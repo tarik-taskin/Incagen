@@ -110,8 +110,9 @@ function App() {
               ref={fileInputRef}
               type="file"
               accept={SUPPORTED_FILE_TYPES}
+              multiple
               className="sr-only"
-              aria-label="Analiz edilecek dosyayı seç"
+              aria-label="Analiz edilecek dosyaları seç"
             />
 
             <button
