@@ -51,7 +51,9 @@ src/
 
 ## Mevcut durum
 
-Ana sayfa, aydınlık/karanlık tema ve Anime.js ile animasyonlu Incagen logosu hazırdır. Belge alanı görsel ve PDF dosyaları için sistem dosya seçicisini açar; dosya yükleme ve yapay zekâ analizi henüz bir servise bağlı değildir.
+Ana sayfa, aydınlık/karanlık tema ve Anime.js ile animasyonlu Incagen logosu hazırdır. Dosya alanı tablo, belge, sunum, yapılandırılmış veri ve görsel türlerinde çoklu seçim yapar; dosya yükleme ve yapay zekâ analizi henüz bir servise bağlı değildir.
+
+Ürün hedefleri ve aktif geliştirme sırası için `GOAL.md`; mimari için `FLOW.md`; bağlayıcı geliştirme kuralları için `RULES.md` okunmalıdır.
 
 Kod değişikliği göndermeden önce şu kontrolleri çalıştır:
 

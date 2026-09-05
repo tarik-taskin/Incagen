@@ -4,12 +4,20 @@
 
 | Özellik | Free | Premium |
 |---|---|---|
-| Dosya kullanımı | Sınırlı | Daha geniş |
-| Analiz ve araştırma derinliği | Standart | Gemini 3.8 Flash `high` seviyesiyle derin |
-| Çıktı ayrıntısı ve görsel kalitesi | Temel profesyonel çıktı | Daha kapsamlı, zengin ve ileri animasyonlu çıktı |
-| Harici veri kaynakları | Bulunmaz | Google Analytics ve Microsoft Clarity |
+| Aylık analiz | 5 | 30 |
+| Analiz başına dosya | 5 | 20 |
+| Dosya başına boyut | 25 MB | 50 MB |
+| Analiz derinliği | Gemini 3.8 Flash `medium` | Gemini 3.8 Flash `high` |
+| Çıktı | Güvenilir web ve PDF raporu | Daha derin karşılaştırma ve önerilerle web ve PDF raporu |
+| Harici veri kaynakları | Bulunmaz | Önce Google Analytics, ardından Microsoft Clarity |
 
-Kesin dosya adetleri ve kullanım limitleri ürün geliştirme sırasında belirlenecektir.
+MVP ödeme olmadan davetli Free beta olarak açılır. iyzico aboneliği ve Premium yetkileri MVP sonrasındaki milestone'da etkinleştirilir.
+
+## Müşteri profilleri
+
+- KOBİ yöneticisi: ilk işlevsel profil
+- E-ticaret işletmesi: onboarding içinde görünür, “Yakında” durumunda pasif
+- Ajans/danışman: onboarding içinde görünür, “Yakında” durumunda pasif
 
 ## Ana ürün akışı
 
@@ -61,6 +69,7 @@ flowchart LR
     subgraph FIREBASE[Firebase Backend]
         AUTH[Firebase Authentication]
         FUNCTIONS[Firebase Functions<br/>İş akışı yönetimi]
+        TASKS[Cloud Tasks<br/>Güvenli iş kuyruğu]
         STORAGE[(Firebase Storage<br/>Kaynak dosyalar)]
         FIRESTORE[(Cloud Firestore<br/>Durum, JSON sonuç ve geçmiş)]
     end
@@ -70,9 +79,10 @@ flowchart LR
         CLARITY[Microsoft Clarity]
     end
 
-    subgraph AI[AI İşleme]
-        FILTER[Düşük maliyetli AI<br/>Spam ve uygunluk kontrolü]
-        TRANSFORM[Ortak veri formatı<br/>Temizleme ve dönüştürme]
+    subgraph PROCESSING[Python Cloud Run]
+        CHECK[Dosya ve güvenlik<br/>kontrolleri]
+        TRANSFORM[Dosya ayrıştırma ve<br/>ortak veri formatı]
+        FILTER[Gemini Flash-Lite<br/>Semantik uygunluk]
         GEMINI[Gemini 3.8 Flash<br/>Ana analiz]
         SCHEMA[JSON Schema doğrulama<br/>ve yeniden deneme]
     end
@@ -84,9 +94,11 @@ flowchart LR
     GA --> FUNCTIONS
     CLARITY --> FUNCTIONS
 
-    FUNCTIONS --> FILTER
-    FILTER --> TRANSFORM
-    TRANSFORM --> GEMINI
+    FUNCTIONS --> TASKS
+    TASKS --> CHECK
+    CHECK --> TRANSFORM
+    TRANSFORM --> FILTER
+    FILTER --> GEMINI
     GEMINI --> SCHEMA
     SCHEMA --> FIRESTORE
 
@@ -98,7 +110,7 @@ flowchart LR
     classDef source fill:#EAF6FF,color:#12324A,stroke:#5798C5,stroke-width:1px;
 
     class AUTH,FUNCTIONS,STORAGE,FIRESTORE firebase;
-    class FILTER,TRANSFORM,GEMINI,SCHEMA ai;
+    class CHECK,FILTER,TRANSFORM,GEMINI,SCHEMA ai;
     class GA,CLARITY source;
 ```
 
@@ -128,13 +140,21 @@ Geçerli JSON sonucu frontend aşağıdaki profesyonel bölümlere dönüştür�
 
 ## Temel teknik kararlar
 
+- İlk kullanıcı profili KOBİ yöneticisidir; e-ticaret ve ajans/danışman profilleri işlev kazanana kadar pasif gösterilir.
+- MVP, Avrupa bölgelerinde ayrı Firebase dev ve prod projeleriyle davetli beta olarak yayınlanır.
+- Firebase Authentication Google ve e-posta/parola girişini destekler.
+- MVP tek kullanıcıyla çalışır; veri modeli gelecekteki ekip üyeliği için `workspaceId` içerir.
+- Desteklenen formatlar CSV, TSV, XLS/XLSX, ODS, PDF, DOC/DOCX, TXT, RTF, Markdown, PPT/PPTX, JSON, XML ve görsellerdir.
+- Analizler arka plan işi olarak yürür; kullanıcı sekmeden ayrılsa bile Firestore üzerinden durum ve geçmiş korunur.
 - Ana analiz modeli `gemini-3.8-flash` olacaktır.
 - Gemini 3.8 Flash, kampanyalı fiyatların geçerli olduğu 31 Aralık 2026 tarihine kadar kullanılacak; sonrasında güncel model ve fiyat seçenekleri yeniden değerlendirilecektir.
-- Premium analizlerde `high` düşünme seviyesi kullanılacaktır.
-- Spam ve uygunluk kontrolü daha düşük maliyetli ayrı bir AI tarafından yapılacaktır.
+- Free analizlerde `medium`, Premium analizlerde `high` düşünme seviyesi kullanılacaktır.
+- MIME, uzantı, boyut, checksum ve zararlı içerik kontrolleri deterministik yapılır; semantik uygunluk yapılandırılabilir Gemini Flash-Lite modeliyle değerlendirilir.
 - Model yanıtı tanımlı JSON şemasına uymak zorundadır; geçersiz yanıt kontrollü şekilde yeniden üretilir.
 - Kesin oranlar ve sayısal metrikler backend tarafından doğrulanmadan kullanıcıya gösterilmez.
-- Tüm AI istekleri ve harici API bağlantıları Firebase Functions üzerinden çalışır; anahtarlar frontend'e verilmez.
+- Firebase Functions yetkilendirme ve orkestrasyonu, Cloud Tasks iş kuyruğunu, Python Cloud Run ise dosya ve AI işlerini yürütür; anahtarlar frontend'e verilmez.
 - Kaynak dosyalar Firebase Storage'da tutulur.
 - Analiz durumu, doğrulanmış JSON sonuçları ve geçmiş analiz kayıtları Cloud Firestore'da tutulur.
-- Geçmiş Analizlerim bölümü daha sonraki UI aşamasında uygulamaya eklenecektir.
+- Kaynak dosyalar ve sonuçlar kullanıcı silene kadar saklanır; silme işlemi tüm ilişkili verileri kalıcı olarak temizler.
+- Geçmiş Analizlerim ve markalı PDF çıktısı MVP kapsamındadır.
+- Premium ödeme altyapısı iyzico ile kurulur; Google Analytics ilk, Microsoft Clarity ikinci harici entegrasyondur.
