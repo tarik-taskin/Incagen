@@ -4,6 +4,7 @@ import { cn } from "../lib/utils";
 
 type AnimatedLogoProps = { className?: string; compact?: boolean };
 
+// Incagen marka işaretini erişilebilir SVG ve hareket tercihlerine duyarlı animasyonlarla çizer.
 export function AnimatedLogo({ className, compact = false }: AnimatedLogoProps) {
   const logoRef = useRef<SVGSVGElement>(null);
   const gradientId = useId().replace(/:/g, "");

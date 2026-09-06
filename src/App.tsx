@@ -1,11 +1,31 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { animate, stagger } from "animejs";
-import { ArrowUpRight, FileImage, FileText, Moon, Sparkles, Sun, Upload } from "lucide-react";
+import { ArrowUpRight, FileImage, Files, FileSpreadsheet, Moon, Sparkles, Sun, Upload } from "lucide-react";
 import { AnimatedLogo } from "./components/animated-logo";
 import { Button } from "./components/ui/button";
 
 type Theme = "light" | "dark";
 
+const SUPPORTED_FILE_TYPES = [
+  ".csv",
+  ".tsv",
+  ".xls",
+  ".xlsx",
+  ".ods",
+  ".pdf",
+  ".doc",
+  ".docx",
+  ".txt",
+  ".rtf",
+  ".md",
+  ".ppt",
+  ".pptx",
+  ".json",
+  ".xml",
+  "image/*",
+].join(",");
+
+// Kaydedilmiş kullanıcı tercihini okuyarak sayfanın ilk tema durumunu belirler.
 function getInitialTheme(): Theme {
   const savedTheme = localStorage.getItem("incagen-theme") as Theme | null;
 
@@ -14,12 +34,13 @@ function getInitialTheme(): Theme {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+// Incagen giriş ekranını, tema yönetimini ve analiz dosyası seçme deneyimini sunar.
 function App() {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
     localStorage.setItem("incagen-theme", theme);
   }, [theme]);
@@ -51,7 +72,7 @@ function App() {
       <header className="relative z-20 mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-10">
         <a href="#" className="flex items-center gap-2.5" aria-label="Incagen ana sayfa">
           <AnimatedLogo className="h-9 w-9" compact />
-          <span className="text-xl font-semibold tracking-[-0.04em]">incagen</span>
+          <span className="text-xl font-semibold tracking-[-0.04em]">Incagen</span>
         </a>
 
         <Button
@@ -81,34 +102,43 @@ function App() {
           </h1>
 
           <p data-reveal className="mt-6 max-w-2xl text-pretty text-base leading-7 text-muted-foreground opacity-0 sm:text-lg">
-            Belgelerinizi yükleyin; Incagen işletmenize özel analizleri, içgörüleri ve uygulanabilir önerileri sizin için hazırlasın.
+            Veri dosyalarınızı yükleyin; Incagen işletmenize özel analizleri, içgörüleri ve uygulanabilir önerileri sizin için hazırlasın.
           </p>
 
-          <div data-reveal className="mt-10 w-full opacity-0 sm:mt-12">
-            <input ref={fileInputRef} type="file" accept="image/*,application/pdf" className="sr-only" aria-label="Analiz edilecek belgeyi seç" />
+          <div className="mt-10 w-full sm:mt-12">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={SUPPORTED_FILE_TYPES}
+              className="sr-only"
+              aria-label="Analiz edilecek dosyayı seç"
+            />
 
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="upload-card group relative w-full overflow-hidden rounded-[2rem] border border-primary/15 bg-card/70 p-2 text-left shadow-[0_28px_90px_-46px_rgba(76,42,133,0.55)] backdrop-blur-2xl transition duration-500 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_34px_100px_-42px_rgba(76,42,133,0.7)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-background dark:border-secondary/15 dark:hover:border-secondary/30"
+              className="upload-card group relative w-full overflow-hidden rounded-[2rem] border border-primary/15 bg-card/70 p-2 text-left shadow-[0_28px_90px_-46px_rgba(76,42,133,0.55)] backdrop-blur-2xl transition-[transform,box-shadow] duration-500 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_34px_100px_-42px_rgba(76,42,133,0.7)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/60 dark:border-secondary/15 dark:hover:border-secondary/30 dark:focus-visible:ring-secondary/60"
             >
               <span className="pointer-events-none absolute inset-x-20 top-0 h-px bg-gradient-to-r from-transparent via-secondary to-transparent opacity-80" />
-              <span className="relative flex min-h-64 flex-col items-center justify-center rounded-[1.55rem] border border-dashed border-primary/20 bg-gradient-to-b from-primary/[0.055] to-transparent px-6 py-12 text-center transition-colors duration-500 group-hover:border-primary/40 dark:border-secondary/20 dark:from-secondary/[0.055] dark:group-hover:border-secondary/40 sm:min-h-72">
+              <span className="relative flex min-h-64 flex-col items-center justify-center rounded-[1.55rem] border border-dashed border-primary/20 bg-gradient-to-b from-primary/[0.055] to-transparent px-6 py-12 text-center group-hover:border-primary/40 dark:border-secondary/20 dark:from-secondary/[0.055] dark:group-hover:border-secondary/40 sm:min-h-72">
                 <span className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-[0_14px_35px_-14px_rgba(76,42,133,0.9)] transition duration-500 group-hover:scale-105 group-hover:-rotate-2 dark:bg-secondary dark:text-[#320E3B]">
                   <Upload className="h-7 w-7" strokeWidth={1.8} />
                 </span>
 
-                <span className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl">Analiz için belgenizi seçin</span>
+                <span className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl">Analiz için dosyanızı seçin</span>
                 <span className="mt-2 max-w-md text-sm leading-6 text-muted-foreground sm:text-base">
-                  Dosyalarınızdan bir görsel veya PDF seçmek için bu alana tıklayın.
+                  İşletme verilerinizi içeren tablo, belge veya görseli seçmek için bu alana tıklayın.
                 </span>
 
                 <span className="mt-7 flex flex-wrap items-center justify-center gap-2 text-xs font-medium text-muted-foreground">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1.5">
-                    <FileImage className="h-3.5 w-3.5 text-primary dark:text-secondary" /> PNG, JPG, WEBP
+                    <FileSpreadsheet className="h-3.5 w-3.5 text-primary dark:text-secondary" /> Tablo verileri
                   </span>
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1.5">
-                    <FileText className="h-3.5 w-3.5 text-primary dark:text-secondary" /> PDF
+                    <Files className="h-3.5 w-3.5 text-primary dark:text-secondary" /> Belgeler
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1.5">
+                    <FileImage className="h-3.5 w-3.5 text-primary dark:text-secondary" /> Görseller
                   </span>
                 </span>
 
@@ -117,7 +147,7 @@ function App() {
             </button>
           </div>
 
-          <p data-reveal className="mt-5 text-xs text-muted-foreground/80 opacity-0">Belgeleriniz siz onay vermeden analiz edilmez.</p>
+          <p data-reveal className="mt-5 text-xs text-muted-foreground/80 opacity-0">Dosyalarınız siz onay vermeden analiz edilmez.</p>
         </section>
       </main>
     </div>
