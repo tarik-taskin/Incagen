@@ -1,22 +1,18 @@
 # Incagen Proje Hafızası
 
-Bu dosya, yeni çalışma oturumlarında projenin temel bağlamını tekrar anlatmaya gerek kalmadan devam edebilmek için tutulur.
+Incagen, işletmelerin müşteri ve operasyon verilerini analiz ederek grafikler, tablolar ve uygulanabilir büyüme önerileri sunmayı amaçlar.
 
-## Temel bilgiler
+## Teknoloji ve kalıcı bağlam
 
-- Incagen, işletmelerin yüklediği müşteri ve operasyon verilerini analiz ederek grafikler, tablolar ve uygulanabilir öneriler sunacak tek sayfalık bir web uygulamasıdır.
-- Frontend React, TypeScript, Vite ve Tailwind CSS ile geliştirilmektedir.
-- Backend için Firebase, yapay zekâ yorumları için Google Gemini API kullanılacaktır.
+- Frontend: React, TypeScript, Vite, Tailwind CSS, shadcn/ui yaklaşımı ve Anime.js.
+- Planlanan backend Firebase, ana AI sağlayıcısı Google Gemini'dir; henüz entegre değildir.
+- Ana renkler `#4c2a85` ve `#bcedf6`; yardımcı palet `#320E3B`, `#ff0035`, `#DDFBD2`.
+- Çalışma kuralları [AGENTS.md](AGENTS.md), teknik kurallar [RULES.md](RULES.md), ürün davranışı [FLOW.md](FLOW.md) içindedir.
 
-## Kalıcı kurallar
+## Tamamlanmış özellikler
 
-1. Her ana function'ın tepesine ne yaptığını ve temel mantığını kısa şekilde açıklayan bir yorum satırı eklenir.
-2. GitHub'da `main`, `furkan` ve `tarik` branchleri bulunur. Furkan ve Tarık kendi branchlerinde çalışır; tamamlanan değişiklikler kontrol edildikten sonra `main` branchine alınır.
-3. API anahtarları, servis hesabı bilgileri ve müşteri verileri repoya eklenmez.
+- Responsive giriş ekranı ve açık/koyu tema.
+- Anime.js ile animasyonlu SVG logo ve Incagen favicon'u.
+- Tablo, belge, sunum, yapılandırılmış veri ve görseller için çoklu dosya seçici.
 
-## Mevcut durum
-
-- Responsive açılış ekranı, açık/koyu tema ve animasyonlu Incagen logosu hazırdır.
-- Tarayıcı sekmesi Incagen favicon'unu kullanır.
-- Dosya seçici tablo, belge, sunum, yapılandırılmış veri ve görsel türlerini gösterecek şekilde hazırlanmıştır.
-- Dosya yükleme, Firebase, Gemini ve sonuç ekranı henüz uygulanmamıştır.
+Dosya seçmek henüz yükleme veya AI işlemi başlatmaz; backend ve sonuç ekranı uygulanmamıştır.

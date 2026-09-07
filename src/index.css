@@ -22,7 +22,6 @@
   * { @apply border-border; }
   html { scroll-behavior: smooth; }
   body { @apply m-0 min-w-80 min-h-screen bg-background text-foreground; }
-  button, input { font: inherit; }
 }
 
 @layer utilities {
