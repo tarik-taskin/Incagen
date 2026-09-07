@@ -53,7 +53,7 @@ src/
 
 Ana sayfa, aydınlık/karanlık tema ve Anime.js ile animasyonlu Incagen logosu hazırdır. Dosya alanı tablo, belge, sunum, yapılandırılmış veri ve görsel türlerinde çoklu seçim yapar; dosya yükleme ve yapay zekâ analizi henüz bir servise bağlı değildir.
 
-Ürün hedefleri ve aktif geliştirme sırası için `GOAL.md`; mimari için `FLOW.md`; bağlayıcı geliştirme kuralları için `RULES.md` okunmalıdır.
+Ayrıntılar: [hedefler](GOAL.md), [ürün ve sistem akışı](FLOW.md), [teknik kurallar](RULES.md), [kalıcı bağlam](MEMORY.md) ve [ekip/agent çalışma düzeni](AGENTS.md).
 
 Kod değişikliği göndermeden önce şu kontrolleri çalıştır:
 

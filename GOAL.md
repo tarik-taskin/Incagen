@@ -1,147 +1,108 @@
-# Incagen Hedefleri ve Yaşayan Yol Haritası
+# Incagen — Yaşayan Yol Haritası
 
-Bu dosya Incagen'in uzun vadeli hedeflerini, aktif milestone'unu, görev sahiplerini ve kalite kapılarını takip eden ortak çalışma belgesidir. Ürün ve sistem akışının teknik ayrıntıları `FLOW.md`, kalıcı bağlam `MEMORY.md`, bağlayıcı geliştirme kuralları `RULES.md` içindedir.
+Ürün ve sistem davranışı [FLOW.md](FLOW.md) içindedir. Bu belge görevleri, sahipleri, kalite kapılarını ve açık kararları takip eder.
 
-## Durum işaretleri
+Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
+İşe başlamadan sahibi Tarık veya Furkan olarak atanır.
 
-- `[ ]` Başlanmadı
-- `[~]` Devam ediyor
-- `[x]` Tamamlandı ve doğrulandı
-- `[!]` Engelli; nedeni ve ihtiyaç duyulan karar yazılmalı
+## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
-Bir iş `[~]` durumuna alınmadan önce `Sahip` alanı Tarık veya Furkan olarak doldurulur. Her `main` birleşiminde tamamlanan işler, aktif milestone, riskler ve kararlar güncellenir.
+Durum: [~]
 
-## Ürün hedefi
+- [x] Sahip: Tarık — React/TypeScript tabanı, animasyonlu logo, responsive giriş ve tema.
+- [x] Sahip: Furkan — İlk ürün/AI akışı, proje hafızası ve favicon.
+- [x] Sahip: Tarık — Çoklu dosya seçimi ve bileşen odaklı stil düzeni.
+- [x] Sahip: Tarık — Ortak roadmap ve belge sorumlulukları.
+- [x] Sahip: Tarık — PR #2 inceleme düzeltmeleri: çoğul arayüz, kararların ayrıştırılması, sade belgeler ve temiz branch geçmişi.
+  Kabul: lint/build/diff kontrolü temiz; çoklu seçim ve iki tema kontrol edilmiş; PR yalnız ilgili değişiklikleri içeriyor.
+- [ ] Sahip: Atanmadı — Router ve korumalı uygulama kabuğu.
+- [ ] Sahip: Atanmadı — Türkçe kaynaklarla i18n temeli.
+- [ ] Sahip: Atanmadı — Vitest, React Testing Library ve Playwright test altyapısı.
+- [ ] Sahip: Atanmadı — CI build/lint/test kalite kapıları.
+- [ ] Sahip: Atanmadı — Ortam/bölge kararı sonrası Firebase ortamları ve güvenli environment şablonu.
 
-Incagen; işletme dosyalarını ve bağlı veri kaynaklarını güvenli biçimde işleyerek KOBİ yöneticilerine kanıta dayalı KPI'lar, grafikler, tablolar ve uygulanabilir büyüme önerileri sunar.
+Kapanış: görevler incelenmiş; CI kontrolleri başarılı; repoda sır veya müşteri verisi yok.
 
-İlk işlevsel müşteri profili KOBİ yöneticisidir. E-ticaret ve ajans/danışman profilleri onboarding içinde görünür fakat “Yakında” durumunda pasiftir.
+## M1 — Kimlik ve uygulama kabuğu
 
-## Başarı ölçütleri
+- [ ] Sahip: Atanmadı — Giriş yöntemleri kararı sonrası Firebase Authentication ve oturum yönetimi.
+- [ ] Sahip: Atanmadı — İşletme bilgileri ve analiz hedefini alan onboarding.
+- [ ] Sahip: Atanmadı — Yeni analiz, sonuç, geçmiş ve ayarlar rotaları.
+- [ ] Sahip: Atanmadı — Kullanıcı izolasyonu; ekip veri modeli kararı sonrası şema.
 
-- Davetli bir KOBİ kullanıcısı hesap açıp dosya yükleme, analiz, web raporu, PDF ve geçmiş akışını yardım almadan tamamlayabilir.
-- Her önemli bulgu kaynak referansı ve `low`, `medium` veya `high` güven düzeyi taşır.
-- Kullanıcı sekmeden ayrılsa bile arka plan işi devam eder ve durum geçmiş ekranından izlenebilir.
-- Kullanıcı bir analizi sildiğinde kaynak dosyalar, türetilmiş veriler, sonuç ve PDF kalıcı olarak silinir.
-- Kullanıcılar yalnız kendi çalışma alanlarındaki verilere erişebilir.
-- Build, lint, otomatik testler ve güvenlik kuralları ilgili milestone kapanmadan başarılı olur.
+Kalite kapısı: oturum yenileme, çıkış, korumalı rotalar ve yetkisiz erişim testleri başarılı.
 
-## Aktif milestone
+## M2 — Dosya yükleme ve hazırlama
 
-### M0 — Temel düzen ve kalite altyapısı
+- [ ] Sahip: Atanmadı — FLOW.md formatları için doğrulama ve normalizasyon.
+- [ ] Sahip: Atanmadı — FLOW.md plan limitlerini backend'de uygula; boyut ve kota sıfırlama kararlarını önce tamamla.
+- [ ] Sahip: Atanmadı — Storage yükleme, ilerleme, iptal ve yeniden deneme.
+- [ ] Sahip: Atanmadı — Bozuk/parolalı/zararlı dosya kontrolleri ve kaynak referansları.
+- [ ] Sahip: Atanmadı — Kısmi hata görünümü ve geçerli dosyalarla devam onayı.
 
-Durum: `[~]`  
-Amaç: Prototipi güvenli, test edilebilir ve ekipçe paralel geliştirilebilir ürün temeline taşımak.
+Kalite kapısı: format fixture'ları, kota sınırları, yetkilendirme ve kısmi hata testleri başarılı.
 
-- [x] Sahip: Tarık — React, TypeScript, Vite, Tailwind ve shadcn/ui tabanını oluştur.
-- [x] Sahip: Tarık — Animasyonlu logo, açık/koyu tema ve responsive giriş ekranını oluştur.
-- [x] Sahip: Furkan — Ürün/AI akışını, proje hafızasını ve favicon'u ekle.
-- [x] Sahip: Tarık — Geniş dosya listesini çoklu seçimle uyumlu hale getir.
-- [x] Sahip: Tarık — Stil sahipliği ve global CSS çakışma kurallarını tanımla.
-- [x] Sahip: Tarık — Yaşayan roadmap ve doküman sorumluluklarını projeye ekle.
-- [ ] Sahip: Atanmadı — React Router ile herkese açık ve korumalı uygulama kabuğunu kur.
-- [ ] Sahip: Atanmadı — Türkçe kaynaklarla başlayacak i18n altyapısını kur.
-- [ ] Sahip: Atanmadı — Vitest, React Testing Library ve Playwright test tabanını kur.
-- [ ] Sahip: Atanmadı — CI üzerinde build, lint ve test kalite kapılarını çalıştır.
-- [ ] Sahip: Atanmadı — Avrupa bölgesinde ayrı Firebase dev/prod projelerini ve güvenli environment şablonlarını hazırla.
+## M3 — AI analiz hattı
 
-Kapanış kriterleri:
+- [ ] Sahip: Atanmadı — Servis seçimi sonrası arka plan iş yönetimi.
+- [ ] Sahip: Atanmadı — Uygunluk kontrolü ve FLOW.md ana model yapılandırması.
+- [ ] Sahip: Atanmadı — Sürümlü JSON Schema, kaynak ve sayısal metrik doğrulama.
+- [ ] Sahip: Atanmadı — Sınırlı retry, idempotent kota tüketimi ve platform hatasında iade.
 
-- Her görev sahibine atanmış ve pull request üzerinden incelenmiş olmalı.
-- CI build, lint ve başlangıç testlerini hatasız çalıştırmalı.
-- Repoda sır, gerçek müşteri verisi veya ortama özel kimlik bilgisi bulunmamalı.
+Kalite kapısı: şema, hata/retry, kota ve kullanıcı izolasyonu entegrasyon testleri başarılı.
 
-## Sonraki milestone'lar
+## M4 — Sonuçlar ve geçmiş
 
-### M1 — Kimlik, onboarding ve uygulama kabuğu
+- [ ] Sahip: Atanmadı — shadcn/ui grafik, KPI, tablo ve öneri ekranları.
+- [ ] Sahip: Atanmadı — Kaynak referansı, güven düzeyi ve çıkarım etiketleri.
+- [ ] Sahip: Atanmadı — Firestore geçmişini listeleme ve filtreleme.
+- [ ] Sahip: Atanmadı — Saklama/silme kararı sonrası ilişkili verilerin temizlenmesi.
+- [ ] Sahip: Atanmadı — PDF kapsam kararı sonrası gerekirse aynı doğrulanmış sonuçtan dışa aktarım.
 
-- [ ] Sahip: Atanmadı — Firebase Authentication ile Google ve e-posta/parola girişini ekle.
-- [ ] Sahip: Atanmadı — Davet kodu doğrulaması ve oturum yönetimini ekle.
-- [ ] Sahip: Atanmadı — KOBİ profilini aktif; e-ticaret ve ajans profillerini “Yakında” olarak göster.
-- [ ] Sahip: Atanmadı — `/app/new`, `/app/analyses/:id`, `/app/history` ve `/app/settings` korumalı rotalarını oluştur.
-- [ ] Sahip: Atanmadı — Tek kullanıcıyla çalışan fakat `workspaceId` üzerinden ekip yapısına hazır veri modelini kur.
+Kalite kapısı: sonuçlar doğrulanmış verilerle eşleşiyor; kaynaklar çalışıyor; yetkisiz erişim ve silme senaryoları geçiyor.
 
-Kalite kapısı: korumalı rotalar, oturum yenileme, çıkış, davet ve kullanıcı izolasyonu testleri başarılı olmalı.
+## M5 — Yayına hazırlık ve operasyon
 
-### M2 — Çoklu dosya yükleme ve normalizasyon
+- [ ] Sahip: Atanmadı — Beta erişim kararı ve kabul senaryoları.
+- [ ] Sahip: Atanmadı — Kullanıcı/kota/başarısız iş yönetimi için operasyon araçları.
+- [ ] Sahip: Atanmadı — App Check, Security Rules ve hız sınırlama.
+- [ ] Sahip: Atanmadı — Hata, iş süresi, parser başarısı ve model maliyetlerini izleme.
+- [ ] Sahip: Atanmadı — Maliyet alarmı, yedekleme ve geri yükleme prosedürü.
 
-- [ ] Sahip: Atanmadı — CSV, TSV, XLS/XLSX, ODS, PDF, DOC/DOCX, TXT, RTF, Markdown, PPT/PPTX, JSON, XML ve görseller için doğrulama uygula.
-- [ ] Sahip: Atanmadı — Beta limitlerini uygula: ayda 5 analiz, analiz başına 5 dosya, dosya başına 25 MB.
-- [ ] Sahip: Atanmadı — Firebase Storage resumable upload, dosya bazlı ilerleme, iptal ve retry ekle.
-- [ ] Sahip: Atanmadı — MIME, uzantı, checksum, bozuk/parolalı dosya ve zararlı içerik kontrollerini ekle.
-- [ ] Sahip: Atanmadı — Python Cloud Run worker ile dosyaları ortak metin, tablo, görsel ve kaynak referansı modeline dönüştür.
-- [ ] Sahip: Atanmadı — Hatalı dosyayı ayrı göster; kullanıcı onayıyla geçerli dosyalarla devam et.
+Kalite kapısı: güvenlik ve uçtan uca testler başarılı; operasyon ve erişim politikaları doğrulanmış.
 
-Kalite kapısı: her format için fixture testleri, kota sınırları ve kısmi yükleme hata senaryoları başarılı olmalı.
+## M6 — Premium ve entegrasyonlar
 
-### M3 — AI analiz hattı
+- [ ] Sahip: Atanmadı — PayTR ödeme entegrasyonu, doğrulanmış webhook ve idempotent plan güncellemesi.
+- [ ] Sahip: Atanmadı — FLOW.md Premium yetki ve limitlerini uygulama.
+- [ ] Sahip: Atanmadı — FLOW.md sırasıyla harici kaynak bağlantıları ve veri normalizasyonu.
+- [ ] Sahip: Atanmadı — Derin analiz ve karşılaştırmalı öneriler.
 
-- [ ] Sahip: Atanmadı — Firebase Functions, Cloud Tasks ve Python Cloud Run iş orkestrasyonunu kur.
-- [ ] Sahip: Atanmadı — Deterministik kontrollerden sonra yapılandırılabilir Gemini Flash-Lite semantik uygunluk kapısını ekle.
-- [ ] Sahip: Atanmadı — Ana analizi `gemini-3.8-flash` ile sürümlenmiş JSON Schema çıktısına bağla.
-- [ ] Sahip: Atanmadı — Free için `medium`, Premium için `high` düşünme seviyesi uygula.
-- [ ] Sahip: Atanmadı — Şema üretimini en fazla iki kez kontrollü tekrar et; KPI ve oranları backend'de doğrula.
-- [ ] Sahip: Atanmadı — Kota tüketimini atomik ve idempotent yap; platform hatasında kotayı iade et.
+Kalite kapısı: ödeme/webhook, plan geçişi, kota ve bağlantı yetkilendirme testleri başarılı. Ödeme entegrasyonu henüz uygulanmamıştır.
 
-İş durumları: `draft`, `uploading`, `queued`, `validating`, `normalizing`, `analyzing`, `rendering`, `completed`, `needs_attention`, `failed`, `deleted`.
+## Açık kararlar
 
-Kalite kapısı: şema, kaynak referansı, retry, idempotency, kota ve kullanıcı izolasyonu entegrasyon testleri başarılı olmalı.
+Aşağıdakiler öneridir, kesin mimari veya tamamlanmış özellik değildir. İlgili işe başlamadan ekip kararı kaydedilir.
 
-### M4 — Web raporu, PDF ve geçmiş
-
-- [ ] Sahip: Atanmadı — Shadcn/ui Chart ve Recharts ile KPI, grafik ve tablo raporunu oluştur.
-- [ ] Sahip: Atanmadı — Bulgu ve önerilerde kaynak referansı ile güven düzeyini göster.
-- [ ] Sahip: Atanmadı — Kanıtsız yorumları kesin bilgi yerine “çıkarım” olarak etiketle.
-- [ ] Sahip: Atanmadı — Aynı doğrulanmış JSON'dan Cloud Run üzerinde markalı PDF üret.
-- [ ] Sahip: Atanmadı — Geçmiş analizleri tarih, hedef, durum ve işletme adına göre listele ve filtrele.
-- [ ] Sahip: Atanmadı — Analiz ve hesap için tam cascade silme akışını uygula.
-
-Kalite kapısı: web ve PDF değerleri aynı olmalı; kaynak bağlantıları çalışmalı; silinen verilere tekrar erişilememeli.
-
-### M5 — Davetli beta ve operasyon
-
-- [ ] Sahip: Atanmadı — Davet, kullanıcı durumu, kota, başarısız iş ve güvenli retry içeren basit admin ekranını oluştur.
-- [ ] Sahip: Atanmadı — Firebase App Check, Storage/Firestore Security Rules ve hız sınırlamayı etkinleştir.
-- [ ] Sahip: Atanmadı — Hata, job süresi, parser başarısı, model maliyeti ve şema retry oranlarını izle.
-- [ ] Sahip: Atanmadı — Maliyet alarmı, yedekleme ve geri yükleme prosedürlerini ekle.
-- [ ] Sahip: Atanmadı — Seçilen KOBİ kullanıcılarıyla davetli beta kabul testini yürüt.
-
-Kalite kapısı: güvenlik emülatör testleri, erişim izolasyonu, silme ve uçtan uca beta senaryosu başarılı olmalı.
-
-### M6 — Premium ve entegrasyonlar
-
-- [ ] Sahip: Atanmadı — iyzico abonelik, imzalı webhook ve idempotent plan güncelleme akışını kur.
-- [ ] Sahip: Atanmadı — Premium limitlerini uygula: ayda 30 analiz, analiz başına 20 dosya, dosya başına 50 MB.
-- [ ] Sahip: Atanmadı — Google Analytics OAuth ve veri normalizasyonunu ekle.
-- [ ] Sahip: Atanmadı — Google Analytics tamamlandıktan sonra Microsoft Clarity entegrasyonunu ekle.
-- [ ] Sahip: Atanmadı — Premium raporlarda daha derin analiz, karşılaştırma ve önerileri etkinleştir.
-
-Free raporun güvenilir web ve PDF çıktısı korunur; Premium değeri yapay içerik kilitlerinden değil derinlik, kota ve entegrasyonlardan gelir.
-
-Kalite kapısı: ödeme webhook'ları, plan yetkilendirmesi, kota geçişi ve OAuth entegrasyon testleri başarılı olmalı.
-
-## Sabit kararlar
-
-- İlk beta davetli KOBİ kullanıcılarıyla yürütülür.
-- Ödeme MVP sonrasında iyzico ile açılır.
-- Arka plan analizi için e-posta gönderilmez; durum uygulama ve geçmiş ekranından izlenir.
-- Kaynak dosyalar ve sonuçlar kullanıcı silene kadar saklanır.
-- Arayüz Türkçe başlar ve i18n ile İngilizceye hazır tutulur.
-- Backend Firebase Auth, Firestore, Storage, Functions ve Hosting kullanır; uzun dosya/AI işleri Python Cloud Run'da çalışır.
-- Dev ve prod ortamları ayrı, servis bölgeleri Avrupa'dadır.
-- AI ve harici servis anahtarları istemciye verilmez.
-- Model adları yapılandırmadan yönetilir ve ilgili milestone başında güncelliği doğrulanır.
+- İş orkestrasyonu: Firebase Functions yanında Cloud Tasks gerekli mi?
+- Uzun dosya/AI işleri: Python Cloud Run mı, başka bir servis mi?
+- Beta erişimi: davetli mi, açık mı?
+- Authentication: Google ve e-posta/parola seçeneklerinden hangileri?
+- Ortamlar ve servis bölgesi: ayrı dev/prod projeleri ve Avrupa bölgesi önerileri.
+- Veri modeli: tek kullanıcı modeli ve gelecekte workspaceId tabanlı ekip desteği.
+- PDF: MVP içinde mi, sonraki milestone'da mı?
+- Saklama: kullanıcı silene kadar tutma önerisi yerine süre, silme ve yedek politikası birlikte belirlenmeli.
+- Dosya boyutu: geliştirme/test sonuçlarına göre sınırlar.
+- Günlük kota: saat dilimi, sıfırlama anı ve devam eden işlere etkisi.
+- Hedef müşteri profilleri: doğrulanana kadar işletme-genel yaklaşım.
 
 ## Açık riskler
 
-- Geniş Office dosya desteği parser bakım maliyetini artırabilir; format fixture'ları kalite kapısından çıkarılamaz.
-- Kullanıcı silene kadar saklama depolama maliyetini ve gizlilik sorumluluğunu artırır; açık silme kontrolleri zorunludur.
-- AI maliyeti gerçek beta kullanımı görülmeden kesin tahmin edilemez; kullanım ve token ölçümü Premium öncesi tamamlanmalıdır.
-- Model veya fiyat değişiklikleri sabit kod yerine yapılandırma ve sürümlü şema gerektirir.
+- Çok sayıda format parser bakımını ve güvenlik yüzeyini büyütür.
+- Saklama/bölge seçimleri gizlilik, maliyet ve operasyonu etkiler; uygulanmadan kararlaştırılmalıdır.
+- AI maliyeti, model erişimi ve şema güvenilirliği gerçek testlerle ölçülmelidir.
+- Kota/webhook tekrarları çift ücret veya tüketim doğurmamalıdır.
 
 ## Karar günlüğü
 
-- 2026-09-05 — KOBİ profili ilk işlevsel müşteri olarak seçildi; diğer profiller onboarding içinde pasif kalacak.
-- 2026-09-05 — MVP kapsamı hesap, çoklu yükleme, arka plan analizi, web/PDF raporu ve geçmiş olarak belirlendi.
-- 2026-09-05 — Geniş dosya listesi, Firebase + Python Cloud Run ve Avrupa dev/prod ortamları seçildi.
-- 2026-09-05 — Davetli beta, iyzico, Google Analytics önceliği ve görev bazlı ekip sahipliği kararlaştırıldı.
+- 2026-09-07 — Tarık'ın onayıyla PR incelemesindeki ürün düzeltmeleri kabul edildi; plan limitleri FLOW.md'de merkezileştirildi, ödeme işi M6'da güncellendi, müşteri segmenti kısıtı kaldırıldı ve ortak değerlendirme gerektiren seçimler açık kararlara taşındı.

@@ -1,160 +1,58 @@
 # Incagen — Ürün ve Sistem Akışı
 
-## Plan ayrımı
+Bu belge planlanan ürün davranışını anlatır; mevcut uygulama yalnız dosya seçen bir frontend prototipidir. Kesinleşmemiş altyapı ve kapsam seçimleri [GOAL.md](GOAL.md) içindeki açık kararlardadır.
+
+## Free ve Premium
+
+Ürün limitlerinin tek kaynağı bu tablodur.
 
 | Özellik | Free | Premium |
 |---|---|---|
-| Aylık analiz | 5 | 30 |
-| Analiz başına dosya | 5 | 20 |
-| Dosya başına boyut | 25 MB | 50 MB |
-| Analiz derinliği | Gemini 3.8 Flash `medium` | Gemini 3.8 Flash `high` |
-| Çıktı | Güvenilir web ve PDF raporu | Daha derin karşılaştırma ve önerilerle web ve PDF raporu |
-| Harici veri kaynakları | Bulunmaz | Önce Google Analytics, ardından Microsoft Clarity |
+| Günlük analiz hakkı | 10 | 30 |
+| Analiz başına maksimum dosya | 10 | 30 |
+| Analiz derinliği | Medium | High |
+| Harici veri kaynakları | Bulunmaz | Google Analytics ve Microsoft Clarity |
+| Web sonucu | Grafikler, tablolar ve öneriler | Daha derin karşılaştırma ve öneriler |
 
-MVP ödeme olmadan davetli Free beta olarak açılır. iyzico aboneliği ve Premium yetkileri MVP sonrasındaki milestone'da etkinleştirilir.
+Dosya boyutu limitleri geliştirme/test aşamasında belirlenecektir. Günlük kotanın saat dilimi ve sıfırlama politikası uygulanmadan önce kararlaştırılacaktır.
 
-## Müşteri profilleri
+## Dosya kabulü ve hazırlama
 
-- KOBİ yöneticisi: ilk işlevsel profil
-- E-ticaret işletmesi: onboarding içinde görünür, “Yakında” durumunda pasif
-- Ajans/danışman: onboarding içinde görünür, “Yakında” durumunda pasif
+Seçicide CSV, TSV, XLS/XLSX, ODS, PDF, DOC/DOCX, TXT, RTF, Markdown, PPT/PPTX, JSON, XML ve görseller bulunur. Seçilebilir olmak, formatın backend'de işlenmesinin tamamlandığı anlamına gelmez.
 
-## Ana ürün akışı
+1. Kullanıcı dosyalarını seçer ve analizi onaylar.
+2. Backend kimlik, plan/kota, MIME, uzantı, boyut ve güvenlik kontrollerini yapar; istemcinin accept filtresine güvenmez.
+3. Kaynak dosyalar yetkilendirilmiş Firebase Storage alanına alınır.
+4. Dosyalar metin, tablo, görsel ve kaynak referansları içeren ortak formata hazırlanır.
+5. Düşük maliyetli, yapılandırılabilir AI uygunluk kontrolü yapılır. Geçersiz dosyalarda anlaşılır hata ve geçerli dosyalarla devam için kullanıcı onayı sunulur.
 
-```mermaid
-flowchart TD
-    START([Incagen]) --> PLAN{Plan kontrolü}
-
-    PLAN -->|Free| FREE[Standart dosya ve analiz kapsamı]
-    PLAN -->|Premium| PREMIUM[Geniş dosya kapsamı<br/>Derin analiz<br/>Google Analytics + Microsoft Clarity]
-
-    FREE --> SOURCE[Veri kaynaklarını hazırla]
-    PREMIUM --> SOURCE
-
-    SOURCE --> GATE[Düşük maliyetli AI ile<br/>spam ve uygunluk kontrolü]
-    GATE -->|Uygun değil| REJECT[Anlaşılır uyarı ve yeniden deneme]
-    GATE -->|Uygun| NORMALIZE[Dosyaları ve bağlı kaynakları<br/>ortak analiz formatına dönüştür]
-
-    NORMALIZE --> ANALYZE[Gemini 3.8 Flash ile ana analiz]
-    ANALYZE --> JSON[Yapılandırılmış JSON sonuç]
-    JSON --> VALIDATE{Backend doğrulaması}
-
-    VALIDATE -->|Eksik veya bozuk| RETRY[Kontrollü yeniden üretim]
-    RETRY --> VALIDATE
-    VALIDATE -->|Geçerli| OUTPUT[Profesyonel animasyonlu<br/>grafikler, tablolar ve içgörüler]
-
-    OUTPUT --> HISTORY[Analizi Firestore geçmişine kaydet]
-    HISTORY --> END([Sonuç ve Geçmiş Analizlerim])
-
-    classDef primary fill:#4C2A85,color:#FFFFFF,stroke:#BCEDF6,stroke-width:2px;
-    classDef process fill:#F5F0FA,color:#320E3B,stroke:#7B5AA6,stroke-width:1px;
-    classDef success fill:#DDFBD2,color:#1D3A18,stroke:#79A86A,stroke-width:1px;
-    classDef warning fill:#FFF3CD,color:#5C4300,stroke:#D5A524,stroke-width:1px;
-
-    class START,ANALYZE,END primary;
-    class FREE,PREMIUM,SOURCE,GATE,NORMALIZE,JSON,RETRY,HISTORY process;
-    class OUTPUT success;
-    class REJECT warning;
-```
-
-## Firebase ve AI veri hattı
+## Analiz ve sonuç hattı
 
 ```mermaid
 flowchart LR
-    subgraph CLIENT[React Uygulaması]
-        UI[Dosya seçimi<br/>Plan ve sonuç arayüzü]
-        PROGRESS[İşlem durumu<br/>ve animasyonlar]
-    end
-
-    subgraph FIREBASE[Firebase Backend]
-        AUTH[Firebase Authentication]
-        FUNCTIONS[Firebase Functions<br/>İş akışı yönetimi]
-        TASKS[Cloud Tasks<br/>Güvenli iş kuyruğu]
-        STORAGE[(Firebase Storage<br/>Kaynak dosyalar)]
-        FIRESTORE[(Cloud Firestore<br/>Durum, JSON sonuç ve geçmiş)]
-    end
-
-    subgraph SOURCES[Premium Veri Kaynakları]
-        GA[Google Analytics]
-        CLARITY[Microsoft Clarity]
-    end
-
-    subgraph PROCESSING[Python Cloud Run]
-        CHECK[Dosya ve güvenlik<br/>kontrolleri]
-        TRANSFORM[Dosya ayrıştırma ve<br/>ortak veri formatı]
-        FILTER[Gemini Flash-Lite<br/>Semantik uygunluk]
-        GEMINI[Gemini 3.8 Flash<br/>Ana analiz]
-        SCHEMA[JSON Schema doğrulama<br/>ve yeniden deneme]
-    end
-
-    UI --> AUTH
-    AUTH --> FUNCTIONS
-    UI --> STORAGE
-    STORAGE --> FUNCTIONS
-    GA --> FUNCTIONS
-    CLARITY --> FUNCTIONS
-
-    FUNCTIONS --> TASKS
-    TASKS --> CHECK
-    CHECK --> TRANSFORM
-    TRANSFORM --> FILTER
-    FILTER --> GEMINI
-    GEMINI --> SCHEMA
-    SCHEMA --> FIRESTORE
-
-    FIRESTORE --> PROGRESS
-    FIRESTORE --> UI
-
-    classDef firebase fill:#FFF1CC,color:#4A3100,stroke:#F2A900,stroke-width:1px;
-    classDef ai fill:#4C2A85,color:#FFFFFF,stroke:#BCEDF6,stroke-width:2px;
-    classDef source fill:#EAF6FF,color:#12324A,stroke:#5798C5,stroke-width:1px;
-
-    class AUTH,FUNCTIONS,STORAGE,FIRESTORE firebase;
-    class CHECK,FILTER,TRANSFORM,GEMINI,SCHEMA ai;
-    class GA,CLARITY source;
+    FILES[Dosyalar] --> CHECK[Backend doğrulama]
+    CHECK --> STORAGE[(Firebase Storage)]
+    STORAGE --> PREP[Ortak veri formatı]
+    SOURCES[Premium bağlı kaynaklar] --> PREP
+    PREP --> GATE[AI uygunluk kontrolü]
+    GATE --> AI[Gemini ana analiz]
+    AI --> JSON{JSON ve metrik doğrulama}
+    JSON -->|Geçerli| DB[(Firestore sonuç ve geçmiş)]
+    JSON -->|Geçersiz| RETRY[Sınırlı yeniden üretim]
+    RETRY --> AI
+    DB --> UI[Grafikler, tablolar ve öneriler]
 ```
 
-## Kullanıcıya gösterilecek işlem aşamaları
+Yeniden üretim sınırlı olmalıdır; sınır aşıldığında iş hata durumuna geçer. Kesin sayısal metrikler ve kaynak referansları backend doğrulamasından geçmeden kullanıcıya gösterilmez. AI anahtarları frontend'e verilmez.
 
-Teknik servis isimleri ve spam kontrolü kullanıcıya gösterilmez. Arayüz yalnızca kısa ve güven veren durumlar gösterir:
+Arka plan işinin durumu, doğrulanmış JSON sonucu ve geçmiş kayıtları Firestore'da tutulur. Kullanıcı sonuçlarını ve önceki analizlerini buradan izler. Çalıştırma/kuyruk servisleri ile saklama ve silme politikası henüz seçilmemiştir.
 
-```text
-Dosyalarınız hazırlanıyor
-Verileriniz güvenli şekilde işleniyor
-İşletme verileriniz analiz ediliyor
-İçgörüler ve öneriler oluşturuluyor
-Sonuçlarınız görselleştiriliyor
-```
+Kullanıcıya teknik servis isimleri yerine “Dosyalarınız hazırlanıyor”, “İşletme verileriniz analiz ediliyor” ve “Sonuçlarınız görselleştiriliyor” gibi işlem durumları gösterilir.
 
-## Sonuç yapısı
+Sonuç; özet, KPI kartları, grafikler, karşılaştırmalı tablolar, bulgular, yapılacak/kaçınılacak işler, öncelikli öneriler ve veri kalitesi uyarılarını içerir. Bulgularda kaynak ve güven düzeyi gösterilir; kanıtsız yorumlar çıkarım olarak etiketlenir.
 
-Geçerli JSON sonucu frontend aşağıdaki profesyonel bölümlere dönüştürür:
+## Model ve entegrasyonlar
 
-- Genel özet ve temel KPI kartları
-- Animasyonlu grafikler ve karşılaştırmalı tablolar
-- Önemli bulgular ve nedenler
-- Yapılması gerekenler
-- Kaçınılması gerekenler
-- Önceliklendirilmiş öneriler
-- Veri kalitesi veya eksik bilgi uyarıları
+Planlanan ana model `gemini-3.8-flash`; Free için `medium`, Premium için `high` düşünme seviyesidir. Projenin kampanya/maliyet planı gereği 31 Aralık 2026 tarihine kadar bu model hedeflenir; sonrasında model ve fiyatlar yeniden değerlendirilir. Model erişimi ve fiyatları entegrasyon sırasında doğrulanır; bu ifade uygulanmış entegrasyon veya fiyat garantisi değildir.
 
-## Temel teknik kararlar
-
-- İlk kullanıcı profili KOBİ yöneticisidir; e-ticaret ve ajans/danışman profilleri işlev kazanana kadar pasif gösterilir.
-- MVP, Avrupa bölgelerinde ayrı Firebase dev ve prod projeleriyle davetli beta olarak yayınlanır.
-- Firebase Authentication Google ve e-posta/parola girişini destekler.
-- MVP tek kullanıcıyla çalışır; veri modeli gelecekteki ekip üyeliği için `workspaceId` içerir.
-- Desteklenen formatlar CSV, TSV, XLS/XLSX, ODS, PDF, DOC/DOCX, TXT, RTF, Markdown, PPT/PPTX, JSON, XML ve görsellerdir.
-- Analizler arka plan işi olarak yürür; kullanıcı sekmeden ayrılsa bile Firestore üzerinden durum ve geçmiş korunur.
-- Ana analiz modeli `gemini-3.8-flash` olacaktır.
-- Gemini 3.8 Flash, kampanyalı fiyatların geçerli olduğu 31 Aralık 2026 tarihine kadar kullanılacak; sonrasında güncel model ve fiyat seçenekleri yeniden değerlendirilecektir.
-- Free analizlerde `medium`, Premium analizlerde `high` düşünme seviyesi kullanılacaktır.
-- MIME, uzantı, boyut, checksum ve zararlı içerik kontrolleri deterministik yapılır; semantik uygunluk yapılandırılabilir Gemini Flash-Lite modeliyle değerlendirilir.
-- Model yanıtı tanımlı JSON şemasına uymak zorundadır; geçersiz yanıt kontrollü şekilde yeniden üretilir.
-- Kesin oranlar ve sayısal metrikler backend tarafından doğrulanmadan kullanıcıya gösterilmez.
-- Firebase Functions yetkilendirme ve orkestrasyonu, Cloud Tasks iş kuyruğunu, Python Cloud Run ise dosya ve AI işlerini yürütür; anahtarlar frontend'e verilmez.
-- Kaynak dosyalar Firebase Storage'da tutulur.
-- Analiz durumu, doğrulanmış JSON sonuçları ve geçmiş analiz kayıtları Cloud Firestore'da tutulur.
-- Kaynak dosyalar ve sonuçlar kullanıcı silene kadar saklanır; silme işlemi tüm ilişkili verileri kalıcı olarak temizler.
-- Geçmiş Analizlerim ve markalı PDF çıktısı MVP kapsamındadır.
-- Premium ödeme altyapısı iyzico ile kurulur; Google Analytics ilk, Microsoft Clarity ikinci harici entegrasyondur.
+Premium harici kaynaklarında önce Google Analytics, ardından Microsoft Clarity entegre edilir. Ödeme uygulama işi roadmap'teki Premium milestone'unda tutulur.

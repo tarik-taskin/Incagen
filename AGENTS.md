@@ -1,32 +1,30 @@
 # Proje çalışma talimatları
 
-her görev bitiminde ya da uzun görevlerde belli amaçla yapılan değişiklikler bittiğinde git add . ; git commit -m "feat(frontend/employees): limit shift list" (bir örnek daha: fix(frontend/bills): fix Turkish labels) şeklinde bir commit atacaksın. commitler atomik olmasa da genel olarak bir işlevi ya da amacı karşılayacak kadar küçük olmalıdır. büyük planlar için 8,9 commit küçük değişiklikler için 1-2 commit yeterli. değişikliklerin büyüklüğüne bağlı olarak her commit mesajından sonra 2-6 adet açıklama maddesi de mesaja dahil edilecek. ayrıca yaptığın commit ya da commitleri en sonda belirtmeni istiyorum. projede genel akışı kullanıcı tarafından fazla etkilemeyen commit edilmemiş küçük değişiklikler tespit edersen bunları da commit'lere dahil et. Her göreve başlamadan önce proje kökündeki `GOAL.md`, `MEMORY.md`, `RULES.md`, `FLOW.md` ve `AGENTS.md` dosyalarını oku.
+## Görev başlangıcı ve belgeler
 
-## Proje belgeleri ve amaçları
+Önce çalışma dalını, çalışma ağacını ve bu dosyayı kontrol et. Kapsama göre ilgili belgeleri oku:
 
-Her görevin başında belgeler aşağıdaki sırayla okunur:
+- [GOAL.md](GOAL.md): aktif milestone, görev sahipliği, kabul kriterleri, riskler ve açık kararlar.
+- [MEMORY.md](MEMORY.md): kısa kalıcı bağlam ve tamamlanmış özellikler.
+- [RULES.md](RULES.md): kod ve stil değişiklikleri için teknik kurallar.
+- [FLOW.md](FLOW.md): ürün akışı, plan limitleri ve sistem davranışı.
+- [README.md](README.md): kurulum, komutlar ve proje yapısı.
 
-1. `AGENTS.md`: Agent çalışma biçimini, commit standardını, belge sorumluluklarını ve ekip koordinasyonunu belirler.
-2. `GOAL.md`: Aktif milestone'u, uzun vadeli hedefleri, görev durumlarını, sahipleri, kalite kapılarını, riskleri ve karar günlüğünü tutar.
-3. `MEMORY.md`: Yeni oturumların projeyi tekrar keşfetmeden devam edebilmesi için kalıcı ürün bağlamını ve mevcut durumu özetler.
-4. `RULES.md`: Stil, güvenlik, branch ve kalite konusunda bağlayıcı geliştirme kurallarını tanımlar.
-5. `FLOW.md`: Kullanıcı akışını, plan farklarını, veri hattını ve teknik mimari kararlarını açıklar.
-6. `README.md`: Yeni ekip üyeleri için kurulum, komutlar ve proje yapısını anlatır.
+Bilgiyi tekrarlamak yerine asıl kaynağa bağlantı ver. Her geliştirme işi GOAL.md içinde bulunmalı; başlamadan sahibi Tarık veya Furkan olarak atanıp [~] yapılmalı. Yalnız gerekli kontroller ve kabul kriterleri doğrulanınca [x] kullan. Engelin nedenini ve beklenen kararı [!] işinin yanında yaz.
 
-Belgelerin sorumlulukları birbirine karıştırılmaz. Roadmap ayrıntısı `GOAL.md`, sistem akışı `FLOW.md`, kalıcı bağlam `MEMORY.md`, bağlayıcı kurallar `RULES.md` içinde tutulur. Bir karar birden fazla belgeyi etkiliyorsa her belgede yalnız o belgenin amacına uygun kısmı güncellenir.
+## Kod ve güvenlik
 
-## Goal çalışma düzeni
+- Her ana function'ın üstüne amacını ve temel mantığını kısa bir yorumla açıkla.
+- API anahtarları, servis hesabı bilgileri, kimlik bilgileri ve gerçek müşteri verileri repoya eklenmez.
+- Teknik değişikliklerde RULES.md, ürün davranışında FLOW.md tutarlılığını kontrol et.
 
-- Bir iş geliştirmeye başlamadan önce `GOAL.md` içinde bulunmalı veya eklenmelidir.
-- İş `[~]` durumuna alınmadan önce sahibi `Tarık` ya da `Furkan` olarak atanır.
-- Tamamlandı işareti yalnız kod, gerekli testler ve kabul kriterleri doğrulandıktan sonra kullanılır.
-- Engelli işler `[!]` olarak işaretlenir; engelin nedeni ve ihtiyaç duyulan karar aynı maddede belirtilir.
-- Her `main` pull request birleşiminde tamamlanan işler, aktif milestone, riskler ve karar günlüğü güncellenir.
-- Yeni teknik kararlar mevcut `RULES.md` ve `FLOW.md` ile çelişmemelidir; çelişiyorsa aynı pull request içinde belgeler birlikte düzeltilir.
+## Commit ve ekip düzeni
 
-## Ekip ve Git akışı
-
-- Görev sahipliği milestone başında veya iş başlamadan önce görev bazında belirlenir; kalıcı frontend/backend sahipliği yoktur.
-- Tarık ve Furkan kendi branch'lerinde çalışır ve kritik değişiklikleri karşılıklı inceler.
-- `main` için normal akış pull request ve en az bir ekip arkadaşı onayıdır.
-- Commit mesajları conventional commit biçiminde ve yapılan amacı anlatacak küçüklükte olmalıdır.
+- Tarık ve Furkan kendi branch'lerinde çalışır; sahiplik görev bazında belirlenir.
+- main değişiklikleri PR ve en az bir ekip arkadaşı onayıyla birleştirilir; koruma aşılmaz.
+- Her görev sonunda veya uzun işlerde anlamlı bir amaç tamamlanınca değişiklikleri inceleyip `git add .` ve commit yap.
+- Mesaj örnekleri: `feat(frontend/employees): limit shift list`, `fix(frontend/bills): fix Turkish labels`.
+- Commit gövdesine büyüklüğüne göre 2–6 açıklama maddesi ekle. Commit'ler tek bir işlevi veya amacı karşılayacak kadar küçük olsun; büyük planlarda yaklaşık 8–9, küçük değişikliklerde 1–2 commit yeterlidir.
+- Genel akışı önemli ölçüde etkilemeyen mevcut küçük değişiklikleri inceleyerek uygun commit'e dahil et; ilgisiz veya anlamı belirsiz kullanıcı değişikliklerini koru.
+- Son yanıtta yapılan commit'leri belirt.
+- Her main birleşiminde GOAL.md durumunu kontrol et; yalnız değişen görev, milestone, risk veya gerçek ürün/teknik kararları güncelle. Sırf PR/merge kaydı için belge commit'i oluşturma.

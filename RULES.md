@@ -11,7 +11,7 @@ Bu kurallar uygulama büyürken tema, bileşen ve sayfa stillerinin birbirini ya
    - Sayfa kökü ve `body` için temel kurallar
    - Birden fazla bileşenin gerçekten paylaştığı, isimlendirilmiş yardımcı sınıflar
    - Erişilebilirlik için genel `prefers-reduced-motion` davranışı
-3. `button`, `input`, `a`, `svg`, `h1` gibi HTML elementlerini doğrudan hedefleyen yeni global görünüm kuralları yazılmaz. Tarayıcı normalizasyonunu Tailwind Preflight yönetir.
+3. Varsayılan tercih Tailwind utility ve bileşen scope'lu stillerdir. `button`, `input`, `a`, `svg`, `h1` gibi global element seçicileri yalnız gerçekten uygulama genelinde gerekli olduğunda kullanılabilir: gerekçesi ve etki alanı kod yanında belgelenmeli, uygun Tailwind katmanında tutulmalı ve shadcn/CVA varyantları ile iki temada çakışmadığı doğrulanmalıdır. Tarayıcı normalizasyonunu Tailwind Preflight yönetir; mevcut reset gereksiz yere tekrarlanmaz.
 4. Bir bileşenin boyutu, rengi, kenarlığı, hover/focus durumu ve animasyonu ilgili React bileşenindeki Tailwind sınıflarında tanımlanır.
 5. Tekrarlanan bileşen varyantları shadcn/ui düzeni ve CVA ile merkezi olarak yönetilir. Aynı bileşen için sayfa seviyesinde ikinci bir stil sistemi oluşturulmaz.
 6. Üçüncü taraf bir kütüphane CSS gerektiriyorsa kurallar benzersiz bir üst sınıf altında scope edilir; global element seçicileriyle uygulamanın geri kalanı etkilenmez.
@@ -35,9 +35,8 @@ Arayüz veya stil değişikliğinden sonra en az şu kontroller yapılır:
 5. `prefers-reduced-motion` tercihinde içerik görünür ve kullanılabilir kalır.
 6. `npm run build` ve `npm run lint` başarılı olmalıdır.
 
-## Branch ve paylaşım
+## Teknik güvenlik
 
-- Geliştirme `tarik` veya `furkan` branch'inde yapılır.
-- Tamamlanan değişiklikler küçük, amaç odaklı commit'lere ayrılır.
-- `main` için normal paylaşım akışı pull request ve en az bir ekip arkadaşı onayıdır.
-- API anahtarları, kimlik bilgileri ve gerçek müşteri verileri hiçbir branch'e commit edilmez.
+- AI ve harici servis sırları yalnız backend'de tutulur; frontend paketine veya loglara yazılmaz.
+- Dosya kabulü, kota ve erişim yetkisi backend'de doğrulanır; istemci kontrolleri güvenlik sınırı değildir.
+- Kullanıcılar arasında veri izolasyonu ve silme davranışı ilgili değişikliklerin testlerinde doğrulanır.
