@@ -126,9 +126,9 @@ function App() {
                   <Upload className="h-7 w-7" strokeWidth={1.8} />
                 </span>
 
-                <span className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl">Analiz için dosyanızı seçin</span>
+                <span className="text-xl font-semibold tracking-[-0.025em] sm:text-2xl">Analiz için dosyalarınızı seçin</span>
                 <span className="mt-2 max-w-md text-sm leading-6 text-muted-foreground sm:text-base">
-                  İşletme verilerinizi içeren tablo, belge veya görseli seçmek için bu alana tıklayın.
+                  İşletme verilerinizi içeren tabloları, belgeleri veya görselleri seçmek için bu alana tıklayın.
                 </span>
 
                 <span className="mt-7 flex flex-wrap items-center justify-center gap-2 text-xs font-medium text-muted-foreground">
