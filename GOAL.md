@@ -15,10 +15,10 @@ Durum: [~]
 - [x] Sahip: Tarık — Ortak roadmap ve belge sorumlulukları.
 - [x] Sahip: Tarık — PR #2 inceleme düzeltmeleri: çoğul arayüz, kararların ayrıştırılması, sade belgeler ve temiz branch geçmişi.
   Kabul: lint/build/diff kontrolü temiz; çoklu seçim ve iki tema kontrol edilmiş; PR yalnız ilgili değişiklikleri içeriyor.
-- [ ] Sahip: Atanmadı — Router ve korumalı uygulama kabuğu.
+- [~] Sahip: Furkan — Router ve korumalı uygulama kabuğu.
 - [ ] Sahip: Atanmadı — Türkçe kaynaklarla i18n temeli.
-- [ ] Sahip: Atanmadı — Vitest, React Testing Library ve Playwright test altyapısı.
-- [ ] Sahip: Atanmadı — CI build/lint/test kalite kapıları.
+- [~] Sahip: Furkan — Vitest, React Testing Library ve Playwright test altyapısı.
+- [~] Sahip: Furkan — CI build/lint/test kalite kapıları.
 - [ ] Sahip: Atanmadı — Ortam/bölge kararı sonrası Firebase ortamları ve güvenli environment şablonu.
 
 Kapanış: görevler incelenmiş; CI kontrolleri başarılı; repoda sır veya müşteri verisi yok.
@@ -34,7 +34,7 @@ Kalite kapısı: oturum yenileme, çıkış, korumalı rotalar ve yetkisiz eriş
 
 ## M2 — Dosya yükleme ve hazırlama
 
-- [ ] Sahip: Atanmadı — FLOW.md formatları için doğrulama ve normalizasyon.
+- [~] Sahip: Furkan — FLOW.md formatları için istemci doğrulaması ve seçim yönetimi; backend normalizasyonu sonraki adımdır.
 - [ ] Sahip: Atanmadı — FLOW.md plan limitlerini backend'de uygula; boyut ve kota sıfırlama kararlarını önce tamamla.
 - [ ] Sahip: Atanmadı — Storage yükleme, ilerleme, iptal ve yeniden deneme.
 - [ ] Sahip: Atanmadı — Bozuk/parolalı/zararlı dosya kontrolleri ve kaynak referansları.
