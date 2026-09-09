@@ -1,6 +1,6 @@
 # Incagen — Ürün ve Sistem Akışı
 
-Bu belge planlanan ürün davranışını anlatır; mevcut uygulama yalnız dosya seçen bir frontend prototipidir. Kesinleşmemiş altyapı ve kapsam seçimleri [GOAL.md](GOAL.md) içindeki açık kararlardadır.
+Bu belge planlanan ürün davranışını anlatır; mevcut uygulama rota yapısı ve istemci ön kontrolleri bulunan bir frontend prototipidir. Kesinleşmemiş altyapı ve kapsam seçimleri [GOAL.md](GOAL.md) içindeki açık kararlardadır.
 
 ## Free ve Premium
 
@@ -18,7 +18,7 @@ Dosya boyutu limitleri geliştirme/test aşamasında belirlenecektir. Günlük k
 
 ## Dosya kabulü ve hazırlama
 
-Seçicide CSV, TSV, XLS/XLSX, ODS, PDF, DOC/DOCX, TXT, RTF, Markdown, PPT/PPTX, JSON, XML ve görseller bulunur. Seçilebilir olmak, formatın backend'de işlenmesinin tamamlandığı anlamına gelmez.
+Seçicide CSV, TSV, XLS/XLSX, ODS, PDF, DOC/DOCX, TXT, RTF, Markdown, PPT/PPTX, JSON, XML ve görseller bulunur. Frontend desteklenmeyen uzantıları ve yinelenen dosyaları reddeder, Free plan için analiz başına 10 dosya sınırını uygular. Bunlar kullanıcı deneyimi ön kontrolüdür; backend aynı kuralları güvenlik sınırı olarak yeniden doğrulayacaktır.
 
 1. Kullanıcı dosyalarını seçer ve analizi onaylar.
 2. Backend kimlik, plan/kota, MIME, uzantı, boyut ve güvenlik kontrollerini yapar; istemcinin accept filtresine güvenmez.

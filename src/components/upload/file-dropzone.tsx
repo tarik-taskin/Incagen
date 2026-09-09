@@ -57,6 +57,8 @@ export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzone
           : "border-primary/30 bg-card/75 hover:border-primary/60 hover:bg-card dark:border-secondary/25 dark:hover:border-secondary/55",
         disabled && "cursor-not-allowed opacity-60",
       )}
+      role="group"
+      aria-label="Dosya seçim alanı"
       onDragEnter={handleDragEnter}
       onDragOver={(event) => event.preventDefault()}
       onDragLeave={handleDragLeave}
@@ -98,5 +100,3 @@ export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzone
     </div>
   );
 }
-
-

@@ -15,10 +15,10 @@ Durum: [~]
 - [x] Sahip: Tarık — Ortak roadmap ve belge sorumlulukları.
 - [x] Sahip: Tarık — PR #2 inceleme düzeltmeleri: çoğul arayüz, kararların ayrıştırılması, sade belgeler ve temiz branch geçmişi.
   Kabul: lint/build/diff kontrolü temiz; çoklu seçim ve iki tema kontrol edilmiş; PR yalnız ilgili değişiklikleri içeriyor.
-- [~] Sahip: Furkan — Router ve korumalı uygulama kabuğu.
+- [x] Sahip: Furkan — Router ve responsive uygulama kabuğu; kimlik tabanlı rota koruması M1 Authentication sonrasında eklenecek.
 - [ ] Sahip: Atanmadı — Türkçe kaynaklarla i18n temeli.
-- [~] Sahip: Furkan — Vitest, React Testing Library ve Playwright test altyapısı.
-- [~] Sahip: Furkan — CI build/lint/test kalite kapıları.
+- [x] Sahip: Furkan — Vitest, React Testing Library ve Playwright test altyapısı.
+- [x] Sahip: Furkan — GitHub Actions üzerinde lint, birim/bileşen testi, build, masaüstü/mobil tarayıcı ve erişilebilirlik kontrolleri.
 - [ ] Sahip: Atanmadı — Ortam/bölge kararı sonrası Firebase ortamları ve güvenli environment şablonu.
 
 Kapanış: görevler incelenmiş; CI kontrolleri başarılı; repoda sır veya müşteri verisi yok.
@@ -27,14 +27,14 @@ Kapanış: görevler incelenmiş; CI kontrolleri başarılı; repoda sır veya m
 
 - [ ] Sahip: Atanmadı — Giriş yöntemleri kararı sonrası Firebase Authentication ve oturum yönetimi.
 - [ ] Sahip: Atanmadı — İşletme bilgileri ve analiz hedefini alan onboarding.
-- [ ] Sahip: Atanmadı — Yeni analiz, sonuç, geçmiş ve ayarlar rotaları.
+- [x] Sahip: Furkan — Yeni analiz, geçmiş ve ayarlar rotaları; sonuç rotası ilgili ekran geliştirilirken eklenecek.
 - [ ] Sahip: Atanmadı — Kullanıcı izolasyonu; ekip veri modeli kararı sonrası şema.
 
 Kalite kapısı: oturum yenileme, çıkış, korumalı rotalar ve yetkisiz erişim testleri başarılı.
 
 ## M2 — Dosya yükleme ve hazırlama
 
-- [~] Sahip: Furkan — FLOW.md formatları için istemci doğrulaması ve seçim yönetimi; backend normalizasyonu sonraki adımdır.
+- [x] Sahip: Furkan — FLOW.md formatları için istemci doğrulaması, tekrar kontrolü, Free plan sınırı ve seçim yönetimi; backend normalizasyonu sonraki adımdır.
 - [ ] Sahip: Atanmadı — FLOW.md plan limitlerini backend'de uygula; boyut ve kota sıfırlama kararlarını önce tamamla.
 - [ ] Sahip: Atanmadı — Storage yükleme, ilerleme, iptal ve yeniden deneme.
 - [ ] Sahip: Atanmadı — Bozuk/parolalı/zararlı dosya kontrolleri ve kaynak referansları.
