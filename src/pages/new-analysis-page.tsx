@@ -4,6 +4,7 @@ import { FileDropzone } from "../components/upload/file-dropzone";
 import { SelectedFileList } from "../components/upload/selected-file-list";
 import { Button } from "../components/ui/button";
 import { FREE_PLAN_FILE_LIMIT } from "../features/files/file-rules";
+import { PLAN_RULES } from "../features/plans/plan-rules";
 import { useFileSelection } from "../hooks/use-file-selection";
 
 // Yeni analiz rotasında dosya seçimi, istemci ön kontrolü ve istek hazırlığını birlikte yönetir.
@@ -37,7 +38,7 @@ export function NewAnalysisPage() {
           </span>
           <div>
             <p className="text-xs text-muted-foreground">Günlük analiz hakkı</p>
-            <p className="text-sm font-semibold">10 analiz · Free</p>
+            <p className="text-sm font-semibold">{PLAN_RULES.free.dailyAnalysisLimit} analiz · {PLAN_RULES.free.label}</p>
           </div>
         </div>
       </div>
@@ -94,14 +95,14 @@ export function NewAnalysisPage() {
             </span>
             <div>
               <h2 id="analysis-summary-title" className="font-semibold">Analiz özeti</h2>
-              <p className="text-xs text-muted-foreground">Free plan</p>
+              <p className="text-xs text-muted-foreground">{PLAN_RULES.free.label} plan</p>
             </div>
           </div>
 
           <dl className="mt-6 space-y-4 text-sm">
             <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Seçilen dosya</dt><dd className="font-semibold">{files.length}/{FREE_PLAN_FILE_LIMIT}</dd></div>
-            <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Analiz derinliği</dt><dd className="font-semibold">Medium</dd></div>
-            <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Harici kaynak</dt><dd className="font-semibold">Bulunmaz</dd></div>
+            <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Analiz derinliği</dt><dd className="font-semibold">{PLAN_RULES.free.analysisDepth}</dd></div>
+            <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Harici kaynak</dt><dd className="font-semibold">{PLAN_RULES.free.externalSources}</dd></div>
           </dl>
 
           <div className="mt-5 h-2 overflow-hidden rounded-full bg-muted" aria-hidden="true">

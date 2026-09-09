@@ -48,10 +48,15 @@ export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzone
     if (!disabled) onFilesSelected(Array.from(event.dataTransfer.files));
   }
 
+  // Fare veya dokunmayla alanın herhangi bir noktasından sistem dosya seçicisini açar.
+  function openFilePicker() {
+    if (!disabled) inputRef.current?.click();
+  }
+
   return (
     <div
       className={cn(
-        "group relative flex min-h-72 flex-col items-center justify-center overflow-hidden rounded-3xl border border-dashed p-6 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-background sm:p-10",
+        "group relative flex min-h-72 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border border-dashed p-6 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-background sm:p-10",
         isDragging
           ? "border-primary bg-primary/[0.08] dark:border-secondary dark:bg-secondary/[0.08]"
           : "border-primary/30 bg-card/75 hover:border-primary/60 hover:bg-card dark:border-secondary/25 dark:hover:border-secondary/55",
@@ -63,6 +68,9 @@ export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzone
       onDragOver={(event) => event.preventDefault()}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      onClick={(event) => {
+        if (event.target !== inputRef.current) openFilePicker();
+      }}
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.08),transparent_58%)] opacity-0 transition-opacity group-hover:opacity-100 dark:bg-[radial-gradient(circle_at_center,hsl(var(--secondary)/0.08),transparent_58%)]" aria-hidden="true" />
       <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:bg-secondary/10 dark:text-secondary">
@@ -80,7 +88,7 @@ export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzone
         disabled={disabled}
         onClick={(event) => {
           event.stopPropagation();
-          inputRef.current?.click();
+          openFilePicker();
         }}
       >
         <FilePlus2 className="h-4 w-4" aria-hidden="true" />

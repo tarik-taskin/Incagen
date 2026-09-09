@@ -63,4 +63,3 @@ export function SelectedFileList({ files, limit, onClear, onRemove }: SelectedFi
     </section>
   );
 }
-

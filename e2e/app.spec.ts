@@ -1,9 +1,9 @@
 import { Buffer } from "node:buffer";
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 // Her sayfadaki kritik WCAG A ve AA ihlallerinin test sonucunu durdurmasını sağlar.
-async function expectNoAccessibilityViolations(page: import("@playwright/test").Page) {
+async function expectNoAccessibilityViolations(page: Page) {
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze();
@@ -11,7 +11,13 @@ async function expectNoAccessibilityViolations(page: import("@playwright/test").
   expect(results.violations).toEqual([]);
 }
 
-test("landing sayfasından dosya hazırlama alanına geçilir ve tema değişir", async ({ page }) => {
+// Görünür responsive navigasyonu mevcut tarayıcı genişliğine göre seçer.
+function getAppNavigation(page: Page) {
+  const navigationName = (page.viewportSize()?.width ?? 1280) >= 1024 ? "Ana navigasyon" : "Mobil navigasyon";
+  return page.getByRole("navigation", { name: navigationName });
+}
+
+test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru yönetir", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Verilerinizdeki büyüme fırsatlarını keşfedin." })).toBeVisible();
   await expectNoAccessibilityViolations(page);
@@ -22,13 +28,31 @@ test("landing sayfasından dosya hazırlama alanına geçilir ve tema değişir"
   await page.getByRole("link", { name: /Analize başla/ }).click();
   await expect(page).toHaveURL(/\/app\/new-analysis$/);
   await expect(page.getByRole("heading", { name: "Verilerinizi analize hazırlayın" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Premium’a geç" }).click();
+  await expect(page.getByRole("region", { name: "Premium üyelik yakında" })).toContainText("PayTR");
+  await expectNoAccessibilityViolations(page);
+  await page.mouse.click(12, 300);
+  await expect(page.getByRole("region", { name: "Premium üyelik yakında" })).toHaveCount(0);
+
+  const navigation = getAppNavigation(page);
+  await navigation.getByRole("link", { name: "Geçmiş" }).click();
+  await expect(page.getByRole("heading", { name: "Geçmiş analizleriniz" })).toBeVisible();
+  await navigation.getByRole("link", { name: "Ayarlar" }).click();
+  await expect(page.getByRole("heading", { name: "Çalışma alanı ayarları" })).toBeVisible();
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("heading", { name: "Verilerinizdeki büyüme fırsatlarını keşfedin." })).toBeVisible();
 });
 
 test("çoklu dosya seçimi hazırlanır ve listeden kaldırılabilir", async ({ page }) => {
   await page.goto("/app/new-analysis");
-  const input = page.getByLabel("Analiz edilecek dosyaları seç");
+  const fileChooserPromise = page.waitForEvent("filechooser");
+  await page.getByRole("group", { name: "Dosya seçim alanı" }).click({ position: { x: 24, y: 24 } });
+  const fileChooser = await fileChooserPromise;
 
-  await input.setInputFiles([
+  await fileChooser.setFiles([
     { name: "satis.csv", mimeType: "text/csv", buffer: Buffer.from("month,total") },
     { name: "rapor.pdf", mimeType: "application/pdf", buffer: Buffer.from("report") },
   ]);

@@ -1,7 +1,9 @@
 import { FileBarChart2, History, Settings } from "lucide-react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { AnimatedLogo } from "../animated-logo";
+import { PremiumUpgrade } from "../premium-upgrade";
 import { ThemeToggle } from "../theme-toggle";
+import { PLAN_RULES } from "../../features/plans/plan-rules";
 import { cn } from "../../lib/utils";
 
 const navigationItems = [
@@ -42,7 +44,7 @@ export function AppShell() {
 
         <nav className="mt-10 space-y-1.5" aria-label="Ana navigasyon">
           {navigationItems.map(({ to, label, icon: Icon }) => (
-            <NavLink key={to} to={to} className={({ isActive }) => getDesktopLinkClass(isActive)}>
+            <NavLink key={to} to={to} replace className={({ isActive }) => getDesktopLinkClass(isActive)}>
               <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
               {label}
             </NavLink>
@@ -51,10 +53,10 @@ export function AppShell() {
 
         <div className="mt-auto rounded-2xl border border-primary/10 bg-primary/[0.05] p-4 dark:border-secondary/10 dark:bg-secondary/[0.05]">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-semibold">Free plan</span>
-            <span className="rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold text-primary dark:bg-secondary/10 dark:text-secondary">10/gün</span>
+            <span className="text-sm font-semibold">{PLAN_RULES.free.label} plan</span>
+            <span className="rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold text-primary dark:bg-secondary/10 dark:text-secondary">{PLAN_RULES.free.dailyAnalysisLimit}/gün</span>
           </div>
-          <p className="mt-2 text-xs leading-5 text-muted-foreground">Her analizde en fazla 10 dosya kullanabilirsiniz.</p>
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">Her analizde en fazla {PLAN_RULES.free.filesPerAnalysis} dosya kullanabilirsiniz.</p>
         </div>
       </aside>
 
@@ -69,8 +71,9 @@ export function AppShell() {
               <p className="text-sm font-medium">İşletme çalışma alanı</p>
               <p className="text-xs text-muted-foreground">Verilerinizi güvenle hazırlayın ve analiz edin.</p>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="hidden rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground sm:inline-flex">Free plan</span>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <PremiumUpgrade />
+              <span className="hidden rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground md:inline-flex">{PLAN_RULES.free.label} plan</span>
               <ThemeToggle />
             </div>
           </div>
@@ -86,6 +89,7 @@ export function AppShell() {
           <NavLink
             key={to}
             to={to}
+            replace
             className={({ isActive }) => cn(
               "flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl px-2 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               isActive ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",

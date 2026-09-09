@@ -12,7 +12,7 @@ Incagen, işletmelerin verilerini analiz ederek grafikler, tablolar ve uygulanab
 ## Tamamlanan temel
 
 - Responsive giriş ekranı, açık/koyu tema ve animasyonlu Incagen logosu.
-- Yeni analiz, geçmiş ve ayarlar için responsive uygulama kabuğu ve rota yapısı.
+- Yeni analiz, geçmiş ve ayarlar için responsive uygulama kabuğu; görünür Premium çağrısı ve uygulama içinden tarayıcı geri tuşuyla landing sayfasına dönüş.
 - FLOW.md formatlarında çoklu dosya seçimi; tekrar, uzantı ve Free plan 10 dosya ön kontrolü.
 - Vitest/React Testing Library birim-bileşen testleri, Playwright masaüstü-mobil akışları ve WCAG A/AA kontrolü.
 - Pull request ve `main` güncellemelerinde çalışan GitHub Actions kalite iş akışı.

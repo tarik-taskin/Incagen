@@ -33,6 +33,17 @@ describe("App routes", () => {
     expect(screen.getByRole("heading", { name: "Çalışma alanı ayarları" })).toBeInTheDocument();
   });
 
+  it("Premium geçiş çağrısında kısa üyelik bilgisini gösterir", async () => {
+    const user = userEvent.setup();
+    renderApp("/app/new-analysis");
+
+    await user.click(screen.getByRole("button", { name: "Premium’a geç" }));
+    const premiumNotice = screen.getByRole("region", { name: "Premium üyelik yakında" });
+    expect(premiumNotice).toHaveTextContent("PayTR");
+
+    await user.click(screen.getByRole("heading", { name: "Verilerinizi analize hazırlayın" }));
+    expect(screen.queryByRole("region", { name: "Premium üyelik yakında" })).not.toBeInTheDocument();
+  });
   it("bilinmeyen adresleri güvenli biçimde landing sayfasına döndürür", async () => {
     renderApp("/bilinmeyen-rota");
 

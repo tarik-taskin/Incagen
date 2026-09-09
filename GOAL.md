@@ -28,6 +28,7 @@ Kapanış: görevler incelenmiş; CI kontrolleri başarılı; repoda sır veya m
 - [ ] Sahip: Atanmadı — Giriş yöntemleri kararı sonrası Firebase Authentication ve oturum yönetimi.
 - [ ] Sahip: Atanmadı — İşletme bilgileri ve analiz hedefini alan onboarding.
 - [x] Sahip: Furkan — Yeni analiz, geçmiş ve ayarlar rotaları; sonuç rotası ilgili ekran geliştirilirken eklenecek.
+- [x] Sahip: Furkan — Uygulama kabuğunda Premium geçiş çağrısı ve iç navigasyondan landing sayfasına dönen tarayıcı geçmişi.
 - [ ] Sahip: Atanmadı — Kullanıcı izolasyonu; ekip veri modeli kararı sonrası şema.
 
 Kalite kapısı: oturum yenileme, çıkış, korumalı rotalar ve yetkisiz erişim testleri başarılı.
@@ -106,3 +107,4 @@ Aşağıdakiler öneridir, kesin mimari veya tamamlanmış özellik değildir. �
 ## Karar günlüğü
 
 - 2026-09-07 — Tarık'ın onayıyla PR incelemesindeki ürün düzeltmeleri kabul edildi; plan limitleri FLOW.md'de merkezileştirildi, ödeme işi M6'da güncellendi, müşteri segmenti kısıtı kaldırıldı ve ortak değerlendirme gerektiren seçimler açık kararlara taşındı.
+- 2026-09-09 — Premium girişinin ödeme entegrasyonuna kadar bilgilendirme göstermesi ve uygulama içi sekmelerin tarayıcı geçmişinde tek çalışma alanı adımı olarak tutulması kabul edildi.

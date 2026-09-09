@@ -8,6 +8,7 @@ export function ThemeToggle() {
 
   return (
     <Button
+      type="button"
       variant="outline"
       size="icon"
       className="rounded-full border-border/70 bg-card/70 shadow-sm backdrop-blur-xl"

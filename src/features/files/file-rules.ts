@@ -1,4 +1,6 @@
-export const FREE_PLAN_FILE_LIMIT = 10;
+import { PLAN_RULES } from "../plans/plan-rules";
+
+export const FREE_PLAN_FILE_LIMIT: number = PLAN_RULES.free.filesPerAnalysis;
 
 export const SUPPORTED_FILE_EXTENSIONS = [
   "csv", "tsv", "xls", "xlsx", "ods",

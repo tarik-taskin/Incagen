@@ -57,7 +57,7 @@ e2e/                  Gerçek tarayıcı senaryoları
 
 ## Mevcut durum
 
-Ana sayfa, açık/koyu tema, responsive uygulama kabuğu ve yeni analiz çalışma alanı hazırdır. Dosya alanı desteklenen türlerde çoklu seçim yapar; yinelenen ve desteklenmeyen dosyaları açıklar, Free planın analiz başına 10 dosya sınırını uygular. Bu kontroller kullanıcı deneyimi içindir; dosya yükleme, Authentication, Firebase backend ve yapay zekâ analizi henüz bağlı değildir.
+Ana sayfa, açık/koyu tema, responsive uygulama kabuğu ve yeni analiz çalışma alanı hazırdır. Uygulama kabuğunda ödeme entegrasyonuna hazırlık amacıyla Premium çağrısı bulunur; iç sayfalarda dolaştıktan sonra tarayıcı geri tuşu landing sayfasına döner. Dosya alanı desteklenen türlerde çoklu seçim yapar; yinelenen ve desteklenmeyen dosyaları açıklar, Free planın analiz başına 10 dosya sınırını uygular. Bu kontroller kullanıcı deneyimi içindir; dosya yükleme, Authentication, Firebase backend ve yapay zekâ analizi henüz bağlı değildir.
 
 Ayrıntılar: [hedefler](GOAL.md), [ürün ve sistem akışı](FLOW.md), [teknik kurallar](RULES.md), [kalıcı bağlam](MEMORY.md) ve [ekip/agent çalışma düzeni](AGENTS.md).
 
