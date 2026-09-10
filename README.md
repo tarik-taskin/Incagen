@@ -4,7 +4,7 @@ Incagen, işletme verilerini yapay zekâ ile analiz ederek büyüme önerileri s
 
 ## Gereksinimler
 
-- Node.js 18.20 veya üzeri
+- Node.js 22.13 veya üzeri
 - npm 10 veya üzeri
 - Git
 
@@ -22,42 +22,50 @@ Uygulama terminalde gösterilen yerel adreste, varsayılan olarak `http://localh
 ## Kullanılabilir komutlar
 
 ```bash
-npm run dev      # Geliştirme sunucusunu başlatır
-npm run build    # Üretim derlemesini oluşturur
-npm run lint     # Kod kalite kontrolünü çalıştırır
-npm run preview  # Üretim derlemesini yerelde önizler
+npm run dev       # Geliştirme sunucusunu başlatır
+npm run lint      # Kod kalite kontrolünü çalıştırır
+npm run test:run  # Birim ve bileşen testlerini tek sefer çalıştırır
+npm run test:e2e  # Masaüstü/mobil tarayıcı ve erişilebilirlik testlerini çalıştırır
+npm run build     # Üretim derlemesini oluşturur
+npm run preview   # Üretim derlemesini yerelde önizler
 ```
+
+Playwright tarayıcısı ilk kullanımda `npx playwright install chromium` komutuyla kurulur.
 
 ## Kullanılan teknolojiler
 
-- React 19 ve TypeScript
-- Vite 6
-- Tailwind CSS
-- shadcn/ui yaklaşımı ve Radix UI
+- React 19, TypeScript ve React Router
+- Vite 6 ve Tailwind CSS
+- shadcn/ui yaklaşımı, Radix UI ve Lucide React
 - Anime.js
-- Lucide React
+- Vitest, React Testing Library, Playwright ve axe-core
 
 ## Proje yapısı
 
 ```text
 src/
-├── components/       Yeniden kullanılabilir arayüz bileşenleri
-│   └── ui/           shadcn/ui tarzı temel bileşenler
-├── lib/              Yardımcı fonksiyonlar
-├── App.tsx           Ana sayfa ve uygulama akışı
-├── index.css         Tema, Tailwind ve genel stiller
+├── components/       Yeniden kullanılabilir arayüz ve yerleşim bileşenleri
+├── features/         Ürün alanına ait saf kurallar ve modeller
+├── hooks/            Yeniden kullanılabilir React durum yönetimi
+├── pages/            Rota seviyesindeki ekranlar
+├── test/             Ortak test kurulumu
+├── App.tsx           Uygulama rotaları
 └── main.tsx          React başlangıç noktası
+e2e/                  Gerçek tarayıcı senaryoları
+.github/workflows/     Pull request kalite iş akışları
 ```
 
 ## Mevcut durum
 
-Ana sayfa, aydınlık/karanlık tema ve Anime.js ile animasyonlu Incagen logosu hazırdır. Dosya alanı tablo, belge, sunum, yapılandırılmış veri ve görsel türlerinde çoklu seçim yapar; dosya yükleme ve yapay zekâ analizi henüz bir servise bağlı değildir.
+Ana sayfa, açık/koyu tema, responsive uygulama kabuğu ve yeni analiz çalışma alanı hazırdır. Uygulama kabuğunda ödeme entegrasyonuna hazırlık amacıyla Premium çağrısı bulunur; iç sayfalarda dolaştıktan sonra tarayıcı geri tuşu landing sayfasına döner. Dosya alanı desteklenen türlerde çoklu seçim yapar; yinelenen ve desteklenmeyen dosyaları açıklar, Free planın analiz başına 10 dosya sınırını uygular. Bu kontroller kullanıcı deneyimi içindir; dosya yükleme, Authentication, Firebase backend ve yapay zekâ analizi henüz bağlı değildir.
 
 Ayrıntılar: [hedefler](GOAL.md), [ürün ve sistem akışı](FLOW.md), [teknik kurallar](RULES.md), [kalıcı bağlam](MEMORY.md) ve [ekip/agent çalışma düzeni](AGENTS.md).
 
-Kod değişikliği göndermeden önce şu kontrolleri çalıştır:
+PR açmadan önce şu kontrolleri çalıştır:
 
 ```bash
-npm run build
 npm run lint
+npm run test:run
+npm run build
+npm run test:e2e
 ```
