@@ -1,20 +1,21 @@
 # Incagen Proje Hafızası
 
-Incagen, işletmelerin verilerini analiz ederek grafikler, tablolar ve uygulanabilir büyüme önerileri sunmayı amaçlar.
+Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretmeyi amaçlar.
 
-## Teknoloji ve kalıcı bağlam
+## Kalıcı bağlam
 
-- Frontend: React, TypeScript, Vite, React Router, Tailwind CSS, shadcn/ui yaklaşımı ve Anime.js.
-- Planlanan backend Firebase, ana AI sağlayıcısı Google Gemini'dir; henüz entegre değildir.
-- Ana renkler `#4c2a85` ve `#bcedf6`; yardımcı palet `#320E3B`, `#ff0035`, `#DDFBD2`.
-- Çalışma kuralları [AGENTS.md](AGENTS.md), teknik kurallar [RULES.md](RULES.md), ürün davranışı [FLOW.md](FLOW.md) içindedir.
+- React, TypeScript, Vite, React Router, Tailwind, shadcn/ui yaklaşımı, Anime.js ve Recharts.
+- Yerel Firebase Auth/Firestore/Storage ve TypeScript Functions. Gemini entegrasyonu gelecekteki iştir.
+- Ana renkler `#4c2a85`, `#bcedf6`; yardımcı renkler `#320E3B`, `#ff0035`, `#DDFBD2`.
+- Çalışma kuralları AGENTS.md, teknik kurallar RULES.md, davranış/limitler FLOW.md içindedir.
 
-## Tamamlanan temel
+## Tamamlanan özellikler
 
-- Responsive giriş ekranı, açık/koyu tema ve animasyonlu Incagen logosu.
-- Yeni analiz, geçmiş ve ayarlar için responsive uygulama kabuğu; görünür Premium çağrısı ve uygulama içinden tarayıcı geri tuşuyla landing sayfasına dönüş.
-- FLOW.md formatlarında çoklu dosya seçimi; tekrar, uzantı ve Free plan 10 dosya ön kontrolü.
-- Vitest/React Testing Library birim-bileşen testleri, Playwright masaüstü-mobil akışları ve WCAG A/AA kontrolü.
-- Pull request ve `main` güncellemelerinde çalışan GitHub Actions kalite iş akışı.
+- Responsive giriş/çalışma alanı, tema, animasyonlu logo, Premium bilgilendirmesi.
+- E-posta/parola kaydı, giriş, korumalı rotalar ve çıkışta taslağın temizlenmesi.
+- Oturum içi çoklu dosya seçimi; CSV için açık sütun/biçim eşleştirmesi.
+- Yerel yükleme, gerçek sayısal rapor, tema uyumlu grafikler ve kaynak özeti.
+- Kullanıcıya özel canlı geçmiş, rapor açma ve kaynaklarla silme.
+- Backend kota/idempotency, kullanıcı izolasyonu ve otomatik test altyapısı.
 
-Dosya hazırlığı henüz yükleme veya AI işlemi başlatmaz; Authentication, Firebase backend ve sonuç ekranı uygulanmamıştır.
+Yalnız demo emülatörleri ve sentetik veriler içindir; canlı bulut veya AI analizi değildir. Kurulum README.md, kalan işler GOAL.md üzerinden takip edilir.
