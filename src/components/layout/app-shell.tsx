@@ -5,6 +5,7 @@ import { PremiumUpgrade } from "../premium-upgrade";
 import { ThemeToggle } from "../theme-toggle";
 import { PLAN_RULES } from "../../features/plans/plan-rules";
 import { cn } from "../../lib/utils";
+import { useWorkspace } from "../../lib/workspace-context";
 
 const navigationItems = [
   { to: "/app/new-analysis", label: "Yeni analiz", icon: FileBarChart2 },
@@ -24,6 +25,7 @@ function getDesktopLinkClass(isActive: boolean) {
 
 // Uygulama sayfalarını ortak responsive navigasyon, başlık ve tema kontrolü içinde sunar.
 export function AppShell() {
+  const workspace = useWorkspace();
   return (
     <div className="min-h-screen bg-background text-foreground">
       <a
@@ -80,6 +82,7 @@ export function AppShell() {
         </header>
 
         <main id="main-content" className="mx-auto min-h-[calc(100vh-4rem)] max-w-7xl px-5 py-8 pb-28 sm:px-8 lg:pb-10">
+          {workspace.busy && <p role="status" className="mb-4 rounded-xl border border-border bg-card p-3 text-sm">İşleminiz devam ediyor. {workspace.activeId && <Link className="underline" to={"/app/analyses/" + workspace.activeId}>İşlemi izle</Link>}</p>}
           <Outlet />
         </main>
       </div>

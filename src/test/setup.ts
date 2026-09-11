@@ -5,6 +5,18 @@ import { cleanup } from "@testing-library/react";
 // Her bileşen testinden sonra oluşturulan DOM ağacını temizler.
 afterEach(() => cleanup());
 
+// jsdom File.text eksikliğini tarayıcı FileReader davranışıyla tamamlar.
+if (!File.prototype.text) {
+  File.prototype.text = function () {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(this);
+    });
+  };
+}
+
 Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: (query: string) => ({
