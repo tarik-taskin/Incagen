@@ -5,11 +5,11 @@ import { SelectedFileList } from "../components/upload/selected-file-list";
 import { Button } from "../components/ui/button";
 import { FREE_PLAN_FILE_LIMIT } from "../features/files/file-rules";
 import { PLAN_RULES } from "../features/plans/plan-rules";
-import { useFileSelection } from "../hooks/use-file-selection";
+import { useWorkspace } from "../lib/workspace-context";
 
 // Yeni analiz rotasında dosya seçimi, istemci ön kontrolü ve istek hazırlığını birlikte yönetir.
 export function NewAnalysisPage() {
-  const { files, rejections, addFiles, removeFile, clearFiles, dismissRejections } = useFileSelection();
+  const { files, rejections, addFiles, removeFile, clearFiles, dismissRejections } = useWorkspace().selection;
   const [isReady, setIsReady] = useState(false);
   const isAtLimit = files.length >= FREE_PLAN_FILE_LIMIT;
 
