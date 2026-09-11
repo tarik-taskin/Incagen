@@ -61,12 +61,16 @@ export function calculateReport(sources: { name: string; text: string; mapping: 
         const cents = parseCents(row[amountIndex], source.mapping.numberFormat);
         report.totalCents += cents;
         if (!Number.isSafeInteger(report.totalCents)) throw new CsvError("Toplam tutar güvenli sınırı aşıyor.");
-        daily.set(day, (daily.get(day) ?? 0) + cents);
+        const dayTotal = (daily.get(day) ?? 0) + cents;
+        if (!Number.isSafeInteger(dayTotal)) throw new CsvError("Gün toplamı güvenli sınırı aşıyor.");
+        daily.set(day, dayTotal);
         if (daily.size > 2000) throw new CsvError("Rapor en fazla 2.000 farklı gün içerebilir.");
         if (categoryIndex >= 0) {
           const category = row[categoryIndex].trim() || "Belirtilmemiş";
           if (category.length > 100) throw new CsvError("Kategori 100 karakteri aşamaz.");
-          categories.set(category, (categories.get(category) ?? 0) + cents);
+          const categoryTotal = (categories.get(category) ?? 0) + cents;
+          if (!Number.isSafeInteger(categoryTotal)) throw new CsvError("Kategori toplamı güvenli sınırı aşıyor.");
+          categories.set(category, categoryTotal);
         }
         count++;
       } catch (error) {

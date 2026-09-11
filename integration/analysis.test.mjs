@@ -30,6 +30,7 @@ test("gerçek rapor, izolasyon, idempotency, hata iadesi ve silme", { timeout: 1
     const run = httpsCallable(a.functions, "runAnalysis");
     const remove = httpsCallable(a.functions, "deleteAnalysis");
     const request = input();
+    await assert.rejects(create({ ...request, files: Array.from({ length: 11 }, () => request.files[0]) }));
     const { data } = await create(request);
     const again = await create(request);
     assert.equal(data.id, again.data.id);
@@ -61,4 +62,20 @@ test("gerçek rapor, izolasyon, idempotency, hata iadesi ve silme", { timeout: 1
     await assert.rejects(getBytes(ref(a.storage, data.paths[0])));
     await remove({ id: failed.id });
   } finally { await deleteApp(a.app); await deleteApp(b.app); }
+});
+
+test("günlük kota on analizden sonra sunucuda engellenir", { timeout: 120000 }, async () => {
+  const a = await client();
+  try {
+    const create = httpsCallable(a.functions, "createAnalysis");
+    const run = httpsCallable(a.functions, "runAnalysis");
+    const remove = httpsCallable(a.functions, "deleteAnalysis");
+    for (let i = 0; i < 11; i++) {
+      const { data } = await create(input());
+      await uploadBytes(ref(a.storage, data.paths[0]), Buffer.from(csv), { contentType: "text/csv" });
+      if (i < 10) await run({ id: data.id });
+      else await assert.rejects(run({ id: data.id }), e => e.code === "functions/resource-exhausted");
+      await remove({ id: data.id });
+    }
+  } finally { await deleteApp(a.app); }
 });

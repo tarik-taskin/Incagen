@@ -21,6 +21,7 @@ export function NewAnalysisPage() {
     <h1 id="new-analysis-title" className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{tr.analysis.title}</h1>
     <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">Satış CSV’lerinizi eşleştirin; toplamları, günlük dağılımı ve kategorileri gerçek verinizden hesaplayalım.</p>
     <p className="mt-2 text-xs text-muted-foreground">{tr.auth.local} {tr.analysis.refresh}</p>
+    <a className="mt-3 inline-block text-sm text-primary underline dark:text-secondary" href="/samples/satis-ornek.csv" download>Sentetik örnek CSV indir (beklenen toplam: 2.244,75 TRY)</a>
     <div className="mt-8 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
       <div className="min-w-0 space-y-6">
         <FileDropzone disabled={busy || files.length >= FREE_PLAN_FILE_LIMIT} onFilesSelected={addFiles} />

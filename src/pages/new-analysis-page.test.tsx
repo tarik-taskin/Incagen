@@ -46,7 +46,7 @@ describe("NewAnalysisPage", () => {
     await user.upload(input, valid);
     await user.upload(input, [valid, unsupported]);
 
-    const alert = screen.getByRole("alert");
+    const alert = screen.getAllByRole("alert")[0];
     expect(alert).toHaveTextContent("veri.json: Bu dosya zaten seçili.");
     expect(alert).toHaveTextContent("arac.exe: Bu dosya türü şu anda desteklenmiyor.");
     expect(screen.getAllByText("veri.json")).toHaveLength(1);

@@ -6,7 +6,8 @@ import { NewAnalysisPage } from "./pages/new-analysis-page";
 import { SettingsPage } from "./pages/settings-page";
 import { AuthPage } from "./pages/auth-page";
 import { RequireAuth } from "./components/require-auth";
-import { AnalysisPage } from "./pages/analysis-page";
+import { lazy, Suspense } from "react";
+const AnalysisPage = lazy(() => import("./pages/analysis-page").then(module => ({ default: module.AnalysisPage })));
 
 // Genel landing rotasını ve uygulama çalışma alanının iç içe sayfalarını tanımlar.
 function App() {
@@ -19,7 +20,7 @@ function App() {
         <Route index element={<Navigate to="new-analysis" replace />} />
         <Route path="new-analysis" element={<NewAnalysisPage />} />
         <Route path="history" element={<HistoryPage />} />
-        <Route path="analyses/:id" element={<AnalysisPage />} />
+        <Route path="analyses/:id" element={<Suspense fallback={<p role="status">Rapor yükleniyor…</p>}><AnalysisPage /></Suspense>} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
       </Route>

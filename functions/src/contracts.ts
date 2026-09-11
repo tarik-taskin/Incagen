@@ -1,6 +1,11 @@
 import { z } from "zod";
 
 export const LIMITS = { files: 10, fileBytes: 5 * 1024 * 1024, totalBytes: 20 * 1024 * 1024, rows: 50_000, daily: 10 } as const;
+
+// UTC saatini İstanbul gün sınırına dönüştürür; kota için istemci saatine güvenilmez.
+export function getQuotaDay(date = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
+}
 export const mappingSchema = z.object({
   dateColumn: z.string().min(1).max(100),
   amountColumn: z.string().min(1).max(100),

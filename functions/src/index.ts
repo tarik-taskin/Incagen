@@ -4,7 +4,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { z } from "zod";
-import { createSchema, LIMITS, type CreateAnalysis } from "./contracts";
+import { createSchema, getQuotaDay, LIMITS, type CreateAnalysis } from "./contracts";
 import { calculateReport, CsvError } from "./csv";
 
 initializeApp({ projectId: "demo-incagen", storageBucket: "demo-incagen.appspot.com" });
@@ -20,11 +20,6 @@ function requireLocal(uid: string | undefined) {
   }
   if (!uid) throw new HttpsError("unauthenticated", "Lütfen giriş yapın.");
   return uid;
-}
-
-// Kota gününü sunucu saatinden İstanbul takvim gününe göre üretir.
-function quotaDay() {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 }
 
 // İstek kimliğiyle tekrar oluşturmayı tekilleştirir ve değişmez dosya manifestini kaydeder.
@@ -54,7 +49,7 @@ export const runAnalysis = onCall(options, async request => {
   const parsed = idSchema.safeParse(request.data);
   if (!parsed.success) throw new HttpsError("invalid-argument", "Geçersiz analiz kimliği.");
   const ref = db.doc(`users/${uid}/analyses/${parsed.data.id}`);
-  const day = quotaDay();
+  const day = getQuotaDay();
   const quotaRef = db.doc(`users/${uid}/quotas/${day}`);
   const attempt = randomUUID();
   const work = await db.runTransaction(async tx => {

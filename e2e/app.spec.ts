@@ -17,6 +17,16 @@ function getAppNavigation(page: Page) {
   return page.getByRole("navigation", { name: navigationName });
 }
 
+// Her senaryoyu bağımsız sentetik hesapla gerçek Auth emülatöründe başlatır.
+async function register(page: Page) {
+  await expect(page.getByRole("heading", { name: "Giriş yap" })).toBeVisible();
+  await page.getByRole("button", { name: "Hesabım yok, hesap oluştur" }).click();
+  await page.getByLabel("E-posta", { exact: true }).fill(`browser-${crypto.randomUUID()}@example.test`);
+  await page.getByLabel("Parola", { exact: true }).fill("Synthetic123!");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Verilerinizi analize hazırlayın" })).toBeVisible();
+}
+
 test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru yönetir", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Verilerinizdeki büyüme fırsatlarını keşfedin." })).toBeVisible();
@@ -26,6 +36,7 @@ test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru y
   await expect(page.locator("html")).toHaveClass(/dark/);
 
   await page.getByRole("link", { name: /Analize başla/ }).click();
+  await register(page);
   await expect(page).toHaveURL(/\/app\/new-analysis$/);
   await expect(page.getByRole("heading", { name: "Verilerinizi analize hazırlayın" })).toBeVisible();
 
@@ -48,6 +59,7 @@ test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru y
 
 test("çoklu dosya seçimi hazırlanır ve listeden kaldırılabilir", async ({ page }) => {
   await page.goto("/app/new-analysis");
+  await register(page);
   const fileChooserPromise = page.waitForEvent("filechooser");
   await page.getByRole("group", { name: "Dosya seçim alanı" }).click({ position: { x: 24, y: 24 } });
   const fileChooser = await fileChooserPromise;
@@ -58,12 +70,12 @@ test("çoklu dosya seçimi hazırlanır ve listeden kaldırılabilir", async ({ 
   ]);
 
   await expect(page.getByText("2/10 dosya analize hazırlanıyor")).toBeVisible();
-  await expect(page.getByText("satis.csv")).toBeVisible();
+  await expect(page.getByText("satis.csv", { exact: true })).toBeVisible();
   await expect(page.getByText("rapor.pdf")).toBeVisible();
-  await page.getByRole("button", { name: "Analize hazırla" }).click();
-  await expect(page.getByRole("status")).toContainText("2 dosya istemci ön kontrolünü geçti");
+  await page.getByRole("button", { name: "Rapor oluştur" }).click();
+  await expect(page.getByText("Bu sürüm yalnız CSV işler. Diğer dosyaları kaldırıp tekrar deneyin.").first()).toBeVisible();
 
   await page.getByRole("button", { name: "satis.csv dosyasını kaldır" }).click();
-  await expect(page.getByText("satis.csv")).toHaveCount(0);
+  await expect(page.getByText("satis.csv", { exact: true })).toHaveCount(0);
   await expectNoAccessibilityViolations(page);
 });

@@ -1,8 +1,20 @@
 import { describe, expect, it } from "vitest";
 import { calculateReport, parseCents, parseDate, readCsv } from "../../../functions/src/csv";
-import { createSchema, type ColumnMapping } from "../../../functions/src/contracts";
+import { createSchema, getQuotaDay, type ColumnMapping } from "../../../functions/src/contracts";
 const mapping: ColumnMapping = { dateColumn: "Tarih", amountColumn: "Tutar", categoryColumn: "Kategori", delimiter: ";", dateFormat: "tr", numberFormat: "tr" };
 describe("CSV hesaplaması", () => {
+  it("kotayı İstanbul gece yarısında sıfırlar", () => {
+    expect(getQuotaDay(new Date("2026-09-11T20:59:59Z"))).toBe("2026-09-11");
+    expect(getQuotaDay(new Date("2026-09-11T21:00:00Z"))).toBe("2026-09-12");
+  });
+  it("50.000 satırı aşan veriyi reddeder", () => {
+    expect(() => calculateReport([{ name: "large.csv", mapping, text: "Tarih;Tutar;Kategori\n" + "01.09.2026;1;A\n".repeat(50001) }])).toThrow("50.000");
+  });
+  it("virgül, tırnak, BOM ve ISO tarihini destekler", () => {
+    const r = calculateReport([{ name: "quoted.csv", mapping: { ...mapping, delimiter: ",", dateFormat: "iso", numberFormat: "dot" }, text: '\uFEFFTarih,Tutar,Kategori\n2026-09-01,"1,234.50","A,B"' }]);
+    expect(r.totalCents).toBe(123450);
+    expect(r.categories[0].category).toBe("A,B");
+  });
   it("gerçek tutarları kuruşla toplar ve kaynakları korur", () => {
     const r = calculateReport([{ name: "satis.csv", mapping, text: "Tarih;Tutar;Kategori\n01.09.2026;1.234,50;A\n02.09.2026;10,25;B\n" }]);
     expect(r.totalCents).toBe(124475);
