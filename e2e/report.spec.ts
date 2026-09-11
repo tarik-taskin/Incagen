@@ -34,6 +34,7 @@ test("kayıt, CSV, gerçek rapor, geçmiş, silme ve çıkış", async ({ page }
   for (const mode of ["light", "dark"]) {
     const dark = await page.locator("html").evaluate(e => e.classList.contains("dark"));
     if (dark !== (mode === "dark")) await page.getByRole("button", { name: /moda geç/ }).click();
+    await expect(page.locator("html")).toHaveClass(mode === "dark" ? /dark/ : /^(?!.*dark).*$/);
     await page.evaluate(async () => {
       await document.fonts.ready;
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));

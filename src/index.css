@@ -26,10 +26,13 @@
   body { @apply m-0 min-w-80 min-h-screen bg-background text-foreground; }
 }
 
-@layer utilities {
+@layer components {
   .form-control {
     @apply block w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-secondary;
   }
+}
+
+@layer utilities {
   .text-balance { text-wrap: balance; }
   .text-pretty { text-wrap: pretty; }
 }
@@ -44,6 +47,7 @@
 .logo-part { transform-box: fill-box; transform-origin: center; will-change: transform, opacity; }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  /* Azaltılmış hareket tercihinde tema renkleri dahil geçişleri tamamen kapatır. */
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition: none !important; }
   [data-reveal] { opacity: 1 !important; }
 }
