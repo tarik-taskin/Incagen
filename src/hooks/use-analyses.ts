@@ -24,6 +24,10 @@ export function useAnalysis(id: string) {
   const key = user?.uid + "/" + id;
   useEffect(() => {
     if (!user || !id) return;
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      queueMicrotask(() => setState({ key, analysis: null, error: "Geçersiz analiz adresi." }));
+      return;
+    }
     return onSnapshot(doc(getServices().db, "users", user.uid, "analyses", id),
       snap => setState({ key, analysis: snap.exists() ? { ...snap.data(), id: snap.id } as Analysis : null, error: "" }),
       e => setState({ key, analysis: null, error: userError(e) }));

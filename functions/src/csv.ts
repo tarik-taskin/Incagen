@@ -24,7 +24,8 @@ export function parseCents(input: string, format: ColumnMapping["numberFormat"])
   const normalized = format === "tr" ? value.replace(/\./g, "").replace(",", ".") : value.replace(/,/g, "");
   const [whole, fraction = ""] = normalized.replace("-", "").split(".");
   const cents = (Number(whole) * 100 + Number(fraction.padEnd(2, "0"))) * (normalized.startsWith("-") ? -1 : 1);
-  if (!Number.isSafeInteger(cents) || Math.abs(cents) > 1e12) throw new CsvError("Tutar güvenli sınırı aşıyor.");
+  // Satır sınırıyla çarpımı da güvenli tamsayı aralığında kalır; grup toplamları taşmaz.
+  if (!Number.isSafeInteger(cents) || Math.abs(cents) > 1e10) throw new CsvError("Tutar güvenli sınırı aşıyor (satır başına 100 milyon).");
   return cents;
 }
 

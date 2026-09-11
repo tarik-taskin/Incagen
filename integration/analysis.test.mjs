@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { initializeApp, deleteApp } from "firebase/app";
-import { getAuth, connectAuthEmulator, createUserWithEmailAndPassword } from "firebase/auth";
+import { getAuth, connectAuthEmulator, createUserWithEmailAndPassword, signOut } from "firebase/auth";
 import { getFirestore, connectFirestoreEmulator, doc, getDoc, setDoc } from "firebase/firestore";
 import { getStorage, connectStorageEmulator, ref, uploadBytes, getBytes } from "firebase/storage";
 import { getFunctions, connectFunctionsEmulator, httpsCallable } from "firebase/functions";
@@ -61,6 +61,15 @@ test("gerçek rapor, izolasyon, idempotency, hata iadesi ve silme", { timeout: 1
     assert.equal((await getDoc(record)).exists(), false);
     await assert.rejects(getBytes(ref(a.storage, data.paths[0])));
     await remove({ id: failed.id });
+    const missing = (await create(input())).data;
+    await assert.rejects(run({ id: missing.id }));
+    assert.equal((await getDoc(quotaRef)).data().used, 1);
+    await uploadBytes(ref(a.storage, missing.paths[0]), Buffer.from(csv), { contentType: "text/csv" });
+    await run({ id: missing.id });
+    assert.equal((await getDoc(quotaRef)).data().used, 2);
+    await remove({ id: missing.id });
+    await signOut(b.auth);
+    await assert.rejects(httpsCallable(b.functions, "createAnalysis")(input()), e => e.code === "functions/unauthenticated");
   } finally { await deleteApp(a.app); await deleteApp(b.app); }
 });
 
