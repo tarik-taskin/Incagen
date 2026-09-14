@@ -6,16 +6,16 @@ import { AuthSuccessTransition } from "./auth-success-transition";
 afterEach(() => vi.useRealTimers());
 
 describe("Kimlik sonrası hazırlık geçişi", () => {
-  it("giriş ve kayıt için on farklı mesaj üretir", () => {
-    expect(new Set(getAuthTransitionMessages(false)).size).toBe(10);
-    expect(new Set(getAuthTransitionMessages(true)).size).toBe(10);
-    expect(getAuthTransitionMessages(false)).toContain("Giriş yapılıyor…");
-    expect(getAuthTransitionMessages(true)).toContain("Hesabınız oluşturuluyor…");
+  it("sıralamadan bağımsız yirmi farklı hazırlık mesajı üretir", () => {
+    const messages = getAuthTransitionMessages();
+
+    expect(new Set(messages).size).toBe(20);
+    expect(messages.join(" ")).not.toMatch(/giriş yapılıyor|hesabınız oluşturuluyor|kayıt olunuyor/i);
   });
 
-  it("on mesajlık havuzdan tekrar etmeyen beş mesaj seçer", () => {
-    const pool = getAuthTransitionMessages(false);
-    const selected = selectAuthTransitionMessages(false);
+  it("yirmi mesajlık havuzdan tekrar etmeyen beş mesaj seçer", () => {
+    const pool = getAuthTransitionMessages();
+    const selected = selectAuthTransitionMessages();
 
     expect(selected).toHaveLength(AUTH_TRANSITION_VISIBLE_MESSAGE_COUNT);
     expect(new Set(selected).size).toBe(AUTH_TRANSITION_VISIBLE_MESSAGE_COUNT);
@@ -25,7 +25,7 @@ describe("Kimlik sonrası hazırlık geçişi", () => {
   it("ilerleme süresi bitince çalışma alanına geçer", () => {
     vi.useFakeTimers();
     const onComplete = vi.fn();
-    render(<AuthSuccessTransition register={false} onComplete={onComplete} />);
+    render(<AuthSuccessTransition onComplete={onComplete} />);
 
     expect(screen.getByRole("status")).toHaveTextContent("Çalışma alanınıza geçiş yapılıyor");
     act(() => vi.advanceTimersByTime(AUTH_TRANSITION_DURATION_MS - 1));

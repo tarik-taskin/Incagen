@@ -4,8 +4,8 @@ import { AUTH_TRANSITION_DURATION_MS, selectAuthTransitionMessages } from "../fe
 import { AnimatedLogo } from "./animated-logo";
 
 // Başarılı Firebase yanıtından sonra mesajları ve üç saniyelik ilerlemeyi gösterip hedef rotaya geçirir.
-export function AuthSuccessTransition({ onComplete, register }: { onComplete: () => void; register: boolean }) {
-  const [messages] = useState(() => selectAuthTransitionMessages(register));
+export function AuthSuccessTransition({ onComplete }: { onComplete: () => void }) {
+  const [messages] = useState(selectAuthTransitionMessages);
   const [messageIndex, setMessageIndex] = useState(0);
   const [progressing, setProgressing] = useState(false);
   const completeRef = useRef(onComplete);

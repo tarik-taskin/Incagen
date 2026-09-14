@@ -290,7 +290,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
         </p>
       </div>
     </section>
-    {authenticated && <AuthSuccessTransition register={register} onComplete={onAuthenticated} />}
+    {authenticated && <AuthSuccessTransition onComplete={onAuthenticated} />}
     </>
   );
 }
