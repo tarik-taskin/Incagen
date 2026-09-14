@@ -25,6 +25,7 @@ async function register(page: Page) {
   await page.getByLabel("Parola", { exact: true }).fill("Synthetic123!");
   await page.getByLabel("Parola tekrarı", { exact: true }).fill("Synthetic123!");
   await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await expect(page.getByRole("status")).toContainText("Çalışma alanınıza geçiş yapılıyor");
   await expect(page.getByRole("heading", { name: "Belgelerinizi analize hazırlayın" })).toBeVisible();
 
   await expect(page.getByText("5 MB/dosya · 30 MB/analiz")).toBeVisible();

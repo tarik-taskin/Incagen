@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-14 — Furkan / Codex: kimlik sonrası hazırlık geçişi
+
+- [x] Sahip: Furkan — Giriş/kayıt sosyal seçeneklerindeki geçici “yakında” metnini kaldır; başarılı Firebase kimlik işleminden sonra 3 saniyelik markalı hazırlık geçişi göster.
+
+Kabul: sosyal ayraç ve pasif sağlayıcıların görünür/erişilebilir adlarında “yakında” bulunmamalı; başarılı giriş ve kayıtta 10 farklı mesaj karışık sırayla gösterilmeli; marka renkli yatay ilerleme çubuğu 3 saniyede dolmalı ve ardından mevcut hedef rotaya gidilmeli; başarısız kimlik işleminde geçiş açılmamalı; masaüstü, mobil ve azaltılmış hareket kullanımı bozulmamalı.
+
+Doğrulama: lint, production build, 31 birim/bileşen testi ve 6 masaüstü/mobil Firebase tarayıcı senaryosu geçti. On benzersiz mesaj, 3 saniyelik tamamlanma çağrısı, sosyal seçenek metni, gerçek kayıt sonrası geçiş görünümü ve hedef rotaya devam doğrulandı.
+
 ### 2026-09-14 — Furkan / Codex: tek komutla yerel geliştirme
 
 - [x] Sahip: Furkan — `npm run dev` ile Firebase emülatörlerini ve frontend'i birlikte başlat; giriş ekranındaki bağlantı hatasının eksik backend başlangıcından kaynaklanmasını önle.

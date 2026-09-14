@@ -6,6 +6,7 @@ import { useAuth } from "../lib/auth-context";
 import { userError } from "../lib/errors";
 import { getServices } from "../lib/firebase";
 import { AnimatedLogo } from "./animated-logo";
+import { AuthSuccessTransition } from "./auth-success-transition";
 import { Button } from "./ui/button";
 
 interface AuthCardProps {
@@ -69,15 +70,15 @@ function MicrosoftMark() {
   );
 }
 
-// Henüz bağlı olmayan sosyal sağlayıcıyı pasif ve açık biçimde sunar.
+// Henüz bağlı olmayan sosyal sağlayıcıyı arayüz yerini koruyarak pasif sunar.
 function SocialOption({ action, icon, name }: { action: string; icon: ReactNode; name: string }) {
   return (
     <button
       type="button"
       disabled
-      title={`${name} bağlantısı yakında`}
+      title={`${name} ile ${action}`}
       className="flex h-12 items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-1 text-[11px] font-semibold text-foreground shadow-sm disabled:cursor-not-allowed disabled:opacity-100 sm:gap-2 sm:px-3 sm:text-sm"
-      aria-label={`${name} ile ${action} — yakında`}
+      aria-label={`${name} ile ${action}`}
     >
       {icon}
       <span>{name}</span>
@@ -97,6 +98,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
 
   const emailValid = emailPattern.test(email.trim());
   const passwordCriteria = [
@@ -132,7 +134,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
     try {
       const operation = register ? createUserWithEmailAndPassword : signInWithEmailAndPassword;
       await operation(getServices().auth, email.trim(), password);
-      onAuthenticated();
+      setAuthenticated(true);
     } catch (submissionError) {
       setError(userError(submissionError));
     } finally {
@@ -143,6 +145,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
   const action = register ? "kayıt ol" : "giriş yap";
 
   return (
+    <>
     <section className="relative w-full overflow-hidden rounded-[2rem] border border-border/80 bg-card text-card-foreground shadow-[0_30px_100px_-32px_rgba(50,14,59,0.65)]" aria-labelledby={titleId}>
       <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-secondary via-primary to-[#ff5978]" aria-hidden="true" />
       <div className="relative p-5 sm:p-8">
@@ -269,7 +272,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
 
         <div className="my-5 flex items-center gap-3" aria-hidden="true">
           <span className="h-px flex-1 bg-border" />
-          <span className="text-xs font-medium text-muted-foreground">Sosyal seçenekler yakında</span>
+          <span className="text-xs font-medium text-muted-foreground">veya</span>
           <span className="h-px flex-1 bg-border" />
         </div>
 
@@ -287,5 +290,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
         </p>
       </div>
     </section>
+    {authenticated && <AuthSuccessTransition register={register} onComplete={onAuthenticated} />}
+    </>
   );
 }

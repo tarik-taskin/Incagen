@@ -15,9 +15,10 @@ describe("Kimlik kartı", () => {
     const user = userEvent.setup();
     renderAuthCard();
 
-    expect(screen.getByRole("button", { name: "Google ile giriş yap — yakında" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Apple ile giriş yap — yakında" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Microsoft ile giriş yap — yakında" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Google ile giriş yap" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Apple ile giriş yap" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Microsoft ile giriş yap" })).toBeDisabled();
+    expect(screen.queryByText(/sosyal seçenekler yakında/i)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Hesap oluştur" }));
     const registerButton = screen.getByRole("button", { name: "Hesap oluştur" });
@@ -41,6 +42,6 @@ describe("Kimlik kartı", () => {
     expect(registerButton).toBeEnabled();
 
     expect(screen.getByLabelText("Davet kodu")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Google ile kayıt ol — yakında" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Google ile kayıt ol" })).toBeDisabled();
   });
 });
