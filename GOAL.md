@@ -7,11 +7,19 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-14 — Furkan / Codex: giriş rotasını kaldırma ve çıkış dönüşü
+
+- [x] Sahip: Furkan — `/login` rotasını kaldır; korumalı erişimde landing modalını kullan ve başarılı çıkıştan sonra ana sayfaya dön.
+
+Kabul: çıkış başarılı olduğunda landing modal açılmadan gösterilmeli; oturumsuz korumalı rota landing üzerindeki giriş modalına dönmeli; girişten sonra istenen güvenli uygulama rotasına devam edilmeli; `/login` uygulama rotası olarak bulunmamalı.
+
+Doğrulama: lint, production build ve yönlendirme/çıkış davranışını kapsayan 26 birim/bileşen testi geçti. Tarayıcı entegrasyonu kullanılmadı.
+
 ### 2026-09-14 — Furkan / Codex: landing üzerinde kimlik modalı
 
 - [x] Sahip: Furkan — “Analize başla” çağrısında landing sayfasını terk etmeden giriş/kayıt modalını göster.
 
-Kabul: oturumsuz kullanıcı landing üzerinde erişilebilir modalı görmeli; modal kapanabilmeli; başarılı kimlik işleminden sonra yeni analiz alanına geçilmeli; doğrudan korumalı rota erişimi güvenli giriş sayfasına yönlenmeye devam etmeli.
+Kabul: oturumsuz kullanıcı landing üzerinde erişilebilir modalı görmeli; modal kapanabilmeli; başarılı kimlik işleminden sonra yeni analiz alanına geçilmeli; doğrudan korumalı rota erişimi landing üzerindeki aynı modalı kullanmalı.
 
 Doğrulama: lint, production build, 23 birim/bileşen testi ve modal erişilebilirliğini de kapsayan 6 masaüstü/mobil tarayıcı testi geçti; aydınlık ve karanlık tema davranışı doğrulandı.
 

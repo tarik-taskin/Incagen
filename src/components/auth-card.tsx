@@ -1,7 +1,6 @@
-import { useId, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { X } from "lucide-react";
-import { Link } from "react-router-dom";
 import { tr } from "../i18n/tr";
 import { useAuth } from "../lib/auth-context";
 import { userError } from "../lib/errors";
@@ -9,15 +8,13 @@ import { getServices } from "../lib/firebase";
 import { Button } from "./ui/button";
 
 interface AuthCardProps {
-  onAuthenticated?: () => void;
-  onClose?: () => void;
-  titleId?: string;
+  onAuthenticated: () => void;
+  onClose: () => void;
+  titleId: string;
 }
 
-// Giriş ve kayıt işlemlerini sayfa ile modal arasında paylaşılan tek formda yürütür.
-export function AuthCard({ onAuthenticated, onClose, titleId: suppliedTitleId }: AuthCardProps) {
-  const generatedTitleId = useId();
-  const titleId = suppliedTitleId ?? generatedTitleId;
+// Landing modalındaki giriş ve kayıt işlemlerini tek formda yürütür.
+export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
   const { error: configError } = useAuth();
   const [register, setRegister] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -33,7 +30,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId: suppliedTitleId }:
     try {
       const operation = register ? createUserWithEmailAndPassword : signInWithEmailAndPassword;
       await operation(getServices().auth, String(form.get("email")).trim(), String(form.get("password")));
-      onAuthenticated?.();
+      onAuthenticated();
     } catch (submissionError) {
       setError(userError(submissionError));
     } finally {
@@ -44,16 +41,10 @@ export function AuthCard({ onAuthenticated, onClose, titleId: suppliedTitleId }:
   return (
     <section className="w-full rounded-3xl border border-border bg-card p-6 shadow-2xl sm:p-8" aria-labelledby={titleId}>
       <div className="flex items-center justify-between gap-4">
-        {onClose ? (
-          <p className="text-sm font-semibold text-primary dark:text-secondary">Incagen hesabı</p>
-        ) : (
-          <Link to="/" className="rounded-md text-sm font-semibold text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary">← Incagen</Link>
-        )}
-        {onClose && (
-          <Button type="button" variant="ghost" size="icon" className="shrink-0 rounded-xl" aria-label="Giriş penceresini kapat" onClick={onClose}>
-            <X className="h-4 w-4" aria-hidden="true" />
-          </Button>
-        )}
+        <p className="text-sm font-semibold text-primary dark:text-secondary">Incagen hesabı</p>
+        <Button type="button" variant="ghost" size="icon" className="shrink-0 rounded-xl" aria-label="Giriş penceresini kapat" onClick={onClose}>
+          <X className="h-4 w-4" aria-hidden="true" />
+        </Button>
       </div>
       <h1 id={titleId} className="mt-5 text-3xl font-semibold">{register ? tr.auth.register : tr.auth.login}</h1>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">{tr.auth.local}</p>

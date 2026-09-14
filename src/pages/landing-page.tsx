@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { animate, stagger } from "animejs";
 import { ArrowRight, BarChart3, FileSearch, ShieldCheck, Sparkles } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AnimatedLogo } from "../components/animated-logo";
 import { AuthModal } from "../components/auth-modal";
 import { ThemeToggle } from "../components/theme-toggle";
@@ -17,10 +17,16 @@ const valueItems = [
 // Marka giriş sayfasını animasyonlu tanıtım, güven mesajları ve uygulama çağrısıyla sunar.
 export function LandingPage() {
   const pageRef = useRef<HTMLDivElement>(null);
-  const [authOpen, setAuthOpen] = useState(false);
+  const location = useLocation();
+  const requested = location.state?.from;
+  const authDestination = typeof requested === "string" && requested.startsWith("/app/") ? requested : "/app/new-analysis";
+  const [authOpen, setAuthOpen] = useState(location.state?.authOpen === true);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const closeAuth = useCallback(() => setAuthOpen(false), []);
+  const closeAuth = useCallback(() => {
+    setAuthOpen(false);
+    navigate("/", { replace: true, state: null });
+  }, [navigate]);
 
   // Oturum varsa çalışma alanına geçer; yoksa landing üzerinde kimlik modalını açar.
   function startAnalysis() {
@@ -102,7 +108,7 @@ export function LandingPage() {
           ))}
         </section>
       </main>
-      <AuthModal open={authOpen} onClose={closeAuth} onAuthenticated={() => navigate("/app/new-analysis")} />
+      <AuthModal open={authOpen} onClose={closeAuth} onAuthenticated={() => navigate(authDestination, { replace: true })} />
     </div>
   );
 }

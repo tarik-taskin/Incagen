@@ -38,6 +38,22 @@ describe("App routes", () => {
     expect(screen.queryByRole("dialog", { name: "Giriş yap" })).not.toBeInTheDocument();
   });
 
+  it("eski login adresini ayrı ekran açmadan landing sayfasına döndürür", async () => {
+    authState.current = { user: null, loading: false, error: "" };
+    renderApp("/login");
+
+    expect(await screen.findByRole("heading", { name: "Verilerinizdeki büyüme fırsatlarını keşfedin." })).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("oturumsuz korumalı adresi landing üzerindeki giriş modalına taşır", async () => {
+    authState.current = { user: null, loading: false, error: "" };
+    renderApp("/app/new-analysis");
+
+    expect(await screen.findByRole("heading", { name: "Verilerinizdeki büyüme fırsatlarını keşfedin." })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Giriş yap" })).toBeInTheDocument();
+  });
+
   it("iç sayfalar arasında dosya seçimini korur", async () => {
     const user = userEvent.setup();
     renderApp("/app/new-analysis");

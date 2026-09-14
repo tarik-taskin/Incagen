@@ -6,7 +6,8 @@ test("kayıt, CSV, gerçek rapor, geçmiş, silme ve çıkış", async ({ page }
   const errors: string[] = [];
   page.on("pageerror", e => errors.push(e.message));
   await page.goto("/app/new-analysis");
-  await expect(page).toHaveURL(/login/);
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("dialog", { name: "Giriş yap" })).toBeVisible();
   await page.getByRole("button", { name: "Hesabım yok, hesap oluştur" }).click();
   await page.getByLabel("E-posta", { exact: true }).fill(`report-${crypto.randomUUID()}@example.test`);
   await page.getByLabel("Parola", { exact: true }).fill("Synthetic123!");
@@ -55,6 +56,8 @@ test("kayıt, CSV, gerçek rapor, geçmiş, silme ve çıkış", async ({ page }
   await expect(page.getByText("Henüz analiziniz yok.")).toBeVisible();
   await nav.getByRole("link", { name: "Ayarlar" }).click();
   await page.getByRole("button", { name: "Çıkış yap" }).click();
-  await expect(page.getByRole("heading", { name: "Giriş yap" })).toBeVisible();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("heading", { name: "Verilerinizdeki büyüme fırsatlarını keşfedin." })).toBeVisible();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   expect(errors).toEqual([]);
 });
