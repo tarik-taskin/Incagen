@@ -1,21 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { ShieldCheck, Sparkles } from "lucide-react";
-import { AUTH_TRANSITION_DURATION_MS, getAuthTransitionMessages } from "../features/auth/auth-transition-content";
+import { AUTH_TRANSITION_DURATION_MS, selectAuthTransitionMessages } from "../features/auth/auth-transition-content";
 import { AnimatedLogo } from "./animated-logo";
-
-// Mesajların her başarılı kimlik işleminde farklı bir sırada görünmesini sağlar.
-function shuffleMessages(messages: readonly string[]) {
-  const shuffled = [...messages];
-  for (let index = shuffled.length - 1; index > 0; index -= 1) {
-    const target = Math.floor(Math.random() * (index + 1));
-    [shuffled[index], shuffled[target]] = [shuffled[target], shuffled[index]];
-  }
-  return shuffled;
-}
 
 // Başarılı Firebase yanıtından sonra mesajları ve üç saniyelik ilerlemeyi gösterip hedef rotaya geçirir.
 export function AuthSuccessTransition({ onComplete, register }: { onComplete: () => void; register: boolean }) {
-  const [messages] = useState(() => shuffleMessages(getAuthTransitionMessages(register)));
+  const [messages] = useState(() => selectAuthTransitionMessages(register));
   const [messageIndex, setMessageIndex] = useState(0);
   const [progressing, setProgressing] = useState(false);
   const completeRef = useRef(onComplete);

@@ -1,6 +1,6 @@
 import { act, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { AUTH_TRANSITION_DURATION_MS, getAuthTransitionMessages } from "../features/auth/auth-transition-content";
+import { AUTH_TRANSITION_DURATION_MS, AUTH_TRANSITION_VISIBLE_MESSAGE_COUNT, getAuthTransitionMessages, selectAuthTransitionMessages } from "../features/auth/auth-transition-content";
 import { AuthSuccessTransition } from "./auth-success-transition";
 
 afterEach(() => vi.useRealTimers());
@@ -11,6 +11,15 @@ describe("Kimlik sonrası hazırlık geçişi", () => {
     expect(new Set(getAuthTransitionMessages(true)).size).toBe(10);
     expect(getAuthTransitionMessages(false)).toContain("Giriş yapılıyor…");
     expect(getAuthTransitionMessages(true)).toContain("Hesabınız oluşturuluyor…");
+  });
+
+  it("on mesajlık havuzdan tekrar etmeyen beş mesaj seçer", () => {
+    const pool = getAuthTransitionMessages(false);
+    const selected = selectAuthTransitionMessages(false);
+
+    expect(selected).toHaveLength(AUTH_TRANSITION_VISIBLE_MESSAGE_COUNT);
+    expect(new Set(selected).size).toBe(AUTH_TRANSITION_VISIBLE_MESSAGE_COUNT);
+    expect(selected.every((message) => pool.includes(message))).toBe(true);
   });
 
   it("ilerleme süresi bitince çalışma alanına geçer", () => {

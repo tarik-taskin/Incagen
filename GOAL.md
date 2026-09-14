@@ -11,9 +11,9 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 - [x] Sahip: Furkan — Giriş/kayıt sosyal seçeneklerindeki geçici “yakında” metnini kaldır; başarılı Firebase kimlik işleminden sonra 3 saniyelik markalı hazırlık geçişi göster.
 
-Kabul: sosyal ayraç ve pasif sağlayıcıların görünür/erişilebilir adlarında “yakında” bulunmamalı; başarılı giriş ve kayıtta 10 farklı mesaj karışık sırayla gösterilmeli; marka renkli yatay ilerleme çubuğu 3 saniyede dolmalı ve ardından mevcut hedef rotaya gidilmeli; başarısız kimlik işleminde geçiş açılmamalı; masaüstü, mobil ve azaltılmış hareket kullanımı bozulmamalı.
+Kabul: sosyal ayraç ve pasif sağlayıcıların görünür/erişilebilir adlarında “yakında” bulunmamalı; başarılı giriş ve kayıtta 10 mesajlık havuzdan rastgele 5 mesaj gösterilmeli; marka renkli yatay ilerleme çubuğu 3 saniyede dolmalı; geçiş boyunca landing URL'si korunup tamamlanınca mevcut hedef rotaya gidilmeli; başarısız kimlik işleminde geçiş açılmamalı; masaüstü, mobil ve azaltılmış hareket kullanımı bozulmamalı.
 
-Doğrulama: lint, production build, 31 birim/bileşen testi ve 6 masaüstü/mobil Firebase tarayıcı senaryosu geçti. On benzersiz mesaj, 3 saniyelik tamamlanma çağrısı, sosyal seçenek metni, gerçek kayıt sonrası geçiş görünümü ve hedef rotaya devam doğrulandı.
+Doğrulama: lint, production build, 32 birim/bileşen testi ve 6 masaüstü/mobil Firebase tarayıcı senaryosu geçti. On mesajlık havuzdan tekrarsız beş mesaj seçimi, 3 saniyelik tamamlanma, geçiş sırasında landing URL'sinin korunması ve sonrasında `/app/new-analysis` rotasına devam doğrulandı.
 
 ### 2026-09-14 — Furkan / Codex: tek komutla yerel geliştirme
 
