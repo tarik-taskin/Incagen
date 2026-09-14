@@ -27,3 +27,10 @@ dist-ssr
 coverage
 playwright-report
 test-results
+
+functions/lib/
+.firebase/
+*-debug.log*
+.env
+.env.local
+.env.*.local

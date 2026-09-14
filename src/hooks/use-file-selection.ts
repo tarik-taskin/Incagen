@@ -38,7 +38,7 @@ function fileSelectionReducer(state: FileSelectionState, action: FileSelectionAc
 }
 
 // Dosya ekleme, kaldırma, temizleme ve son doğrulama hatalarını sayfadan bağımsız yönetir.
-export function useFileSelection(limit = FREE_PLAN_FILE_LIMIT) {
+export function useFileSelectionState(limit = FREE_PLAN_FILE_LIMIT) {
   const [state, dispatch] = useReducer(fileSelectionReducer, initialState);
 
   return {

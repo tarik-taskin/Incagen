@@ -7,6 +7,26 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-14 — Furkan / Codex: Tarık branch entegrasyonu
+
+- [x] Sahip: Furkan — Tarık'ın yerel CSV rapor hattını güncel main ve Furkan branch'iyle birleştirip doğrula.
+
+Kabul: Tarık'ın sekiz commit'i ve yeni doğrudan main çalışma düzeni korunmalı; lint, frontend/backend build ve birim testleri geçmeli; local/remote main ile local/remote Furkan branch'leri aynı commit'te olmalı.
+
+Doğrulama: lint, frontend/backend build, 22 birim/bileşen testi, 2 emülatör entegrasyon senaryosu ve 6 masaüstü/mobil tarayıcı testi geçti.
+
+### 2026-09-11 — Tarık / Codex: CSV'den gerçek rapora
+
+- [x] Sahip: Tarık — Uzantı güvenliği, kalıcı oturum içi dosya seçimi ve regresyon testleri.
+- [x] Sahip: Tarık — Yerel Firebase Auth/Firestore/Storage/Functions ve e-posta/parola oturumu.
+- [x] Sahip: Tarık — CSV eşleştirme, backend hesaplama, kota ve idempotent analiz akışı.
+- [x] Sahip: Tarık — Sonuç rotası, grafikler, gerçek geçmiş ve kaynaklarla birlikte silme.
+- [x] Sahip: Tarık — Türkçe sözlük, emülatör izolasyon testleri, tarayıcı testleri ve kurulum belgeleri.
+
+Kabul: sentetik CSV ile kayıt → yükleme → hesaplanan rapor → geçmiş → silme akışı ve iki kullanıcı izolasyonu doğrulanmalı. AI yorumu ve bulut yayını kapsam dışıdır.
+
+Doğrulama: lint, frontend/backend build, 22 birim/bileşen testi, 2 emülatör entegrasyon senaryosu ve 6 masaüstü/mobil tarayıcı testi geçti. Son tarayıcı koşusunda retry gerekmedi; iki temada axe erişilebilirlik kontrolü yapıldı. GitHub üzerindeki CI sonucu henüz doğrulanmadı.
+
 Durum: [~]
 
 - [x] Sahip: Tarık — React/TypeScript tabanı, animasyonlu logo, responsive giriş ve tema.
@@ -16,29 +36,32 @@ Durum: [~]
 - [x] Sahip: Tarık — PR #2 inceleme düzeltmeleri: çoğul arayüz, kararların ayrıştırılması, sade belgeler ve temiz branch geçmişi.
   Kabul: lint/build/diff kontrolü temiz; çoklu seçim ve iki tema kontrol edilmiş; PR yalnız ilgili değişiklikleri içeriyor.
 - [x] Sahip: Furkan — Router ve responsive uygulama kabuğu; kimlik tabanlı rota koruması M1 Authentication sonrasında eklenecek.
-- [ ] Sahip: Atanmadı — Türkçe kaynaklarla i18n temeli.
+- [x] Sahip: Tarık — Türkçe kaynaklarla i18n temeli; mevcut tüm metinlerin taşınması ve ikinci dil sonraki iştir.
 - [x] Sahip: Furkan — Vitest, React Testing Library ve Playwright test altyapısı.
 - [x] Sahip: Furkan — GitHub Actions üzerinde lint, birim/bileşen testi, build, masaüstü/mobil tarayıcı ve erişilebilirlik kontrolleri.
 - [x] Sahip: Furkan — Günlük branch/main eşitleme ve koşullu PR çalışma düzenini belgele.
-- [ ] Sahip: Atanmadı — Ortam/bölge kararı sonrası Firebase ortamları ve güvenli environment şablonu.
+- [x] Sahip: Tarık — Buluta kapalı demo emülatörleri ve güvenli environment şablonu.
+- [ ] Sahip: Atanmadı — Gerçek dev/prod Firebase kaynakları ve bulut güvenlik doğrulaması.
 
 Kapanış: görevler incelenmiş; CI kontrolleri başarılı; repoda sır veya müşteri verisi yok.
 
 ## M1 — Kimlik ve uygulama kabuğu
 
-- [ ] Sahip: Atanmadı — Giriş yöntemleri kararı sonrası Firebase Authentication ve oturum yönetimi.
+- [x] Sahip: Tarık — Yerel Firebase e-posta/parola Authentication, oturum yönetimi ve korumalı rotalar.
 - [ ] Sahip: Atanmadı — İşletme bilgileri ve analiz hedefini alan onboarding.
 - [x] Sahip: Furkan — Yeni analiz, geçmiş ve ayarlar rotaları; sonuç rotası ilgili ekran geliştirilirken eklenecek.
 - [x] Sahip: Furkan — Uygulama kabuğunda Premium geçiş çağrısı ve iç navigasyondan landing sayfasına dönen tarayıcı geçmişi.
-- [ ] Sahip: Atanmadı — Kullanıcı izolasyonu; ekip veri modeli kararı sonrası şema.
+- [x] Sahip: Tarık — UID tabanlı kullanıcı izolasyonu ve iki hesapla emülatör testleri.
+- [ ] Sahip: Atanmadı — Gelecekte workspace tabanlı ekip veri modeli.
 
 Kalite kapısı: oturum yenileme, çıkış, korumalı rotalar ve yetkisiz erişim testleri başarılı.
 
 ## M2 — Dosya yükleme ve hazırlama
 
 - [x] Sahip: Furkan — FLOW.md formatları için istemci doğrulaması, tekrar kontrolü, Free plan sınırı ve seçim yönetimi; backend normalizasyonu sonraki adımdır.
-- [ ] Sahip: Atanmadı — FLOW.md plan limitlerini backend'de uygula; boyut ve kota sıfırlama kararlarını önce tamamla.
-- [ ] Sahip: Atanmadı — Storage yükleme, ilerleme, iptal ve yeniden deneme.
+- [x] Sahip: Tarık — CSV için Free kota, dosya/satır/boyut sınırları ve İstanbul takvim günü kontrolü.
+- [x] Sahip: Tarık — Yerel Storage yükleme, ilerleme, iptal ve aynı oturumda yeniden deneme.
+- [x] Sahip: Tarık — Açık CSV eşleştirmesi, hatalı kayıt reddi ve kaynak özeti.
 - [ ] Sahip: Atanmadı — Bozuk/parolalı/zararlı dosya kontrolleri ve kaynak referansları.
 - [ ] Sahip: Atanmadı — Kısmi hata görünümü ve geçerli dosyalarla devam onayı.
 
@@ -49,16 +72,20 @@ Kalite kapısı: format fixture'ları, kota sınırları, yetkilendirme ve kısm
 - [ ] Sahip: Atanmadı — Servis seçimi sonrası arka plan iş yönetimi.
 - [ ] Sahip: Atanmadı — Uygunluk kontrolü ve FLOW.md ana model yapılandırması.
 - [ ] Sahip: Atanmadı — Sürümlü JSON Schema, kaynak ve sayısal metrik doğrulama.
-- [ ] Sahip: Atanmadı — Sınırlı retry, idempotent kota tüketimi ve platform hatasında iade.
+- [x] Sahip: Tarık — CSV hattında idempotent kota, hata iadesi ve süre aşımı sonrası kullanıcı tetiklemeli retry.
+- [ ] Sahip: Atanmadı — AI için kalıcı kuyruk ve sınırlı otomatik retry.
 
 Kalite kapısı: şema, hata/retry, kota ve kullanıcı izolasyonu entegrasyon testleri başarılı.
 
 ## M4 — Sonuçlar ve geçmiş
 
-- [ ] Sahip: Atanmadı — shadcn/ui grafik, KPI, tablo ve öneri ekranları.
+- [x] Sahip: Tarık — CSV sonucu için KPI, Recharts grafikleri ve erişilebilir tablo karşılıkları.
+- [ ] Sahip: Atanmadı — AI bulgu ve öneri ekranları.
 - [ ] Sahip: Atanmadı — Kaynak referansı, güven düzeyi ve çıkarım etiketleri.
-- [ ] Sahip: Atanmadı — Firestore geçmişini listeleme ve filtreleme.
-- [ ] Sahip: Atanmadı — Saklama/silme kararı sonrası ilişkili verilerin temizlenmesi.
+- [x] Sahip: Tarık — Kullanıcıya özel Firestore geçmişini listeleme ve kayıtlı raporu açma.
+- [ ] Sahip: Atanmadı — Geçmiş arama ve filtreleme.
+- [x] Sahip: Tarık — Yerel analiz ile kaynak dosyalarının birlikte ve tekrar denenebilir silinmesi.
+- [ ] Sahip: Atanmadı — Canlı saklama, yedek ve silme politikaları.
 - [ ] Sahip: Atanmadı — PDF kapsam kararı sonrası gerekirse aynı doğrulanmış sonuçtan dışa aktarım.
 
 Kalite kapısı: sonuçlar doğrulanmış verilerle eşleşiyor; kaynaklar çalışıyor; yetkisiz erişim ve silme senaryoları geçiyor.
@@ -84,18 +111,17 @@ Kalite kapısı: ödeme/webhook, plan geçişi, kota ve bağlantı yetkilendirme
 
 ## Açık kararlar
 
-Aşağıdakiler öneridir, kesin mimari veya tamamlanmış özellik değildir. İlgili işe başlamadan ekip kararı kaydedilir.
+Aşağıdakiler sonraki aşamanın açık kararlarıdır. Bugünkü yerel akışın kesinleşen seçimleri FLOW.md ve karar günlüğündedir.
 
 - İş orkestrasyonu: Firebase Functions yanında Cloud Tasks gerekli mi?
 - Uzun dosya/AI işleri: Python Cloud Run mı, başka bir servis mi?
 - Beta erişimi: davetli mi, açık mı?
-- Authentication: Google ve e-posta/parola seçeneklerinden hangileri?
-- Ortamlar ve servis bölgesi: ayrı dev/prod projeleri ve Avrupa bölgesi önerileri.
-- Veri modeli: tek kullanıcı modeli ve gelecekte workspaceId tabanlı ekip desteği.
+- Authentication: e-posta/parolaya ek Google girişi ne zaman gerekli?
+- Ortamlar: ayrı dev/prod ve europe-west1 varsayımının gerçek veri/gizlilik gereksinimleriyle doğrulanması.
+- Veri modeli: UID modelinden workspaceId tabanlı ekip desteğine geçiş zamanı.
 - PDF: MVP içinde mi, sonraki milestone'da mı?
 - Saklama: kullanıcı silene kadar tutma önerisi yerine süre, silme ve yedek politikası birlikte belirlenmeli.
-- Dosya boyutu: geliştirme/test sonuçlarına göre sınırlar.
-- Günlük kota: saat dilimi, sıfırlama anı ve devam eden işlere etkisi.
+- Dosya boyutu: FLOW.md geçici CSV sınırlarının gerçek yük testleriyle güncellenmesi.
 - Hedef müşteri profilleri: doğrulanana kadar işletme-genel yaklaşım.
 
 ## Açık riskler
@@ -104,9 +130,13 @@ Aşağıdakiler öneridir, kesin mimari veya tamamlanmış özellik değildir. �
 - Saklama/bölge seçimleri gizlilik, maliyet ve operasyonu etkiler; uygulanmadan kararlaştırılmalıdır.
 - AI maliyeti, model erişimi ve şema güvenilirliği gerçek testlerle ölçülmelidir.
 - Kota/webhook tekrarları çift ücret veya tüketim doğurmamalıdır.
+- Firebase CLI geliştirme bağımlılıklarında 7 orta önem uyarısı kaldı; üretim bağımlılık denetimleri temiz. Uyumsuz ana sürümler zorlanmadı.
+- Yerel testler bulut IAM/App Check, kalıcı kuyruk ve gerçek veri operasyonunun hazır olduğunu göstermez.
+- Firestore istemci paketi 500 kB build uyarısı veriyor; sonraki performans bütçesi çalışmasında küçültülmeli.
 
 ## Karar günlüğü
 
+- 2026-09-11 — Tarık'ın karar yetkisiyle bugünkü işler Tarık/Codex'e aittir; Furkan'a yeni iş atanmadı. Yerel emülatör, e-posta/parola, UID izolasyonu, TypeScript Functions ve deterministik CSV raporu uygulandı. Kota, geçici sınırlar ve silme davranışı FLOW.md'dedir. AI, gerçek bulut, ödeme ve diğer formatların işlenmesi kapsam dışıdır.
 - 2026-09-07 — Tarık'ın onayıyla PR incelemesindeki ürün düzeltmeleri kabul edildi; plan limitleri FLOW.md'de merkezileştirildi, ödeme işi M6'da güncellendi, müşteri segmenti kısıtı kaldırıldı ve ortak değerlendirme gerektiren seçimler açık kararlara taşındı.
 - 2026-09-09 — Premium girişinin ödeme entegrasyonuna kadar bilgilendirme göstermesi ve uygulama içi sekmelerin tarayıcı geçmişinde tek çalışma alanı adımı olarak tutulması kabul edildi.
 - 2026-09-14 — Günlük geliştirmede kişisel branch'lerden doğrulama sonrası doğrudan main'e push edilmesi; Tarık ve Furkan ayrı kod alanlarında paralel ilerlediğinde veya açıkça istendiğinde PR kullanılması kabul edildi.

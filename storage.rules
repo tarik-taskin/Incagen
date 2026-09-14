@@ -1,0 +1,20 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /users/{uid}/analyses/{analysisId}/{fileId} {
+      function owned() { return request.auth != null && request.auth.uid == uid; }
+      function analysis() {
+        return firestore.get(/databases/(default)/documents/users/$(uid)/analyses/$(analysisId)).data;
+      }
+      allow read: if owned();
+      allow create, update: if owned()
+        && analysis().status in ['draft', 'uploading', 'failed']
+        && fileId in analysis().manifest
+        && request.resource.size == analysis().manifest[fileId].size
+        && request.resource.size > 0 && request.resource.size <= 5 * 1024 * 1024
+        && request.resource.contentType == 'text/csv';
+      allow delete: if false;
+    }
+    match /{path=**} { allow read, write: if false; }
+  }
+}

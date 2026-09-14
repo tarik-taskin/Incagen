@@ -44,12 +44,12 @@ export function getFileExtension(fileName: string) {
 
 // Dosyanın desteklenen ürün formatlarından birine ait olup olmadığını istemci tarafında kontrol eder.
 export function isSupportedFile(file: File) {
-  return getFileExtension(file.name) in extensionCategoryMap;
+  return Object.prototype.hasOwnProperty.call(extensionCategoryMap, getFileExtension(file.name));
 }
 
 // Dosyayı arayüzde gösterilecek iş verisi kategorisine eşler.
 export function getFileCategory(file: File): FileCategory {
-  return extensionCategoryMap[getFileExtension(file.name)] ?? "Belge";
+  return isSupportedFile(file) ? extensionCategoryMap[getFileExtension(file.name)] : "Belge";
 }
 
 // Aynı dosyanın tek seçimde veya sonraki seçimlerde tekrar eklenmesini belirlemek için kararlı bir kimlik üretir.

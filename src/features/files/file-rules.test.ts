@@ -14,6 +14,11 @@ function createFile(name: string, size = 4, lastModified = 1) {
 }
 
 describe("file rules", () => {
+  it("prototip anahtarlarını dosya uzantısı olarak kabul etmez", () => {
+    for (const extension of ["constructor", "__proto__", "prototype"]) {
+      expect(isSupportedFile(createFile(`veri.${extension}`))).toBe(false);
+    }
+  });
   it("desteklenen uzantıları büyük-küçük harften bağımsız sınıflandırır", () => {
     const spreadsheet = createFile("Aylık Rapor.XLSX");
     const image = createFile("grafik.PNG");

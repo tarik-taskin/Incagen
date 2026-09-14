@@ -1,121 +1,56 @@
-import { useState } from "react";
-import { AlertCircle, ArrowRight, CheckCircle2, Clock3, FileStack } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { FileDropzone } from "../components/upload/file-dropzone";
 import { SelectedFileList } from "../components/upload/selected-file-list";
+import { CsvMapping } from "../components/upload/csv-mapping";
 import { Button } from "../components/ui/button";
 import { FREE_PLAN_FILE_LIMIT } from "../features/files/file-rules";
-import { PLAN_RULES } from "../features/plans/plan-rules";
-import { useFileSelection } from "../hooks/use-file-selection";
+import { useWorkspace } from "../lib/workspace-context";
+import { tr } from "../i18n/tr";
 
-// Yeni analiz rotasında dosya seçimi, istemci ön kontrolü ve istek hazırlığını birlikte yönetir.
+// Dosya, işletme ve açık sütun eşleştirmelerini gerçek backend raporuna bağlar.
 export function NewAnalysisPage() {
-  const { files, rejections, addFiles, removeFile, clearFiles, dismissRejections } = useFileSelection();
-  const [isReady, setIsReady] = useState(false);
-  const isAtLimit = files.length >= FREE_PLAN_FILE_LIMIT;
-
-  // Yeni bir dosya grubu geldiğinde önceki hazırlık sonucunu temizleyip seçimi doğrular.
-  function handleFilesSelected(selectedFiles: File[]) {
-    setIsReady(false);
-    addFiles(selectedFiles);
+  const { selection, draft, setDraft, busy, progress, error, activeId, start, cancel } = useWorkspace();
+  const { files, rejections, addFiles, removeFile, clearFiles, dismissRejections } = selection;
+  const navigate = useNavigate();
+  async function submit() {
+    const id = await start();
+    if (id) navigate("/app/analyses/" + id);
   }
-
-  // Kullanıcının seçtiği dosyaları mevcut frontend kapsamı içinde analize hazır olarak işaretler.
-  function handlePrepareAnalysis() {
-    if (files.length > 0) setIsReady(true);
-  }
-
-  return (
-    <section aria-labelledby="new-analysis-title">
-      <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
-        <div>
-          <p className="text-sm font-semibold text-primary dark:text-secondary">Yeni analiz</p>
-          <h1 id="new-analysis-title" className="mt-2 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Verilerinizi analize hazırlayın</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">Dosyalarınızı birlikte seçin, ön kontrolleri tamamlayın ve analiz kapsamını doğrulayın.</p>
-        </div>
-        <div className="flex shrink-0 items-center gap-3 rounded-2xl border border-border/70 bg-card/75 px-4 py-3 shadow-sm">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-secondary/10 dark:text-secondary">
-            <Clock3 className="h-5 w-5" aria-hidden="true" />
-          </span>
-          <div>
-            <p className="text-xs text-muted-foreground">Günlük analiz hakkı</p>
-            <p className="text-sm font-semibold">{PLAN_RULES.free.dailyAnalysisLimit} analiz · {PLAN_RULES.free.label}</p>
-          </div>
-        </div>
+  return <section aria-labelledby="new-analysis-title">
+    <p className="text-sm font-semibold text-primary dark:text-secondary">Yeni analiz · Free</p>
+    <h1 id="new-analysis-title" className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{tr.analysis.title}</h1>
+    <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">Satış CSV’lerinizi eşleştirin; toplamları, günlük dağılımı ve kategorileri gerçek verinizden hesaplayalım.</p>
+    <p className="mt-2 text-xs text-muted-foreground">{tr.auth.local} {tr.analysis.refresh}</p>
+    <a className="mt-3 inline-block text-sm text-primary underline dark:text-secondary" href="/samples/satis-ornek.csv" download>Sentetik örnek CSV indir (beklenen toplam: 2.244,75 TRY)</a>
+    <div className="mt-8 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
+      <div className="min-w-0 space-y-6">
+        <FileDropzone disabled={busy || files.length >= FREE_PLAN_FILE_LIMIT} onFilesSelected={addFiles} />
+        {rejections.length > 0 && <div role="alert" className="rounded-2xl border border-red-500/30 bg-red-500/5 p-4 text-sm">
+          <h2 className="font-semibold">Bazı dosyalar eklenemedi</h2>
+          <ul className="mt-2 space-y-1">{rejections.map(r => <li key={r.id} className="break-words">{r.fileName}: {r.reason}</li>)}</ul>
+          <Button variant="ghost" onClick={dismissRejections}>Bildirimi kapat</Button>
+        </div>}
+        <fieldset disabled={busy} className="min-w-0">
+          <SelectedFileList files={files} limit={FREE_PLAN_FILE_LIMIT} onClear={() => { if (!busy) clearFiles(); }} onRemove={id => { if (!busy) removeFile(id); }} />
+        </fieldset>
+        {files.filter(f => f.file.name.toLowerCase().endsWith(".csv")).map(item => <CsvMapping key={item.id} item={item} />)}
+        {files.some(f => !f.file.name.toLowerCase().endsWith(".csv")) && <p role="alert" className="rounded-xl border border-border p-4 text-sm">{tr.analysis.csvOnly}</p>}
       </div>
-
-      <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
-        <div className="space-y-6">
-          <FileDropzone disabled={isAtLimit} onFilesSelected={handleFilesSelected} />
-
-          {rejections.length > 0 && (
-            <div className="rounded-2xl border border-red-500/25 bg-red-500/[0.06] p-4" role="alert">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600 dark:text-red-400" aria-hidden="true" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <h2 className="text-sm font-semibold">Bazı dosyalar eklenemedi</h2>
-                    <button type="button" className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" onClick={dismissRejections}>Bildirimi kapat</button>
-                  </div>
-                  <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-                    {rejections.map(({ id, fileName, reason }) => <li key={id}><span className="font-medium text-foreground">{fileName}:</span> {reason}</li>)}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {isReady && (
-            <div className="flex items-start gap-3 rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.07] p-4" role="status">
-              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-              <div>
-                <p className="text-sm font-semibold">Dosya kapsamı hazır</p>
-                <p className="mt-1 text-sm text-muted-foreground">{files.length} dosya istemci ön kontrolünü geçti. Backend bağlantısı eklendiğinde analiz isteği bu adımdan gönderilecek.</p>
-              </div>
-            </div>
-          )}
-
-          <SelectedFileList
-            files={files}
-            limit={FREE_PLAN_FILE_LIMIT}
-            onClear={() => {
-              setIsReady(false);
-              clearFiles();
-            }}
-            onRemove={(id) => {
-              setIsReady(false);
-              removeFile(id);
-            }}
-          />
-        </div>
-
-        <aside className="h-fit rounded-3xl border border-border/70 bg-card/75 p-5 shadow-sm xl:sticky xl:top-24" aria-labelledby="analysis-summary-title">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-secondary/10 dark:text-secondary">
-              <FileStack className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <div>
-              <h2 id="analysis-summary-title" className="font-semibold">Analiz özeti</h2>
-              <p className="text-xs text-muted-foreground">{PLAN_RULES.free.label} plan</p>
-            </div>
-          </div>
-
-          <dl className="mt-6 space-y-4 text-sm">
-            <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Seçilen dosya</dt><dd className="font-semibold">{files.length}/{FREE_PLAN_FILE_LIMIT}</dd></div>
-            <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Analiz derinliği</dt><dd className="font-semibold">{PLAN_RULES.free.analysisDepth}</dd></div>
-            <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Harici kaynak</dt><dd className="font-semibold">{PLAN_RULES.free.externalSources}</dd></div>
-          </dl>
-
-          <div className="mt-5 h-2 overflow-hidden rounded-full bg-muted" aria-hidden="true">
-            <div className="h-full rounded-full bg-primary transition-[width] dark:bg-secondary" style={{ width: `${(files.length / FREE_PLAN_FILE_LIMIT) * 100}%` }} />
-          </div>
-
-          <Button type="button" className="mt-6 w-full gap-2 rounded-xl" disabled={files.length === 0} onClick={handlePrepareAnalysis}>
-            Analize hazırla
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Button>
-          <p className="mt-3 text-center text-xs leading-5 text-muted-foreground">Bu adım dosyaları yalnızca tarayıcıda hazırlar; henüz sunucuya göndermez.</p>
-        </aside>
-      </div>
-    </section>
-  );
+      <aside className="rounded-3xl border border-border bg-card p-5 shadow-sm xl:sticky xl:top-24" aria-label="Rapor ayarları">
+        <h2 className="text-lg font-semibold">Rapor ayarları</h2>
+        <fieldset disabled={busy} className="mt-5 space-y-4">
+          <label className="block text-sm">{tr.analysis.business}<input className="form-control mt-1" maxLength={100} value={draft.business} onChange={e => setDraft(d => ({ ...d, business: e.target.value }))} /></label>
+          <label className="block text-sm">{tr.analysis.titleLabel}<input className="form-control mt-1" maxLength={100} value={draft.title} onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} /></label>
+          <label className="block text-sm">{tr.analysis.currency}<select className="form-control mt-1" value={draft.currency} onChange={e => setDraft(d => ({ ...d, currency: e.target.value as typeof draft.currency }))}><option>TRY</option><option>USD</option><option>EUR</option></select></label>
+        </fieldset>
+        <p className="mt-5 text-xs leading-5 text-muted-foreground">Free: 10 analiz/gün · 10 dosya/analiz. Yerel sınırlar: 5 MB/dosya, 20 MB ve 50.000 satır/analiz. Tek para birimi; dönüşüm yapılmaz.</p>
+        {busy && <div role="status" className="mt-4 text-sm"><p>{progress < 100 ? `Yükleniyor: %${progress}` : tr.status.processing}</p><progress aria-label="Yükleme ilerlemesi" className="mt-2 w-full accent-purple-700" value={progress} max={100} /></div>}
+        {error && <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{error}</p>}
+        <Button className="mt-5 w-full" disabled={busy || files.length === 0} onClick={submit}>{tr.analysis.start}</Button>
+        {busy && progress < 100 && <Button variant="ghost" className="mt-2 w-full" onClick={cancel}>{tr.analysis.cancel}</Button>}
+        {activeId && <Link className="mt-4 block text-sm underline" to={"/app/analyses/" + activeId}>Son işlemi aç</Link>}
+        <p className="mt-3 text-xs leading-5 text-muted-foreground">Rapor oluştur düğmesi dosyalarınızı yerel backend’e gönderir. AI çağrısı yapılmaz.</p>
+      </aside>
+    </div>
+  </section>;
 }
