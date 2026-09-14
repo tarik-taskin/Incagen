@@ -20,11 +20,12 @@ export function LandingPage() {
   const location = useLocation();
   const requested = location.state?.from;
   const authDestination = typeof requested === "string" && requested.startsWith("/app/") ? requested : "/app/new-analysis";
-  const [authOpen, setAuthOpen] = useState(location.state?.authOpen === true);
+  const [authRequested, setAuthRequested] = useState(false);
+  const authOpen = authRequested || location.state?.authOpen === true;
   const { user } = useAuth();
   const navigate = useNavigate();
   const closeAuth = useCallback(() => {
-    setAuthOpen(false);
+    setAuthRequested(false);
     navigate("/", { replace: true, state: null });
   }, [navigate]);
 
@@ -35,7 +36,7 @@ export function LandingPage() {
       return;
     }
 
-    setAuthOpen(true);
+    setAuthRequested(true);
   }
 
   useEffect(() => {
@@ -108,7 +109,7 @@ export function LandingPage() {
           ))}
         </section>
       </main>
-      <AuthModal open={authOpen} onClose={closeAuth} onAuthenticated={() => navigate(authDestination, { replace: true })} />
+      <AuthModal open={authOpen} onClose={closeAuth} onAuthenticated={() => navigate(authDestination)} />
     </div>
   );
 }

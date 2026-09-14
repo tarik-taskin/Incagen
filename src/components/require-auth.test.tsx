@@ -11,8 +11,8 @@ function LandingState() {
 }
 
 // Gerçek servis açmadan anonim/yükleniyor durumunda korumalı verinin render edilmediğini denetler.
-function renderGate(loading: boolean) {
-  render(<AuthContext.Provider value={{ user: null, loading, error: "" }}><MemoryRouter initialEntries={["/app/new-analysis"]}><Routes><Route path="/" element={<LandingState />} /><Route element={<RequireAuth />}><Route path="/app/new-analysis" element={<p>Özel rapor</p>} /></Route></Routes></MemoryRouter></AuthContext.Provider>);
+function renderGate(loading: boolean, logoutPending = false) {
+  render(<AuthContext.Provider value={{ user: null, loading, error: "" }}><MemoryRouter initialEntries={[{ pathname: "/app/new-analysis", state: logoutPending ? { logoutPending: true } : null }]}><Routes><Route path="/" element={<LandingState />} /><Route element={<RequireAuth />}><Route path="/app/new-analysis" element={<p>Özel rapor</p>} /></Route></Routes></MemoryRouter></AuthContext.Provider>);
 }
 describe("Oturum kapısı", () => {
   it("anonim kullanıcıyı landing üzerindeki giriş modalına yönlendirir", () => {
@@ -24,5 +24,10 @@ describe("Oturum kapısı", () => {
     renderGate(true);
     expect(screen.getByRole("status")).toHaveTextContent("Oturum kontrol ediliyor");
     expect(screen.queryByText("Özel rapor")).not.toBeInTheDocument();
+  });
+  it("çıkış yönlendirmesinde landing modalını açmaz", () => {
+    renderGate(false, true);
+    expect(screen.getByRole("heading", { name: "Landing" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Landing modalı" })).not.toBeInTheDocument();
   });
 });

@@ -8,5 +8,6 @@ export function RequireAuth() {
   const { user, loading } = useAuth();
   const location = useLocation();
   if (loading) return <p role="status" className="p-8">{tr.auth.loading}</p>;
-  return user ? <WorkspaceProvider key={user.uid}><Outlet /></WorkspaceProvider> : <Navigate to="/" state={{ authOpen: true, from: location.pathname }} replace />;
+  if (user) return <WorkspaceProvider key={user.uid}><Outlet /></WorkspaceProvider>;
+  return <Navigate to="/" state={location.state?.logoutPending ? null : { authOpen: true, from: location.pathname }} replace />;
 }

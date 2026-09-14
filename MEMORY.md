@@ -12,7 +12,7 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 ## Tamamlanan özellikler
 
 - Responsive giriş/çalışma alanı, tema, animasyonlu logo, Premium bilgilendirmesi.
-- E-posta/parola kaydı, giriş, korumalı rotalar ve çıkışta taslağın temizlenmesi.
+- E-posta/parola kaydı, giriş, korumalı rotalar, bağlı e-postaya şifre yenileme isteği ve çıkışta taslağın temizlenmesi.
 - Oturum içi çoklu dosya seçimi; CSV için açık sütun/biçim eşleştirmesi.
 - Yerel yükleme, gerçek sayısal rapor, tema uyumlu grafikler ve kaynak özeti.
 - Kullanıcıya özel canlı geçmiş, rapor açma ve kaynaklarla silme.

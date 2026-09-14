@@ -45,6 +45,7 @@ TypeScript Cloud Functions kullanılır; bugünkü küçük CSV işlerinde Cloud
 - Sonuçlar `users/{uid}/analyses/{id}`, kota `users/{uid}/quotas/{day}`, kaynaklar Storage içinde `users/{uid}/analyses/{id}/{fileId}` altında tutulur.
 - Kullanıcı yalnız kendi verilerini okuyabilir. Manifest dışı yükleme ve istemcinin rapor/durum/kota yazması yasaktır. Backend yetkiyi oturum token'ından alır.
 - İç sayfa geçişlerinde dosyalar, eşleştirmeler ve yükleme korunur. Çıkışta yükleme iptal edilir ve taslak temizlenir. Sayfa yenilemede yerel dosyalar yeniden seçilmelidir; kaydedilmiş analizler geçmişte kalır.
+- Oturumdaki kullanıcı şifre değiştirme isteğini yalnız bağlı e-posta adresi için başlatabilir. Canlı Firebase ortamında bağlantı e-postayla iletilir; mevcut yerel emülatör gerçek e-posta teslim etmez.
 - Analizler kullanıcı silene kadar tutulur; mevcut emülatör verisi normal durdurmada kalıcı değildir. Gerçek müşteri için saklama/yedek politikası ayrıca onaylanmalıdır.
 
 ## Sonraki AI ve entegrasyon aşaması

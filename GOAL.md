@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-14 — Furkan / Codex: hesap ve güvenlik ayarları
+
+- [x] Sahip: Furkan — Ayarlar ekranını genişlet; oturum e-postasına parola değiştirme bağlantısı gönderen hesap güvenliği akışını ekle.
+
+Kabul: ayarlar geniş ve responsive bir hesap görünümü sunmalı; kullanıcı bağlı e-posta adresini görmeli; parola sıfırlama isteğinin yüklenme, başarı ve hata durumları açıklanmalı; çıkış ve yerel veri davranışı korunmalı.
+
+Doğrulama: lint, production build, 30 birim/bileşen testi ve 6 masaüstü/mobil tarayıcı senaryosu geçti. Şifre isteğinin doğru e-postaya gitmesi, başarı/hata durumları ve çıkışta modalın açılmaması doğrulandı; kişisel Chrome entegrasyonu kullanılmadı.
+
 ### 2026-09-14 — Furkan / Codex: profesyonel kimlik modalı
 
 - [x] Sahip: Furkan — Giriş ve kayıt modalını modern, doğrulamalı ve sağlayıcı seçenekli bir deneyime dönüştür.
