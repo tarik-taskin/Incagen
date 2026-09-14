@@ -61,7 +61,7 @@ Ana sayfa, açık/koyu tema, responsive uygulama kabuğu ve yeni analiz çalış
 
 Ayrıntılar: [hedefler](GOAL.md), [ürün ve sistem akışı](FLOW.md), [teknik kurallar](RULES.md), [kalıcı bağlam](MEMORY.md) ve [ekip/agent çalışma düzeni](AGENTS.md).
 
-PR açmadan önce şu kontrolleri çalıştır:
+Değişiklikleri `main`e göndermeden önce şu kontrolleri çalıştır:
 
 ```bash
 npm run lint

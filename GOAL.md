@@ -19,6 +19,7 @@ Durum: [~]
 - [ ] Sahip: Atanmadı — Türkçe kaynaklarla i18n temeli.
 - [x] Sahip: Furkan — Vitest, React Testing Library ve Playwright test altyapısı.
 - [x] Sahip: Furkan — GitHub Actions üzerinde lint, birim/bileşen testi, build, masaüstü/mobil tarayıcı ve erişilebilirlik kontrolleri.
+- [x] Sahip: Furkan — Günlük branch/main eşitleme ve koşullu PR çalışma düzenini belgele.
 - [ ] Sahip: Atanmadı — Ortam/bölge kararı sonrası Firebase ortamları ve güvenli environment şablonu.
 
 Kapanış: görevler incelenmiş; CI kontrolleri başarılı; repoda sır veya müşteri verisi yok.
@@ -108,3 +109,4 @@ Aşağıdakiler öneridir, kesin mimari veya tamamlanmış özellik değildir. �
 
 - 2026-09-07 — Tarık'ın onayıyla PR incelemesindeki ürün düzeltmeleri kabul edildi; plan limitleri FLOW.md'de merkezileştirildi, ödeme işi M6'da güncellendi, müşteri segmenti kısıtı kaldırıldı ve ortak değerlendirme gerektiren seçimler açık kararlara taşındı.
 - 2026-09-09 — Premium girişinin ödeme entegrasyonuna kadar bilgilendirme göstermesi ve uygulama içi sekmelerin tarayıcı geçmişinde tek çalışma alanı adımı olarak tutulması kabul edildi.
+- 2026-09-14 — Günlük geliştirmede kişisel branch'lerden doğrulama sonrası doğrudan main'e push edilmesi; Tarık ve Furkan ayrı kod alanlarında paralel ilerlediğinde veya açıkça istendiğinde PR kullanılması kabul edildi.
