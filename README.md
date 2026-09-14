@@ -17,16 +17,16 @@ npm --prefix functions ci
 npx playwright install chromium
 ```
 
-Bir terminalde backend'i başlatın:
-
-```bash
-npm run emulators
-```
-
-İkinci terminalde frontend'i başlatın:
+Frontend ve tüm yerel Firebase servislerini tek terminalde başlatın:
 
 ```bash
 npm run dev
+```
+
+Komut önce Functions'ı derler ve emülatörleri hazırlar, ardından Vite adresini gösterir. Servisleri ayrı terminallerde izlemek isterseniz backend'i `npm run emulators`, frontend'i ikinci terminalde şu komutla başlatabilirsiniz:
+
+```bash
+npm run dev:web
 ```
 
 Vite'ın gösterdiği yerel adresi açın. Yeni hesap oluşturun; gerçek e-posta/parola yerine sentetik test bilgileri kullanın. Firebase login, API anahtarı veya faturalandırma gerekmez.
@@ -46,7 +46,8 @@ Dosyalar iç navigasyonda korunur; tarayıcı yenilemesinde yeniden seçilir. Em
 
 | Komut | Amaç |
 |---|---|
-| `npm run dev` | Yerel frontend |
+| `npm run dev` | Frontend ve tüm yerel Firebase servisleri |
+| `npm run dev:web` | Zaten çalışan emülatörlerle yalnız frontend |
 | `npm run emulators` | Backend derleme ve yerel servisler |
 | `npm run lint` | Kod kalite kontrolü |
 | `npm run test:run` | Birim/bileşen testleri |

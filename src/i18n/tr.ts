@@ -3,7 +3,7 @@ export const tr = {
     login: "Giriş yap", register: "Hesap oluştur", logout: "Çıkış yap",
     email: "E-posta", password: "Parola", loading: "Oturum kontrol ediliyor…",
     local: "Yerel geliştirme ortamı — yalnız sentetik veriler kullanın.",
-    offline: "Yerel servisle bağlantı kurulamadı. Firebase emülatörlerini başlatın.",
+    offline: "Yerel servisle bağlantı kurulamadı. Projeyi npm run dev komutuyla yeniden başlatın.",
     invalid: "E-posta veya parola geçersiz.", exists: "Bu e-posta zaten kayıtlı.",
     weak: "Parola en az 8 karakter olmalı.", generic: "İşlem tamamlanamadı. Yeniden deneyin.",
   },

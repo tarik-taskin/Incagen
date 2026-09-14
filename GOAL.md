@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-14 — Furkan / Codex: tek komutla yerel geliştirme
+
+- [x] Sahip: Furkan — `npm run dev` ile Firebase emülatörlerini ve frontend'i birlikte başlat; giriş ekranındaki bağlantı hatasının eksik backend başlangıcından kaynaklanmasını önle.
+
+Kabul: komut önce Functions'ı derleyip Auth, Firestore, Storage ve Functions emülatörlerini hazır etmeli, ardından Vite'ı başlatmalı; Playwright kendi emülatörleriyle çakışmamalı; hata mesajı doğru başlangıç komutunu göstermeli; README tek ve iki terminal seçeneklerini açıklamalı.
+
+Doğrulama: tek komutla dört Firebase emülatörü ve Vite başarıyla başlatıldı; lint, frontend/Functions production build, 29 birim/bileşen testi ve 6 masaüstü/mobil emülatörlü tarayıcı senaryosu geçti. Playwright'ın `dev:web` ile mevcut emülatörlere bağlandığı ve port çakışması yaratmadığı doğrulandı.
+
 ### 2026-09-14 — Furkan / Codex: plan başına belge boyutu sınırları
 
 - [x] Sahip: Furkan — Free analiz toplamını 30 MB, planlanan Premium analiz toplamını 50 MB yap; dosya başına 5 MB ve mevcut adet/günlük limitleri koru.
