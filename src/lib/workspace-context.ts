@@ -1,9 +1,8 @@
 import { createContext, useContext } from "react";
-import type { ColumnMapping, CreateAnalysis } from "../../functions/src/contracts";
 import type { useFileSelectionState } from "../hooks/use-file-selection";
 export interface Draft {
-  title: string; business: string; currency: CreateAnalysis["currency"];
-  mappings: Record<string, ColumnMapping>;
+  title: string;
+  business: string;
 }
 export interface WorkspaceState {
   selection: ReturnType<typeof useFileSelectionState>;

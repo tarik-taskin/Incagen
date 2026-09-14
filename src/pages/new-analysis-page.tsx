@@ -1,13 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
 import { FileDropzone } from "../components/upload/file-dropzone";
 import { SelectedFileList } from "../components/upload/selected-file-list";
-import { CsvMapping } from "../components/upload/csv-mapping";
 import { Button } from "../components/ui/button";
 import { FREE_PLAN_FILE_LIMIT } from "../features/files/file-rules";
+import { PLAN_RULES } from "../features/plans/plan-rules";
 import { useWorkspace } from "../lib/workspace-context";
 import { tr } from "../i18n/tr";
 
-// Dosya, işletme ve açık sütun eşleştirmelerini gerçek backend raporuna bağlar.
+// Farklı iş belgesi türlerini analiz hazırlığı ve güvenli yerel yükleme akışında birleştirir.
 export function NewAnalysisPage() {
   const { selection, draft, setDraft, busy, progress, error, activeId, start, cancel } = useWorkspace();
   const { files, rejections, addFiles, removeFile, clearFiles, dismissRejections } = selection;
@@ -19,9 +19,8 @@ export function NewAnalysisPage() {
   return <section aria-labelledby="new-analysis-title">
     <p className="text-sm font-semibold text-primary dark:text-secondary">Yeni analiz · Free</p>
     <h1 id="new-analysis-title" className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{tr.analysis.title}</h1>
-    <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">Satış CSV’lerinizi eşleştirin; toplamları, günlük dağılımı ve kategorileri gerçek verinizden hesaplayalım.</p>
+    <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">Belgelerinizi, tablolarınızı, sunumlarınızı, veri dosyalarınızı ve görsellerinizi tek analiz alanında bir araya getirin.</p>
     <p className="mt-2 text-xs text-muted-foreground">{tr.auth.local} {tr.analysis.refresh}</p>
-    <a className="mt-3 inline-block text-sm text-primary underline dark:text-secondary" href="/samples/satis-ornek.csv" download>Sentetik örnek CSV indir (beklenen toplam: 2.244,75 TRY)</a>
     <div className="mt-8 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
       <div className="min-w-0 space-y-6">
         <FileDropzone disabled={busy || files.length >= FREE_PLAN_FILE_LIMIT} onFilesSelected={addFiles} />
@@ -33,23 +32,28 @@ export function NewAnalysisPage() {
         <fieldset disabled={busy} className="min-w-0">
           <SelectedFileList files={files} limit={FREE_PLAN_FILE_LIMIT} onClear={() => { if (!busy) clearFiles(); }} onRemove={id => { if (!busy) removeFile(id); }} />
         </fieldset>
-        {files.filter(f => f.file.name.toLowerCase().endsWith(".csv")).map(item => <CsvMapping key={item.id} item={item} />)}
-        {files.some(f => !f.file.name.toLowerCase().endsWith(".csv")) && <p role="alert" className="rounded-xl border border-border p-4 text-sm">{tr.analysis.csvOnly}</p>}
       </div>
-      <aside className="rounded-3xl border border-border bg-card p-5 shadow-sm xl:sticky xl:top-24" aria-label="Rapor ayarları">
-        <h2 className="text-lg font-semibold">Rapor ayarları</h2>
+      <aside className="rounded-3xl border border-border bg-card p-5 shadow-sm xl:sticky xl:top-24" aria-label="Analiz ayarları">
+        <h2 className="text-lg font-semibold">Analiz ayarları</h2>
         <fieldset disabled={busy} className="mt-5 space-y-4">
           <label className="block text-sm">{tr.analysis.business}<input className="form-control mt-1" maxLength={100} value={draft.business} onChange={e => setDraft(d => ({ ...d, business: e.target.value }))} /></label>
           <label className="block text-sm">{tr.analysis.titleLabel}<input className="form-control mt-1" maxLength={100} value={draft.title} onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} /></label>
-          <label className="block text-sm">{tr.analysis.currency}<select className="form-control mt-1" value={draft.currency} onChange={e => setDraft(d => ({ ...d, currency: e.target.value as typeof draft.currency }))}><option>TRY</option><option>USD</option><option>EUR</option></select></label>
         </fieldset>
-        <p className="mt-5 text-xs leading-5 text-muted-foreground">Free: 10 analiz/gün · 10 dosya/analiz. Yerel sınırlar: 5 MB/dosya, 20 MB ve 50.000 satır/analiz. Tek para birimi; dönüşüm yapılmaz.</p>
+        <div className="mt-5 rounded-2xl border border-primary/10 bg-primary/[0.05] p-3.5 text-xs leading-5 text-muted-foreground dark:border-secondary/10 dark:bg-secondary/[0.05]">
+          <p className="font-semibold text-foreground">{PLAN_RULES.free.label} plan</p>
+          <p>{PLAN_RULES.free.dailyAnalysisLimit} analiz/gün · {PLAN_RULES.free.filesPerAnalysis} belge/analiz · {PLAN_RULES.free.analysisDepth} analiz zekâsı</p>
+        </div>
+        <div className="mt-3 rounded-2xl border border-border/80 p-3.5 text-xs leading-5 text-muted-foreground">
+          <p className="font-semibold text-foreground">Premium bağlantıları</p>
+          <p>{PLAN_RULES.premium.externalSources}</p>
+        </div>
+        <p className="mt-4 text-xs leading-5 text-muted-foreground">Tüm planlar aynı belge formatlarını kabul eder. Yerel sınırlar: 5 MB/dosya ve 20 MB/analiz.</p>
         {busy && <div role="status" className="mt-4 text-sm"><p>{progress < 100 ? `Yükleniyor: %${progress}` : tr.status.processing}</p><progress aria-label="Yükleme ilerlemesi" className="mt-2 w-full accent-purple-700" value={progress} max={100} /></div>}
         {error && <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{error}</p>}
         <Button className="mt-5 w-full" disabled={busy || files.length === 0} onClick={submit}>{tr.analysis.start}</Button>
         {busy && progress < 100 && <Button variant="ghost" className="mt-2 w-full" onClick={cancel}>{tr.analysis.cancel}</Button>}
         {activeId && <Link className="mt-4 block text-sm underline" to={"/app/analyses/" + activeId}>Son işlemi aç</Link>}
-        <p className="mt-3 text-xs leading-5 text-muted-foreground">Rapor oluştur düğmesi dosyalarınızı yerel backend’e gönderir. AI çağrısı yapılmaz.</p>
+        <p className="mt-3 text-xs leading-5 text-muted-foreground">Belgeler yerel backend’de manifest ile doğrulanır ve analize hazırlanır. AI çağrısı henüz yapılmaz.</p>
       </aside>
     </div>
   </section>;

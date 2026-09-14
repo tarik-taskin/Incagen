@@ -77,7 +77,7 @@ export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzone
         {isDragging ? <FilePlus2 className="h-7 w-7" aria-hidden="true" /> : <UploadCloud className="h-7 w-7" aria-hidden="true" />}
       </div>
       <h2 className="relative mt-5 text-xl font-semibold tracking-[-0.03em]">
-        {isDragging ? "Dosyalarınızı buraya bırakın" : "Analiz için dosyalarınızı seçin"}
+        {isDragging ? "Belgelerinizi buraya bırakın" : "Belgelerinizi ekleyin"}
       </h2>
       <p className="relative mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
         İşletme verilerinizi içeren tabloları, belgeleri, sunumları, yapılandırılmış verileri veya görselleri birlikte ekleyebilirsiniz.
@@ -92,9 +92,9 @@ export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzone
         }}
       >
         <FilePlus2 className="h-4 w-4" aria-hidden="true" />
-        Dosyaları seç
+        Belgeleri seç
       </Button>
-      <p className="relative mt-4 text-xs text-muted-foreground">CSV, Excel, PDF, Word, metin, sunum, JSON, XML ve görsel formatları</p>
+      <p className="relative mt-4 text-xs text-muted-foreground">Tablo, PDF, Word, metin, sunum, yapılandırılmış veri ve görsel formatları</p>
       <input
         ref={inputRef}
         className="sr-only"

@@ -16,24 +16,23 @@ function setupUser() {
 }
 
 describe("NewAnalysisPage", () => {
-  it("çoklu dosyaları listeler, analiz hazırlığını açar ve dosya kaldırır", async () => {
+  it("farklı belge türlerini birlikte listeler ve dosya kaldırır", async () => {
     const user = setupUser();
     renderPage();
     const input = screen.getByLabelText("Analiz edilecek dosyaları seç");
-    const sales = new File(["month,total"], "satis.csv", { type: "text/csv", lastModified: 1 });
+    const sheet = new File(["sheet"], "faaliyet.xlsx", { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", lastModified: 1 });
     const report = new File(["report"], "rapor.pdf", { type: "application/pdf", lastModified: 2 });
 
-    await user.upload(input, [sales, report]);
+    await user.upload(input, [sheet, report]);
 
-    expect(screen.getByText("satis.csv")).toBeInTheDocument();
+    expect(screen.getByText("faaliyet.xlsx")).toBeInTheDocument();
     expect(screen.getByText("rapor.pdf")).toBeInTheDocument();
     expect(screen.getByText("2/10 dosya analize hazırlanıyor")).toBeInTheDocument();
+    expect(screen.queryByText("Para birimi")).not.toBeInTheDocument();
+    expect(screen.queryByText(/sütun eşleştirme/i)).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Rapor oluştur" }));
-    expect(screen.getAllByText(/Bu sürüm yalnız CSV işler/).length).toBeGreaterThan(0);
-
-    await user.click(screen.getByRole("button", { name: "satis.csv dosyasını kaldır" }));
-    expect(screen.queryByText("satis.csv")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "faaliyet.xlsx dosyasını kaldır" }));
+    expect(screen.queryByText("faaliyet.xlsx")).not.toBeInTheDocument();
   });
 
   it("yinelenen ve desteklenmeyen dosyaları açıklamalı olarak reddeder", async () => {
@@ -56,12 +55,12 @@ describe("NewAnalysisPage", () => {
     const user = setupUser();
     renderPage();
     const input = screen.getByLabelText("Analiz edilecek dosyaları seç");
-    const files = Array.from({ length: 11 }, (_, index) => new File([String(index)], `dosya-${index}.csv`, { lastModified: index }));
+    const files = Array.from({ length: 11 }, (_, index) => new File([String(index)], `belge-${index}.pdf`, { type: "application/pdf", lastModified: index }));
 
     await user.upload(input, files);
 
     expect(screen.getByText("10/10 dosya analize hazırlanıyor")).toBeInTheDocument();
-    expect(screen.getByText(/dosya-10.csv:/)).toBeInTheDocument();
+    expect(screen.getByText(/belge-10.pdf:/)).toBeInTheDocument();
     expect(input).toBeDisabled();
   });
 });

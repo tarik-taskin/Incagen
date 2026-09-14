@@ -1,6 +1,6 @@
 # Incagen
 
-İşletme verilerinden analiz ve büyüme önerileri üretmeyi amaçlayan uygulama. Mevcut teslimat: yerel hesap, CSV yükleme, gerçek sayısal rapor, grafikler, geçmiş ve kaynaklarıyla silme. Gemini ve canlı bulut entegrasyonu henüz yoktur.
+İşletme verilerinden analiz ve büyüme önerileri üretmeyi amaçlayan uygulama. Mevcut teslimat: yerel hesap, çoklu iş belgesi yükleme, backend manifest doğrulaması, hazırlık özeti, geçmiş ve kaynaklarıyla silme. Gemini ve canlı bulut entegrasyonu henüz yoktur.
 
 ## Gereksinimler
 
@@ -33,14 +33,12 @@ Vite'ın gösterdiği yerel adresi açın. Yeni hesap oluşturun; gerçek e-post
 
 Varsayılan geliştirme modu emülatördür. İsteğe bağlı `.env.example` dosyasını `.env.local` olarak kopyalayabilirsiniz. Bu sürüm yalnız `demo-incagen`, loopback adresi ve emülatör modunu kabul eder; eksik servisleri gerçek bulutla tamamlamaz.
 
-### İlk rapor
+### İlk belge hazırlığı
 
-1. Yeni analiz ekranından sentetik örnek CSV'yi indirin ve seçin.
-2. İşletme ve rapor başlığını doldurun.
-3. Ayırıcı: noktalı virgül; tarih: DD.MM.YYYY; sayı: Türkçe.
-4. Tarih → Tarih, tutar → Tutar, kategori → Kategori eşleştirmelerini seçin.
-5. Rapor oluşturun. Örnek dosyada beklenen toplam **2.244,75 TRY**, satır sayısı **5**.
-6. Geçmişten raporu tekrar açın; silme kaynak dosyaları da kaldırır.
+1. Yeni analiz ekranından sentetik bir tablo, belge, sunum, veri dosyası veya görsel seçin.
+2. İşletme ve analiz başlığını doldurun.
+3. Belgeleri hazırlayın; backend dosya adı, boyutu ve içerik türünü manifestle doğrular.
+4. Geçmişten hazırlık özetini tekrar açın; silme kaynak belgeleri de kaldırır.
 
 Dosyalar iç navigasyonda korunur; tarayıcı yenilemesinde yeniden seçilir. Emülatör kapandığında test hesap ve raporları normalde kaybolur. Kalıcı müşteri depolaması değildir.
 
@@ -64,14 +62,13 @@ Dosyalar iç navigasyonda korunur; tarayıcı yenilemesinde yeniden seçilir. Em
 
 ## Yapı ve teknoloji
 
-React, TypeScript, Vite, React Router, Tailwind, shadcn/ui yaklaşımı, Anime.js, Recharts ve Firebase. Vitest/Testing Library, Playwright/axe ve Firebase emülatör testleri kullanılır.
+React, TypeScript, Vite, React Router, Tailwind, shadcn/ui yaklaşımı, Anime.js ve Firebase. Vitest/Testing Library, Playwright/axe ve Firebase emülatör testleri kullanılır.
 
 - `src/pages`, `src/components`: ekranlar ve ortak arayüz.
 - `src/hooks`, `src/lib`: oturum, taslak, servis ve canlı kayıt bağları.
 - `src/i18n`: Türkçe mesaj sözlüğü temeli; İngilizce henüz yoktur.
-- `functions/src`: paylaşılan analiz sözleşmesi, CSV hesaplama ve backend uçları.
+- `functions/src`: paylaşılan belge sözleşmesi, manifest doğrulama ve backend uçları.
 - `integration`, `e2e`: güvenlik/yaşam döngüsü ve tarayıcı testleri.
-- `public/samples`: yalnız sentetik demo CSV.
 
 Belgeler: [hedefler](GOAL.md), [akış](FLOW.md), [kurallar](RULES.md), [kalıcı bağlam](MEMORY.md), [ekip düzeni](AGENTS.md).
 
@@ -87,6 +84,6 @@ Functions değiştiyse `npm run build:functions`; backend veya kullanıcı akı�
 
 ## Bilinen sınırlar
 
-Yalnız CSV işlenir; boyut ve kota sınırları FLOW.md'dedir. AI, PDF/Office ayrıştırma, Google girişi, Premium ödeme ve canlı yayına geçiş tamamlanmadı. Emülatör testi bulut IAM/App Check testi yerine geçmez.
+Belge içerik ayrıştırması ve AI yorumu henüz yapılmaz; format, boyut ve kota sınırları FLOW.md'dedir. Google Analytics, Microsoft Clarity, Google girişi, Premium ödeme ve canlı yayına geçiş tamamlanmadı. Emülatör testi bulut IAM/App Check testi yerine geçmez.
 
 Bağımlılık denetiminde uygulama ve Functions üretim bağımlılıkları temizdir; Firebase CLI geliştirme zincirinde orta önem seviyesinde uyarılar bulunmaktadır. CLI'yi eski ana sürüme zorlayan `audit fix --force` uygulanmadı. `gaxios → uuid` ve `express → qs` için kontrollü override'lar mevcut API kullanımıyla test edilmiştir.

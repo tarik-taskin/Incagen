@@ -1,47 +1,48 @@
 import { z } from "zod";
 
-export const LIMITS = { files: 10, fileBytes: 5 * 1024 * 1024, totalBytes: 20 * 1024 * 1024, rows: 50_000, daily: 10 } as const;
+export const LIMITS = { files: 10, fileBytes: 5 * 1024 * 1024, totalBytes: 20 * 1024 * 1024, daily: 10 } as const;
+
+export const SUPPORTED_FILE_EXTENSIONS = [
+  "csv", "tsv", "xls", "xlsx", "ods",
+  "pdf", "doc", "docx", "txt", "rtf", "md",
+  "ppt", "pptx", "json", "xml",
+  "jpg", "jpeg", "png", "webp", "gif", "svg", "heic", "heif",
+] as const;
+
+const supportedExtensions = new Set<string>(SUPPORTED_FILE_EXTENSIONS);
+
+// Dosya adını izin verilen iş belgesi ve veri formatlarıyla sınırlar.
+export function hasSupportedExtension(name: string) {
+  const finalDot = name.lastIndexOf(".");
+  return finalDot > -1 && supportedExtensions.has(name.slice(finalDot + 1).toLowerCase());
+}
 
 // UTC saatini İstanbul gün sınırına dönüştürür; kota için istemci saatine güvenilmez.
 export function getQuotaDay(date = new Date()) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
 }
-export const mappingSchema = z.object({
-  dateColumn: z.string().min(1).max(100),
-  amountColumn: z.string().min(1).max(100),
-  categoryColumn: z.string().max(100).default(""),
-  dateFormat: z.enum(["iso", "tr"]),
-  numberFormat: z.enum(["dot", "tr"]),
-  delimiter: z.enum([",", ";"]),
-}).strict().refine(m => new Set([m.dateColumn, m.amountColumn, m.categoryColumn].filter(Boolean)).size === (m.categoryColumn ? 3 : 2), "Sütunlar farklı olmalı.");
 export const createSchema = z.object({
   requestId: z.string().uuid(),
   title: z.string().trim().min(1).max(100),
   business: z.string().trim().min(1).max(100),
-  currency: z.enum(["TRY", "USD", "EUR"]),
   files: z.array(z.object({
-    name: z.string().min(1).max(200).refine(n => n.toLowerCase().endsWith(".csv"), "Yalnız CSV işlenebilir."),
+    name: z.string().min(1).max(200).refine(hasSupportedExtension, "Bu dosya türü desteklenmiyor."),
     size: z.number().int().positive().max(LIMITS.fileBytes),
-    mapping: mappingSchema,
+    contentType: z.string().trim().min(1).max(200),
   }).strict()).min(1).max(LIMITS.files),
 }).strict().refine(v => v.files.reduce((n, f) => n + f.size, 0) <= LIMITS.totalBytes, "Toplam boyut 20 MB'ı aşamaz.");
-export type ColumnMapping = z.infer<typeof mappingSchema>;
 export type CreateAnalysis = z.infer<typeof createSchema>;
 export type AnalysisStatus = "draft" | "uploading" | "processing" | "completed" | "failed" | "deleting";
 export interface Report {
-  version: 1;
-  totalCents: number;
-  rowCount: number;
-  averageCents: number;
-  daily: { date: string; cents: number }[];
-  categories: { category: string; cents: number }[];
-  sources: { name: string; rows: number; blankRows: number }[];
+  version: 2;
+  fileCount: number;
+  totalBytes: number;
+  sources: { name: string; size: number; contentType: string }[];
 }
 export interface Analysis {
   id: string;
   title: string;
   business: string;
-  currency: CreateAnalysis["currency"];
   status: AnalysisStatus;
   createdAt: number;
   updatedAt: number;

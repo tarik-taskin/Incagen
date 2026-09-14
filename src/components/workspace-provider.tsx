@@ -12,7 +12,7 @@ import { tr } from "../i18n/tr";
 // Oturum boyunca dosya taslağını ve yüklemeyi yaşatır; sayfa değişimi işi kesmez.
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const selection = useFileSelectionState();
-  const [draft, setDraft] = useState<Draft>({ title: "", business: "", currency: "TRY", mappings: {} });
+  const [draft, setDraft] = useState<Draft>({ title: "", business: "" });
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
@@ -28,15 +28,15 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     if (lock.current) return;
     setError("");
     if (!selection.files.length) { setError(tr.analysis.empty); return; }
-    if (selection.files.some(f => !f.file.name.toLowerCase().endsWith(".csv"))) { setError(tr.analysis.csvOnly); return; }
     const body = {
-      title: draft.title, business: draft.business, currency: draft.currency,
-      files: selection.files.map(f => ({ name: f.file.name, size: f.file.size, mapping: draft.mappings[f.id] })),
+      title: draft.title,
+      business: draft.business,
+      files: selection.files.map(({ file }) => ({ name: file.name, size: file.size, contentType: file.type || "application/octet-stream" })),
     };
     const signature = JSON.stringify({ body, ids: selection.files.map(f => f.id) });
     if (!request.current || request.current.signature !== signature) request.current = { signature, id: crypto.randomUUID() };
     const parsed = createSchema.safeParse({ ...body, requestId: request.current.id });
-    if (!parsed.success) { setError("İşletme, başlık ve tüm CSV sütunlarını doldurun. Sınırlar: 5 MB/dosya, 20 MB/analiz."); return; }
+    if (!parsed.success) { setError("İşletme ve analiz başlığını doldurun. Sınırlar: 5 MB/dosya, 20 MB/analiz."); return; }
     lock.current = true; cancelled.current = false; setBusy(true); setProgress(0);
     try {
       const services = getServices();
@@ -52,7 +52,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       for (const [i, item] of selection.files.entries()) {
         if (cancelled.current) throw new Error("Yükleme iptal edildi.");
         await new Promise<void>((resolve, reject) => {
-          const upload = uploadBytesResumable(ref(services.storage, data.paths[i]), item.file, { contentType: "text/csv" });
+          const upload = uploadBytesResumable(ref(services.storage, data.paths[i]), item.file, { contentType: item.file.type || "application/octet-stream" });
           task.current = upload;
           upload.on("state_changed", snapshot => setProgress(Math.round((completed + snapshot.bytesTransferred) / total * 100)), reject, resolve);
         });
@@ -60,7 +60,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       }
       task.current = null;
       if (cancelled.current) throw new Error("Yükleme iptal edildi.");
-      await httpsCallable(services.functions, "runAnalysis", { timeout: 130_000 })({ id: data.id });
+      await httpsCallable(services.functions, "prepareAnalysis", { timeout: 130_000 })({ id: data.id });
       return data.id;
     } catch (e) { if (!cancelled.current) setError(userError(e)); else setError("Yükleme iptal edildi; dosyalarınız korundu."); }
     finally { task.current = null; lock.current = false; setBusy(false); }

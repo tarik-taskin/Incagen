@@ -25,7 +25,7 @@ async function register(page: Page) {
   await page.getByLabel("Parola", { exact: true }).fill("Synthetic123!");
   await page.getByLabel("Parola tekrarı", { exact: true }).fill("Synthetic123!");
   await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Verilerinizi analize hazırlayın" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Belgelerinizi analize hazırlayın" })).toBeVisible();
 }
 
 test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru yönetir", async ({ page }) => {
@@ -42,7 +42,7 @@ test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru y
   await expectNoAccessibilityViolations(page);
   await register(page);
   await expect(page).toHaveURL(/\/app\/new-analysis$/);
-  await expect(page.getByRole("heading", { name: "Verilerinizi analize hazırlayın" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Belgelerinizi analize hazırlayın" })).toBeVisible();
 
   await page.getByRole("button", { name: "Premium’a geç" }).click();
   await expect(page.getByRole("region", { name: "Premium üyelik yakında" })).toContainText("PayTR");
@@ -61,7 +61,7 @@ test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru y
   await expect(page.getByRole("heading", { name: "Verilerinizdeki büyüme fırsatlarını keşfedin." })).toBeVisible();
 });
 
-test("çoklu dosya seçimi hazırlanır ve listeden kaldırılabilir", async ({ page }) => {
+test("farklı belge türleri hazırlanır ve listeden kaldırılabilir", async ({ page }) => {
   await page.goto("/app/new-analysis");
   await register(page);
   const fileChooserPromise = page.waitForEvent("filechooser");
@@ -69,17 +69,14 @@ test("çoklu dosya seçimi hazırlanır ve listeden kaldırılabilir", async ({ 
   const fileChooser = await fileChooserPromise;
 
   await fileChooser.setFiles([
-    { name: "satis.csv", mimeType: "text/csv", buffer: Buffer.from("month,total") },
+    { name: "faaliyet.xlsx", mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", buffer: Buffer.from("sheet") },
     { name: "rapor.pdf", mimeType: "application/pdf", buffer: Buffer.from("report") },
   ]);
 
   await expect(page.getByText("2/10 dosya analize hazırlanıyor")).toBeVisible();
-  await expect(page.getByText("satis.csv", { exact: true })).toBeVisible();
+  await expect(page.getByText("faaliyet.xlsx", { exact: true })).toBeVisible();
   await expect(page.getByText("rapor.pdf")).toBeVisible();
-  await page.getByRole("button", { name: "Rapor oluştur" }).click();
-  await expect(page.getByText("Bu sürüm yalnız CSV işler. Diğer dosyaları kaldırıp tekrar deneyin.").first()).toBeVisible();
-
-  await page.getByRole("button", { name: "satis.csv dosyasını kaldır" }).click();
-  await expect(page.getByText("satis.csv", { exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "faaliyet.xlsx dosyasını kaldır" }).click();
+  await expect(page.getByText("faaliyet.xlsx", { exact: true })).toHaveCount(0);
   await expectNoAccessibilityViolations(page);
 });

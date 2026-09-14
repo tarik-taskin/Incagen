@@ -31,9 +31,9 @@ describe("file rules", () => {
   });
 
   it("yinelenen ve desteklenmeyen dosyaları reddederken geçerli dosyaları korur", () => {
-    const existingFile = createFile("mevcut.csv", 10, 10);
+    const existingFile = createFile("mevcut.pdf", 10, 10);
     const existing = [{ id: getFileIdentity(existingFile), file: existingFile, category: "Tablo" as const }];
-    const duplicate = createFile("mevcut.csv", 10, 10);
+    const duplicate = createFile("mevcut.pdf", 10, 10);
     const unsupported = createFile("program.exe");
     const valid = createFile("sunum.pptx");
 
@@ -41,13 +41,13 @@ describe("file rules", () => {
 
     expect(result.accepted.map(({ file }) => file.name)).toEqual(["sunum.pptx"]);
     expect(result.rejected).toEqual(expect.arrayContaining([
-      expect.objectContaining({ fileName: "mevcut.csv", reason: "Bu dosya zaten seçili." }),
+      expect.objectContaining({ fileName: "mevcut.pdf", reason: "Bu dosya zaten seçili." }),
       expect.objectContaining({ fileName: "program.exe", reason: "Bu dosya türü şu anda desteklenmiyor." }),
     ]));
   });
 
   it("plan sınırını aynı seçim grubunda da uygular", () => {
-    const files = Array.from({ length: 11 }, (_, index) => createFile(`rapor-${index}.csv`, index + 1, index));
+    const files = Array.from({ length: 11 }, (_, index) => createFile(`belge-${index}.pdf`, index + 1, index));
     const result = validateFileSelection([], files, 10);
 
     expect(result.accepted).toHaveLength(10);

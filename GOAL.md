@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-14 — Furkan / Codex: genel belge hazırlama hattı
+
+- [x] Sahip: Furkan — Yeni analiz deneyimini para birimi ve tabloya özel eşleştirmelerden arındır; desteklenen tüm iş belgesi türlerini frontend, Storage ve Functions boyunca hazırla.
+
+Kabul: dosya seçimi belirli bir tablo formatına özel mesaj veya kontrol göstermemeli; para birimi kaldırılmalı; Free/Premium format kapsamı aynı olmalı ve yalnız adet, analiz derinliği ve planlanan harici bağlantılar farklılaşmalı; backend dosya adı/boyutu/içerik türünü doğrulayıp AI çağrısı yapmadan hazırlık özeti üretmeli; eski satış raporu bileşenleri ve parser bağımlılıkları kaldırılmalı.
+
+Doğrulama: lint, frontend/Functions production build, 27 birim/bileşen testi, 2 Firebase emülatör entegrasyon senaryosu ve 6 masaüstü/mobil tarayıcı senaryosu geçti. Genel belge seçimi, Storage manifest doğrulaması, kota/idempotency, kullanıcı izolasyonu, hazırlık özeti ve kaynaklarıyla silme doğrulandı.
+
 ### 2026-09-14 — Furkan / Codex: hesap ve güvenlik ayarları
 
 - [x] Sahip: Furkan — Ayarlar ekranını genişlet; oturum e-postasına parola değiştirme bağlantısı gönderen hesap güvenliği akışını ekle.
@@ -41,21 +49,21 @@ Doğrulama: lint, production build, 23 birim/bileşen testi ve modal erişilebil
 
 ### 2026-09-14 — Furkan / Codex: Tarık branch entegrasyonu
 
-- [x] Sahip: Furkan — Tarık'ın yerel CSV rapor hattını güncel main ve Furkan branch'iyle birleştirip doğrula.
+- [x] Sahip: Furkan — Tarık'ın yerel rapor prototipini güncel main ve Furkan branch'iyle birleştirip doğrula.
 
 Kabul: Tarık'ın sekiz commit'i ve yeni doğrudan main çalışma düzeni korunmalı; lint, frontend/backend build ve birim testleri geçmeli; local/remote main ile local/remote Furkan branch'leri aynı commit'te olmalı.
 
 Doğrulama: lint, frontend/backend build, 22 birim/bileşen testi, 2 emülatör entegrasyon senaryosu ve 6 masaüstü/mobil tarayıcı testi geçti.
 
-### 2026-09-11 — Tarık / Codex: CSV'den gerçek rapora
+### 2026-09-11 — Tarık / Codex: ilk yerel rapor prototipi
 
 - [x] Sahip: Tarık — Uzantı güvenliği, kalıcı oturum içi dosya seçimi ve regresyon testleri.
 - [x] Sahip: Tarık — Yerel Firebase Auth/Firestore/Storage/Functions ve e-posta/parola oturumu.
-- [x] Sahip: Tarık — CSV eşleştirme, backend hesaplama, kota ve idempotent analiz akışı.
+- [x] Sahip: Tarık — Tablo eşleştirme, backend hesaplama, kota ve idempotent analiz akışı; genel belge hazırlama hattı bu prototipin yerini aldı.
 - [x] Sahip: Tarık — Sonuç rotası, grafikler, gerçek geçmiş ve kaynaklarla birlikte silme.
 - [x] Sahip: Tarık — Türkçe sözlük, emülatör izolasyon testleri, tarayıcı testleri ve kurulum belgeleri.
 
-Kabul: sentetik CSV ile kayıt → yükleme → hesaplanan rapor → geçmiş → silme akışı ve iki kullanıcı izolasyonu doğrulanmalı. AI yorumu ve bulut yayını kapsam dışıdır.
+Kabul: sentetik tablo verisiyle kayıt → yükleme → hesaplanan rapor → geçmiş → silme akışı ve iki kullanıcı izolasyonu doğrulanmalı. AI yorumu ve bulut yayını kapsam dışıdır.
 
 Doğrulama: lint, frontend/backend build, 22 birim/bileşen testi, 2 emülatör entegrasyon senaryosu ve 6 masaüstü/mobil tarayıcı testi geçti. Son tarayıcı koşusunda retry gerekmedi; iki temada axe erişilebilirlik kontrolü yapıldı. GitHub üzerindeki CI sonucu henüz doğrulanmadı.
 
@@ -91,9 +99,9 @@ Kalite kapısı: oturum yenileme, çıkış, korumalı rotalar ve yetkisiz eriş
 ## M2 — Dosya yükleme ve hazırlama
 
 - [x] Sahip: Furkan — FLOW.md formatları için istemci doğrulaması, tekrar kontrolü, Free plan sınırı ve seçim yönetimi; backend normalizasyonu sonraki adımdır.
-- [x] Sahip: Tarık — CSV için Free kota, dosya/satır/boyut sınırları ve İstanbul takvim günü kontrolü.
+- [x] Sahip: Tarık — İlk tablo prototipi için Free kota ve İstanbul takvim günü kontrolü; geçerli genel belge sınırları FLOW.md'ye taşındı.
 - [x] Sahip: Tarık — Yerel Storage yükleme, ilerleme, iptal ve aynı oturumda yeniden deneme.
-- [x] Sahip: Tarık — Açık CSV eşleştirmesi, hatalı kayıt reddi ve kaynak özeti.
+- [x] Sahip: Tarık — İlk tablo prototipinde açık kolon eşleştirmesi ve kaynak özeti; bu akış genel belge hazırlama deneyimiyle değiştirildi.
 - [ ] Sahip: Atanmadı — Bozuk/parolalı/zararlı dosya kontrolleri ve kaynak referansları.
 - [ ] Sahip: Atanmadı — Kısmi hata görünümü ve geçerli dosyalarla devam onayı.
 
@@ -104,14 +112,14 @@ Kalite kapısı: format fixture'ları, kota sınırları, yetkilendirme ve kısm
 - [ ] Sahip: Atanmadı — Servis seçimi sonrası arka plan iş yönetimi.
 - [ ] Sahip: Atanmadı — Uygunluk kontrolü ve FLOW.md ana model yapılandırması.
 - [ ] Sahip: Atanmadı — Sürümlü JSON Schema, kaynak ve sayısal metrik doğrulama.
-- [x] Sahip: Tarık — CSV hattında idempotent kota, hata iadesi ve süre aşımı sonrası kullanıcı tetiklemeli retry.
+- [x] Sahip: Tarık — Hazırlama hattında idempotent kota, hata iadesi ve süre aşımı sonrası kullanıcı tetiklemeli retry.
 - [ ] Sahip: Atanmadı — AI için kalıcı kuyruk ve sınırlı otomatik retry.
 
 Kalite kapısı: şema, hata/retry, kota ve kullanıcı izolasyonu entegrasyon testleri başarılı.
 
 ## M4 — Sonuçlar ve geçmiş
 
-- [x] Sahip: Tarık — CSV sonucu için KPI, Recharts grafikleri ve erişilebilir tablo karşılıkları.
+- [x] Sahip: Furkan — Genel belgeler için doğrulanmış kaynak ve hazırlık özeti; AI bulgu ve grafikleri sonraki aşamaya bırakıldı.
 - [ ] Sahip: Atanmadı — AI bulgu ve öneri ekranları.
 - [ ] Sahip: Atanmadı — Kaynak referansı, güven düzeyi ve çıkarım etiketleri.
 - [x] Sahip: Tarık — Kullanıcıya özel Firestore geçmişini listeleme ve kayıtlı raporu açma.
@@ -153,7 +161,7 @@ Aşağıdakiler sonraki aşamanın açık kararlarıdır. Bugünkü yerel akış
 - Veri modeli: UID modelinden workspaceId tabanlı ekip desteğine geçiş zamanı.
 - PDF: MVP içinde mi, sonraki milestone'da mı?
 - Saklama: kullanıcı silene kadar tutma önerisi yerine süre, silme ve yedek politikası birlikte belirlenmeli.
-- Dosya boyutu: FLOW.md geçici CSV sınırlarının gerçek yük testleriyle güncellenmesi.
+- Dosya boyutu: FLOW.md geçici belge sınırlarının gerçek yük testleriyle güncellenmesi.
 - Hedef müşteri profilleri: doğrulanana kadar işletme-genel yaklaşım.
 
 ## Açık riskler
@@ -168,7 +176,7 @@ Aşağıdakiler sonraki aşamanın açık kararlarıdır. Bugünkü yerel akış
 
 ## Karar günlüğü
 
-- 2026-09-11 — Tarık'ın karar yetkisiyle bugünkü işler Tarık/Codex'e aittir; Furkan'a yeni iş atanmadı. Yerel emülatör, e-posta/parola, UID izolasyonu, TypeScript Functions ve deterministik CSV raporu uygulandı. Kota, geçici sınırlar ve silme davranışı FLOW.md'dedir. AI, gerçek bulut, ödeme ve diğer formatların işlenmesi kapsam dışıdır.
+- 2026-09-11 — Tarık'ın karar yetkisiyle bugünkü işler Tarık/Codex'e aittir; Furkan'a yeni iş atanmadı. Yerel emülatör, e-posta/parola, UID izolasyonu, TypeScript Functions ve deterministik tablo raporu prototipi uygulandı. Bu prototip daha sonra genel belge hazırlama hattıyla değiştirildi. Kota, geçici sınırlar ve silme davranışı FLOW.md'dedir; AI, gerçek bulut ve ödeme kapsam dışıdır.
 - 2026-09-07 — Tarık'ın onayıyla PR incelemesindeki ürün düzeltmeleri kabul edildi; plan limitleri FLOW.md'de merkezileştirildi, ödeme işi M6'da güncellendi, müşteri segmenti kısıtı kaldırıldı ve ortak değerlendirme gerektiren seçimler açık kararlara taşındı.
 - 2026-09-09 — Premium girişinin ödeme entegrasyonuna kadar bilgilendirme göstermesi ve uygulama içi sekmelerin tarayıcı geçmişinde tek çalışma alanı adımı olarak tutulması kabul edildi.
 - 2026-09-14 — Günlük geliştirmede kişisel branch'lerden doğrulama sonrası doğrudan main'e push edilmesi; Tarık ve Furkan ayrı kod alanlarında paralel ilerlediğinde veya açıkça istendiğinde PR kullanılması kabul edildi.

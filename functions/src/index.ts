@@ -5,13 +5,14 @@ import { getStorage } from "firebase-admin/storage";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { z } from "zod";
 import { createSchema, getQuotaDay, LIMITS, type CreateAnalysis } from "./contracts";
-import { calculateReport, CsvError } from "./csv";
 
 initializeApp({ projectId: "demo-incagen", storageBucket: "demo-incagen.appspot.com" });
 const db = getFirestore();
 const bucket = getStorage().bucket();
 const options = { region: "europe-west1", timeoutSeconds: 120, memory: "512MiB" as const };
 const idSchema = z.object({ id: z.string().uuid() }).strict();
+
+class FileValidationError extends Error {}
 
 // Yerel prototipte eksik emülatör ayarının gerçek Firebase servislerine erişmesini engeller.
 function requireLocal(uid: string | undefined) {
@@ -30,7 +31,7 @@ export const createAnalysis = onCall(options, async request => {
   const input = parsed.data;
   const ref = db.doc(`users/${uid}/analyses/${input.requestId}`);
   const fingerprint = createHash("sha256").update(JSON.stringify(input)).digest("hex");
-  const manifest = Object.fromEntries(input.files.map((file, i) => [`file-${i}.csv`, file]));
+  const manifest = Object.fromEntries(input.files.map((file, i) => [`file-${i}`, file]));
   await db.runTransaction(async tx => {
     const existing = await tx.get(ref);
     if (existing.exists) {
@@ -38,13 +39,13 @@ export const createAnalysis = onCall(options, async request => {
       if (existing.data()?.status === "deleting") throw new HttpsError("failed-precondition", "Analiz siliniyor.");
       return;
     }
-    tx.create(ref, { title: input.title, business: input.business, currency: input.currency, manifest, fingerprint, status: "uploading", attempts: 0, createdAt: Date.now(), updatedAt: Date.now() });
+    tx.create(ref, { title: input.title, business: input.business, manifest, fingerprint, status: "uploading", attempts: 0, createdAt: Date.now(), updatedAt: Date.now() });
   });
   return { id: input.requestId, paths: Object.keys(manifest).map(key => `users/${uid}/analyses/${input.requestId}/${key}`) };
 });
 
-// Yüklenmiş kaynakları kilitleyip doğrular; aynı işin eşzamanlı çağrıları tek kota ve tek sonuç kullanır.
-export const runAnalysis = onCall(options, async request => {
+// Yüklenmiş belgeleri kilitleyip doğrular; aynı hazırlığın eşzamanlı çağrıları tek kota ve tek sonuç kullanır.
+export const prepareAnalysis = onCall(options, async request => {
   const uid = requireLocal(request.auth?.uid);
   const parsed = idSchema.safeParse(request.data);
   if (!parsed.success) throw new HttpsError("invalid-argument", "Geçersiz analiz kimliği.");
@@ -71,29 +72,26 @@ export const runAnalysis = onCall(options, async request => {
   });
   if (!work) return { id: ref.id };
   try {
-    const sources = [];
+    const sources: { name: string; size: number; contentType: string }[] = [];
     let totalBytes = 0;
     for (const [key, entry] of Object.entries(work.manifest as Record<string, CreateAnalysis["files"][number]>)) {
       const file = bucket.file(`users/${uid}/analyses/${ref.id}/${key}`);
       const [metadata] = await file.getMetadata();
       const size = Number(metadata.size);
       totalBytes += size;
-      if (size !== entry.size || size > LIMITS.fileBytes || totalBytes > LIMITS.totalBytes || metadata.contentType !== "text/csv") throw new CsvError(`${entry.name}: Dosya boyutu veya türü geçersiz.`);
-      const [buffer] = await file.download({ validation: false });
-      let text: string;
-      try { text = new TextDecoder("utf-8", { fatal: true }).decode(buffer); }
-      catch { throw new CsvError(`${entry.name}: UTF-8 kodlaması gerekli.`); }
-      if (text.includes("\u0000")) throw new CsvError(`${entry.name}: İkili içerik CSV olarak işlenemez.`);
-      sources.push({ name: entry.name, mapping: entry.mapping, text });
+      if (size !== entry.size || size > LIMITS.fileBytes || totalBytes > LIMITS.totalBytes || metadata.contentType !== entry.contentType) {
+        throw new FileValidationError(`${entry.name}: Dosya boyutu veya içerik türü manifest ile eşleşmiyor.`);
+      }
+      sources.push({ name: entry.name, size, contentType: entry.contentType });
     }
-    const report = calculateReport(sources);
+    const report = { version: 2 as const, fileCount: sources.length, totalBytes, sources };
     await db.runTransaction(async tx => {
       const current = await tx.get(ref);
       if (current.data()?.attempt === attempt && current.data()?.status === "processing") tx.update(ref, { status: "completed", report, updatedAt: Date.now() });
     });
     return { id: ref.id };
   } catch (error) {
-    const message = error instanceof CsvError ? error.message : "İşlem tamamlanamadı. Dosyaları kontrol edip yeniden deneyin.";
+    const message = error instanceof FileValidationError ? error.message : "Belgeler hazırlanamadı. Dosyaları kontrol edip yeniden deneyin.";
     await db.runTransaction(async tx => {
       const current = await tx.get(ref);
       const quota = await tx.get(quotaRef);
@@ -101,7 +99,7 @@ export const runAnalysis = onCall(options, async request => {
       tx.update(ref, { status: "failed", error: message, updatedAt: Date.now() });
       tx.set(quotaRef, { used: Math.max(0, (quota.data()?.used ?? 0) - 1) });
     });
-    throw new HttpsError(error instanceof CsvError ? "invalid-argument" : "internal", message);
+    throw new HttpsError(error instanceof FileValidationError ? "invalid-argument" : "internal", message);
   }
 });
 

@@ -1,13 +1,7 @@
 import { PLAN_RULES } from "../plans/plan-rules";
+import { LIMITS, SUPPORTED_FILE_EXTENSIONS } from "../../../functions/src/contracts";
 
 export const FREE_PLAN_FILE_LIMIT: number = PLAN_RULES.free.filesPerAnalysis;
-
-export const SUPPORTED_FILE_EXTENSIONS = [
-  "csv", "tsv", "xls", "xlsx", "ods",
-  "pdf", "doc", "docx", "txt", "rtf", "md",
-  "ppt", "pptx", "json", "xml",
-  "jpg", "jpeg", "png", "webp", "gif", "svg", "heic", "heif",
-] as const;
 
 export const SUPPORTED_FILE_ACCEPT = SUPPORTED_FILE_EXTENSIONS
   .map((extension) => `.${extension}`)
@@ -76,6 +70,7 @@ export function validateFileSelection(
   const accepted: PreparedFile[] = [];
   const rejected: FileRejection[] = [];
   const knownIds = new Set(existingFiles.map(({ id }) => id));
+  let selectedBytes = existingFiles.reduce((total, { file }) => total + file.size, 0);
 
   incomingFiles.forEach((file, index) => {
     const id = getFileIdentity(file);
@@ -83,10 +78,14 @@ export function validateFileSelection(
 
     if (!isSupportedFile(file)) {
       reason = "Bu dosya türü şu anda desteklenmiyor.";
+    } else if (file.size === 0 || file.size > LIMITS.fileBytes) {
+      reason = "Dosya boş olamaz ve 5 MB sınırını aşamaz.";
     } else if (knownIds.has(id)) {
       reason = "Bu dosya zaten seçili.";
     } else if (existingFiles.length + accepted.length >= limit) {
       reason = `Free planda bir analiz için en fazla ${limit} dosya seçebilirsiniz.`;
+    } else if (selectedBytes + file.size > LIMITS.totalBytes) {
+      reason = "Bir analizdeki belgelerin toplamı 20 MB sınırını aşamaz.";
     }
 
     if (reason) {
@@ -95,6 +94,7 @@ export function validateFileSelection(
     }
 
     knownIds.add(id);
+    selectedBytes += file.size;
     accepted.push({ id, file, category: getFileCategory(file) });
   });
 

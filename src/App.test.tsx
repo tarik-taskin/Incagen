@@ -66,7 +66,7 @@ describe("App routes", () => {
   it("uygulama kökünü yeni analiz ekranına yönlendirir", async () => {
     renderApp("/app");
 
-    expect(await screen.findByRole("heading", { name: "Verilerinizi analize hazırlayın" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Belgelerinizi analize hazırlayın" })).toBeInTheDocument();
   });
 
   it("uygulama kabuğu içinde geçmişten ayarlara geçer", async () => {
@@ -87,7 +87,7 @@ describe("App routes", () => {
     const premiumNotice = screen.getByRole("region", { name: "Premium üyelik yakında" });
     expect(premiumNotice).toHaveTextContent("PayTR");
 
-    await user.click(screen.getByRole("heading", { name: "Verilerinizi analize hazırlayın" }));
+    await user.click(screen.getByRole("heading", { name: "Belgelerinizi analize hazırlayın" }));
     expect(screen.queryByRole("region", { name: "Premium üyelik yakında" })).not.toBeInTheDocument();
   });
   it("bilinmeyen adresleri güvenli biçimde landing sayfasına döndürür", async () => {
