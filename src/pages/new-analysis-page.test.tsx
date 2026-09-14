@@ -30,6 +30,8 @@ describe("NewAnalysisPage", () => {
     expect(screen.getByText("2/10 dosya analize hazırlanıyor")).toBeInTheDocument();
     expect(screen.queryByText("Para birimi")).not.toBeInTheDocument();
     expect(screen.queryByText(/sütun eşleştirme/i)).not.toBeInTheDocument();
+    expect(screen.getByText("5 MB/dosya · 30 MB/analiz")).toBeInTheDocument();
+    expect(screen.getByText("5 MB/dosya · 50 MB/analiz")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "faaliyet.xlsx dosyasını kaldır" }));
     expect(screen.queryByText("faaliyet.xlsx")).not.toBeInTheDocument();

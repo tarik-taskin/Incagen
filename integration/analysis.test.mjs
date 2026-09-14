@@ -37,6 +37,10 @@ test("belge hazırlığı, izolasyon, idempotency, doğrulama ve silme", { timeo
     const remove = httpsCallable(a.functions, "deleteAnalysis");
     const request = input();
     await assert.rejects(create({ ...request, files: Array.from({ length: 11 }, () => request.files[0]) }));
+    const limitFiles = Array.from({ length: 6 }, (_, index) => ({ name: `belge-${index}.pdf`, size: 5 * 1024 * 1024, contentType: "application/pdf" }));
+    await assert.rejects(create({ ...input(), files: [...limitFiles, { name: "fazla.pdf", size: 1, contentType: "application/pdf" }] }));
+    const atLimit = (await create({ ...input(), files: limitFiles })).data;
+    await remove({ id: atLimit.id });
     const { data } = await create(request);
     const again = await create(request);
     assert.equal(data.id, again.data.id);

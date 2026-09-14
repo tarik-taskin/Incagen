@@ -13,6 +13,13 @@ function createFile(name: string, size = 4, lastModified = 1) {
   return new File(["x".repeat(size)], name, { lastModified });
 }
 
+// Büyük bellek ayırmadan sınır dosyalarının gerçek File boyutunu taklit eder.
+function sizedFile(name: string, size: number) {
+  const file = createFile(name);
+  Object.defineProperty(file, "size", { value: size });
+  return file;
+}
+
 describe("file rules", () => {
   it("prototip anahtarlarını dosya uzantısı olarak kabul etmez", () => {
     for (const extension of ["constructor", "__proto__", "prototype"]) {
@@ -53,6 +60,14 @@ describe("file rules", () => {
     expect(result.accepted).toHaveLength(10);
     expect(result.rejected).toHaveLength(1);
     expect(result.rejected[0]?.reason).toContain("en fazla 10 dosya");
+  });
+
+  it("Free planda toplam 30 MB'ı kabul edip fazlasını reddeder", () => {
+    const files = Array.from({ length: 6 }, (_, index) => sizedFile(`belge-${index}.pdf`, 5 * 1024 * 1024));
+    const result = validateFileSelection([], [...files, sizedFile("fazla.pdf", 1)]);
+
+    expect(result.accepted).toHaveLength(6);
+    expect(result.rejected[0]?.reason).toContain("30 MB");
   });
 
   it("dosya boyutlarını okunabilir biçimde gösterir", () => {

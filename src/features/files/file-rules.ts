@@ -79,13 +79,13 @@ export function validateFileSelection(
     if (!isSupportedFile(file)) {
       reason = "Bu dosya türü şu anda desteklenmiyor.";
     } else if (file.size === 0 || file.size > LIMITS.fileBytes) {
-      reason = "Dosya boş olamaz ve 5 MB sınırını aşamaz.";
+      reason = `Dosya boş olamaz ve ${LIMITS.fileBytes / 1024 ** 2} MB sınırını aşamaz.`;
     } else if (knownIds.has(id)) {
       reason = "Bu dosya zaten seçili.";
     } else if (existingFiles.length + accepted.length >= limit) {
       reason = `Free planda bir analiz için en fazla ${limit} dosya seçebilirsiniz.`;
     } else if (selectedBytes + file.size > LIMITS.totalBytes) {
-      reason = "Bir analizdeki belgelerin toplamı 20 MB sınırını aşamaz.";
+      reason = `Free planda bir analizdeki belgelerin toplamı ${LIMITS.totalBytes / 1024 ** 2} MB sınırını aşamaz.`;
     }
 
     if (reason) {

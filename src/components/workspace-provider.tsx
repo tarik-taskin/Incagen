@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { httpsCallable } from "firebase/functions";
 import { ref, uploadBytesResumable, type UploadTask } from "firebase/storage";
 import { getDoc, doc } from "firebase/firestore";
-import { createSchema, type CreateAnalysis } from "../../functions/src/contracts";
+import { createSchema, LIMITS, type CreateAnalysis } from "../../functions/src/contracts";
 import { useFileSelectionState } from "../hooks/use-file-selection";
 import { WorkspaceContext, type Draft } from "../lib/workspace-context";
 import { getServices } from "../lib/firebase";
@@ -36,7 +36,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     const signature = JSON.stringify({ body, ids: selection.files.map(f => f.id) });
     if (!request.current || request.current.signature !== signature) request.current = { signature, id: crypto.randomUUID() };
     const parsed = createSchema.safeParse({ ...body, requestId: request.current.id });
-    if (!parsed.success) { setError("İşletme ve analiz başlığını doldurun. Sınırlar: 5 MB/dosya, 20 MB/analiz."); return; }
+    if (!parsed.success) { setError(`İşletme ve analiz başlığını doldurun. Free sınırları: ${LIMITS.fileBytes / 1024 ** 2} MB/dosya, ${LIMITS.totalBytes / 1024 ** 2} MB/analiz.`); return; }
     lock.current = true; cancelled.current = false; setBusy(true); setProgress(0);
     try {
       const services = getServices();

@@ -1,5 +1,6 @@
 import { Crown, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { PLAN_RULES } from "../features/plans/plan-rules";
 import { Button } from "./ui/button";
 
 // Premium üyelik girişini görünür tutar ve ödeme akışı bağlanana kadar kısa ürün bilgisini gösterir.
@@ -58,7 +59,7 @@ export function PremiumUpgrade() {
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
           <p id="premium-upgrade-title" className="pr-8 text-sm font-semibold" role="status" aria-live="polite">Premium üyelik yakında</p>
-          <p className="mt-1.5 text-xs leading-5 text-muted-foreground">Daha derin analiz, daha geniş dosya hakkı ve harici veri kaynakları PayTR ödeme akışı hazır olduğunda burada sunulacak.</p>
+          <p className="mt-1.5 text-xs leading-5 text-muted-foreground">{PLAN_RULES.premium.dailyAnalysisLimit} analiz/gün, {PLAN_RULES.premium.filesPerAnalysis} dosya/analiz, {PLAN_RULES.premium.fileBytes / 1024 ** 2} MB/dosya ve toplam {PLAN_RULES.premium.totalBytes / 1024 ** 2} MB; {PLAN_RULES.premium.analysisDepth} analiz zekâsı ile {PLAN_RULES.premium.externalSources} PayTR ödeme akışı hazır olduğunda sunulacak.</p>
         </div>
       )}
     </div>

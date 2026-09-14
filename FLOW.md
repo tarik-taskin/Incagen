@@ -14,6 +14,8 @@ Bu sürüm yalnız `demo-incagen` Firebase emülatörleriyle çalışır. Gerçe
 |---|---|---|
 | Günlük analiz | 10 | 30 |
 | Analiz başına dosya | 10 | 30 |
+| Dosya başına boyut | 5 MB | 5 MB |
+| Analiz başına toplam boyut | 30 MB | 50 MB |
 | Belge formatları | Tablo, belge, sunum, veri ve görsel | Tablo, belge, sunum, veri ve görsel |
 | AI derinliği | Medium | High |
 | Harici kaynak | Yok | Önce Google Analytics, sonra Microsoft Clarity |
@@ -24,7 +26,7 @@ Premium ödeme ve yetkilendirmeleri henüz uygulanmadı. Mevcut oturumlar Free k
 
 - Free ve Premium aynı format kapsamını kullanır: tablolar, PDF/Word/metin belgeleri, sunumlar, JSON/XML verileri ve yaygın görsel formatları.
 - Çalıştırılabilir veya ürün kapsamı dışındaki dosya türleri kabul edilmez. Uzantı kontrolü istemcide ve backend sözleşmesinde aynı listeden uygulanır.
-- Geçici geliştirme sınırları iki planda da 5 MB/dosya ve 20 MB/analizdir. Analiz başına adet sınırı Free için 10, Premium için 30'dur.
+- Geçici geliştirme sınırları iki planda da 5 MB/dosya; analiz toplamı Free için 30 MB, planlanan Premium için 50 MB'dır. Analiz başına adet sınırı Free için 10, Premium için 30'dur. Premium yetkilendirmesi gelene kadar backend yalnız Free sınırını uygular.
 - Dosya adı, boyutu ve içerik türü değişmez manifestte tutulur. Storage yalnız manifestte bulunan ve manifestle tam eşleşen kaynağı kabul eder.
 - Mevcut sürüm belge içeriğini ayrıştırmaz veya AI sonucu üretmez. Hazırlık özeti belge adedi, toplam boyut ve doğrulanmış kaynak listesini gösterir.
 - Sonuç ekranında “Belgeler hazırlandı — AI yorumu henüz eklenmedi” ibaresi zorunludur.

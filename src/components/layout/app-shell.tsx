@@ -58,7 +58,7 @@ export function AppShell() {
             <span className="text-sm font-semibold">{PLAN_RULES.free.label} plan</span>
             <span className="rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold text-primary dark:bg-secondary/10 dark:text-secondary">{PLAN_RULES.free.dailyAnalysisLimit}/gün</span>
           </div>
-          <p className="mt-2 text-xs leading-5 text-muted-foreground">Her analizde en fazla {PLAN_RULES.free.filesPerAnalysis} dosya kullanabilirsiniz.</p>
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">Her analizde en fazla {PLAN_RULES.free.filesPerAnalysis} dosya, dosya başına {PLAN_RULES.free.fileBytes / 1024 ** 2} MB ve toplam {PLAN_RULES.free.totalBytes / 1024 ** 2} MB kullanabilirsiniz.</p>
         </div>
       </aside>
 

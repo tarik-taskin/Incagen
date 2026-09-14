@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-14 — Furkan / Codex: plan başına belge boyutu sınırları
+
+- [x] Sahip: Furkan — Free analiz toplamını 30 MB, planlanan Premium analiz toplamını 50 MB yap; dosya başına 5 MB ve mevcut adet/günlük limitleri koru.
+
+Kabul: yeni analiz arayüzü ve hata mesajları doğru plan sınırlarını göstermeli; istemci ve backend Free için 30 MB toplamı uygulamalı; Premium 50 MB sınırı ortak plan sözleşmesinde tanımlanmalı ancak Premium yetkilendirmesi açılmadan kullanıcıya uygulanmamalı; FLOW.md ve sınır testleri güncellenmeli.
+
+Doğrulama: lint, frontend/Functions production build, 29 birim/bileşen testi, 2 Firebase emülatör entegrasyon senaryosu ve 6 masaüstü/mobil tarayıcı senaryosu geçti. Tam 30 MB Free isteğinin kabulü, 30 MB + 1 baytın reddi ve Premium 50 MB plan değerinin arayüzde gösterimi doğrulandı.
+
 ### 2026-09-14 — Furkan / Codex: genel belge hazırlama hattı
 
 - [x] Sahip: Furkan — Yeni analiz deneyimini para birimi ve tabloya özel eşleştirmelerden arındır; desteklenen tüm iş belgesi türlerini frontend, Storage ve Functions boyunca hazırla.

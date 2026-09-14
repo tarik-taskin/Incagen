@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-export const LIMITS = { files: 10, fileBytes: 5 * 1024 * 1024, totalBytes: 20 * 1024 * 1024, daily: 10 } as const;
+export const LIMITS = { files: 10, fileBytes: 5 * 1024 * 1024, totalBytes: 30 * 1024 * 1024, daily: 10 } as const;
+export const PREMIUM_LIMITS = { files: 30, fileBytes: LIMITS.fileBytes, totalBytes: 50 * 1024 * 1024, daily: 30 } as const;
 
 export const SUPPORTED_FILE_EXTENSIONS = [
   "csv", "tsv", "xls", "xlsx", "ods",
@@ -30,7 +31,7 @@ export const createSchema = z.object({
     size: z.number().int().positive().max(LIMITS.fileBytes),
     contentType: z.string().trim().min(1).max(200),
   }).strict()).min(1).max(LIMITS.files),
-}).strict().refine(v => v.files.reduce((n, f) => n + f.size, 0) <= LIMITS.totalBytes, "Toplam boyut 20 MB'ı aşamaz.");
+}).strict().refine(v => v.files.reduce((n, f) => n + f.size, 0) <= LIMITS.totalBytes, "Free planda toplam boyut 30 MB'ı aşamaz.");
 export type CreateAnalysis = z.infer<typeof createSchema>;
 export type AnalysisStatus = "draft" | "uploading" | "processing" | "completed" | "failed" | "deleting";
 export interface Report {
