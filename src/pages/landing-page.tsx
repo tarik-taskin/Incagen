@@ -1,10 +1,12 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { animate, stagger } from "animejs";
 import { ArrowRight, BarChart3, FileSearch, ShieldCheck, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AnimatedLogo } from "../components/animated-logo";
+import { AuthModal } from "../components/auth-modal";
 import { ThemeToggle } from "../components/theme-toggle";
 import { Button } from "../components/ui/button";
+import { useAuth } from "../lib/auth-context";
 
 const valueItems = [
   { icon: FileSearch, title: "Verilerinizi birleştirin", description: "Tablo, belge ve görsellerinizi tek analiz alanında hazırlayın." },
@@ -15,6 +17,20 @@ const valueItems = [
 // Marka giriş sayfasını animasyonlu tanıtım, güven mesajları ve uygulama çağrısıyla sunar.
 export function LandingPage() {
   const pageRef = useRef<HTMLDivElement>(null);
+  const [authOpen, setAuthOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const closeAuth = useCallback(() => setAuthOpen(false), []);
+
+  // Oturum varsa çalışma alanına geçer; yoksa landing üzerinde kimlik modalını açar.
+  function startAnalysis() {
+    if (user) {
+      navigate("/app/new-analysis");
+      return;
+    }
+
+    setAuthOpen(true);
+  }
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !pageRef.current) return;
@@ -64,8 +80,8 @@ export function LandingPage() {
             İşletme verilerinizi tek çalışma alanında hazırlayın; Incagen analizleri, içgörüleri ve uygulanabilir önerileri anlaşılır sonuçlara dönüştürsün.
           </p>
           <div data-reveal className="mt-8 flex flex-col gap-3 opacity-0 sm:flex-row">
-            <Button asChild size="default" className="h-12 rounded-xl px-6 text-base shadow-lg shadow-primary/20">
-              <Link to="/app/new-analysis">Analize başla <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            <Button type="button" size="default" className="h-12 rounded-xl px-6 text-base shadow-lg shadow-primary/20" onClick={startAnalysis}>
+              Analize başla <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
             <Button asChild variant="outline" size="default" className="h-12 rounded-xl bg-card/60 px-6 text-base backdrop-blur-xl">
               <a href="#nasil-calisir">Nasıl çalışır?</a>
@@ -86,6 +102,7 @@ export function LandingPage() {
           ))}
         </section>
       </main>
+      <AuthModal open={authOpen} onClose={closeAuth} onAuthenticated={() => navigate("/app/new-analysis")} />
     </div>
   );
 }

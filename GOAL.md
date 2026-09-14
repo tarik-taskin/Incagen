@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-14 — Furkan / Codex: landing üzerinde kimlik modalı
+
+- [x] Sahip: Furkan — “Analize başla” çağrısında landing sayfasını terk etmeden giriş/kayıt modalını göster.
+
+Kabul: oturumsuz kullanıcı landing üzerinde erişilebilir modalı görmeli; modal kapanabilmeli; başarılı kimlik işleminden sonra yeni analiz alanına geçilmeli; doğrudan korumalı rota erişimi güvenli giriş sayfasına yönlenmeye devam etmeli.
+
+Doğrulama: lint, production build, 23 birim/bileşen testi ve modal erişilebilirliğini de kapsayan 6 masaüstü/mobil tarayıcı testi geçti; aydınlık ve karanlık tema davranışı doğrulandı.
+
 ### 2026-09-14 — Furkan / Codex: Tarık branch entegrasyonu
 
 - [x] Sahip: Furkan — Tarık'ın yerel CSV rapor hattını güncel main ve Furkan branch'iyle birleştirip doğrula.

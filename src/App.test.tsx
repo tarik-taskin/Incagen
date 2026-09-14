@@ -1,10 +1,13 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { ThemeProvider } from "./components/theme-provider";
-vi.mock("./lib/auth-context", () => ({ useAuth: () => ({ user: { uid: "test-user", email: "test@example.test" }, loading: false, error: "" }) }));
+const authState = vi.hoisted(() => ({
+  current: { user: { uid: "test-user", email: "test@example.test" } as { uid: string; email: string } | null, loading: false, error: "" },
+}));
+vi.mock("./lib/auth-context", () => ({ useAuth: () => authState.current }));
 vi.mock("./hooks/use-analyses", () => ({ useAnalyses: () => ({ rows: [], loading: false, error: "" }) }));
 
 // Uygulamayı istenen başlangıç adresinde gerçek tema ve router sağlayıcılarıyla oluşturur.
@@ -19,6 +22,22 @@ function renderApp(initialPath: string) {
 }
 
 describe("App routes", () => {
+  beforeEach(() => {
+    authState.current = { user: { uid: "test-user", email: "test@example.test" }, loading: false, error: "" };
+  });
+
+  it("oturumsuz analiz çağrısında landing üzerinde giriş modalını açar ve kapatır", async () => {
+    const user = userEvent.setup();
+    authState.current = { user: null, loading: false, error: "" };
+    renderApp("/");
+
+    await user.click(screen.getByRole("button", { name: /Analize başla/ }));
+    expect(screen.getByRole("dialog", { name: "Giriş yap" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Giriş penceresini kapat" }));
+    expect(screen.queryByRole("dialog", { name: "Giriş yap" })).not.toBeInTheDocument();
+  });
+
   it("iç sayfalar arasında dosya seçimini korur", async () => {
     const user = userEvent.setup();
     renderApp("/app/new-analysis");

@@ -35,7 +35,10 @@ test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru y
   await page.getByRole("button", { name: "Karanlık moda geç" }).click();
   await expect(page.locator("html")).toHaveClass(/dark/);
 
-  await page.getByRole("link", { name: /Analize başla/ }).click();
+  await page.getByRole("button", { name: /Analize başla/ }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("dialog", { name: "Giriş yap" })).toBeVisible();
+  await expectNoAccessibilityViolations(page);
   await register(page);
   await expect(page).toHaveURL(/\/app\/new-analysis$/);
   await expect(page.getByRole("heading", { name: "Verilerinizi analize hazırlayın" })).toBeVisible();
