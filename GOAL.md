@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-14 — Furkan / Codex: profesyonel kimlik modalı
+
+- [x] Sahip: Furkan — Giriş ve kayıt modalını modern, doğrulamalı ve sağlayıcı seçenekli bir deneyime dönüştür.
+
+Kabul: iki modda e-posta geçerlilik geri bildirimi ve parola görünürlüğü bulunmalı; kayıt modunda parola tekrarı, canlı 8 karakter/büyük harf/rakam/özel karakter ölçütleri ve davet kodu alanı gösterilmeli; Google, Apple ve Microsoft seçenekleri pasif “yakında” arayüzü olarak sunulmalı; mevcut yerel e-posta/parola işlemi korunmalı.
+
+Doğrulama: lint, production build ve yeni form etkileşimlerini kapsayan 27 birim/bileşen testi geçti. Tarayıcı entegrasyonu kullanılmadı; mevcut masaüstü/mobil senaryolar yeni kayıt alanlarına uyarlandı.
+
 ### 2026-09-14 — Furkan / Codex: giriş rotasını kaldırma ve çıkış dönüşü
 
 - [x] Sahip: Furkan — `/login` rotasını kaldır; korumalı erişimde landing modalını kullan ve başarılı çıkıştan sonra ana sayfaya dön.

@@ -8,9 +8,10 @@ test("kayıt, CSV, gerçek rapor, geçmiş, silme ve çıkış", async ({ page }
   await page.goto("/app/new-analysis");
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole("dialog", { name: "Giriş yap" })).toBeVisible();
-  await page.getByRole("button", { name: "Hesabım yok, hesap oluştur" }).click();
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
   await page.getByLabel("E-posta", { exact: true }).fill(`report-${crypto.randomUUID()}@example.test`);
   await page.getByLabel("Parola", { exact: true }).fill("Synthetic123!");
+  await page.getByLabel("Parola tekrarı", { exact: true }).fill("Synthetic123!");
   await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Verilerinizi analize hazırlayın" })).toBeVisible();
   await page.getByLabel("Analiz edilecek dosyaları seç").setInputFiles({
