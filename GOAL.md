@@ -7,6 +7,15 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-18 — Tarık / Codex: belge ayrıştırma temeli
+
+- [~] Sahip: Tarık — Gerçekte işlenen formatlarla frontend/backend destek matrisini eşitle.
+- [~] Sahip: Tarık — Kaynak konumu, parser sürümü, uyarı ve içerik parçalarını taşıyan ortak belge modelini ekle.
+- [~] Sahip: Tarık — Metin/veri, CSV/TSV, XLSX, PDF, görsel, DOCX ve PPTX ayrıştırıcılarını güvenli sınırlarla uygula.
+- [~] Sahip: Tarık — Ayrıştırılmış özetleri mevcut hazırlama sonucuna bağla; bozuk veya içerikle uyuşmayan dosyaları reddet.
+
+Kabul: yalnız gerçekten ayrıştırılan uzantılar seçilebilmeli; her kaynak kararlı bir hash ve konumlu içerik parçaları üretmeli; arşiv, satır/hücre, metin ve parça sınırları backend'de uygulanmalı; bozuk/parolalı/yanlış tür dosyaları kota iadesiyle başarısız olmalı; sentetik fixture'lar, entegrasyon akışı, lint ve build kontrolleri geçmeli. Gemini çağrısı, tavsiye ve grafik üretimi bu teslimatın kapsamında değildir.
+
 ### 2026-09-14 — Furkan / Codex: kimlik sonrası hazırlık geçişi
 
 - [x] Sahip: Furkan — Giriş/kayıt sosyal seçeneklerindeki geçici “yakında” metnini kaldır; başarılı Firebase kimlik işleminden sonra 3 saniyelik markalı hazırlık geçişi göster.

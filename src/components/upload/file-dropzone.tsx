@@ -80,7 +80,7 @@ export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzone
         {isDragging ? "Belgelerinizi buraya bırakın" : "Belgelerinizi ekleyin"}
       </h2>
       <p className="relative mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-        İşletme verilerinizi içeren tabloları, belgeleri, sunumları, yapılandırılmış verileri veya görselleri birlikte ekleyebilirsiniz.
+        İşletme verilerinizi içeren modern tabloları, belgeleri, sunumları, yapılandırılmış verileri veya görselleri birlikte ekleyebilirsiniz.
       </p>
       <Button
         type="button"
@@ -94,7 +94,7 @@ export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzone
         <FilePlus2 className="h-4 w-4" aria-hidden="true" />
         Belgeleri seç
       </Button>
-      <p className="relative mt-4 text-xs text-muted-foreground">Tablo, PDF, Word, metin, sunum, yapılandırılmış veri ve görsel formatları</p>
+      <p className="relative mt-4 text-xs text-muted-foreground">PDF · DOCX · PPTX · XLSX/CSV · TXT/MD/JSON · PNG/JPEG/WebP</p>
       <input
         ref={inputRef}
         className="sr-only"

@@ -1,5 +1,11 @@
 import { PLAN_RULES } from "../plans/plan-rules";
-import { LIMITS, SUPPORTED_FILE_EXTENSIONS } from "../../../functions/src/contracts";
+import {
+  getSupportedExtension,
+  LIMITS,
+  SUPPORTED_FILE_EXTENSIONS,
+  SUPPORTED_FILE_FORMATS,
+  type DocumentCategory,
+} from "../../../functions/src/contracts";
 
 export const FREE_PLAN_FILE_LIMIT: number = PLAN_RULES.free.filesPerAnalysis;
 
@@ -7,7 +13,7 @@ export const SUPPORTED_FILE_ACCEPT = SUPPORTED_FILE_EXTENSIONS
   .map((extension) => `.${extension}`)
   .join(",");
 
-export type FileCategory = "Tablo" | "Belge" | "Sunum" | "Veri" | "Görsel";
+export type FileCategory = DocumentCategory;
 
 export interface PreparedFile {
   id: string;
@@ -21,15 +27,6 @@ export interface FileRejection {
   reason: string;
 }
 
-const extensionCategoryMap: Record<string, FileCategory> = {
-  csv: "Tablo", tsv: "Tablo", xls: "Tablo", xlsx: "Tablo", ods: "Tablo",
-  pdf: "Belge", doc: "Belge", docx: "Belge", txt: "Belge", rtf: "Belge", md: "Belge",
-  ppt: "Sunum", pptx: "Sunum",
-  json: "Veri", xml: "Veri",
-  jpg: "Görsel", jpeg: "Görsel", png: "Görsel", webp: "Görsel", gif: "Görsel",
-  svg: "Görsel", heic: "Görsel", heif: "Görsel",
-};
-
 // Dosya adındaki son uzantıyı küçük harfli ve karşılaştırılabilir biçimde döndürür.
 export function getFileExtension(fileName: string) {
   const finalDot = fileName.lastIndexOf(".");
@@ -38,12 +35,13 @@ export function getFileExtension(fileName: string) {
 
 // Dosyanın desteklenen ürün formatlarından birine ait olup olmadığını istemci tarafında kontrol eder.
 export function isSupportedFile(file: File) {
-  return Object.prototype.hasOwnProperty.call(extensionCategoryMap, getFileExtension(file.name));
+  return getSupportedExtension(file.name) !== null;
 }
 
 // Dosyayı arayüzde gösterilecek iş verisi kategorisine eşler.
 export function getFileCategory(file: File): FileCategory {
-  return isSupportedFile(file) ? extensionCategoryMap[getFileExtension(file.name)] : "Belge";
+  const extension = getSupportedExtension(file.name);
+  return extension ? SUPPORTED_FILE_FORMATS[extension].category : "Belge";
 }
 
 // Aynı dosyanın tek seçimde veya sonraki seçimlerde tekrar eklenmesini belirlemek için kararlı bir kimlik üretir.

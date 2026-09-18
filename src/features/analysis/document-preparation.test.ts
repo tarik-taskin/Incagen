@@ -24,6 +24,9 @@ describe("Belge hazırlama sözleşmesi", () => {
     expect(createSchema.safeParse(request()).success).toBe(true);
     expect(hasSupportedExtension("SUNUM.PPTX")).toBe(true);
     expect(hasSupportedExtension("notlar.md")).toBe(true);
+    for (const deferred of ["eski.xls", "eski.doc", "eski.ppt", "tablo.ods", "tarama.heic", "vektor.svg"]) {
+      expect(hasSupportedExtension(deferred)).toBe(false);
+    }
   });
 
   it("çalıştırılabilir dosyayı ve dosya boyutu sınırı ihlalini reddeder", () => {
