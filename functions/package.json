@@ -4,6 +4,9 @@
   "overrides": {
     "gaxios": {
       "uuid": "^11.1.1"
+    },
+    "exceljs": {
+      "uuid": "^11.1.1"
     }
   },
   "main": "lib/index.js",
@@ -14,11 +17,20 @@
     "build": "tsc"
   },
   "dependencies": {
+    "csv-parse": "^7.0.2",
+    "exceljs": "^4.4.0",
+    "fast-xml-parser": "^5.11.1",
     "firebase-admin": "^14.4.0",
     "firebase-functions": "^7.3.2",
+    "jszip": "^3.10.2",
+    "mammoth": "^1.12.3",
+    "pdf-parse": "^2.4.5",
+    "yauzl": "^3.4.0",
     "zod": "^4.6.2"
   },
   "devDependencies": {
+    "@types/yauzl": "^3.4.0",
+    "pdf-lib": "^1.17.1",
     "typescript": "^7.0.2"
   }
 }
