@@ -24,7 +24,7 @@ export function AnalysisPage() {
     setBusy(true);
     setActionError("");
     try {
-      await httpsCallable(getServices().functions, name, { timeout: 130_000 })({ id });
+      await httpsCallable(getServices().functions, name, { timeout: 310_000 })({ id });
       if (name === "deleteAnalysis") navigate("/app/history", { replace: true });
     } catch (actionFailure) {
       setActionError(userError(actionFailure));
@@ -43,15 +43,17 @@ export function AnalysisPage() {
     <p className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm dark:border-secondary/20">{tr.analysis.disclaimer}</p>
     {(analysis.error || actionError) && <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{actionError || analysis.error}</p>}
     {analysis.status === "uploading" && <p className="mt-5 text-sm">Yükleme tamamlanmadıysa Yeni analiz sayfasından aynı belgelerle devam edin.</p>}
-    {analysis.status === "processing" && <p className="mt-5 text-sm">Belgeler doğrulanıyor; sayfadan ayrılabilirsiniz. İki buçuk dakikadan uzun sürerse yeniden denemek güvenlidir.</p>}
+    {analysis.status === "processing" && <p className="mt-5 text-sm">Belgelerin içeriği ayrıştırılıyor; sayfadan ayrılabilirsiniz. Beş dakikadan uzun sürerse yeniden denemek güvenlidir.</p>}
     {analysis.status === "completed" && report && <>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-2xl border border-border bg-card p-5"><Files className="h-5 w-5 text-primary dark:text-secondary" aria-hidden="true" /><p className="mt-3 text-sm text-muted-foreground">Hazırlanan belge</p><p className="mt-2 text-2xl font-semibold">{report.fileCount.toLocaleString("tr-TR")}</p></div>
         <div className="rounded-2xl border border-border bg-card p-5"><HardDrive className="h-5 w-5 text-primary dark:text-secondary" aria-hidden="true" /><p className="mt-3 text-sm text-muted-foreground">Toplam kaynak boyutu</p><p className="mt-2 text-2xl font-semibold">{formatFileSize(report.totalBytes)}</p></div>
+        <div className="rounded-2xl border border-border bg-card p-5"><FileCheck2 className="h-5 w-5 text-primary dark:text-secondary" aria-hidden="true" /><p className="mt-3 text-sm text-muted-foreground">İçerik parçası</p><p className="mt-2 text-2xl font-semibold">{report.totalChunks.toLocaleString("tr-TR")}</p></div>
+        <div className="rounded-2xl border border-border bg-card p-5"><FileCheck2 className="h-5 w-5 text-primary dark:text-secondary" aria-hidden="true" /><p className="mt-3 text-sm text-muted-foreground">Ayrıştırılan karakter</p><p className="mt-2 text-2xl font-semibold">{report.totalCharacters.toLocaleString("tr-TR")}</p></div>
       </div>
       <section className="mt-6 rounded-3xl border border-border bg-card p-5 sm:p-6" aria-labelledby="prepared-sources-title">
-        <div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"><FileCheck2 className="h-5 w-5" aria-hidden="true" /></span><div><h2 id="prepared-sources-title" className="font-semibold">Belgeler analize hazır</h2><p className="text-sm text-muted-foreground">Dosya adı, boyutu ve içerik türü backend manifestiyle doğrulandı.</p></div></div>
-        <ul className="mt-5 divide-y divide-border/70 rounded-2xl border border-border/70" aria-label="Hazırlanan belgeler">{report.sources.map((source, index) => <li key={`${source.name}-${index}`} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm"><span className="break-all font-medium">{source.name}</span><span className="text-xs text-muted-foreground">{formatFileSize(source.size)} · {source.contentType}</span></li>)}</ul>
+        <div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"><FileCheck2 className="h-5 w-5" aria-hidden="true" /></span><div><h2 id="prepared-sources-title" className="font-semibold">Belgelerin içeriği ayrıştırıldı</h2><p className="text-sm text-muted-foreground">Dosya imzası, içerik türü ve güvenli ayrıştırma sınırları backend tarafından doğrulandı.</p></div></div>
+        <ul className="mt-5 divide-y divide-border/70 rounded-2xl border border-border/70" aria-label="Hazırlanan belgeler">{report.sources.map(source => <li key={source.id} className="px-4 py-3 text-sm"><div className="flex flex-wrap items-center justify-between gap-2"><span className="break-all font-medium">{source.name}</span><span className="text-xs text-muted-foreground">{source.category} · {formatFileSize(source.size)} · {source.detectedMime}</span></div><p className="mt-1 text-xs text-muted-foreground">{source.chunkCount.toLocaleString("tr-TR")} parça · {source.characterCount.toLocaleString("tr-TR")} karakter{source.metadata.pages ? ` · ${source.metadata.pages} sayfa` : ""}{source.metadata.sheets ? ` · ${source.metadata.sheets} çalışma sayfası` : ""}{source.metadata.slides ? ` · ${source.metadata.slides} slayt` : ""}{source.metadata.width && source.metadata.height ? ` · ${source.metadata.width}×${source.metadata.height}px` : ""}</p>{source.warnings.length > 0 && <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-amber-700 dark:text-amber-300">{source.warnings.map((warning, index) => <li key={`${source.id}-warning-${index}`}>{warning}</li>)}</ul>}</li>)}</ul>
       </section>
       <section className="mt-6 rounded-3xl border border-primary/15 bg-primary/[0.05] p-5 dark:border-secondary/15 dark:bg-secondary/[0.05]" aria-labelledby="next-step-title">
         <div className="flex gap-3"><Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary dark:text-secondary" aria-hidden="true" /><div><h2 id="next-step-title" className="font-semibold">Sonraki analiz katmanı</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">AI yorumları henüz bağlı değil. Premium plan için planlanan kaynak bağlantıları: {PLAN_RULES.premium.externalSources}.</p></div></div>

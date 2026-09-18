@@ -1,15 +1,17 @@
 import { createHash, randomUUID } from "node:crypto";
+import { gzipSync } from "node:zlib";
 import { initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { z } from "zod";
-import { createSchema, getQuotaDay, LIMITS, type CreateAnalysis } from "./contracts";
+import { createSchema, getQuotaDay, LIMITS, type CreateAnalysis, type ReportSource } from "./contracts";
+import { countDocumentCharacters, DocumentParseError, parseDocument } from "./parsing";
 
 initializeApp({ projectId: "demo-incagen", storageBucket: "demo-incagen.appspot.com" });
 const db = getFirestore();
 const bucket = getStorage().bucket();
-const options = { region: "europe-west1", timeoutSeconds: 120, memory: "512MiB" as const };
+const options = { region: "europe-west1", timeoutSeconds: 300, memory: "1GiB" as const };
 const idSchema = z.object({ id: z.string().uuid() }).strict();
 
 class FileValidationError extends Error {}
@@ -72,8 +74,10 @@ export const prepareAnalysis = onCall(options, async request => {
   });
   if (!work) return { id: ref.id };
   try {
-    const sources: { name: string; size: number; contentType: string }[] = [];
+    const sources: ReportSource[] = [];
     let totalBytes = 0;
+    let totalChunks = 0;
+    let totalCharacters = 0;
     for (const [key, entry] of Object.entries(work.manifest as Record<string, CreateAnalysis["files"][number]>)) {
       const file = bucket.file(`users/${uid}/analyses/${ref.id}/${key}`);
       const [metadata] = await file.getMetadata();
@@ -82,9 +86,37 @@ export const prepareAnalysis = onCall(options, async request => {
       if (size !== entry.size || size > LIMITS.fileBytes || totalBytes > LIMITS.totalBytes || metadata.contentType !== entry.contentType) {
         throw new FileValidationError(`${entry.name}: Dosya boyutu veya içerik türü manifest ile eşleşmiyor.`);
       }
-      sources.push({ name: entry.name, size, contentType: entry.contentType });
+      const [data] = await file.download();
+      let parsed;
+      try {
+        parsed = await parseDocument({ sourceId: key, fileName: entry.name, contentType: entry.contentType, data });
+      } catch (error) {
+        if (error instanceof DocumentParseError) throw new FileValidationError(`${entry.name}: ${error.message}`);
+        throw error;
+      }
+      const characterCount = countDocumentCharacters(parsed);
+      totalChunks += parsed.chunks.length;
+      totalCharacters += characterCount;
+      const artifactPath = `derived/${uid}/analyses/${ref.id}/${key}.json.gz`;
+      await bucket.file(artifactPath).save(gzipSync(Buffer.from(JSON.stringify(parsed))), {
+        resumable: false,
+        metadata: { contentType: "application/gzip", cacheControl: "private, no-store", metadata: { sha256: parsed.sha256, parserVersion: parsed.parserVersion } },
+      });
+      sources.push({
+        id: key,
+        name: entry.name,
+        size,
+        declaredContentType: entry.contentType,
+        detectedMime: parsed.detectedMime,
+        sha256: parsed.sha256,
+        category: parsed.category,
+        chunkCount: parsed.chunks.length,
+        characterCount,
+        warnings: parsed.warnings,
+        metadata: parsed.metadata,
+      });
     }
-    const report = { version: 2 as const, fileCount: sources.length, totalBytes, sources };
+    const report = { version: 3 as const, fileCount: sources.length, totalBytes, totalChunks, totalCharacters, sources };
     await db.runTransaction(async tx => {
       const current = await tx.get(ref);
       if (current.data()?.attempt === attempt && current.data()?.status === "processing") tx.update(ref, { status: "completed", report, updatedAt: Date.now() });
@@ -92,6 +124,7 @@ export const prepareAnalysis = onCall(options, async request => {
     return { id: ref.id };
   } catch (error) {
     const message = error instanceof FileValidationError ? error.message : "Belgeler hazırlanamadı. Dosyaları kontrol edip yeniden deneyin.";
+    await bucket.deleteFiles({ prefix: `derived/${uid}/analyses/${ref.id}/` }).catch(() => undefined);
     await db.runTransaction(async tx => {
       const current = await tx.get(ref);
       const quota = await tx.get(quotaRef);
@@ -124,6 +157,7 @@ export const deleteAnalysis = onCall(options, async request => {
   });
   if (exists) {
     await bucket.deleteFiles({ prefix: `users/${uid}/analyses/${ref.id}/` });
+    await bucket.deleteFiles({ prefix: `derived/${uid}/analyses/${ref.id}/` });
     await ref.delete();
   }
   return { deleted: true };

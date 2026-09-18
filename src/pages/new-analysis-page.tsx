@@ -56,7 +56,7 @@ export function NewAnalysisPage() {
         <Button className="mt-5 w-full" disabled={busy || files.length === 0} onClick={submit}>{tr.analysis.start}</Button>
         {busy && progress < 100 && <Button variant="ghost" className="mt-2 w-full" onClick={cancel}>{tr.analysis.cancel}</Button>}
         {activeId && <Link className="mt-4 block text-sm underline" to={"/app/analyses/" + activeId}>Son işlemi aç</Link>}
-        <p className="mt-3 text-xs leading-5 text-muted-foreground">Belgeler yerel backend’de manifest ile doğrulanır ve analize hazırlanır. AI çağrısı henüz yapılmaz.</p>
+        <p className="mt-3 text-xs leading-5 text-muted-foreground">Belgeler yerel backend’de içerik imzasıyla doğrulanır, ayrıştırılır ve kaynak konumlarıyla hazırlanır. AI çağrısı henüz yapılmaz.</p>
       </aside>
     </div>
   </section>;

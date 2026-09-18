@@ -15,7 +15,7 @@ test("kayıt, belge hazırlığı, geçmiş, silme ve çıkış", async ({ page 
   await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Belgelerinizi analize hazırlayın" })).toBeVisible();
   await page.getByLabel("Analiz edilecek dosyaları seç").setInputFiles({
-    name: "faaliyet-ozeti.pdf", mimeType: "application/pdf",
+    name: "faaliyet-ozeti.txt", mimeType: "text/plain",
     buffer: Buffer.from("Sentetik faaliyet özeti"),
   });
   await page.getByLabel("İşletme adı", { exact: true }).fill("Sentetik İşletme");
@@ -24,13 +24,14 @@ test("kayıt, belge hazırlığı, geçmiş, silme ve çıkış", async ({ page 
   await nav.getByRole("link", { name: "Ayarlar" }).click();
   await nav.getByRole("link", { name: "Yeni analiz" }).click();
   await expect(page.getByLabel("Analiz başlığı", { exact: true })).toHaveValue("Eylül faaliyet analizi");
-  await expect(page.getByText("faaliyet-ozeti.pdf", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Belgeleri hazırla", exact: true }).click();
+  await expect(page.getByText("faaliyet-ozeti.txt", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Belgeleri ayrıştır", exact: true }).click();
   await expect(page).toHaveURL(/\/app\/analyses\//, { timeout: 30000 });
   await expect(page.getByText("Analize hazır", { exact: true })).toBeVisible();
-  await expect(page.getByText("Belgeler hazırlandı — AI yorumu henüz eklenmedi")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Belgeler analize hazır" })).toBeVisible();
-  await expect(page.getByText("faaliyet-ozeti.pdf", { exact: true })).toBeVisible();
+  await expect(page.getByText("Belge içerikleri ayrıştırıldı — AI yorumu henüz eklenmedi")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Belgelerin içeriği ayrıştırıldı" })).toBeVisible();
+  await expect(page.getByText("faaliyet-ozeti.txt", { exact: true })).toBeVisible();
+  await expect(page.getByText("Sentetik faaliyet özeti".length.toLocaleString("tr-TR"), { exact: true })).toBeVisible();
   for (const mode of ["light", "dark"]) {
     const dark = await page.locator("html").evaluate(e => e.classList.contains("dark"));
     if (dark !== (mode === "dark")) await page.getByRole("button", { name: /moda geç/ }).click();

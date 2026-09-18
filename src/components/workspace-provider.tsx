@@ -60,7 +60,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       }
       task.current = null;
       if (cancelled.current) throw new Error("Yükleme iptal edildi.");
-      await httpsCallable(services.functions, "prepareAnalysis", { timeout: 130_000 })({ id: data.id });
+      await httpsCallable(services.functions, "prepareAnalysis", { timeout: 310_000 })({ id: data.id });
       return data.id;
     } catch (e) { if (!cancelled.current) setError(userError(e)); else setError("Yükleme iptal edildi; dosyalarınız korundu."); }
     finally { task.current = null; lock.current = false; setBusy(false); }

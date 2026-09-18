@@ -9,9 +9,9 @@ export const tr = {
   },
   analysis: {
     title: "Belgelerinizi analize hazırlayın", reportTitle: "Belge hazırlık özeti",
-    disclaimer: "Belgeler hazırlandı — AI yorumu henüz eklenmedi",
+    disclaimer: "Belge içerikleri ayrıştırıldı — AI yorumu henüz eklenmedi",
     titleLabel: "Analiz başlığı", business: "İşletme adı",
-    start: "Belgeleri hazırla", retry: "Yeniden dene", cancel: "Yüklemeyi iptal et",
+    start: "Belgeleri ayrıştır", retry: "Yeniden dene", cancel: "Yüklemeyi iptal et",
     refresh: "Dosyalar sayfalar arasında korunur. Tarayıcıyı yenilerseniz yeniden seçmeniz gerekir.",
     empty: "Önce en az bir belge ekleyin.", deleted: "Analiz ve kaynak belgeler silindi.",
     delete: "Analizi ve belgeleri sil", confirm: "Analiz ve kaynak belgeler kalıcı olarak silinsin mi?",
