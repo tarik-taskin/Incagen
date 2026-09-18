@@ -9,12 +9,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ### 2026-09-18 — Tarık / Codex: belge ayrıştırma temeli
 
-- [~] Sahip: Tarık — Gerçekte işlenen formatlarla frontend/backend destek matrisini eşitle.
-- [~] Sahip: Tarık — Kaynak konumu, parser sürümü, uyarı ve içerik parçalarını taşıyan ortak belge modelini ekle.
-- [~] Sahip: Tarık — Metin/veri, CSV/TSV, XLSX, PDF, görsel, DOCX ve PPTX ayrıştırıcılarını güvenli sınırlarla uygula.
-- [~] Sahip: Tarık — Ayrıştırılmış özetleri mevcut hazırlama sonucuna bağla; bozuk veya içerikle uyuşmayan dosyaları reddet.
+- [x] Sahip: Tarık — Gerçekte işlenen formatlarla frontend/backend destek matrisini eşitle.
+- [x] Sahip: Tarık — Kaynak konumu, parser sürümü, uyarı ve içerik parçalarını taşıyan ortak belge modelini ekle.
+- [x] Sahip: Tarık — Metin/veri, CSV/TSV, XLSX, PDF, görsel, DOCX ve PPTX ayrıştırıcılarını güvenli sınırlarla uygula.
+- [x] Sahip: Tarık — Ayrıştırılmış özetleri mevcut hazırlama sonucuna bağla; bozuk veya içerikle uyuşmayan dosyaları reddet.
 
 Kabul: yalnız gerçekten ayrıştırılan uzantılar seçilebilmeli; her kaynak kararlı bir hash ve konumlu içerik parçaları üretmeli; arşiv, satır/hücre, metin ve parça sınırları backend'de uygulanmalı; bozuk/parolalı/yanlış tür dosyaları kota iadesiyle başarısız olmalı; sentetik fixture'lar, entegrasyon akışı, lint ve build kontrolleri geçmeli. Gemini çağrısı, tavsiye ve grafik üretimi bu teslimatın kapsamında değildir.
+
+Doğrulama: lint, frontend/backend üretim derlemeleri, 32 frontend testi, 7 parser fixture testi, 2 emülatör entegrasyon senaryosu ve retry gerektirmeyen 6 masaüstü/mobil tarayıcı testi geçti. Her iki üretim bağımlılık ağacı `npm audit --omit=dev` sonucunda temizdir.
 
 ### 2026-09-14 — Furkan / Codex: kimlik sonrası hazırlık geçişi
 
@@ -135,7 +137,8 @@ Kalite kapısı: oturum yenileme, çıkış, korumalı rotalar ve yetkisiz eriş
 - [x] Sahip: Tarık — İlk tablo prototipi için Free kota ve İstanbul takvim günü kontrolü; geçerli genel belge sınırları FLOW.md'ye taşındı.
 - [x] Sahip: Tarık — Yerel Storage yükleme, ilerleme, iptal ve aynı oturumda yeniden deneme.
 - [x] Sahip: Tarık — İlk tablo prototipinde açık kolon eşleştirmesi ve kaynak özeti; bu akış genel belge hazırlama deneyimiyle değiştirildi.
-- [ ] Sahip: Atanmadı — Bozuk/parolalı/zararlı dosya kontrolleri ve kaynak referansları.
+- [x] Sahip: Tarık — Bozuk, parolalı, türü uyuşmayan ve aktif içerik taşıyan dosyaları reddet; konumlu kaynak referansları üret.
+- [ ] Sahip: Atanmadı — Canlı ortam için zararlı yazılım taraması ve karantina politikası.
 - [ ] Sahip: Atanmadı — Kısmi hata görünümü ve geçerli dosyalarla devam onayı.
 
 Kalite kapısı: format fixture'ları, kota sınırları, yetkilendirme ve kısmi hata testleri başarılı.
@@ -209,6 +212,7 @@ Aşağıdakiler sonraki aşamanın açık kararlarıdır. Bugünkü yerel akış
 
 ## Karar günlüğü
 
+- 2026-09-18 — Tarık/Codex teslimatında destek kapsamı gerçekten ayrıştırılan CSV/TSV/XLSX, PDF/DOCX/TXT/Markdown, PPTX, JSON ve PNG/JPEG/WebP ile sınırlandı. Ortak sürümlü belge modeli, server-only sıkıştırılmış türetilmiş içerik ve kaynak özeti mevcut hazırlama akışına bağlandı. OCR, görsel anlamlandırma, Gemini, tavsiye ve grafik üretimi sonraki M3/M4 işidir.
 - 2026-09-11 — Tarık'ın karar yetkisiyle bugünkü işler Tarık/Codex'e aittir; Furkan'a yeni iş atanmadı. Yerel emülatör, e-posta/parola, UID izolasyonu, TypeScript Functions ve deterministik tablo raporu prototipi uygulandı. Bu prototip daha sonra genel belge hazırlama hattıyla değiştirildi. Kota, geçici sınırlar ve silme davranışı FLOW.md'dedir; AI, gerçek bulut ve ödeme kapsam dışıdır.
 - 2026-09-07 — Tarık'ın onayıyla PR incelemesindeki ürün düzeltmeleri kabul edildi; plan limitleri FLOW.md'de merkezileştirildi, ödeme işi M6'da güncellendi, müşteri segmenti kısıtı kaldırıldı ve ortak değerlendirme gerektiren seçimler açık kararlara taşındı.
 - 2026-09-09 — Premium girişinin ödeme entegrasyonuna kadar bilgilendirme göstermesi ve uygulama içi sekmelerin tarayıcı geçmişinde tek çalışma alanı adımı olarak tutulması kabul edildi.

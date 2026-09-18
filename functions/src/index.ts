@@ -12,6 +12,7 @@ initializeApp({ projectId: "demo-incagen", storageBucket: "demo-incagen.appspot.
 const db = getFirestore();
 const bucket = getStorage().bucket();
 const options = { region: "europe-west1", timeoutSeconds: 300, memory: "1GiB" as const };
+const processingLeaseMs = 330_000;
 const idSchema = z.object({ id: z.string().uuid() }).strict();
 
 class FileValidationError extends Error {}
@@ -59,7 +60,7 @@ export const prepareAnalysis = onCall(options, async request => {
     const snap = await tx.get(ref);
     if (!snap.exists) throw new HttpsError("not-found", "Analiz bulunamadı.");
     const data = snap.data()!;
-    if (data.status === "completed" || (data.status === "processing" && Date.now() - data.updatedAt < 150_000)) return null;
+    if (data.status === "completed" || (data.status === "processing" && Date.now() - data.updatedAt < processingLeaseMs)) return null;
     if (data.status === "deleting") throw new HttpsError("failed-precondition", "Analiz siliniyor.");
     const quota = await tx.get(quotaRef);
     // Yarım kalmış çalışmanın rezervasyonunu geri al; yeniden denemede yeni günün kotasını kullan.
@@ -146,7 +147,7 @@ export const deleteAnalysis = onCall(options, async request => {
     const snap = await tx.get(ref);
     if (!snap.exists) return false;
     const data = snap.data()!;
-    if (data.status === "processing" && Date.now() - data.updatedAt < 150_000) throw new HttpsError("failed-precondition", "İşlem sürerken silinemez.");
+    if (data.status === "processing" && Date.now() - data.updatedAt < processingLeaseMs) throw new HttpsError("failed-precondition", "İşlem sürerken silinemez.");
     if (data.status === "processing" && data.quotaDay) {
       const quotaRef = db.doc(`users/${uid}/quotas/${data.quotaDay}`);
       const quota = await tx.get(quotaRef);

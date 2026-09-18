@@ -31,6 +31,7 @@ export async function parseXlsxDocument(input: ParserInput) {
   const chunks: DocumentChunk[] = [];
   const warnings: string[] = [];
   let totalRows = 0;
+  let totalCells = 0;
   for (const worksheet of workbook.worksheets) {
     const width = worksheet.actualColumnCount;
     const height = worksheet.actualRowCount;
@@ -41,6 +42,8 @@ export async function parseXlsxDocument(input: ParserInput) {
     if (width > PARSING_LIMITS.tableColumns) throw new DocumentParseError(`${worksheet.name}: Sütun sınırı aşıldı.`);
     totalRows += Math.max(0, height - 1);
     if (totalRows > PARSING_LIMITS.tableRows) throw new DocumentParseError("XLSX toplam satır sınırını aşıyor.");
+    totalCells += Math.max(0, height - 1) * width;
+    if (totalCells > PARSING_LIMITS.tableCells) throw new DocumentParseError("XLSX toplam hücre sınırını aşıyor.");
     const header = Array.from({ length: width }, (_, index) => normalizeCell(worksheet.getRow(1).getCell(index + 1).value));
     const columns = normalizeColumns(header, width);
     const rows: ParsedCell[][] = [];

@@ -38,6 +38,7 @@ export function parseDelimitedDocument(input: ParserInput) {
   if (records.length - 1 > PARSING_LIMITS.tableRows) throw new DocumentParseError("Tablo satır sınırını aşıyor.");
   const width = Math.max(...records.map(row => row.length));
   if (!width || width > PARSING_LIMITS.tableColumns) throw new DocumentParseError("Tablo sütun sınırını aşıyor.");
+  if ((records.length - 1) * width > PARSING_LIMITS.tableCells) throw new DocumentParseError("Tablo hücre sınırını aşıyor.");
   const columns = normalizeColumns(records[0] as ParsedCell[], width);
   const rows = records.slice(1).map(row => Array.from({ length: width }, (_, index) => row[index] ?? null));
   const chunks = createTableChunks(input.sourceId, columns, rows, { section: "tablo" });

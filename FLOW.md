@@ -2,9 +2,9 @@
 
 ## Çalışan yerel dikey akış
 
-E-posta/parola kaydı → korumalı çalışma alanı → farklı iş belgelerini seçme → yerel Storage yüklemesi → Functions manifest doğrulaması → Firestore hazırlık özeti → geçmişten açma veya kaynaklarıyla silme.
+E-posta/parola kaydı → korumalı çalışma alanı → farklı iş belgelerini seçme → yerel Storage yüklemesi → Functions içerik doğrulaması ve ayrıştırma → kaynak konumlu hazırlık özeti → geçmişten açma veya kaynaklarıyla silme.
 
-Bu sürüm yalnız `demo-incagen` Firebase emülatörleriyle çalışır. Gerçek buluta fallback veya canlı yayına uygunluk iddiası yoktur. Yalnız sentetik veriler kullanılmalıdır. AI yorumu ve belge içerik ayrıştırması henüz eklenmedi; mevcut backend dosya manifestini doğrular ve kaynakları analize hazırlar.
+Bu sürüm yalnız `demo-incagen` Firebase emülatörleriyle çalışır. Gerçek buluta fallback veya canlı yayına uygunluk iddiası yoktur. Yalnız sentetik veriler kullanılmalıdır. Backend desteklenen belgelerin içeriğini deterministik olarak ayrıştırır; AI yorumu henüz eklenmedi.
 
 ## Free ve Premium
 
@@ -24,23 +24,28 @@ Premium ödeme ve yetkilendirmeleri henüz uygulanmadı. Mevcut oturumlar Free k
 
 ## Belge hazırlama davranışı
 
-- Free ve Premium aynı format kapsamını kullanır: tablolar, PDF/Word/metin belgeleri, sunumlar, JSON/XML verileri ve yaygın görsel formatları.
+- Free ve Premium aynı gerçek format kapsamını kullanır: CSV/TSV/XLSX, PDF/DOCX/TXT/Markdown, PPTX, JSON ve PNG/JPEG/WebP.
+- Eski DOC/XLS/PPT, ODS, RTF, XML, GIF, SVG ve HEIC/HEIF güvenli dönüştürme hattı eklenene kadar kabul edilmez.
 - Çalıştırılabilir veya ürün kapsamı dışındaki dosya türleri kabul edilmez. Uzantı kontrolü istemcide ve backend sözleşmesinde aynı listeden uygulanır.
 - Geçici geliştirme sınırları iki planda da 5 MB/dosya; analiz toplamı Free için 30 MB, planlanan Premium için 50 MB'dır. Analiz başına adet sınırı Free için 10, Premium için 30'dur. Premium yetkilendirmesi gelene kadar backend yalnız Free sınırını uygular.
-- Dosya adı, boyutu ve içerik türü değişmez manifestte tutulur. Storage yalnız manifestte bulunan ve manifestle tam eşleşen kaynağı kabul eder.
-- Mevcut sürüm belge içeriğini ayrıştırmaz veya AI sonucu üretmez. Hazırlık özeti belge adedi, toplam boyut ve doğrulanmış kaynak listesini gösterir.
-- Sonuç ekranında “Belgeler hazırlandı — AI yorumu henüz eklenmedi” ibaresi zorunludur.
+- Dosya adı, boyutu ve içerik türü değişmez manifestte tutulur. Storage yalnız manifestte bulunan ve manifestle tam eşleşen kaynağı kabul eder; backend ayrıca gerçek dosya imzasını doğrular.
+- Metin ve JSON UTF-8; tablolar satır/sütun; XLSX çalışma sayfası; PDF sayfa; PPTX slayt; görseller boyut konumuyla normalize edilir. DOCX okunabilir metne dönüştürülür.
+- Formüller ve makrolar çalıştırılmaz. Parolalı, bozuk, türü uyuşmayan, yol geçişli, aşırı genişleyen veya gömülü çalıştırılabilir nesne taşıyan dosyalar reddedilir.
+- Ayrıştırma sınırları: dosya başına 1 milyon metin karakteri, 50.000 tablo satırı, 200 sütun, 500.000 hücre, 50 XLSX sayfası, 250 PDF sayfası/slayt, 2.000 arşiv kaydı ve 40 MB açılmış arşiv boyutu. Görseller en fazla 40 milyon pikseldir.
+- Normalize içerik gzip JSON olarak kullanıcı okumasına kapalı `derived/{uid}/analyses/{id}` alanında tutulur. Firestore yalnız hash, gerçek MIME, kategori, konum/karakter sayıları ve uyarıları taşıyan özeti saklar.
+- Görseller ve metin katmanı olmayan PDF/sunum sayfaları kaynak konumuyla işaretlenir; OCR ve görsel anlamlandırma sonraki AI aşamasındadır.
+- Sonuç ekranında “Belge içerikleri ayrıştırıldı — AI yorumu henüz eklenmedi” ibaresi zorunludur.
 
 ## Teknik sözleşme ve veri sahipliği
 
 TypeScript Cloud Functions kullanılır; bugünkü belge hazırlığında Cloud Tasks ve Python Cloud Run yoktur. Gelecekte bulut için ayrı dev/prod ve `europe-west1` varsayılır; kaynaklar henüz oluşturulmadı. Bölge veya saklama değişiklikleri gerçek veri kullanımı öncesinde yeniden değerlendirilir.
 
 - `createAnalysis`: doğrulanmış başlık, işletme ve dosya manifestiyle taslak oluşturur; istemcinin UUID istek kimliği ve içerik fingerprint'i tekrarları tekilleştirir.
-- `prepareAnalysis`: kaynak boyutu, içerik türü, manifest ve kota sınırlarını backend'de doğrular; hazırlık özetini kaydeder.
+- `prepareAnalysis`: kaynak boyutu, içerik türü, imza, arşiv ve parser sınırlarını backend'de doğrular; normalize artefaktı ve hazırlık özetini kaydeder.
 - `deleteAnalysis`: silme durumuyla yeni yazmayı kilitler, dosyaları ve raporu siler. İşlem sürerken silme reddedilir; yarım kalan silme tekrar denenebilir.
 - İstemci taslağı bellektedir. Sunucuda kayıt `uploading → processing → completed/failed` durumlarından geçer; silmede geçici `deleting` kullanılır.
-- Çalışan iş için 150 saniyelik yeniden deneme koruması vardır. Süre aşımı sonrası açık yeniden deneme eski rezervasyonu düzeltir ve yeni deneme kimliği kullanır; eski iş sonucu yeni işi ezemez. Otomatik kalıcı kuyruk henüz yoktur.
-- Sonuçlar `users/{uid}/analyses/{id}`, kota `users/{uid}/quotas/{day}`, kaynaklar Storage içinde `users/{uid}/analyses/{id}/{fileId}` altında tutulur.
+- Çalışan iş için 330 saniyelik yeniden deneme koruması vardır; bu eşik 300 saniyelik Function zaman aşımını güvenli payla kapsar. Süre aşımı sonrası açık yeniden deneme eski rezervasyonu düzeltir ve yeni deneme kimliği kullanır; eski iş sonucu yeni işi ezemez. Otomatik kalıcı kuyruk henüz yoktur.
+- Sonuçlar `users/{uid}/analyses/{id}`, kota `users/{uid}/quotas/{day}`, ham kaynaklar `users/{uid}/analyses/{id}/{fileId}`, server-only türetilmiş içerikler `derived/{uid}/analyses/{id}` altında tutulur. Silme iki Storage alanını da temizler.
 - Kullanıcı yalnız kendi verilerini okuyabilir. Manifest dışı yükleme ve istemcinin rapor/durum/kota yazması yasaktır. Backend yetkiyi oturum token'ından alır.
 - İç sayfa geçişlerinde seçilen dosyalar ve yükleme durumu korunur. Çıkışta yükleme iptal edilir ve taslak temizlenir. Sayfa yenilemede yerel dosyalar yeniden seçilmelidir; kaydedilmiş analizler geçmişte kalır.
 - Oturumdaki kullanıcı şifre değiştirme isteğini yalnız bağlı e-posta adresi için başlatabilir. Canlı Firebase ortamında bağlantı e-postayla iletilir; mevcut yerel emülatör gerçek e-posta teslim etmez.
@@ -48,6 +53,6 @@ TypeScript Cloud Functions kullanılır; bugünkü belge hazırlığında Cloud 
 
 ## Sonraki AI ve entegrasyon aşaması
 
-Kaynak hazırlığı → düşük maliyetli uygunluk kontrolü → Gemini → sürümlü sonuç şeması ve sayısal doğrulama → kanıtlı bulgu/öneriler akışı planlanmıştır. AI anahtarları yalnız backend'de tutulacaktır.
+Kaynak ayrıştırma → deterministik metrikler → düşük maliyetli uygunluk kontrolü → Gemini → sürümlü sonuç şeması ve sayısal doğrulama → kanıtlı bulgu/öneriler akışı planlanmıştır. AI anahtarları yalnız backend'de tutulacaktır.
 
-Proje planındaki ana model `gemini-3.8-flash`; 31 Aralık 2026 sonrası model ve fiyatlar yeniden değerlendirilecek. Model erişimi, düşünme seçenekleri ve kampanya koşulları entegrasyon sırasında doğrulanmalıdır; mevcut kod model çağırmaz ve fiyat garantisi vermez. PDF/Office normalizasyonu, PDF raporu, Google girişi ve ödeme gelecekteki işlerdir.
+Proje planındaki ana model `gemini-3.8-flash`; 31 Aralık 2026 sonrası model ve fiyatlar yeniden değerlendirilecek. Model erişimi, düşünme seçenekleri ve kampanya koşulları entegrasyon sırasında doğrulanmalıdır; mevcut kod model çağırmaz ve fiyat garantisi vermez. OCR/görsel anlamlandırma, PDF raporu, Google girişi ve ödeme gelecekteki işlerdir.

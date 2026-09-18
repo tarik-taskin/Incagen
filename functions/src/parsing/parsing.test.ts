@@ -88,5 +88,11 @@ describe("ortak belge ayrıştırıcıları", () => {
     await expect(parseDocument(input("dosya.xls", "application/vnd.ms-excel", Buffer.from("legacy")))).rejects.toBeInstanceOf(DocumentParseError);
     await expect(parseDocument(input("dosya.pdf", "application/pdf", Buffer.from("PDF değil")))).rejects.toThrow("PDF imzası");
     await expect(parseDocument(input("dosya.png", "image/jpeg", Buffer.alloc(64)))).rejects.toThrow("içerik türü");
+
+    const macro = new JSZip();
+    macro.file("[Content_Types].xml", "<Types/>");
+    macro.file("word/document.xml", "<w:document/>");
+    macro.file("word/vbaProject.bin", "active-content");
+    await expect(parseDocument(input("makro.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", await macro.generateAsync({ type: "nodebuffer" })))).rejects.toThrow("Makro");
   });
 });

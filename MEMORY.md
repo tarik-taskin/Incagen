@@ -13,8 +13,9 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 
 - Responsive giriş/çalışma alanı, tema, animasyonlu logo, Premium bilgilendirmesi.
 - E-posta/parola kaydı, giriş, korumalı rotalar, bağlı e-postaya şifre yenileme isteği ve çıkışta taslağın temizlenmesi.
-- Oturum içi çoklu iş belgesi seçimi; Free ve Premium için ortak format kapsamı.
-- Yerel yükleme, backend manifest doğrulaması ve kaynak hazırlık özeti.
+- Oturum içi çoklu iş belgesi seçimi; yalnız gerçekten ayrıştırılan modern formatlardan oluşan ortak plan kapsamı.
+- Yerel yükleme; MIME/imza ve güvenli arşiv doğrulaması; metin, tablo, PDF, modern Office ve görsel ayrıştırma.
+- Kaynak hash'i ve sayfa/çalışma sayfası/slayt/satır konumlarını taşıyan normalize, sıkıştırılmış server-only artefaktlar.
 - Kullanıcıya özel canlı geçmiş, rapor açma ve kaynaklarla silme.
 - Backend kota/idempotency, kullanıcı izolasyonu ve otomatik test altyapısı.
 

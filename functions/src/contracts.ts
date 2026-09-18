@@ -40,6 +40,7 @@ export const PARSING_LIMITS = {
   chunksPerFile: 1_000,
   tableRows: 50_000,
   tableColumns: 200,
+  tableCells: 500_000,
   workbookSheets: 50,
   pdfPages: 250,
   slides: 250,

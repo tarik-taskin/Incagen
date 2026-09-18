@@ -1,6 +1,6 @@
 # Incagen
 
-İşletme verilerinden analiz ve büyüme önerileri üretmeyi amaçlayan uygulama. Mevcut teslimat: yerel hesap, çoklu iş belgesi yükleme, backend manifest doğrulaması, hazırlık özeti, geçmiş ve kaynaklarıyla silme. Gemini ve canlı bulut entegrasyonu henüz yoktur.
+İşletme verilerinden analiz ve büyüme önerileri üretmeyi amaçlayan uygulama. Mevcut teslimat: yerel hesap, çoklu iş belgesi yükleme, gerçek içerik ayrıştırma, kaynak konumlu hazırlık özeti, geçmiş ve kaynaklarıyla silme. Gemini ve canlı bulut entegrasyonu henüz yoktur.
 
 ## Gereksinimler
 
@@ -35,10 +35,11 @@ Varsayılan geliştirme modu emülatördür. İsteğe bağlı `.env.example` dos
 
 ### İlk belge hazırlığı
 
-1. Yeni analiz ekranından sentetik bir tablo, belge, sunum, veri dosyası veya görsel seçin.
+1. Yeni analiz ekranından sentetik PDF/DOCX/PPTX, CSV/TSV/XLSX, TXT/MD/JSON veya PNG/JPEG/WebP seçin.
 2. İşletme ve analiz başlığını doldurun.
-3. Belgeleri hazırlayın; backend dosya adı, boyutu ve içerik türünü manifestle doğrular.
-4. Geçmişten hazırlık özetini tekrar açın; silme kaynak belgeleri de kaldırır.
+3. Belgeleri ayrıştırın; backend manifestin yanında dosya imzasını, arşiv güvenliğini ve gerçek içeriği doğrular.
+4. Sonuçta kaynak hash'i, gerçek MIME, parça/karakter ve sayfa/çalışma sayfası/slayt bilgilerini inceleyin.
+5. Geçmişten hazırlık özetini tekrar açın; silme ham kaynakları ve türetilmiş içerikleri birlikte kaldırır.
 
 Dosyalar iç navigasyonda korunur; tarayıcı yenilemesinde yeniden seçilir. Emülatör kapandığında test hesap ve raporları normalde kaybolur. Kalıcı müşteri depolaması değildir.
 
@@ -51,6 +52,7 @@ Dosyalar iç navigasyonda korunur; tarayıcı yenilemesinde yeniden seçilir. Em
 | `npm run emulators` | Backend derleme ve yerel servisler |
 | `npm run lint` | Kod kalite kontrolü |
 | `npm run test:run` | Birim/bileşen testleri |
+| `npm run test:functions` | Belge parser fixture testleri |
 | `npm run build` | Frontend üretim derlemesi |
 | `npm run build:functions` | Backend derlemesi |
 | `npm run test:integration` | Kendi emülatörünü açan güvenlik/kota/rapor testleri |
@@ -68,7 +70,8 @@ React, TypeScript, Vite, React Router, Tailwind, shadcn/ui yaklaşımı, Anime.j
 - `src/pages`, `src/components`: ekranlar ve ortak arayüz.
 - `src/hooks`, `src/lib`: oturum, taslak, servis ve canlı kayıt bağları.
 - `src/i18n`: Türkçe mesaj sözlüğü temeli; İngilizce henüz yoktur.
-- `functions/src`: paylaşılan belge sözleşmesi, manifest doğrulama ve backend uçları.
+- `functions/src/parsing`: metin, tablo, PDF, modern Office ve görsel ayrıştırıcıları.
+- `functions/src`: paylaşılan belge sözleşmesi, içerik doğrulama ve backend uçları.
 - `integration`, `e2e`: güvenlik/yaşam döngüsü ve tarayıcı testleri.
 
 Belgeler: [hedefler](GOAL.md), [akış](FLOW.md), [kurallar](RULES.md), [kalıcı bağlam](MEMORY.md), [ekip düzeni](AGENTS.md).
@@ -85,6 +88,6 @@ Functions değiştiyse `npm run build:functions`; backend veya kullanıcı akı�
 
 ## Bilinen sınırlar
 
-Belge içerik ayrıştırması ve AI yorumu henüz yapılmaz; format, boyut ve kota sınırları FLOW.md'dedir. Google Analytics, Microsoft Clarity, Google girişi, Premium ödeme ve canlı yayına geçiş tamamlanmadı. Emülatör testi bulut IAM/App Check testi yerine geçmez.
+AI yorumu ve görsel OCR henüz yapılmaz; metin katmanı olmayan sayfalar sonraki AI aşaması için işaretlenir. Eski Office/ODS/RTF/XML/GIF/SVG/HEIC formatları güvenli dönüştürme hattı gelene kadar kabul edilmez. Format, parser, boyut ve kota sınırları FLOW.md'dedir. Google Analytics, Microsoft Clarity, Google girişi, Premium ödeme ve canlı yayına geçiş tamamlanmadı. Emülatör testi bulut IAM/App Check testi yerine geçmez.
 
 Bağımlılık denetiminde uygulama ve Functions üretim bağımlılıkları temizdir; Firebase CLI geliştirme zincirinde orta önem seviyesinde uyarılar bulunmaktadır. CLI'yi eski ana sürüme zorlayan `audit fix --force` uygulanmadı. `gaxios → uuid` ve `express → qs` için kontrollü override'lar mevcut API kullanımıyla test edilmiştir.
