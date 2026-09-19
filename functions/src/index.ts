@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { gzipSync } from "node:zlib";
 import { initializeApp } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
@@ -14,6 +15,7 @@ const bucket = getStorage().bucket();
 const options = { region: "europe-west1", timeoutSeconds: 300, memory: "1GiB" as const };
 const processingLeaseMs = 330_000;
 const idSchema = z.object({ id: z.string().uuid() }).strict();
+const deleteAccountSchema = z.object({ confirmation: z.literal("HESABIMI SİL") }).strict();
 
 class FileValidationError extends Error {}
 
@@ -36,6 +38,8 @@ export const createAnalysis = onCall(options, async request => {
   const fingerprint = createHash("sha256").update(JSON.stringify(input)).digest("hex");
   const manifest = Object.fromEntries(input.files.map((file, i) => [`file-${i}`, file]));
   await db.runTransaction(async tx => {
+    const account = await tx.get(db.doc(`users/${uid}`));
+    if (account.data()?.deletingAccount) throw new HttpsError("failed-precondition", "Hesap siliniyor.");
     const existing = await tx.get(ref);
     if (existing.exists) {
       if (existing.data()?.fingerprint !== fingerprint) throw new HttpsError("already-exists", "Bu istek kimliği farklı bir analiz için kullanıldı.");
@@ -57,6 +61,8 @@ export const prepareAnalysis = onCall(options, async request => {
   const quotaRef = db.doc(`users/${uid}/quotas/${day}`);
   const attempt = randomUUID();
   const work = await db.runTransaction(async tx => {
+    const account = await tx.get(db.doc(`users/${uid}`));
+    if (account.data()?.deletingAccount) throw new HttpsError("failed-precondition", "Hesap siliniyor.");
     const snap = await tx.get(ref);
     if (!snap.exists) throw new HttpsError("not-found", "Analiz bulunamadı.");
     const data = snap.data()!;
@@ -144,6 +150,8 @@ export const deleteAnalysis = onCall(options, async request => {
   if (!parsed.success) throw new HttpsError("invalid-argument", "Geçersiz analiz kimliği.");
   const ref = db.doc(`users/${uid}/analyses/${parsed.data.id}`);
   const exists = await db.runTransaction(async tx => {
+    const account = await tx.get(db.doc(`users/${uid}`));
+    if (account.data()?.deletingAccount) throw new HttpsError("failed-precondition", "Hesap siliniyor.");
     const snap = await tx.get(ref);
     if (!snap.exists) return false;
     const data = snap.data()!;
@@ -161,5 +169,30 @@ export const deleteAnalysis = onCall(options, async request => {
     await bucket.deleteFiles({ prefix: `derived/${uid}/analyses/${ref.id}/` });
     await ref.delete();
   }
+  return { deleted: true };
+});
+
+// Yakın zamanda doğrulanmış hesap isteğinde yazmayı kilitler; verileri ve dosyaları temizleyip Auth hesabını en son siler.
+export const deleteAccount = onCall(options, async request => {
+  const uid = requireLocal(request.auth?.uid);
+  if (!deleteAccountSchema.safeParse(request.data).success) throw new HttpsError("invalid-argument", "Hesap silme onayı geçersiz.");
+  const authTime = Number(request.auth?.token.auth_time ?? 0);
+  if (!authTime || Date.now() / 1000 - authTime > 300) throw new HttpsError("failed-precondition", "Devam etmek için parolanızı yeniden doğrulayın.");
+
+  const userRef = db.doc(`users/${uid}`);
+  await db.runTransaction(async tx => {
+    const analyses = await tx.get(userRef.collection("analyses").where("status", "==", "processing"));
+    if (analyses.docs.some(doc => Date.now() - doc.data().updatedAt < processingLeaseMs)) {
+      throw new HttpsError("failed-precondition", "Devam eden analiz bitince hesabınızı silin.");
+    }
+    tx.set(userRef, { deletingAccount: true, updatedAt: Date.now() }, { merge: true });
+  });
+
+  // Hata halinde Auth hesabı kalır; kullanıcı aynı onayla silmeyi yeniden deneyebilir.
+  await bucket.deleteFiles({ prefix: `users/${uid}/analyses/` });
+  await bucket.deleteFiles({ prefix: `derived/${uid}/analyses/` });
+  for (const collection of await userRef.listCollections()) await db.recursiveDelete(collection);
+  await getAuth().deleteUser(uid);
+  await userRef.delete();
   return { deleted: true };
 });

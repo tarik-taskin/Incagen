@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const LIMITS = { files: 10, fileBytes: 5 * 1024 * 1024, totalBytes: 30 * 1024 * 1024, daily: 10 } as const;
-export const PREMIUM_LIMITS = { files: 30, fileBytes: LIMITS.fileBytes, totalBytes: 50 * 1024 * 1024, daily: 30 } as const;
+export const PREMIUM_LIMITS = { files: 30, fileBytes: LIMITS.fileBytes, totalBytes: 60 * 1024 * 1024, daily: 30 } as const;
 
 export type DocumentCategory = "Tablo" | "Belge" | "Sunum" | "Veri" | "Görsel";
 export type ParserKind = "delimited" | "xlsx" | "pdf" | "image" | "text" | "json" | "docx" | "pptx";

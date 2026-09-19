@@ -90,4 +90,6 @@ Functions değiştiyse `npm run build:functions`; backend veya kullanıcı akı�
 
 AI yorumu ve görsel OCR henüz yapılmaz; metin katmanı olmayan sayfalar sonraki AI aşaması için işaretlenir. Eski Office/ODS/RTF/XML/GIF/SVG/HEIC formatları güvenli dönüştürme hattı gelene kadar kabul edilmez. Format, parser, boyut ve kota sınırları FLOW.md'dedir. Google Analytics, Microsoft Clarity, Google girişi, Premium ödeme ve canlı yayına geçiş tamamlanmadı. Emülatör testi bulut IAM/App Check testi yerine geçmez.
 
+Ayarlar'daki hesap silme işlemi yalnız yerel emülatörde çalışır. Parola ve açık onay ister; hesabı, analiz kayıtlarını, kaynak belgeleri ve hazırlanmış içerikleri kalıcı olarak kaldırır.
+
 Bağımlılık denetiminde uygulama ve Functions üretim bağımlılıkları temizdir; Firebase CLI geliştirme zincirinde orta önem seviyesinde uyarılar bulunmaktadır. CLI'yi eski ana sürüme zorlayan `audit fix --force` uygulanmadı. `gaxios → uuid` ve `express → qs` için kontrollü override'lar mevcut API kullanımıyla test edilmiştir.

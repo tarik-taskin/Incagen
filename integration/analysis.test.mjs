@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { initializeApp, deleteApp } from "firebase/app";
-import { getAuth, connectAuthEmulator, createUserWithEmailAndPassword, signOut } from "firebase/auth";
+import { getAuth, connectAuthEmulator, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { getFirestore, connectFirestoreEmulator, doc, getDoc, setDoc } from "firebase/firestore";
 import { getStorage, connectStorageEmulator, ref, uploadBytes, getBytes } from "firebase/storage";
 import { getFunctions, connectFunctionsEmulator, httpsCallable } from "firebase/functions";
@@ -106,5 +106,30 @@ test("günlük kota on hazırlıktan sonra sunucuda engellenir", { timeout: 1200
       else await assert.rejects(prepare({ id: data.id }), error => error.code === "functions/resource-exhausted");
       await remove({ id: data.id });
     }
+  } finally { await deleteApp(a.app); }
+});
+
+test("hesap silme onay gerektirir ve Auth, analiz, kota ve dosyaları temizler", { timeout: 120000 }, async () => {
+  const a = await client();
+  try {
+    const uid = a.auth.currentUser.uid;
+    const email = a.auth.currentUser.email;
+    const create = httpsCallable(a.functions, "createAnalysis");
+    const prepare = httpsCallable(a.functions, "prepareAnalysis");
+    const removeAccount = httpsCallable(a.functions, "deleteAccount");
+    const { data } = await create(input());
+    await uploadBytes(ref(a.storage, data.paths[0]), documentBody, { contentType: "text/plain" });
+    await prepare({ id: data.id });
+    const record = doc(a.db, "users", uid, "analyses", data.id);
+    const quota = doc(a.db, "users", uid, "quotas", (await getDoc(record)).data().quotaDay);
+
+    await assert.rejects(removeAccount({ confirmation: "YANLIŞ" }), error => error.code === "functions/invalid-argument");
+    assert.equal((await getDoc(record)).exists(), true);
+    assert.equal((await removeAccount({ confirmation: "HESABIMI SİL" })).data.deleted, true);
+    assert.equal((await getDoc(record)).exists(), false);
+    assert.equal((await getDoc(quota)).exists(), false);
+    await assert.rejects(getBytes(ref(a.storage, data.paths[0])));
+    await signOut(a.auth);
+    await assert.rejects(signInWithEmailAndPassword(a.auth, email, "Synthetic123!"));
   } finally { await deleteApp(a.app); }
 });

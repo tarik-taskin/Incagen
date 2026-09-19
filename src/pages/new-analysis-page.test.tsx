@@ -33,7 +33,7 @@ describe("NewAnalysisPage", () => {
     expect(screen.getByText("Tüm planlar aynı belge formatlarını kabul eder.")).toBeInTheDocument();
     expect(screen.queryByText(/Yerel geliştirme ortamı/)).not.toBeInTheDocument();
     expect(screen.queryByText("5 MB/dosya · 30 MB/analiz")).not.toBeInTheDocument();
-    expect(screen.queryByText("5 MB/dosya · 50 MB/analiz")).not.toBeInTheDocument();
+    expect(screen.queryByText("5 MB/dosya · 60 MB/analiz")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "faaliyet.xlsx dosyasını kaldır" }));
     expect(screen.queryByText("faaliyet.xlsx")).not.toBeInTheDocument();

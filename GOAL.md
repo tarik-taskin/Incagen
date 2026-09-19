@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-19 — Furkan / Codex: plan, hesap ve boş geçmiş iyileştirmeleri
+
+- [x] Sahip: Furkan — Plan ekranını sadeleştir, Premium toplamını 60 MB olarak tüm sözleşme ve belgelerde eşitle, Ayarlar'a gerçek hesap silme ile Google Analytics / Microsoft Clarity bağlantı taslaklarını ekle ve boş geçmişi iyileştir.
+
+Kabul: Premium 60 MB merkezi sözleşme, plan ekranı, açıklamalar ve testlerde tutarlı olmalı; istenen Plan metinleri kaldırılmalı ve etkin olmayan Premium eylemi pasif düğme olmalı; hesap silme yeniden kimlik doğrulaması ve açık onay sonrasında Auth, Firestore, ham ve türetilmiş dosyaları temizlemeli; bağlantı eylemleri açıkça pasif kalmalı; boş geçmiş mobil/masaüstü ve iki temada kullanılabilir olmalı. Bu iş yalnız `furkan` dalında tutulacak; PR ve main push kullanıcı onayına kadar yapılmayacak.
+
+Doğrulama: lint, frontend ve Functions derlemeleri, 32 uygulama ve 7 parser testi, 3 Firebase entegrasyon testi ve 10 masaüstü/mobil tarayıcı senaryosu geçti. Yanlış onay/parola, başarılı hesap silme, iki tema erişilebilirliği ve mobil taşma doğrulandı. Premium 60 MB ve pasif bağlantılar ekranlarda kontrol edildi.
+
 ### 2026-09-19 — Furkan / Codex: plan karşılaştırması ve yeni analiz sadeleştirmesi
 
 - [x] Sahip: Furkan — Yeni analizdeki yinelenen plan ve yerel ortam metinlerini kaldır; Ayarlar altına Free/Premium farkını gösteren ayrı Plan ekranı ekle.
@@ -52,11 +60,11 @@ Doğrulama: tek komutla dört Firebase emülatörü ve Vite başarıyla başlat�
 
 ### 2026-09-14 — Furkan / Codex: plan başına belge boyutu sınırları
 
-- [x] Sahip: Furkan — Free analiz toplamını 30 MB, planlanan Premium analiz toplamını 50 MB yap; dosya başına 5 MB ve mevcut adet/günlük limitleri koru.
+- [x] Sahip: Furkan — Free analiz toplamını 30 MB, planlanan Premium için ilk toplam sınırı belirle; dosya başına 5 MB ve mevcut adet/günlük limitleri koru. Güncel Premium sınırı üstteki görevle 60 MB'a çıkarıldı.
 
-Kabul: yeni analiz arayüzü ve hata mesajları doğru plan sınırlarını göstermeli; istemci ve backend Free için 30 MB toplamı uygulamalı; Premium 50 MB sınırı ortak plan sözleşmesinde tanımlanmalı ancak Premium yetkilendirmesi açılmadan kullanıcıya uygulanmamalı; FLOW.md ve sınır testleri güncellenmeli.
+Kabul: yeni analiz arayüzü ve hata mesajları doğru plan sınırlarını göstermeli; istemci ve backend Free için 30 MB toplamı uygulamalı; Premium plan sınırı ortak sözleşmede tanımlanmalı ancak yetkilendirme açılmadan kullanıcıya uygulanmamalı; FLOW.md ve sınır testleri güncellenmeli.
 
-Doğrulama: lint, frontend/Functions production build, 29 birim/bileşen testi, 2 Firebase emülatör entegrasyon senaryosu ve 6 masaüstü/mobil tarayıcı senaryosu geçti. Tam 30 MB Free isteğinin kabulü, 30 MB + 1 baytın reddi ve Premium 50 MB plan değerinin arayüzde gösterimi doğrulandı.
+Doğrulama: lint, frontend/Functions production build, 29 birim/bileşen testi, 2 Firebase emülatör entegrasyon senaryosu ve 6 masaüstü/mobil tarayıcı senaryosu geçti. Tam 30 MB Free isteğinin kabulü, 30 MB + 1 baytın reddi ve o günkü Premium plan değerinin arayüzde gösterimi doğrulandı.
 
 ### 2026-09-14 — Furkan / Codex: genel belge hazırlama hattı
 

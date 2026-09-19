@@ -39,13 +39,13 @@ describe("Belge hazırlama sözleşmesi", () => {
     expect(createSchema.safeParse(oversized).success).toBe(false);
   });
 
-  it("Free 30 MB sınırını uygular ve Premium 50 MB'ı ayrı plan sınırı olarak tutar", () => {
+  it("Free 30 MB sınırını uygular ve Premium 60 MB'ı ayrı plan sınırı olarak tutar", () => {
     const full = request();
     full.files = Array.from({ length: 6 }, (_, index) => ({ name: `belge-${index}.pdf`, size: 5 * 1024 * 1024, contentType: "application/pdf" }));
     expect(createSchema.safeParse(full).success).toBe(true);
     expect(createSchema.safeParse({ ...full, files: [...full.files, { name: "fazla.pdf", size: 1, contentType: "application/pdf" }] }).success).toBe(false);
     expect(LIMITS.totalBytes).toBe(30 * 1024 * 1024);
-    expect(PREMIUM_LIMITS.totalBytes).toBe(50 * 1024 * 1024);
+    expect(PREMIUM_LIMITS.totalBytes).toBe(60 * 1024 * 1024);
     expect(PREMIUM_LIMITS.fileBytes).toBe(LIMITS.fileBytes);
   });
 

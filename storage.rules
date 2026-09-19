@@ -6,8 +6,12 @@ service firebase.storage {
       function analysis() {
         return firestore.get(/databases/(default)/documents/users/$(uid)/analyses/$(analysisId)).data;
       }
+      function accountActive() {
+        return !firestore.exists(/databases/(default)/documents/users/$(uid))
+          || firestore.get(/databases/(default)/documents/users/$(uid)).data.deletingAccount != true;
+      }
       allow read: if owned();
-      allow create, update: if owned()
+      allow create, update: if owned() && accountActive()
         && analysis().status in ['draft', 'uploading', 'failed']
         && fileId in analysis().manifest
         && request.resource.size == analysis().manifest[fileId].size

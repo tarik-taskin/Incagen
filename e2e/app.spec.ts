@@ -107,3 +107,49 @@ test("farklı belge türleri hazırlanır ve listeden kaldırılabilir", async (
   await expect(page.getByText("faaliyet.xlsx", { exact: true })).toHaveCount(0);
   await expectNoAccessibilityViolations(page);
 });
+
+test("boş geçmiş, bağlantı taslakları ve doğrulanmış hesap silme", async ({ page }, testInfo) => {
+  await page.goto("/app/new-analysis");
+  await register(page);
+  const navigation = getAppNavigation(page);
+  await navigation.getByRole("link", { name: "Plan" }).click();
+  await expect(page.getByText("60 MB")).toHaveCount(2);
+  await expect(page.getByRole("button", { name: "Premium'a geç" })).toBeDisabled();
+  await expect(page.getByText("Premium özellikler planlama aşamasında")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Belge formatları iki planda da aynı" })).toHaveCount(0);
+
+  await navigation.getByRole("link", { name: "Geçmiş" }).click();
+  await expect(page.getByRole("heading", { name: "Burada güzel şeyler birikecek." })).toBeVisible();
+  await expect(page.getByRole("link", { name: "İlk analizini hazırla" })).toBeVisible();
+  await expectNoAccessibilityViolations(page);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath("empty-history.png"), fullPage: true });
+  await page.getByRole("button", { name: "Karanlık moda geç" }).click();
+  await expectNoAccessibilityViolations(page);
+  await page.screenshot({ path: testInfo.outputPath("empty-history-dark.png"), fullPage: true });
+
+  await navigation.getByRole("link", { name: "Ayarlar" }).click();
+  await expect(page.getByRole("heading", { name: "Google Analytics" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Microsoft Clarity" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Hesabı bağla" })).toHaveCount(2);
+  for (const button of await page.getByRole("button", { name: "Hesabı bağla" }).all()) await expect(button).toBeDisabled();
+  await expectNoAccessibilityViolations(page);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath("settings-connections-dark.png"), fullPage: true });
+  await page.getByRole("button", { name: "Aydınlık moda geç" }).click();
+  await expectNoAccessibilityViolations(page);
+  await page.screenshot({ path: testInfo.outputPath("settings-connections.png"), fullPage: true });
+
+  await page.getByRole("button", { name: "Hesabı sil", exact: true }).click();
+  const dialog = page.getByRole("alertdialog", { name: "Hesabınızı kalıcı olarak silin" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "Hesabı kalıcı olarak sil" })).toBeDisabled();
+  await dialog.getByLabel("Mevcut parola").fill("Wrong123!");
+  await dialog.getByLabel(/Onaylamak için/).fill("HESABIMI SİL");
+  await dialog.getByRole("button", { name: "Hesabı kalıcı olarak sil" }).click();
+  await expect(dialog.getByRole("alert")).toBeVisible();
+  await dialog.getByLabel("Mevcut parola").fill("Synthetic123!");
+  await dialog.getByRole("button", { name: "Hesabı kalıcı olarak sil" }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("heading", { name: "Verilerinizdeki büyüme fırsatlarını keşfedin." })).toBeVisible();
+});

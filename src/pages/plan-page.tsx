@@ -1,6 +1,5 @@
 import { ArrowRight, Check, Crown, FileStack, Gauge, Link2, ShieldCheck, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
-import { SUPPORTED_FILE_EXTENSIONS } from "../../functions/src/contracts";
 import { PLAN_RULES } from "../features/plans/plan-rules";
 
 type Plan = typeof PLAN_RULES.free | typeof PLAN_RULES.premium;
@@ -41,7 +40,7 @@ function PlanCard({ plan, premium }: { plan: Plan; premium: boolean }) {
     </ul>
     <div className="mt-auto pt-8">
       {premium
-        ? <div className="rounded-xl border border-primary/15 bg-primary/[0.05] px-4 py-3 text-sm text-muted-foreground dark:border-secondary/20 dark:bg-secondary/[0.06]">Premium üyelik ve bağlantılar henüz açılmadı.</div>
+        ? <button type="button" disabled className="min-h-11 w-full cursor-not-allowed rounded-xl border border-primary/20 bg-primary/10 px-5 text-sm font-semibold text-primary/60 dark:border-secondary/20 dark:bg-secondary/10 dark:text-secondary/60">Premium'a geç</button>
         : <Link to="/app/new-analysis" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">Yeni analiz aç <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>}
     </div>
   </article>;
@@ -80,7 +79,6 @@ export function PlanPage() {
     <section className="mt-8 rounded-[2rem] border border-border bg-card p-5 shadow-sm sm:p-8" aria-labelledby="plan-compare-title">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border pb-5">
         <div><p className="text-xs font-semibold uppercase tracking-[0.15em] text-primary dark:text-secondary">Yan yana karşılaştırma</p><h2 id="plan-compare-title" className="mt-1 text-xl font-semibold">Plan farkları</h2></div>
-        <p className="text-xs text-muted-foreground">Premium özellikler planlama aşamasında</p>
       </div>
       <div className="hidden grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)] gap-3 border-b border-border py-4 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:grid">
         <span>Özellik</span><span>Free</span><span>Premium</span>
@@ -94,10 +92,6 @@ export function PlanPage() {
       </dl>
     </section>
 
-    <section className="mt-6 flex flex-col gap-4 rounded-3xl border border-primary/15 bg-primary/[0.04] p-5 dark:border-secondary/20 dark:bg-secondary/[0.05] sm:flex-row sm:items-start sm:p-6" aria-labelledby="plan-formats-title">
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:bg-secondary/10 dark:text-secondary"><FileStack className="h-5 w-5" aria-hidden="true" /></span>
-      <div><h2 id="plan-formats-title" className="font-semibold">Belge formatları iki planda da aynı</h2><p className="mt-1 text-sm leading-6 text-muted-foreground">Plan seçimi hangi dosyayı ekleyebileceğinizi değiştirmez. Desteklenen formatlar:</p><p className="mt-3 break-words text-xs font-medium leading-6 text-foreground/80">{SUPPORTED_FILE_EXTENSIONS.map(extension => extension.toUpperCase()).join(" · ")}</p></div>
-    </section>
     <p className="mt-5 text-xs leading-5 text-muted-foreground">Premium ödeme, High AI analizi ve Google Analytics / Microsoft Clarity bağlantıları henüz kullanıma açılmadı. Bu ekran planlanan kapasiteyi gösterir; mevcut hesaplarda Free sınırları geçerlidir.</p>
   </section>;
 }

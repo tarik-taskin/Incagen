@@ -15,7 +15,7 @@ Bu sürüm yalnız `demo-incagen` Firebase emülatörleriyle çalışır. Gerçe
 | Günlük analiz | 10 | 30 |
 | Analiz başına dosya | 10 | 30 |
 | Dosya başına boyut | 5 MB | 5 MB |
-| Analiz başına toplam boyut | 30 MB | 50 MB |
+| Analiz başına toplam boyut | 30 MB | 60 MB |
 | Belge formatları | Tablo, belge, sunum, veri ve görsel | Tablo, belge, sunum, veri ve görsel |
 | AI derinliği | Medium | High |
 | Harici kaynak | Yok | Önce Google Analytics, sonra Microsoft Clarity |
@@ -29,7 +29,7 @@ Uygulamadaki Plan sekmesi aktif Free sınırlarını ve Premium için planlanan 
 - Free ve Premium aynı gerçek format kapsamını kullanır: CSV/TSV/XLSX, PDF/DOCX/TXT/Markdown, PPTX, JSON ve PNG/JPEG/WebP.
 - Eski DOC/XLS/PPT, ODS, RTF, XML, GIF, SVG ve HEIC/HEIF güvenli dönüştürme hattı eklenene kadar kabul edilmez.
 - Çalıştırılabilir veya ürün kapsamı dışındaki dosya türleri kabul edilmez. Uzantı kontrolü istemcide ve backend sözleşmesinde aynı listeden uygulanır.
-- Geçici geliştirme sınırları iki planda da 5 MB/dosya; analiz toplamı Free için 30 MB, planlanan Premium için 50 MB'dır. Analiz başına adet sınırı Free için 10, Premium için 30'dur. Premium yetkilendirmesi gelene kadar backend yalnız Free sınırını uygular.
+- Geçici geliştirme sınırları iki planda da 5 MB/dosya; analiz toplamı Free için 30 MB, planlanan Premium için 60 MB'dır. Analiz başına adet sınırı Free için 10, Premium için 30'dur. Premium yetkilendirmesi gelene kadar backend yalnız Free sınırını uygular.
 - Dosya adı, boyutu ve içerik türü değişmez manifestte tutulur. Storage yalnız manifestte bulunan ve manifestle tam eşleşen kaynağı kabul eder; backend ayrıca gerçek dosya imzasını doğrular.
 - Metin ve JSON UTF-8; tablolar satır/sütun; XLSX çalışma sayfası; PDF sayfa; PPTX slayt; görseller boyut konumuyla normalize edilir. DOCX okunabilir metne dönüştürülür.
 - Formüller ve makrolar çalıştırılmaz. Parolalı, bozuk, türü uyuşmayan, yol geçişli, aşırı genişleyen veya gömülü çalıştırılabilir nesne taşıyan dosyalar reddedilir.
@@ -45,6 +45,7 @@ TypeScript Cloud Functions kullanılır; bugünkü belge hazırlığında Cloud 
 - `createAnalysis`: doğrulanmış başlık, işletme ve dosya manifestiyle taslak oluşturur; istemcinin UUID istek kimliği ve içerik fingerprint'i tekrarları tekilleştirir.
 - `prepareAnalysis`: kaynak boyutu, içerik türü, imza, arşiv ve parser sınırlarını backend'de doğrular; normalize artefaktı ve hazırlık özetini kaydeder.
 - `deleteAnalysis`: silme durumuyla yeni yazmayı kilitler, dosyaları ve raporu siler. İşlem sürerken silme reddedilir; yarım kalan silme tekrar denenebilir.
+- `deleteAccount`: son 5 dakika içinde parola ile yeniden doğrulanmış ve açık onay vermiş kullanıcı için yeni analiz/yükleme yazmasını kilitler; aktif işlem varsa beklemesini ister. Ham ve türetilmiş dosyaları, Firestore kullanıcı alt koleksiyonlarını, ardından Auth hesabını siler. Temizlik başarısızsa Auth hesabı kalır ve yeniden denenebilir.
 - Geçmişte tekli silme kartın işlem menüsünden, toplu silme seçim modundan yapılır. Her ikisi de geri alınamaz silme uyarısı ister; toplu işlem kayıtları sırayla siler ve başarısız kalanları yeniden deneme için seçili bırakır.
 - İstemci taslağı bellektedir. Sunucuda kayıt `uploading → processing → completed/failed` durumlarından geçer; silmede geçici `deleting` kullanılır.
 - Çalışan iş için 330 saniyelik yeniden deneme koruması vardır; bu eşik 300 saniyelik Function zaman aşımını güvenli payla kapsar. Süre aşımı sonrası açık yeniden deneme eski rezervasyonu düzeltir ve yeni deneme kimliği kullanır; eski iş sonucu yeni işi ezemez. Otomatik kalıcı kuyruk henüz yoktur.
@@ -52,6 +53,7 @@ TypeScript Cloud Functions kullanılır; bugünkü belge hazırlığında Cloud 
 - Kullanıcı yalnız kendi verilerini okuyabilir. Manifest dışı yükleme ve istemcinin rapor/durum/kota yazması yasaktır. Backend yetkiyi oturum token'ından alır.
 - İç sayfa geçişlerinde seçilen dosyalar ve yükleme durumu korunur. Çıkışta yükleme iptal edilir ve taslak temizlenir. Sayfa yenilemede yerel dosyalar yeniden seçilmelidir; kaydedilmiş analizler geçmişte kalır.
 - Oturumdaki kullanıcı şifre değiştirme isteğini yalnız bağlı e-posta adresi için başlatabilir. Canlı Firebase ortamında bağlantı e-postayla iletilir; mevcut yerel emülatör gerçek e-posta teslim etmez.
+- Ayarlar'da Google Analytics ve Microsoft Clarity bağlantıları yalnız pasif arayüzdür; OAuth veya veri senkronizasyonu yoktur.
 - Analizler kullanıcı silene kadar tutulur; mevcut emülatör verisi normal durdurmada kalıcı değildir. Gerçek müşteri için saklama/yedek politikası ayrıca onaylanmalıdır.
 
 ## Sonraki AI ve entegrasyon aşaması

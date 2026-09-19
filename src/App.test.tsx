@@ -91,7 +91,7 @@ describe("App routes", () => {
     await user.click(screen.getByRole("button", { name: "Premium’a geç" }));
     const premiumNotice = screen.getByRole("region", { name: "Premium üyelik yakında" });
     expect(premiumNotice).toHaveTextContent("PayTR");
-    expect(premiumNotice).toHaveTextContent("toplam 50 MB");
+    expect(premiumNotice).toHaveTextContent("toplam 60 MB");
     expect(within(premiumNotice).getByRole("link", { name: "Planları karşılaştır" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("heading", { name: "Belgelerinizi analize hazırlayın" }));

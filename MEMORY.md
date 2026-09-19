@@ -12,11 +12,12 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 ## Tamamlanan özellikler
 
 - Responsive giriş/çalışma alanı, tema, animasyonlu logo, Premium bilgilendirmesi.
-- E-posta/parola kaydı, giriş, korumalı rotalar, bağlı e-postaya şifre yenileme isteği ve çıkışta taslağın temizlenmesi.
+- E-posta/parola kaydı, giriş, korumalı rotalar, bağlı e-postaya şifre yenileme isteği, çıkışta taslağın temizlenmesi ve yerel emülatörde yeniden doğrulamalı hesap silme.
 - Oturum içi çoklu iş belgesi seçimi; yalnız gerçekten ayrıştırılan modern formatlardan oluşan ortak plan kapsamı.
 - Yerel yükleme; MIME/imza ve güvenli arşiv doğrulaması; metin, tablo, PDF, modern Office ve görsel ayrıştırma.
 - Kaynak hash'i ve sayfa/çalışma sayfası/slayt/satır konumlarını taşıyan normalize, sıkıştırılmış server-only artefaktlar.
 - Kullanıcıya özel canlı geçmiş, rapor açma ve kaynaklarla silme.
+- Free/Premium karşılaştırması; planlanan Premium toplamı 60 MB. Google Analytics ve Microsoft Clarity bağlantıları Ayarlar'da pasif taslaktır.
 - Backend kota/idempotency, kullanıcı izolasyonu ve otomatik test altyapısı.
 
 Yalnız demo emülatörleri ve sentetik veriler içindir; canlı bulut veya AI analizi değildir. Kurulum README.md, kalan işler GOAL.md üzerinden takip edilir.
