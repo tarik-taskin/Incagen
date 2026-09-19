@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-19 — Furkan / Codex: geçmişte güvenli silme deneyimi
+
+- [x] Sahip: Furkan — Geçmiş kartlarına tekli silme için bağlamsal işlem menüsü, toplu silme için seçim modu ve açık onay uyarısı ekle.
+
+Kabul: normal listede her karta ayrı çöp kutusu eklenmemeli; tekli ve toplu silme kaynak belgeleriyle birlikte silme sonucunu açıkça bildirmeli; iptal veri değiştirmemeli; toplu işlem kısmi hata yaşarsa başarısız kayıtlar yeniden denenebilir kalmalı; mobil/masaüstü, açık/koyu tema ve klavye erişimi korunmalı.
+
+Doğrulama: lint, frontend/Functions derlemeleri, 32 uygulama ve 7 parser testi, 2 Firebase entegrasyon senaryosu ile 8 masaüstü/mobil tarayıcı testi geçti. Tekli ve iki kayıtlı toplu silme, iptal, klavye menüsü, koyu tema erişilebilirlik taraması ve mobil taşma kontrolü doğrulandı; açık/koyu geçmiş ekranı görselleri incelendi.
+
 ### 2026-09-18 — Tarık / Codex: belge ayrıştırma temeli
 
 - [x] Sahip: Tarık — Gerçekte işlenen formatlarla frontend/backend destek matrisini eşitle.

@@ -1,13 +1,217 @@
+import { useEffect, useRef, useState } from "react";
+import { httpsCallable } from "firebase/functions";
+import { ArrowUpRight, CheckCheck, FileClock, MoreHorizontal, Trash2, X } from "lucide-react";
 import { Link } from "react-router-dom";
+import type { Analysis } from "../../functions/src/contracts";
+import { Button } from "../components/ui/button";
 import { useAnalyses } from "../hooks/use-analyses";
 import { tr } from "../i18n/tr";
+import { userError } from "../lib/errors";
+import { getServices } from "../lib/firebase";
 
-// Yalnız oturum sahibinin hazırlanmış analizlerini tarih sırasıyla listeler.
+interface DeleteTarget {
+  items: { id: string; title: string }[];
+}
+
+interface Notice {
+  kind: "success" | "error";
+  text: string;
+}
+
+// Durumu listedeki kısa, renk destekli etikete dönüştürür; anlamı metin de taşır.
+function statusTone(status: Analysis["status"]) {
+  if (status === "completed") return "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
+  if (status === "failed") return "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-300";
+  if (status === "processing" || status === "deleting") return "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300";
+  return "border-border bg-muted text-muted-foreground";
+}
+
+// Tekli silmeyi kartın üzerinde sürekli bir çöp kutusu göstermeden bağlamsal menüye yerleştirir.
+function HistoryActions({ analysis, disabled, onDelete }: { analysis: Analysis; disabled: boolean; onDelete: () => void }) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const firstActionRef = useRef<HTMLAnchorElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    firstActionRef.current?.focus();
+    function handlePointer(event: PointerEvent) {
+      if (event.target instanceof Node && !rootRef.current?.contains(event.target)) setOpen(false);
+    }
+    function handleKey(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
+    }
+    document.addEventListener("pointerdown", handlePointer);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointer);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [open]);
+
+  return <div ref={rootRef} className="relative shrink-0">
+    <button ref={triggerRef} type="button" disabled={disabled}
+      aria-label={analysis.title + " için diğer işlemler"} aria-expanded={open}
+      aria-controls={"history-actions-" + analysis.id}
+      className="flex h-10 w-10 items-center justify-center rounded-xl border border-transparent text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
+      onClick={() => setOpen(value => !value)}>
+      <MoreHorizontal className="h-5 w-5" aria-hidden="true" />
+    </button>
+    {open && <div id={"history-actions-" + analysis.id} className="absolute right-0 top-full z-20 mt-1.5 w-48 rounded-2xl border border-border bg-card p-1.5 shadow-xl" aria-label={analysis.title + " işlemleri"}>
+      <Link ref={firstActionRef} to={"/app/analyses/" + analysis.id}
+        className="flex min-h-10 items-center justify-between gap-2 rounded-xl px-3 text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        onClick={() => setOpen(false)}>Analizi aç <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
+      <div className="my-1 border-t border-border" />
+      <button type="button" className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-sm text-red-700 transition-colors hover:bg-red-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:text-red-300"
+        onClick={() => { setOpen(false); onDelete(); }}><Trash2 className="h-4 w-4" aria-hidden="true" /> Analizi sil</button>
+    </div>}
+  </div>;
+}
+
+// Kullanıcıya özel geçmişi gösterir; seçim ve onay sonrasında mevcut güvenli silme endpoint'ini sırayla çağırır.
 export function HistoryPage() {
   const { rows, loading, error } = useAnalyses();
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [target, setTarget] = useState<DeleteTarget | null>(null);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const selectedRows = rows.filter(row => selectedIds.has(row.id));
+  const allSelected = rows.length > 0 && selectedRows.length === rows.length;
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (target && !dialog.open) {
+      dialog.showModal();
+      cancelRef.current?.focus();
+    } else if (!target && dialog.open) dialog.close();
+  }, [target]);
+
+  // Seçim modunu kapatırken önceki işten kalan seçimleri temizler.
+  function toggleSelectionMode() {
+    setSelectionMode(value => !value);
+    setSelectedIds(new Set());
+    setNotice(null);
+  }
+
+  // Kart seçimini kimlik üzerinden günceller; canlı liste sırası değişse de seçim kararlı kalır.
+  function toggleSelected(id: string) {
+    setSelectedIds(current => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  // Onaydan sonra her analizi ayrı siler; kısmi hatada yalnız başarısız kayıtları seçili bırakır.
+  async function deleteConfirmed() {
+    if (!target || progress) return;
+    const items = target.items;
+    setProgress({ done: 0, total: items.length });
+    setNotice(null);
+    const failed: { id: string; title: string; reason: string }[] = [];
+    let deleted = 0;
+    try {
+      const remove = httpsCallable<{ id: string }, { deleted: boolean }>(getServices().functions, "deleteAnalysis", { timeout: 310_000 });
+      for (const [index, item] of items.entries()) {
+        try {
+          await remove({ id: item.id });
+          deleted++;
+        } catch (actionError) {
+          failed.push({ ...item, reason: userError(actionError) });
+        }
+        setProgress({ done: index + 1, total: items.length });
+      }
+    } catch (actionError) {
+      failed.push(...items.map(item => ({ ...item, reason: userError(actionError) })));
+    }
+    setProgress(null);
+    setTarget(null);
+    setSelectedIds(new Set(failed.map(item => item.id)));
+    setSelectionMode(failed.length > 0);
+    if (failed.length) {
+      const lead = failed[0];
+      setNotice({ kind: "error", text: (deleted ? deleted + " analiz silindi. " : "") + failed.length + " analiz silinemedi: " + lead.title + " — " + lead.reason + " Kalanları yeniden deneyebilirsiniz." });
+    } else {
+      setNotice({ kind: "success", text: deleted + " analiz ve kaynak belgeleri silindi." });
+    }
+  }
+
   return <section aria-labelledby="history-title">
-    <h1 id="history-title" className="text-3xl font-semibold">{tr.analysis.history}</h1>
-    <p className="mt-3 text-sm text-muted-foreground">Hazırlanmış analizlerinizi açın, devam eden yüklemeleri izleyin veya kaynak belgeleriyle birlikte silin.</p>
-    {loading ? <p role="status" className="mt-8">Geçmiş yükleniyor…</p> : error ? <p role="alert" className="mt-8">{error}</p> : rows.length ? <ul className="mt-8 space-y-3">{rows.map(a => <li key={a.id}><Link className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" to={"/app/analyses/" + a.id}><div className="min-w-0"><h2 className="break-words font-semibold">{a.title}</h2><p className="mt-1 text-xs text-muted-foreground">{a.business} · {new Date(a.createdAt).toLocaleString("tr-TR")}</p></div><span className="text-sm">{tr.status[a.status]}</span></Link></li>)}</ul> : <div className="mt-8 rounded-3xl border border-border bg-card p-8"><p>{tr.analysis.noHistory}</p><Link className="mt-4 inline-block text-primary underline dark:text-secondary" to="/app/new-analysis">İlk analizini hazırla</Link></div>}
+    <div className="flex flex-wrap items-start justify-between gap-5">
+      <div className="flex items-start gap-4">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-primary/15 bg-primary/10 text-primary dark:border-secondary/20 dark:bg-secondary/10 dark:text-secondary"><FileClock className="h-5 w-5" aria-hidden="true" /></span>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary dark:text-secondary">Çalışma alanı / Arşiv</p>
+          <h1 id="history-title" className="mt-1 text-3xl font-semibold tracking-tight">{tr.analysis.history}</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Analizlerinizi yeniden açın veya artık ihtiyacınız olmayan kayıtları kaynak belgeleriyle birlikte yönetin.</p>
+        </div>
+      </div>
+      {!loading && !error && rows.length > 0 && <Button variant="outline" className="gap-2 rounded-xl" disabled={progress !== null} onClick={toggleSelectionMode}>
+        {selectionMode ? <X className="h-4 w-4" aria-hidden="true" /> : <Trash2 className="h-4 w-4" aria-hidden="true" />}
+        {selectionMode ? "Seçimi bitir" : "Seç ve sil"}
+      </Button>}
+    </div>
+
+    {notice && <p role={notice.kind === "error" ? "alert" : "status"}
+      className={"mt-6 rounded-2xl border px-4 py-3 text-sm leading-6 " + (notice.kind === "error" ? "border-red-500/25 bg-red-500/5 text-red-700 dark:text-red-300" : "border-emerald-500/25 bg-emerald-500/5 text-emerald-700 dark:text-emerald-300")}>{notice.text}</p>}
+
+    {selectionMode && rows.length > 0 && <div className="mt-7 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/[0.04] p-4 dark:border-secondary/20 dark:bg-secondary/[0.04] sm:p-5" aria-label="Toplu silme işlemleri">
+      <div><p className="font-semibold">{selectedRows.length} analiz seçildi</p><p className="mt-1 text-xs text-muted-foreground">Seçtiklerinizi silmeden önce onay isteyeceğiz.</p></div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="ghost" className="gap-2 rounded-xl" disabled={progress !== null} onClick={() => setSelectedIds(allSelected ? new Set() : new Set(rows.map(row => row.id)))}>
+          <CheckCheck className="h-4 w-4" aria-hidden="true" />{allSelected ? "Seçimi temizle" : "Tümünü seç"}
+        </Button>
+        <Button variant="outline" className="gap-2 rounded-xl border-red-500/30 text-red-700 hover:bg-red-500/10 dark:text-red-300" disabled={selectedRows.length === 0 || progress !== null}
+          onClick={() => setTarget({ items: selectedRows.map(row => ({ id: row.id, title: row.title })) })}>
+          <Trash2 className="h-4 w-4" aria-hidden="true" /> Seçilenleri sil
+        </Button>
+      </div>
+    </div>}
+
+    {loading ? <p role="status" className="mt-8">Geçmiş yükleniyor…</p> : error ? <p role="alert" className="mt-8">{error}</p> : rows.length ? <ul className="mt-7 space-y-3" aria-label="Analiz geçmişi">{rows.map(analysis => <li key={analysis.id} className="relative rounded-2xl border border-border/80 bg-card shadow-sm transition-colors hover:border-primary/25 dark:hover:border-secondary/25">
+      {selectionMode ? <label className="flex min-h-24 cursor-pointer flex-wrap items-center gap-4 rounded-2xl p-4 transition-colors hover:bg-muted/40 sm:p-5">
+        <input type="checkbox" className="h-5 w-5 shrink-0 accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          checked={selectedIds.has(analysis.id)} disabled={progress !== null} onChange={() => toggleSelected(analysis.id)} aria-label={analysis.title + " seç"} />
+        <span className="min-w-0 flex-1"><span className="block break-words font-semibold">{analysis.title}</span><span className="mt-1 block text-xs text-muted-foreground">{analysis.business} · {new Date(analysis.createdAt).toLocaleString("tr-TR")}</span></span>
+        <span className={"rounded-full border px-3 py-1 text-xs font-medium " + statusTone(analysis.status)}>{tr.status[analysis.status]}</span>
+      </label> : <div className="flex min-h-24 items-center gap-2 p-2 sm:gap-3">
+        <Link className="flex min-w-0 flex-1 items-center justify-between gap-3 rounded-xl px-2 py-3 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:px-3" to={"/app/analyses/" + analysis.id}>
+          <span className="min-w-0"><span className="block break-words font-semibold">{analysis.title}</span><span className="mt-1 block text-xs text-muted-foreground">{analysis.business} · {new Date(analysis.createdAt).toLocaleString("tr-TR")}</span><span className={"mt-2 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium sm:hidden " + statusTone(analysis.status)}>{tr.status[analysis.status]}</span></span>
+          <ArrowUpRight className="hidden h-4 w-4 shrink-0 text-muted-foreground sm:block" aria-hidden="true" />
+        </Link>
+        <div className="flex shrink-0 items-center gap-1 pr-1 sm:gap-2 sm:pr-2">
+          <span className={"hidden rounded-full border px-3 py-1 text-xs font-medium sm:inline-flex " + statusTone(analysis.status)}>{tr.status[analysis.status]}</span>
+          <HistoryActions analysis={analysis} disabled={progress !== null} onDelete={() => setTarget({ items: [{ id: analysis.id, title: analysis.title }] })} />
+        </div>
+      </div>}
+    </li>)}</ul> : <div className="mt-8 rounded-3xl border border-border bg-card p-8"><p>{tr.analysis.noHistory}</p><Link className="mt-4 inline-block text-primary underline dark:text-secondary" to="/app/new-analysis">İlk analizini hazırla</Link></div>}
+
+    <dialog ref={dialogRef} role="alertdialog" aria-labelledby="history-delete-title" aria-describedby="history-delete-description"
+      onCancel={event => { if (progress) event.preventDefault(); else setTarget(null); }}
+      onClose={() => { if (!progress) setTarget(null); }}
+      className="w-[min(92vw,30rem)] max-w-none rounded-3xl border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm">
+      <div className="p-6 sm:p-7">
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/10 text-red-700 dark:text-red-300"><Trash2 className="h-5 w-5" aria-hidden="true" /></span>
+        <h2 id="history-delete-title" className="mt-5 text-xl font-semibold">{target?.items.length === 1 ? "Bu analizi silmek istiyor musunuz?" : (target?.items.length ?? 0) + " analizi silmek istiyor musunuz?"}</h2>
+        <p id="history-delete-description" className="mt-2 text-sm leading-6 text-muted-foreground">Bu işlem geri alınamaz. Seçilen analizler, yüklenen kaynak belgeler ve hazırlanmış içerikler birlikte silinir.</p>
+        {target?.items.length === 1 && <p className="mt-4 break-words rounded-xl bg-muted px-4 py-3 text-sm font-medium">{target.items[0].title}</p>}
+        {progress && <p role="status" className="mt-4 text-sm text-muted-foreground">Siliniyor: {progress.done}/{progress.total}</p>}
+        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button ref={cancelRef} variant="outline" className="rounded-xl" disabled={progress !== null} onClick={() => setTarget(null)}>Vazgeç</Button>
+          <Button className="gap-2 rounded-xl bg-red-700 text-white hover:bg-red-800 dark:bg-red-600 dark:hover:bg-red-700" disabled={progress !== null} onClick={deleteConfirmed}>
+            <Trash2 className="h-4 w-4" aria-hidden="true" />{target?.items.length === 1 ? "Analizi sil" : (target?.items.length ?? 0) + " analizi sil"}
+          </Button>
+        </div>
+      </div>
+    </dialog>
   </section>;
 }

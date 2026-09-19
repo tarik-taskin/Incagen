@@ -61,3 +61,69 @@ test("kayıt, belge hazırlığı, geçmiş, silme ve çıkış", async ({ page 
   await expect(page.getByRole("dialog")).toHaveCount(0);
   expect(errors).toEqual([]);
 });
+
+test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışır", async ({ page }, testInfo) => {
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(error.message));
+  await page.goto("/app/new-analysis");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await page.getByLabel("E-posta", { exact: true }).fill("history-" + crypto.randomUUID() + "@example.test");
+  await page.getByLabel("Parola", { exact: true }).fill("Synthetic123!");
+  await page.getByLabel("Parola tekrarı", { exact: true }).fill("Synthetic123!");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Belgelerinizi analize hazırlayın" })).toBeVisible();
+
+  for (let index = 1; index <= 3; index++) {
+    if (index > 1) await page.goto("/app/new-analysis");
+    await page.getByLabel("Analiz edilecek dosyaları seç").setInputFiles({
+      name: "ornek-" + index + ".txt", mimeType: "text/plain",
+      buffer: Buffer.from("Sentetik analiz " + index),
+    });
+    await page.getByLabel("İşletme adı", { exact: true }).fill("Sentetik İşletme");
+    await page.getByLabel("Analiz başlığı", { exact: true }).fill("Geçmiş testi " + index);
+    await page.getByRole("button", { name: "Belgeleri ayrıştır" }).click();
+    await expect(page.getByText("Analize hazır", { exact: true })).toBeVisible();
+  }
+
+  await page.goto("/app/history");
+  const history = page.getByRole("list", { name: "Analiz geçmişi" });
+  await expect(history.getByRole("listitem")).toHaveCount(3);
+  await page.screenshot({ path: testInfo.outputPath("history-light.png"), fullPage: true });
+  const menuTrigger = page.getByRole("button", { name: "Geçmiş testi 1 için diğer işlemler" });
+  await menuTrigger.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("link", { name: "Analizi aç" })).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(menuTrigger).toBeFocused();
+
+  await menuTrigger.click();
+  await page.getByRole("button", { name: "Analizi sil", exact: true }).click();
+  const confirmation = page.getByRole("alertdialog");
+  await expect(confirmation).toContainText("Bu işlem geri alınamaz");
+  await confirmation.getByRole("button", { name: "Vazgeç" }).click();
+  await expect(history.getByRole("listitem")).toHaveCount(3);
+
+  await menuTrigger.click();
+  await page.getByRole("button", { name: "Analizi sil", exact: true }).click();
+  await confirmation.getByRole("button", { name: "Analizi sil", exact: true }).click();
+  await expect(history.getByRole("listitem")).toHaveCount(2);
+
+  await page.getByRole("button", { name: "Seç ve sil" }).click();
+  await page.getByRole("button", { name: "Tümünü seç" }).click();
+  await expect(page.getByText("2 analiz seçildi")).toBeVisible();
+  await page.getByRole("button", { name: "Karanlık moda geç" }).click();
+  await page.screenshot({ path: testInfo.outputPath("history-dark-selection.png"), fullPage: true });
+  const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+  expect(accessibility.violations).toEqual([]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+
+  await page.getByRole("button", { name: "Seçilenleri sil" }).click();
+  await expect(confirmation).toContainText("2 analizi silmek istiyor musunuz?");
+  await confirmation.getByRole("button", { name: "Vazgeç" }).click();
+  await expect(history.getByRole("listitem")).toHaveCount(2);
+  await expect(page.getByText("2 analiz seçildi")).toBeVisible();
+  await page.getByRole("button", { name: "Seçilenleri sil" }).click();
+  await confirmation.getByRole("button", { name: "2 analizi sil" }).click();
+  await expect(page.getByText("Henüz analiziniz yok.")).toBeVisible();
+  expect(errors).toEqual([]);
+});
