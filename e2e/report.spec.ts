@@ -102,7 +102,15 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
 
   await menuTrigger.click();
   await expect(menuTrigger).toHaveAttribute("aria-expanded", "true");
-  await page.getByRole("button", { name: "Analizi sil", exact: true }).click();
+  const menu = page.getByLabel("Geçmiş testi 1 işlemleri");
+  await expect(menu).toBeVisible();
+  if (testInfo.project.name === "mobile-chromium") {
+    const menuBottom = await menu.evaluate(element => element.getBoundingClientRect().bottom);
+    const navTop = await page.getByRole("navigation", { name: "Mobil navigasyon" })
+      .evaluate(element => element.getBoundingClientRect().top);
+    expect(menuBottom).toBeLessThan(navTop);
+  }
+  await menu.getByRole("button", { name: "Analizi sil", exact: true }).click();
   const confirmation = page.getByRole("alertdialog");
   await expect(confirmation).toContainText("Bu işlem geri alınamaz");
   await confirmation.getByRole("button", { name: "Vazgeç" }).click();
@@ -111,7 +119,7 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
 
   await menuTrigger.click();
   await expect(menuTrigger).toHaveAttribute("aria-expanded", "true");
-  await page.getByRole("button", { name: "Analizi sil", exact: true }).click();
+  await menu.getByRole("button", { name: "Analizi sil", exact: true }).click();
   await confirmation.getByRole("button", { name: "Analizi sil", exact: true }).click();
   await expect(page.getByRole("status").filter({ hasText: "1 analiz ve kaynak belgeleri silindi." })).toBeVisible({ timeout: 30_000 });
   await expect(history.getByRole("listitem")).toHaveCount(2, { timeout: 30_000 });

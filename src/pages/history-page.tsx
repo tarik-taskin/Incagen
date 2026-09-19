@@ -26,7 +26,7 @@ function statusTone(status: Analysis["status"]) {
   return "border-border bg-muted text-muted-foreground";
 }
 
-// Tekli silmeyi kartın üzerinde sürekli bir çöp kutusu göstermeden bağlamsal menüye yerleştirir.
+// Tekli silmeyi bağlamsal menüye yerleştirir; mobilde menüyü sabit alt navigasyonun üstüne açar.
 function HistoryActions({ analysis, disabled, onDelete }: { analysis: Analysis; disabled: boolean; onDelete: () => void }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -61,7 +61,7 @@ function HistoryActions({ analysis, disabled, onDelete }: { analysis: Analysis; 
       onClick={() => setOpen(value => !value)}>
       <MoreHorizontal className="h-5 w-5" aria-hidden="true" />
     </button>
-    {open && <div id={"history-actions-" + analysis.id} className="absolute right-0 top-full z-20 mt-1.5 w-48 rounded-2xl border border-border bg-card p-1.5 shadow-xl" aria-label={analysis.title + " işlemleri"}>
+    {open && <div id={"history-actions-" + analysis.id} className="absolute bottom-full right-0 z-40 mb-1.5 w-48 rounded-2xl border border-border bg-card p-1.5 shadow-xl lg:bottom-auto lg:top-full lg:mb-0 lg:mt-1.5" aria-label={analysis.title + " işlemleri"}>
       <Link ref={firstActionRef} to={"/app/analyses/" + analysis.id}
         className="flex min-h-10 items-center justify-between gap-2 rounded-xl px-3 text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         onClick={() => setOpen(false)}>Analizi aç <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
