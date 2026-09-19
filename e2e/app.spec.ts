@@ -111,15 +111,18 @@ test("farklı belge türleri hazırlanır ve listeden kaldırılabilir", async (
 test("boş geçmiş, bağlantı taslakları ve doğrulanmış hesap silme", async ({ page }, testInfo) => {
   await page.goto("/app/new-analysis");
   await register(page);
+  await expect(page.getByText("Bu aşamada analiz henüz başlamaz.", { exact: false })).toBeVisible();
+  await expect(page.getByText("AI çağrısı henüz yapılmaz.")).toHaveCount(0);
   const navigation = getAppNavigation(page);
   await navigation.getByRole("link", { name: "Plan" }).click();
   await expect(page.getByText("60 MB")).toHaveCount(2);
   await expect(page.getByRole("button", { name: "Premium'a geç" })).toBeDisabled();
   await expect(page.getByText("Premium özellikler planlama aşamasında")).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "Belge formatları iki planda da aynı" })).toHaveCount(0);
+  await expect(page.getByText("Premium ödeme, High AI analizi", { exact: false })).toHaveCount(0);
 
   await navigation.getByRole("link", { name: "Geçmiş" }).click();
-  await expect(page.getByRole("heading", { name: "Burada güzel şeyler birikecek." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "İş verilerinizi analize hazırlamaya başlayın." })).toBeVisible();
   await expect(page.getByRole("link", { name: "İlk analizini hazırla" })).toBeVisible();
   await expectNoAccessibilityViolations(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -131,6 +134,8 @@ test("boş geçmiş, bağlantı taslakları ve doğrulanmış hesap silme", asyn
   await navigation.getByRole("link", { name: "Ayarlar" }).click();
   await expect(page.getByRole("heading", { name: "Google Analytics" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Microsoft Clarity" })).toBeVisible();
+  await expect(page.getByText("Yerel demo ortamı")).toHaveCount(0);
+  await expect(page.getByText("Yakında", { exact: true })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Hesabı bağla" })).toHaveCount(2);
   for (const button of await page.getByRole("button", { name: "Hesabı bağla" }).all()) await expect(button).toBeDisabled();
   await expectNoAccessibilityViolations(page);

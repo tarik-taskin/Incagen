@@ -124,10 +124,6 @@ export function SettingsPage() {
             </div>
           </dl>
 
-          <div className="mt-6 rounded-2xl border border-primary/10 bg-primary/[0.05] p-4 text-sm leading-6 text-muted-foreground dark:border-secondary/10 dark:bg-secondary/[0.05]">
-            <p className="font-semibold text-foreground">Yerel demo ortamı</p>
-            <p className="mt-1">Yalnız sentetik veriler kullanın. Tamamlanan raporlar siz silene kadar bu hesaba bağlı kalır.</p>
-          </div>
         </article>
 
         <div className="space-y-5">
@@ -188,7 +184,7 @@ export function SettingsPage() {
             { name: "Google Analytics", subtitle: "Ziyaretçi ve trafik verileri", icon: BarChart3, tone: "from-amber-400/20 to-orange-500/10 text-amber-700 dark:text-amber-300" },
             { name: "Microsoft Clarity", subtitle: "Oturum ve davranış içgörüleri", icon: MousePointer2, tone: "from-sky-400/20 to-blue-500/10 text-sky-700 dark:text-sky-300" },
           ].map(({ name, subtitle, icon: Icon, tone }) => <article key={name} className="flex min-w-0 flex-col rounded-3xl border border-border bg-background/70 p-5 transition-colors hover:border-primary/25 dark:hover:border-secondary/25">
-            <div className="flex items-start justify-between gap-3"><span className={"flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br " + tone}><Icon className="h-6 w-6" aria-hidden="true" /></span><span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">Yakında</span></div>
+            <div><span className={"flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br " + tone}><Icon className="h-6 w-6" aria-hidden="true" /></span></div>
             <h3 className="mt-5 text-lg font-semibold">{name}</h3><p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
             <button type="button" disabled className="mt-6 min-h-11 w-full cursor-not-allowed rounded-xl border border-border bg-muted/60 px-4 text-sm font-semibold text-muted-foreground">Hesabı bağla</button>
           </article>)}

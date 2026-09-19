@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-20 — Furkan / Codex: ekran metinlerinde son düzenlemeler
+
+- [x] Sahip: Furkan — Plan alt notunu, Ayarlar'daki yerel demo kartını ve bağlantı kartlarındaki “Yakında” rozetlerini kaldır; boş geçmiş başlığını ve yeni analiz açıklamasını mevcut belge hazırlama davranışına uygun hale getir.
+
+Kabul: istenmeyen metinler görünmemeli; yeni analiz açıklaması bu aşamada analizin başlamadığını net söylemeli; boş geçmiş başlığı iş verileriyle ilgili olmalı; mevcut işlemler ve erişilebilirlik korunmalı. Kontroller sonrası PR açmadan doğrudan main'e push edilecek ve local/remote main ile Furkan dalları eşitlenecek.
+
+Doğrulama: lint, üretim derlemesi, 32 uygulama ve 7 parser testi geçti. Masaüstü/mobil 6 tarayıcı senaryosunda istenmeyen metinlerin yokluğu, yeni açıklama ve boş geçmiş başlığı, iki tema erişilebilirliği ve mobil taşma kontrol edildi.
+
 ### 2026-09-19 — Furkan / Codex: plan, hesap ve boş geçmiş iyileştirmeleri
 
 - [x] Sahip: Furkan — Plan ekranını sadeleştir, Premium toplamını 60 MB olarak tüm sözleşme ve belgelerde eşitle, Ayarlar'a gerçek hesap silme ile Google Analytics / Microsoft Clarity bağlantı taslaklarını ekle ve boş geçmişi iyileştir.

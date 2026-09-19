@@ -92,6 +92,5 @@ export function PlanPage() {
       </dl>
     </section>
 
-    <p className="mt-5 text-xs leading-5 text-muted-foreground">Premium ödeme, High AI analizi ve Google Analytics / Microsoft Clarity bağlantıları henüz kullanıma açılmadı. Bu ekran planlanan kapasiteyi gösterir; mevcut hesaplarda Free sınırları geçerlidir.</p>
   </section>;
 }
