@@ -30,11 +30,12 @@ async function register(page: Page) {
   await expect(page.getByRole("heading", { name: "Belgelerinizi analize hazırlayın" })).toBeVisible();
   await expect(page).toHaveURL(/\/app\/new-analysis$/);
 
-  await expect(page.getByText("5 MB/dosya · 30 MB/analiz")).toBeVisible();
-  await expect(page.getByText("5 MB/dosya · 50 MB/analiz")).toBeVisible();
+  await expect(page.getByText("Tüm planlar aynı belge formatlarını kabul eder.")).toBeVisible();
+  await expect(page.getByText("5 MB/dosya · 30 MB/analiz")).toHaveCount(0);
+  await expect(page.getByText("Yerel geliştirme ortamı — yalnız sentetik veriler kullanın.")).toHaveCount(0);
 }
 
-test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru yönetir", async ({ page }) => {
+test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru yönetir", async ({ page }, testInfo) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Verilerinizdeki büyüme fırsatlarını keşfedin." })).toBeVisible();
   await expectNoAccessibilityViolations(page);
@@ -50,13 +51,25 @@ test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru y
   await expect(page).toHaveURL(/\/app\/new-analysis$/);
   await expect(page.getByRole("heading", { name: "Belgelerinizi analize hazırlayın" })).toBeVisible();
 
+  const navigation = getAppNavigation(page);
+  await navigation.getByRole("link", { name: "Plan" }).click();
+  await expect(page.getByRole("heading", { name: "Planınızı ve sınırlarınızı görün" })).toBeVisible();
+  await expect(page.getByText("Google Analytics ve Microsoft Clarity · planlanan")).toBeVisible();
+  await expectNoAccessibilityViolations(page);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath("plan-dark.png"), fullPage: true });
+  await navigation.getByRole("link", { name: "Yeni analiz" }).click();
+
   await page.getByRole("button", { name: "Premium’a geç" }).click();
   await expect(page.getByRole("region", { name: "Premium üyelik yakında" })).toContainText("PayTR");
   await expectNoAccessibilityViolations(page);
   await page.mouse.click(12, 300);
   await expect(page.getByRole("region", { name: "Premium üyelik yakında" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Premium’a geç" }).click();
+  await page.getByRole("link", { name: "Planları karşılaştır" }).click();
+  await expect(page.getByRole("heading", { name: "Planınızı ve sınırlarınızı görün" })).toBeVisible();
+  await navigation.getByRole("link", { name: "Yeni analiz" }).click();
 
-  const navigation = getAppNavigation(page);
   await navigation.getByRole("link", { name: "Geçmiş" }).click();
   await expect(page.getByRole("heading", { name: "Geçmiş analizleriniz" })).toBeVisible();
   await navigation.getByRole("link", { name: "Ayarlar" }).click();
@@ -67,9 +80,17 @@ test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru y
   await expect(page.getByRole("heading", { name: "Verilerinizdeki büyüme fırsatlarını keşfedin." })).toBeVisible();
 });
 
-test("farklı belge türleri hazırlanır ve listeden kaldırılabilir", async ({ page }) => {
+test("farklı belge türleri hazırlanır ve listeden kaldırılabilir", async ({ page }, testInfo) => {
   await page.goto("/app/new-analysis");
   await register(page);
+  const navigation = getAppNavigation(page);
+  await navigation.getByRole("link", { name: "Plan" }).click();
+  await expect(page.getByRole("heading", { name: "Free" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Premium" })).toBeVisible();
+  await expectNoAccessibilityViolations(page);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath("plan-light.png"), fullPage: true });
+  await navigation.getByRole("link", { name: "Yeni analiz" }).click();
   const fileChooserPromise = page.waitForEvent("filechooser");
   await page.getByRole("group", { name: "Dosya seçim alanı" }).click({ position: { x: 24, y: 24 } });
   const fileChooser = await fileChooserPromise;

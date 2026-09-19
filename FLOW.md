@@ -22,6 +22,8 @@ Bu sürüm yalnız `demo-incagen` Firebase emülatörleriyle çalışır. Gerçe
 
 Premium ödeme ve yetkilendirmeleri henüz uygulanmadı. Mevcut oturumlar Free kabul edilir. Günlük kota sunucunun `Europe/Istanbul` takvim gününe göredir; işlem başında transaction ile rezerve edilir. Başarısız işlemde iade edilir; tamamlanmış analizi silmek kotayı geri getirmez. Aynı istek ve tekrarlanan çalıştırmalar çift kota tüketmez.
 
+Uygulamadaki Plan sekmesi aktif Free sınırlarını ve Premium için planlanan kapasiteyi karşılaştırır. Premium ödeme, AI derinliği ve harici veri bağlantıları etkin özellik gibi sunulmaz.
+
 ## Belge hazırlama davranışı
 
 - Free ve Premium aynı gerçek format kapsamını kullanır: CSV/TSV/XLSX, PDF/DOCX/TXT/Markdown, PPTX, JSON ve PNG/JPEG/WebP.

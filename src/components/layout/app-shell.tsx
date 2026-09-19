@@ -1,4 +1,4 @@
-import { FileBarChart2, History, Settings } from "lucide-react";
+import { Crown, FileBarChart2, History, Settings } from "lucide-react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { AnimatedLogo } from "../animated-logo";
 import { PremiumUpgrade } from "../premium-upgrade";
@@ -11,6 +11,7 @@ const navigationItems = [
   { to: "/app/new-analysis", label: "Yeni analiz", icon: FileBarChart2 },
   { to: "/app/history", label: "Geçmiş", icon: History },
   { to: "/app/settings", label: "Ayarlar", icon: Settings },
+  { to: "/app/plan", label: "Plan", icon: Crown },
 ];
 
 // Aktif rota bilgisini kullanarak masaüstü navigasyon bağlantılarının stilini üretir.
@@ -87,7 +88,7 @@ export function AppShell() {
         </main>
       </div>
 
-      <nav className="fixed inset-x-4 bottom-4 z-30 grid grid-cols-3 rounded-2xl border border-border/70 bg-card/95 p-1.5 shadow-xl backdrop-blur-xl lg:hidden" aria-label="Mobil navigasyon">
+      <nav className="fixed inset-x-4 bottom-4 z-30 grid grid-cols-4 rounded-2xl border border-border/70 bg-card/95 p-1.5 shadow-xl backdrop-blur-xl lg:hidden" aria-label="Mobil navigasyon">
         {navigationItems.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}

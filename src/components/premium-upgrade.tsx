@@ -1,5 +1,6 @@
-import { Crown, X } from "lucide-react";
+import { ArrowRight, Crown, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { PLAN_RULES } from "../features/plans/plan-rules";
 import { Button } from "./ui/button";
 
@@ -60,6 +61,7 @@ export function PremiumUpgrade() {
           </button>
           <p id="premium-upgrade-title" className="pr-8 text-sm font-semibold" role="status" aria-live="polite">Premium üyelik yakında</p>
           <p className="mt-1.5 text-xs leading-5 text-muted-foreground">{PLAN_RULES.premium.dailyAnalysisLimit} analiz/gün, {PLAN_RULES.premium.filesPerAnalysis} dosya/analiz, {PLAN_RULES.premium.fileBytes / 1024 ** 2} MB/dosya ve toplam {PLAN_RULES.premium.totalBytes / 1024 ** 2} MB; {PLAN_RULES.premium.analysisDepth} analiz zekâsı ile {PLAN_RULES.premium.externalSources} PayTR ödeme akışı hazır olduğunda sunulacak.</p>
+          <Link to="/app/plan" replace onClick={() => setIsOpen(false)} className="mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-lg text-xs font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary">Planları karşılaştır <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></Link>
         </div>
       )}
     </div>

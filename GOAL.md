@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-19 — Furkan / Codex: plan karşılaştırması ve yeni analiz sadeleştirmesi
+
+- [x] Sahip: Furkan — Yeni analizdeki yinelenen plan ve yerel ortam metinlerini kaldır; Ayarlar altına Free/Premium farkını gösteren ayrı Plan ekranı ekle.
+
+Kabul: yeni analiz ekranında Free/Premium açıklama kartları ve yerel geliştirme metni görünmemeli; ortak belge formatı cümlesi korunmalı; Plan ekranı merkezi plan kurallarındaki günlük/adet/boyut sınırlarını doğru göstermeli, aynı format kapsamını ve planlanan AI/bağlantı ayrımını açıklamalı; Premium'u etkin veya ücretli gösteren sahte eylem bulunmamalı; masaüstü/mobil navigasyon, iki tema ve erişilebilirlik doğrulanmalı.
+
+Doğrulama: lint, frontend üretim derlemesi, 32 uygulama ve 7 parser testi geçti. Çalışan Firebase emülatörlerinde masaüstü/mobil 8 tarayıcı senaryosu çalıştırıldı; iç bağlantının geri tuşu düzeltmesinden sonra ilgili 2 senaryo tekrar geçti. Plan ekranının iki tema görselleri, mobil taşma ve WCAG A/AA taramaları kontrol edildi.
+
 ### 2026-09-19 — Furkan / Codex: geçmişte güvenli silme deneyimi
 
 - [x] Sahip: Furkan — Geçmiş kartlarına tekli silme için bağlamsal işlem menüsü, toplu silme için seçim modu ve açık onay uyarısı ekle.

@@ -3,7 +3,6 @@ import { FileDropzone } from "../components/upload/file-dropzone";
 import { SelectedFileList } from "../components/upload/selected-file-list";
 import { Button } from "../components/ui/button";
 import { FREE_PLAN_FILE_LIMIT } from "../features/files/file-rules";
-import { PLAN_RULES } from "../features/plans/plan-rules";
 import { useWorkspace } from "../lib/workspace-context";
 import { tr } from "../i18n/tr";
 
@@ -20,7 +19,6 @@ export function NewAnalysisPage() {
     <p className="text-sm font-semibold text-primary dark:text-secondary">Yeni analiz · Free</p>
     <h1 id="new-analysis-title" className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{tr.analysis.title}</h1>
     <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">Belgelerinizi, tablolarınızı, sunumlarınızı, veri dosyalarınızı ve görsellerinizi tek analiz alanında bir araya getirin.</p>
-    <p className="mt-2 text-xs text-muted-foreground">{tr.auth.local} {tr.analysis.refresh}</p>
     <div className="mt-8 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
       <div className="min-w-0 space-y-6">
         <FileDropzone disabled={busy || files.length >= FREE_PLAN_FILE_LIMIT} onFilesSelected={addFiles} />
@@ -39,18 +37,7 @@ export function NewAnalysisPage() {
           <label className="block text-sm">{tr.analysis.business}<input className="form-control mt-1" maxLength={100} value={draft.business} onChange={e => setDraft(d => ({ ...d, business: e.target.value }))} /></label>
           <label className="block text-sm">{tr.analysis.titleLabel}<input className="form-control mt-1" maxLength={100} value={draft.title} onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} /></label>
         </fieldset>
-        <div className="mt-5 rounded-2xl border border-primary/10 bg-primary/[0.05] p-3.5 text-xs leading-5 text-muted-foreground dark:border-secondary/10 dark:bg-secondary/[0.05]">
-          <p className="font-semibold text-foreground">{PLAN_RULES.free.label} plan</p>
-          <p>{PLAN_RULES.free.dailyAnalysisLimit} analiz/gün · {PLAN_RULES.free.filesPerAnalysis} belge/analiz · {PLAN_RULES.free.analysisDepth} analiz zekâsı</p>
-          <p>{PLAN_RULES.free.fileBytes / 1024 ** 2} MB/dosya · {PLAN_RULES.free.totalBytes / 1024 ** 2} MB/analiz</p>
-        </div>
-        <div className="mt-3 rounded-2xl border border-border/80 p-3.5 text-xs leading-5 text-muted-foreground">
-          <p className="font-semibold text-foreground">Premium · yakında</p>
-          <p>{PLAN_RULES.premium.dailyAnalysisLimit} analiz/gün · {PLAN_RULES.premium.filesPerAnalysis} belge/analiz · {PLAN_RULES.premium.analysisDepth} analiz zekâsı</p>
-          <p>{PLAN_RULES.premium.fileBytes / 1024 ** 2} MB/dosya · {PLAN_RULES.premium.totalBytes / 1024 ** 2} MB/analiz</p>
-          <p>{PLAN_RULES.premium.externalSources}</p>
-        </div>
-        <p className="mt-4 text-xs leading-5 text-muted-foreground">Tüm planlar aynı belge formatlarını kabul eder. Şu anda Free sınırları uygulanır.</p>
+        <p className="mt-5 text-xs leading-5 text-muted-foreground">Tüm planlar aynı belge formatlarını kabul eder.</p>
         {busy && <div role="status" className="mt-4 text-sm"><p>{progress < 100 ? `Yükleniyor: %${progress}` : tr.status.processing}</p><progress aria-label="Yükleme ilerlemesi" className="mt-2 w-full accent-purple-700" value={progress} max={100} /></div>}
         {error && <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{error}</p>}
         <Button className="mt-5 w-full" disabled={busy || files.length === 0} onClick={submit}>{tr.analysis.start}</Button>
