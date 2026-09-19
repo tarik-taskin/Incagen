@@ -13,7 +13,9 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 Kabul: lint, birim/bileşen, build, tarayıcı ve Firebase entegrasyon kontrolleri temiz bir ortamda geçmeli; GitHub Quality koşusu yeşil doğrulanmalı; PR açılmadan main ve Furkan dalları eşitlenmeli. Tanı veya uzak koşu erişimi engellenirse somut neden ve eksik doğrulama burada belirtilmeli.
 
-Yerel doğrulama: Node 22 ve CI ayarıyla izole emülatörlerde 10 tarayıcı, 3 Firebase entegrasyon, 32 uygulama ve 7 parser testi; lint ve üretim derlemesi geçti. Önceki GitHub logunun gerçek assertion satırı paylaşılmadığından kesin kök neden bilinmiyor. Ortak emülatörlerde CI eşzamanlılığı azaltıldı; uzun silme akışı işlem sonucu ve canlı liste güncellemesini ayrı ayrı bekliyor. Uzak Quality sonucunun doğrulanması bekleniyor.
+Tanı: `0cd1b0a` Quality koşusu mobil geçmiş testinde `e2e/report.spec.ts:102` menü öğesine tıklarken düştü. Escape odağı hemen geri verirken React menüsünün kapanış render'ı bitmeyebiliyor; test, odak kontrolünden sonra menüyü yeniden tıklayarak açık menüyü kapatabiliyordu. Test artık `aria-expanded=false` durumunu ve iptal sonrası modal kapanışını bekliyor. CI emülatörleri tek tarayıcı işçisiyle kullanıyor, silme sonucu ile canlı liste ayrı doğrulanıyor. Eski Java aksiyonu güncellendi; Ubuntu koşucusu sabitlendi.
+
+Yerel doğrulama: Node 22 ve CI ayarıyla izole emülatörlerde tam 10 tarayıcı testi ve mobil rapor senaryolarında 20/20 tekrar, 3 Firebase entegrasyon, 32 uygulama ve 7 parser testi; lint ve üretim derlemesi geçti. Yeni GitHub Quality sonucunun doğrulanması bekleniyor.
 
 ### 2026-09-20 — Furkan / Codex: ekran metinlerinde son düzenlemeler
 

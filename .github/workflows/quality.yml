@@ -16,7 +16,7 @@ concurrency:
 jobs:
   quality:
     name: Lint, test, build and browser checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
 
     steps:
@@ -33,7 +33,7 @@ jobs:
         run: npm ci && npm --prefix functions ci
 
       - name: Set up Java for Firebase emulators
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21

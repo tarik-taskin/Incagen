@@ -97,15 +97,20 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
   await expect(page.getByRole("link", { name: "Analizi aç" })).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(menuTrigger).toBeFocused();
+  // Escape odaklamayı menü kapanmadan önce yapabildiği için kapanışın render edilmesini de bekler.
+  await expect(menuTrigger).toHaveAttribute("aria-expanded", "false");
 
   await menuTrigger.click();
+  await expect(menuTrigger).toHaveAttribute("aria-expanded", "true");
   await page.getByRole("button", { name: "Analizi sil", exact: true }).click();
   const confirmation = page.getByRole("alertdialog");
   await expect(confirmation).toContainText("Bu işlem geri alınamaz");
   await confirmation.getByRole("button", { name: "Vazgeç" }).click();
+  await expect(confirmation).not.toBeVisible();
   await expect(history.getByRole("listitem")).toHaveCount(3);
 
   await menuTrigger.click();
+  await expect(menuTrigger).toHaveAttribute("aria-expanded", "true");
   await page.getByRole("button", { name: "Analizi sil", exact: true }).click();
   await confirmation.getByRole("button", { name: "Analizi sil", exact: true }).click();
   await expect(page.getByRole("status").filter({ hasText: "1 analiz ve kaynak belgeleri silindi." })).toBeVisible({ timeout: 30_000 });
