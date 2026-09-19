@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-20 — Furkan / Codex: main Quality CI onarımı
+
+- [~] Sahip: Furkan — `067ba99` main push'unda mobil geçmiş testinin düştüğü Quality koşusunu onar ve yeni commit'in CI sonucunu doğrula.
+
+Kabul: lint, birim/bileşen, build, tarayıcı ve Firebase entegrasyon kontrolleri temiz bir ortamda geçmeli; GitHub Quality koşusu yeşil doğrulanmalı; PR açılmadan main ve Furkan dalları eşitlenmeli. Tanı veya uzak koşu erişimi engellenirse somut neden ve eksik doğrulama burada belirtilmeli.
+
+Yerel doğrulama: Node 22 ve CI ayarıyla izole emülatörlerde 10 tarayıcı, 3 Firebase entegrasyon, 32 uygulama ve 7 parser testi; lint ve üretim derlemesi geçti. Önceki GitHub logunun gerçek assertion satırı paylaşılmadığından kesin kök neden bilinmiyor. Ortak emülatörlerde CI eşzamanlılığı azaltıldı; uzun silme akışı işlem sonucu ve canlı liste güncellemesini ayrı ayrı bekliyor. Uzak Quality sonucunun doğrulanması bekleniyor.
+
 ### 2026-09-20 — Furkan / Codex: ekran metinlerinde son düzenlemeler
 
 - [x] Sahip: Furkan — Plan alt notunu, Ayarlar'daki yerel demo kartını ve bağlantı kartlarındaki “Yakında” rozetlerini kaldır; boş geçmiş başlığını ve yeni analiz açıklamasını mevcut belge hazırlama davranışına uygun hale getir.

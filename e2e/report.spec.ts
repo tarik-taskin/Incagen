@@ -63,6 +63,8 @@ test("kayıt, belge hazırlığı, geçmiş, silme ve çıkış", async ({ page 
 });
 
 test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışır", async ({ page }, testInfo) => {
+  // Üç hazırlama ve üç silme çağrısı CI'daki soğuk emülatörlerde tek ekran testinden uzun sürer.
+  test.setTimeout(120_000);
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/app/new-analysis");
@@ -82,7 +84,7 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
     await page.getByLabel("İşletme adı", { exact: true }).fill("Sentetik İşletme");
     await page.getByLabel("Analiz başlığı", { exact: true }).fill("Geçmiş testi " + index);
     await page.getByRole("button", { name: "Belgeleri ayrıştır" }).click();
-    await expect(page.getByText("Analize hazır", { exact: true })).toBeVisible();
+    await expect(page.getByText("Analize hazır", { exact: true })).toBeVisible({ timeout: 30_000 });
   }
 
   await page.goto("/app/history");
@@ -106,7 +108,8 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
   await menuTrigger.click();
   await page.getByRole("button", { name: "Analizi sil", exact: true }).click();
   await confirmation.getByRole("button", { name: "Analizi sil", exact: true }).click();
-  await expect(history.getByRole("listitem")).toHaveCount(2);
+  await expect(page.getByRole("status").filter({ hasText: "1 analiz ve kaynak belgeleri silindi." })).toBeVisible({ timeout: 30_000 });
+  await expect(history.getByRole("listitem")).toHaveCount(2, { timeout: 30_000 });
 
   await page.getByRole("button", { name: "Seç ve sil" }).click();
   await page.getByRole("button", { name: "Tümünü seç" }).click();
@@ -124,6 +127,7 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
   await expect(page.getByText("2 analiz seçildi")).toBeVisible();
   await page.getByRole("button", { name: "Seçilenleri sil" }).click();
   await confirmation.getByRole("button", { name: "2 analizi sil" }).click();
-  await expect(page.getByText("Henüz analiziniz yok.")).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: "2 analiz ve kaynak belgeleri silindi." })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText("Henüz analiziniz yok.")).toBeVisible({ timeout: 30_000 });
   expect(errors).toEqual([]);
 });

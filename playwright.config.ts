@@ -4,7 +4,8 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
-  workers: 2,
+  // CI'da ortak Firebase emülatörlerine aynı anda yük bindirmemek için senaryoları sırayla çalıştırır.
+  workers: process.env.CI ? 1 : 2,
   timeout: 60000,
   retries: 1,
   reporter: [["list"], ["html", { open: "never" }]],
