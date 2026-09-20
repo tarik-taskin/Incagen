@@ -9,13 +9,13 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ### 2026-09-20 — Furkan / Codex: main Quality CI onarımı
 
-- [~] Sahip: Furkan — `067ba99` main push'unda mobil geçmiş testinin düştüğü Quality koşusunu onar ve yeni commit'in CI sonucunu doğrula.
+- [x] Sahip: Furkan — `067ba99` main push'unda mobil geçmiş testinin düştüğü Quality koşusunu onar ve yeni commit'in CI sonucunu doğrula.
 
 Kabul: lint, birim/bileşen, build, tarayıcı ve Firebase entegrasyon kontrolleri temiz bir ortamda geçmeli; GitHub Quality koşusu yeşil doğrulanmalı; PR açılmadan main ve Furkan dalları eşitlenmeli. Tanı veya uzak koşu erişimi engellenirse somut neden ve eksik doğrulama burada belirtilmeli.
 
 Tanı: `0cd1b0a` ve `481b1d8` Quality koşuları mobil geçmiş testinde, menü açık olmasına rağmen `Analizi sil` tıklamasında düştü. Geçmişteki son karta odaklanınca aşağı açılan menü, `z-30` sabit mobil navigasyonun arkasında kalabiliyordu. Menü mobilde yukarı, masaüstünde aşağı açılıyor ve katman sırası düzeltildi; test mobil menünün navigasyondan yukarıda kaldığını ölçüyor. Escape ve modal kapanışı ile silme sonucu/canlı liste beklemeleri de korunuyor. CI emülatörleri tek tarayıcı işçisiyle kullanıyor; eski Java aksiyonu güncellendi ve Ubuntu koşucusu sabitlendi.
 
-Yerel doğrulama: Node 22 ve CI ayarıyla izole emülatörlerde tam 10 tarayıcı testi, önceki test düzeninde mobil rapor senaryolarında 20/20 tekrar, 3 Firebase entegrasyon, 32 uygulama ve 7 parser testi; lint ve üretim derlemesi geçti. Menünün yukarı konumu ve navigasyonla çakışmaması mobil testte doğrulandı. Yeni GitHub Quality sonucunun doğrulanması bekleniyor.
+Doğrulama: Node 22 ve CI ayarıyla izole emülatörlerde tam 10 tarayıcı testi, önceki test düzeninde mobil rapor senaryolarında 20/20 tekrar, 3 Firebase entegrasyon, 32 uygulama ve 7 parser testi; lint ve üretim derlemesi geçti. Menünün yukarı konumu ve navigasyonla çakışmaması mobil testte doğrulandı. `7d66f50` main commit'inin GitHub Quality koşusu 1/1 yeşil doğrulandı; local/remote main ve Furkan dalları bu committe eşitlendi.
 
 ### 2026-09-20 — Furkan / Codex: ekran metinlerinde son düzenlemeler
 
