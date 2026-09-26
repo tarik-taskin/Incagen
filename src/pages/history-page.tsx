@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { httpsCallable } from "firebase/functions";
-import { ArrowRight, ArrowUpRight, CheckCheck, FileClock, FilePlus2, MoreHorizontal, Sparkles, Trash2, X } from "lucide-react";
+import { Archive, ArrowRight, ArrowUpRight, CheckCheck, CircleCheckBig, FileClock, FilePlus2, LoaderCircle, MoreHorizontal, Sparkles, Trash2, TriangleAlert, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Analysis } from "../../functions/src/contracts";
 import { Button } from "../components/ui/button";
+import { summarizeHistory } from "../features/history/history-view";
 import { useAnalyses } from "../hooks/use-analyses";
 import { tr } from "../i18n/tr";
 import { userError } from "../lib/errors";
@@ -84,6 +85,7 @@ export function HistoryPage() {
   const cancelRef = useRef<HTMLButtonElement>(null);
   const selectedRows = rows.filter(row => selectedIds.has(row.id));
   const allSelected = rows.length > 0 && selectedRows.length === rows.length;
+  const summary = summarizeHistory(rows);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -163,6 +165,20 @@ export function HistoryPage() {
 
     {notice && <p role={notice.kind === "error" ? "alert" : "status"}
       className={"mt-6 rounded-2xl border px-4 py-3 text-sm leading-6 " + (notice.kind === "error" ? "border-red-500/25 bg-red-500/5 text-red-700 dark:text-red-300" : "border-emerald-500/25 bg-emerald-500/5 text-emerald-700 dark:text-emerald-300")}>{notice.text}</p>}
+
+    {!loading && !error && rows.length > 0 && <section className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Arşiv özeti">
+      {[
+        { label: "Toplam analiz", value: summary.total, icon: Archive, tone: "border-primary/15 bg-primary/[0.05] text-primary dark:border-secondary/20 dark:bg-secondary/[0.06] dark:text-secondary" },
+        { label: "Analize hazır", value: summary.completed, icon: CircleCheckBig, tone: "border-emerald-500/20 bg-emerald-500/[0.06] text-emerald-700 dark:text-emerald-300" },
+        { label: "Devam ediyor", value: summary.active, icon: LoaderCircle, tone: "border-amber-500/20 bg-amber-500/[0.06] text-amber-700 dark:text-amber-300" },
+        { label: "Dikkat istiyor", value: summary.failed, icon: TriangleAlert, tone: "border-red-500/20 bg-red-500/[0.05] text-red-700 dark:text-red-300" },
+      ].map(item => <div key={item.label} className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm sm:p-5">
+        <div className="flex items-center justify-between gap-3">
+          <div><p className="text-xs font-medium text-muted-foreground">{item.label}</p><p className="mt-2 text-2xl font-semibold tabular-nums">{item.value.toLocaleString("tr-TR")}</p></div>
+          <span className={"flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border " + item.tone}><item.icon className="h-4.5 w-4.5" aria-hidden="true" /></span>
+        </div>
+      </div>)}
+    </section>}
 
     {selectionMode && rows.length > 0 && <div className="mt-7 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/[0.04] p-4 dark:border-secondary/20 dark:bg-secondary/[0.04] sm:p-5" aria-label="Toplu silme işlemleri">
       <div><p className="font-semibold">{selectedRows.length} analiz seçildi</p><p className="mt-1 text-xs text-muted-foreground">Seçtiklerinizi silmeden önce onay isteyeceğiz.</p></div>

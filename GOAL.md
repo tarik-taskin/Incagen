@@ -7,6 +7,12 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-26 — Furkan / Codex: geçmiş arşivi keşif ve görünürlük
+
+- [~] Sahip: Furkan — Geçmiş ekranına arşiv özeti, yerel arama, durum/tarih filtreleri ve sıralama ekle; görünümü URL üzerinde korunabilir hale getir.
+
+Kabul: özet yalnız kullanıcının canlı analiz listesinden türetilmeli; arama başlık, işletme ve hazırlanmış kaynak belge adlarını kapsamalı; durum ve tarih filtreleri birlikte çalışmalı; sıralama ve filtreler geri/ileri gezinmede korunmalı; boş arşiv ile sonuç bulunamayan görünüm ayrılmalı; toplu seçim yalnız görünür sonuçlarda anlaşılır davranmalı; mobil/masaüstü, iki tema, klavye kullanımı ve erişilebilirlik doğrulanmalı.
+
 ### 2026-09-21 — Furkan / Codex: çalışan Netlify önizlemesi
 
 - [~] Sahip: Furkan — `incagen.netlify.app` üzerinde e-posta/parola kimliği, çıkış ve hesap silme dahil gerçek Firebase servislerine bağlı manuel Netlify yayını hazırla.
