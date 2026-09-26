@@ -34,3 +34,6 @@ functions/lib/
 .env
 .env.local
 .env.*.local
+
+# Local Netlify folder
+.netlify

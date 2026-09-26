@@ -2,7 +2,7 @@ export const tr = {
   auth: {
     login: "Giriş yap", register: "Hesap oluştur", logout: "Çıkış yap",
     email: "E-posta", password: "Parola", loading: "Oturum kontrol ediliyor…",
-    offline: "Yerel servisle bağlantı kurulamadı. Projeyi npm run dev komutuyla yeniden başlatın.",
+    offline: "Servisle bağlantı kurulamadı. Lütfen yeniden deneyin.",
     invalid: "E-posta veya parola geçersiz.", exists: "Bu e-posta zaten kayıtlı.",
     weak: "Parola en az 8 karakter olmalı.", generic: "İşlem tamamlanamadı. Yeniden deneyin.",
   },

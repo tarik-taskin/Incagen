@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-21 — Furkan / Codex: çalışan Netlify önizlemesi
+
+- [~] Sahip: Furkan — `incagen.netlify.app` üzerinde e-posta/parola kimliği, çıkış ve hesap silme dahil gerçek Firebase servislerine bağlı manuel Netlify yayını hazırla.
+
+Kabul: localhost emülatör akışı korunmalı; canlı frontend yalnız açıkça verilen Firebase web yapılandırmasını kullanmalı; Auth, Firestore, Storage ve Functions aynı gerçek projeye bağlanmalı; Netlify SPA rotaları yenilemede çalışmalı; giriş, kayıt, çıkış, parola sıfırlama ve hesap silme URL üzerinde doğrulanmalı. Hazırlık `furkan` dalında commitlenebilir; canlı doğrulama tamamlanmadan `main`e push yapılmayacak ve PR açılmayacak.
+
+Durum: Netlify sitesi `https://incagen.netlify.app` olarak Pludo Juniors hesabında oluşturuldu ve klasöre yerel olarak bağlandı. Tarık'ın Firebase proje erişimi/yapılandırması ve canlı servis durumu bekleniyor.
+
 ### 2026-09-20 — Furkan / Codex: main Quality CI onarımı
 
 - [x] Sahip: Furkan — `067ba99` main push'unda mobil geçmiş testinin düştüğü Quality koşusunu onar ve yeni commit'in CI sonucunu doğrula.

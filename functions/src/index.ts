@@ -9,7 +9,7 @@ import { z } from "zod";
 import { createSchema, getQuotaDay, LIMITS, type CreateAnalysis, type ReportSource } from "./contracts";
 import { countDocumentCharacters, DocumentParseError, parseDocument } from "./parsing";
 
-initializeApp({ projectId: "demo-incagen", storageBucket: "demo-incagen.appspot.com" });
+initializeApp();
 const db = getFirestore();
 const bucket = getStorage().bucket();
 const options = { region: "europe-west1", timeoutSeconds: 300, memory: "1GiB" as const };
@@ -19,18 +19,15 @@ const deleteAccountSchema = z.object({ confirmation: z.literal("HESABIMI SİL") 
 
 class FileValidationError extends Error {}
 
-// Yerel prototipte eksik emülatör ayarının gerçek Firebase servislerine erişmesini engeller.
-function requireLocal(uid: string | undefined) {
-  if (!process.env.FIRESTORE_EMULATOR_HOST || !process.env.FIREBASE_AUTH_EMULATOR_HOST || !process.env.FIREBASE_STORAGE_EMULATOR_HOST) {
-    throw new HttpsError("failed-precondition", "Bu sürüm yalnız tam yerel emülatör ortamında çalışır.");
-  }
+// Callable isteğin Firebase Auth tarafından doğrulanmış bir kullanıcıya ait olmasını zorunlu kılar.
+function requireUser(uid: string | undefined) {
   if (!uid) throw new HttpsError("unauthenticated", "Lütfen giriş yapın.");
   return uid;
 }
 
 // İstek kimliğiyle tekrar oluşturmayı tekilleştirir ve değişmez dosya manifestini kaydeder.
 export const createAnalysis = onCall(options, async request => {
-  const uid = requireLocal(request.auth?.uid);
+  const uid = requireUser(request.auth?.uid);
   const parsed = createSchema.safeParse(request.data);
   if (!parsed.success) throw new HttpsError("invalid-argument", parsed.error.issues[0].message);
   const input = parsed.data;
@@ -53,7 +50,7 @@ export const createAnalysis = onCall(options, async request => {
 
 // Yüklenmiş belgeleri kilitleyip doğrular; aynı hazırlığın eşzamanlı çağrıları tek kota ve tek sonuç kullanır.
 export const prepareAnalysis = onCall(options, async request => {
-  const uid = requireLocal(request.auth?.uid);
+  const uid = requireUser(request.auth?.uid);
   const parsed = idSchema.safeParse(request.data);
   if (!parsed.success) throw new HttpsError("invalid-argument", "Geçersiz analiz kimliği.");
   const ref = db.doc(`users/${uid}/analyses/${parsed.data.id}`);
@@ -145,7 +142,7 @@ export const prepareAnalysis = onCall(options, async request => {
 
 // Önce yazmayı kilitler, sonra kaynakları ve sonucu siler; yarım kalan silme tekrar denenebilir.
 export const deleteAnalysis = onCall(options, async request => {
-  const uid = requireLocal(request.auth?.uid);
+  const uid = requireUser(request.auth?.uid);
   const parsed = idSchema.safeParse(request.data);
   if (!parsed.success) throw new HttpsError("invalid-argument", "Geçersiz analiz kimliği.");
   const ref = db.doc(`users/${uid}/analyses/${parsed.data.id}`);
@@ -174,7 +171,7 @@ export const deleteAnalysis = onCall(options, async request => {
 
 // Yakın zamanda doğrulanmış hesap isteğinde yazmayı kilitler; verileri ve dosyaları temizleyip Auth hesabını en son siler.
 export const deleteAccount = onCall(options, async request => {
-  const uid = requireLocal(request.auth?.uid);
+  const uid = requireUser(request.auth?.uid);
   if (!deleteAccountSchema.safeParse(request.data).success) throw new HttpsError("invalid-argument", "Hesap silme onayı geçersiz.");
   const authTime = Number(request.auth?.token.auth_time ?? 0);
   if (!authTime || Date.now() / 1000 - authTime > 300) throw new HttpsError("failed-precondition", "Devam etmek için parolanızı yeniden doğrulayın.");

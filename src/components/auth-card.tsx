@@ -4,7 +4,7 @@ import { Apple, BadgeCheck, Check, Circle, Eye, EyeOff, KeyRound, Mail, ShieldCh
 import { tr } from "../i18n/tr";
 import { useAuth } from "../lib/auth-context";
 import { userError } from "../lib/errors";
-import { getServices } from "../lib/firebase";
+import { getServices, usesFirebaseEmulator } from "../lib/firebase";
 import { AnimatedLogo } from "./animated-logo";
 import { AuthSuccessTransition } from "./auth-success-transition";
 import { Button } from "./ui/button";
@@ -86,7 +86,7 @@ function SocialOption({ action, icon, name }: { action: string; icon: ReactNode;
   );
 }
 
-// Yerel Firebase kimlik işlemlerini doğrulamalı ve iki modlu modal formunda yürütür.
+// Firebase kimlik işlemlerini doğrulamalı ve iki modlu modal formunda yürütür.
 export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
   const { error: configError } = useAuth();
   const [register, setRegister] = useState(false);
@@ -156,7 +156,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
             </span>
             <div>
               <p className="font-semibold tracking-[-0.02em]">Incagen</p>
-              <p className="flex items-center gap-1 text-xs text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" /> Yerel analiz alanı</p>
+              <p className="flex items-center gap-1 text-xs text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" /> {usesFirebaseEmulator ? "Yerel analiz alanı" : "Güvenli analiz alanı"}</p>
             </div>
           </div>
           <Button type="button" variant="ghost" size="icon" className="shrink-0 rounded-xl" aria-label="Giriş penceresini kapat" onClick={onClose}>
@@ -171,7 +171,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
             {register ? "Kişisel analiz alanınızı oluşturun ve raporlarınızı bir arada yönetin." : "Analizlerinize ve kayıtlı raporlarınıza kaldığınız yerden devam edin."}
           </p>
           <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-primary/10 bg-primary/[0.05] px-2.5 py-1 text-xs font-medium text-primary dark:border-secondary/15 dark:bg-secondary/[0.07] dark:text-secondary">
-            <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" /> Yerel demo · Yalnız sentetik veri
+            <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" /> {usesFirebaseEmulator ? "Yerel demo · Yalnız sentetik veri" : "Firebase ile korunan hesap"}
           </span>
         </div>
 
