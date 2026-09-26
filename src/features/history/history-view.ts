@@ -18,6 +18,34 @@ export interface HistoryViewOptions {
   sort: HistorySort;
 }
 
+export const DEFAULT_HISTORY_VIEW: HistoryViewOptions = { query: "", status: "all", period: "all", sort: "newest" };
+const historyStatuses: HistoryStatusFilter[] = ["all", "completed", "active", "failed"];
+const historyPeriods: HistoryPeriodFilter[] = ["all", "7d", "30d", "90d"];
+const historySorts: HistorySort[] = ["newest", "oldest", "title"];
+
+// Adresteki bilinmeyen veya eski değerleri güvenli varsayılanlara indirger.
+export function parseHistoryView(params: URLSearchParams): HistoryViewOptions {
+  const status = params.get("status") as HistoryStatusFilter | null;
+  const period = params.get("period") as HistoryPeriodFilter | null;
+  const sort = params.get("sort") as HistorySort | null;
+  return {
+    query: params.get("q")?.slice(0, 100) ?? "",
+    status: status && historyStatuses.includes(status) ? status : "all",
+    period: period && historyPeriods.includes(period) ? period : "all",
+    sort: sort && historySorts.includes(sort) ? sort : "newest",
+  };
+}
+
+// Yalnız varsayılandan farklı seçimleri yazar; paylaşılabilir adresi kısa ve kararlı tutar.
+export function serializeHistoryView(options: HistoryViewOptions) {
+  const params = new URLSearchParams();
+  if (options.query.trim()) params.set("q", options.query.trim());
+  if (options.status !== "all") params.set("status", options.status);
+  if (options.period !== "all") params.set("period", options.period);
+  if (options.sort !== "newest") params.set("sort", options.sort);
+  return params;
+}
+
 const collator = new Intl.Collator("tr-TR", { sensitivity: "base", numeric: true });
 
 // Türkçe karakter ve boşluk farklarını aramada kullanıcı için öngörülebilir hale getirir.

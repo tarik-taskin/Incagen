@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { Archive, ArrowRight, ArrowUpRight, CheckCheck, CircleCheckBig, FileClock, FilePlus2, LoaderCircle, MoreHorizontal, RotateCcw, Search, SlidersHorizontal, Sparkles, Trash2, TriangleAlert, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import type { Analysis } from "../../functions/src/contracts";
 import { Button } from "../components/ui/button";
-import { buildHistoryView, summarizeHistory, type HistoryPeriodFilter, type HistorySort, type HistoryStatusFilter } from "../features/history/history-view";
+import { buildHistoryView, DEFAULT_HISTORY_VIEW, parseHistoryView, serializeHistoryView, summarizeHistory, type HistoryPeriodFilter, type HistorySort, type HistoryStatusFilter, type HistoryViewOptions } from "../features/history/history-view";
 import { useAnalyses } from "../hooks/use-analyses";
 import { tr } from "../i18n/tr";
 import { userError } from "../lib/errors";
@@ -81,10 +81,9 @@ export function HistoryPage() {
   const [target, setTarget] = useState<DeleteTarget | null>(null);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
-  const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<HistoryStatusFilter>("all");
-  const [periodFilter, setPeriodFilter] = useState<HistoryPeriodFilter>("all");
-  const [sort, setSort] = useState<HistorySort>("newest");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const view = parseHistoryView(searchParams);
+  const { query, status: statusFilter, period: periodFilter, sort } = view;
   const dialogRef = useRef<HTMLDialogElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const visibleRows = buildHistoryView(rows, { query, status: statusFilter, period: periodFilter, sort });
@@ -119,13 +118,12 @@ export function HistoryPage() {
     });
   }
 
-  function clearFilters() {
-    setQuery("");
-    setStatusFilter("all");
-    setPeriodFilter("all");
-    setSort("newest");
+  function updateView(update: Partial<HistoryViewOptions>) {
+    setSearchParams(serializeHistoryView({ ...view, ...update }), { replace: true });
     setSelectedIds(new Set());
   }
+
+  function clearFilters() { updateView(DEFAULT_HISTORY_VIEW); }
 
   // Onaydan sonra her analizi ayrı siler; kısmi hatada yalnız başarısız kayıtları seçili bırakır.
   async function deleteConfirmed() {
@@ -203,24 +201,24 @@ export function HistoryPage() {
         <label className="relative block">
           <span className="sr-only">Arşivde ara</span>
           <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-          <input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Başlık, işletme veya belge ara"
+          <input type="search" value={query} onChange={event => updateView({ query: event.target.value })} placeholder="Başlık, işletme veya belge ara"
             className="min-h-11 w-full rounded-xl border border-border bg-background py-2 pl-10 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:border-secondary dark:focus:ring-secondary/20" />
         </label>
         <label>
           <span className="sr-only">Duruma göre filtrele</span>
-          <select value={statusFilter} onChange={event => setStatusFilter(event.target.value as HistoryStatusFilter)} className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:border-secondary dark:focus:ring-secondary/20">
+          <select value={statusFilter} onChange={event => updateView({ status: event.target.value as HistoryStatusFilter })} className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:border-secondary dark:focus:ring-secondary/20">
             <option value="all">Tüm durumlar</option><option value="completed">Analize hazır</option><option value="active">Devam ediyor</option><option value="failed">Dikkat istiyor</option>
           </select>
         </label>
         <label>
           <span className="sr-only">Tarihe göre filtrele</span>
-          <select value={periodFilter} onChange={event => setPeriodFilter(event.target.value as HistoryPeriodFilter)} className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:border-secondary dark:focus:ring-secondary/20">
+          <select value={periodFilter} onChange={event => updateView({ period: event.target.value as HistoryPeriodFilter })} className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:border-secondary dark:focus:ring-secondary/20">
             <option value="all">Tüm tarihler</option><option value="7d">Son 7 gün</option><option value="30d">Son 30 gün</option><option value="90d">Son 90 gün</option>
           </select>
         </label>
         <label>
           <span className="sr-only">Analizleri sırala</span>
-          <select value={sort} onChange={event => setSort(event.target.value as HistorySort)} className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:border-secondary dark:focus:ring-secondary/20">
+          <select value={sort} onChange={event => updateView({ sort: event.target.value as HistorySort })} className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:border-secondary dark:focus:ring-secondary/20">
             <option value="newest">En yeni</option><option value="oldest">En eski</option><option value="title">Başlığa göre</option>
           </select>
         </label>

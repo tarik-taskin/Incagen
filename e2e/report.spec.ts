@@ -90,6 +90,18 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
   await page.goto("/app/history");
   const history = page.getByRole("list", { name: "Analiz geçmişi" });
   await expect(history.getByRole("listitem")).toHaveCount(3);
+  const archiveSummary = page.getByRole("region", { name: "Arşiv özeti" });
+  await expect(archiveSummary).toContainText("Toplam analiz3");
+  await expect(archiveSummary).toContainText("Analize hazır3");
+  await page.getByLabel("Arşivde ara").fill("Geçmiş testi 1");
+  await expect(history.getByRole("listitem")).toHaveCount(1);
+  await expect(page).toHaveURL(/q=Ge%C3%A7mi%C5%9F\+testi\+1/);
+  await page.reload();
+  await expect(page.getByLabel("Arşivde ara")).toHaveValue("Geçmiş testi 1");
+  await expect(history.getByRole("listitem")).toHaveCount(1);
+  await page.getByRole("button", { name: "Filtreleri temizle" }).click();
+  await expect(history.getByRole("listitem")).toHaveCount(3);
+  await expect(page).toHaveURL(/\/app\/history$/);
   await page.screenshot({ path: testInfo.outputPath("history-light.png"), fullPage: true });
   const menuTrigger = page.getByRole("button", { name: "Geçmiş testi 1 için diğer işlemler" });
   await menuTrigger.focus();
@@ -125,7 +137,7 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
   await expect(history.getByRole("listitem")).toHaveCount(2, { timeout: 30_000 });
 
   await page.getByRole("button", { name: "Seç ve sil" }).click();
-  await page.getByRole("button", { name: "Tümünü seç" }).click();
+  await page.getByRole("button", { name: "Görünenleri seç" }).click();
   await expect(page.getByText("2 analiz seçildi")).toBeVisible();
   await page.getByRole("button", { name: "Karanlık moda geç" }).click();
   await page.screenshot({ path: testInfo.outputPath("history-dark-selection.png"), fullPage: true });

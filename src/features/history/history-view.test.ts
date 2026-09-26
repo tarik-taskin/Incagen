@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Analysis, AnalysisStatus } from "../../../functions/src/contracts";
-import { buildHistoryView, summarizeHistory } from "./history-view";
+import { buildHistoryView, parseHistoryView, serializeHistoryView, summarizeHistory } from "./history-view";
 
 function analysis(id: string, status: AnalysisStatus): Analysis {
   return { id, title: id, business: "Sentetik İşletme", status, createdAt: 1, updatedAt: 1 };
@@ -49,5 +49,19 @@ describe("history view", () => {
 
     expect(buildHistoryView(rows, { query: "", status: "failed", period: "30d", sort: "title" }, now).map(row => row.id)).toEqual(["new-failed"]);
     expect(buildHistoryView(rows, { query: "", status: "active", period: "all", sort: "oldest" }, now).map(row => row.id)).toEqual(["active"]);
+  });
+
+  it("geçerli görünümü kısa URL parametrelerine çevirip geri okur", () => {
+    const options = { query: "Eylül özeti", status: "completed" as const, period: "30d" as const, sort: "title" as const };
+    const params = serializeHistoryView(options);
+
+    expect(params.toString()).toBe("q=Eyl%C3%BCl+%C3%B6zeti&status=completed&period=30d&sort=title");
+    expect(parseHistoryView(params)).toEqual(options);
+  });
+
+  it("bilinmeyen URL seçimlerinde güvenli varsayılanları kullanır", () => {
+    const params = new URLSearchParams("q=test&status=unknown&period=365d&sort=random");
+
+    expect(parseHistoryView(params)).toEqual({ query: "test", status: "all", period: "all", sort: "newest" });
   });
 });

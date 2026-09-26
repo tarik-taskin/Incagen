@@ -9,9 +9,11 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ### 2026-09-26 — Furkan / Codex: geçmiş arşivi keşif ve görünürlük
 
-- [~] Sahip: Furkan — Geçmiş ekranına arşiv özeti, yerel arama, durum/tarih filtreleri ve sıralama ekle; görünümü URL üzerinde korunabilir hale getir.
+- [x] Sahip: Furkan — Geçmiş ekranına arşiv özeti, yerel arama, durum/tarih filtreleri ve sıralama ekle; görünümü URL üzerinde korunabilir hale getir.
 
 Kabul: özet yalnız kullanıcının canlı analiz listesinden türetilmeli; arama başlık, işletme ve hazırlanmış kaynak belge adlarını kapsamalı; durum ve tarih filtreleri birlikte çalışmalı; sıralama ve filtreler geri/ileri gezinmede korunmalı; boş arşiv ile sonuç bulunamayan görünüm ayrılmalı; toplu seçim yalnız görünür sonuçlarda anlaşılır davranmalı; mobil/masaüstü, iki tema, klavye kullanımı ve erişilebilirlik doğrulanmalı.
+
+Doğrulama: lint, production build, 38 uygulama ve 7 Functions/parser testi geçti. Çalışan Firebase emülatörlerinde önce 8 bağımsız tarayıcı senaryosu, ardından düğme adı beklentisi güncellenen geçmiş senaryosu masaüstü ve mobilde 2/2 geçti; URL yenileme, arşiv özeti, arama temizleme, görünür toplu seçim, iki tema erişilebilirliği ve mobil taşma doğrulandı.
 
 ### 2026-09-21 — Furkan / Codex: çalışan Netlify önizlemesi
 
