@@ -10,6 +10,7 @@ export interface WorkspaceState {
   setDraft: (update: (draft: Draft) => Draft) => void;
   busy: boolean; progress: number; error: string; activeId: string;
   start: () => Promise<string | undefined>;
+  completeDraft: () => void;
   cancel: () => void;
 }
 export const WorkspaceContext = createContext<WorkspaceState | null>(null);

@@ -32,6 +32,13 @@ test("kayıt, belge hazırlığı, geçmiş, silme ve çıkış", async ({ page 
   await expect(page.getByRole("heading", { name: "Belgelerin içeriği ayrıştırıldı" })).toBeVisible();
   await expect(page.getByText("faaliyet-ozeti.txt", { exact: true })).toBeVisible();
   await expect(page.getByText("Sentetik faaliyet özeti".length.toLocaleString("tr-TR"), { exact: true })).toBeVisible();
+  const completedReportUrl = page.url();
+  await page.getByRole("link", { name: "Yeni analiz oluştur" }).click();
+  await expect(page.getByLabel("İşletme adı", { exact: true })).toHaveValue("Sentetik İşletme");
+  await expect(page.getByLabel("Analiz başlığı", { exact: true })).toHaveValue("");
+  await expect(page.getByText("faaliyet-ozeti.txt", { exact: true })).toHaveCount(0);
+  await page.getByRole("link", { name: "Son işlemi aç" }).click();
+  await expect(page).toHaveURL(completedReportUrl);
   for (const mode of ["light", "dark"]) {
     const dark = await page.locator("html").evaluate(e => e.classList.contains("dark"));
     if (dark !== (mode === "dark")) await page.getByRole("button", { name: /moda geç/ }).click();

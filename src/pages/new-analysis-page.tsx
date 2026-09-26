@@ -8,12 +8,15 @@ import { tr } from "../i18n/tr";
 
 // Farklı iş belgesi türlerini analiz hazırlığı ve güvenli yerel yükleme akışında birleştirir.
 export function NewAnalysisPage() {
-  const { selection, draft, setDraft, busy, progress, error, activeId, start, cancel } = useWorkspace();
+  const { selection, draft, setDraft, busy, progress, error, activeId, start, completeDraft, cancel } = useWorkspace();
   const { files, rejections, addFiles, removeFile, clearFiles, dismissRejections } = selection;
   const navigate = useNavigate();
   async function submit() {
     const id = await start();
-    if (id) navigate("/app/analyses/" + id);
+    if (id) {
+      completeDraft();
+      navigate("/app/analyses/" + id);
+    }
   }
   return <section aria-labelledby="new-analysis-title">
     <p className="text-sm font-semibold text-primary dark:text-secondary">Yeni analiz · Free</p>

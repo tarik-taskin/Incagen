@@ -65,6 +65,14 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     } catch (e) { if (!cancelled.current) setError(userError(e)); else setError("Yükleme iptal edildi; dosyalarınız korundu."); }
     finally { task.current = null; lock.current = false; setBusy(false); }
   }
+  // Başarılı hazırlıktan sonra yeni iş için dosya ve başlığı temizler; oturumdaki işletme ve son iş bağlantısını korur.
+  function completeDraft() {
+    selection.clearFiles();
+    setDraft(current => ({ ...current, title: "" }));
+    setProgress(0);
+    setError("");
+    request.current = null;
+  }
   function cancel() { cancelled.current = true; task.current?.cancel(); }
-  return <WorkspaceContext.Provider value={{ selection, draft, setDraft, busy, progress, error, activeId, start, cancel }}>{children}</WorkspaceContext.Provider>;
+  return <WorkspaceContext.Provider value={{ selection, draft, setDraft, busy, progress, error, activeId, start, completeDraft, cancel }}>{children}</WorkspaceContext.Provider>;
 }

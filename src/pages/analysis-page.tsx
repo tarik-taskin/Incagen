@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FileCheck2, Files, HardDrive, Sparkles } from "lucide-react";
+import { FileCheck2, FilePlus2, Files, HardDrive, Sparkles } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { httpsCallable } from "firebase/functions";
 import { Button } from "../components/ui/button";
@@ -60,6 +60,7 @@ export function AnalysisPage() {
       </section>
     </>}
     <div className="mt-6 flex flex-wrap gap-3">
+      <Button asChild><Link className="gap-2" to="/app/new-analysis"><FilePlus2 className="h-4 w-4" aria-hidden="true" /> Yeni analiz oluştur</Link></Button>
       {["failed", "processing"].includes(analysis.status) && <Button disabled={busy} onClick={() => action("prepareAnalysis")}>{tr.analysis.retry}</Button>}
       <Button variant="outline" disabled={busy} onClick={() => action("deleteAnalysis")}>{tr.analysis.delete}</Button>
     </div>

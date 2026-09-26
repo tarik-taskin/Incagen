@@ -67,4 +67,17 @@ describe("NewAnalysisPage", () => {
     expect(screen.getByText(/belge-10.pdf:/)).toBeInTheDocument();
     expect(input).toBeDisabled();
   });
+
+  it("doğrulama başarısız olduğunda dosya ve analiz başlığını yeniden deneme için korur", async () => {
+    const user = setupUser();
+    renderPage();
+    await user.upload(screen.getByLabelText("Analiz edilecek dosyaları seç"), new File(["test"], "faaliyet.txt", { type: "text/plain" }));
+    await user.type(screen.getByLabelText("Analiz başlığı"), "Korunacak taslak");
+
+    await user.click(screen.getByRole("button", { name: "Belgeleri ayrıştır" }));
+
+    expect(screen.getByRole("alert")).toHaveTextContent("İşletme ve analiz başlığını doldurun");
+    expect(screen.getByText("faaliyet.txt")).toBeInTheDocument();
+    expect(screen.getByLabelText("Analiz başlığı")).toHaveValue("Korunacak taslak");
+  });
 });

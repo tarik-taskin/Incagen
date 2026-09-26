@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-26 — Furkan / Codex: başarılı analiz sonrası temiz taslak
+
+- [x] Sahip: Furkan — Başarılı belge hazırlığından sonra dosya ve analiz başlığı taslağını temizle; işletme adını koru ve sonuçtan yeni analize açık geçiş ekle.
+
+Kabul: taslak yalnız backend hazırlığı başarıyla tamamlandıktan sonra temizlenmeli; seçili dosyalar, reddetme bildirimleri, analiz başlığı, ilerleme ve tekrar kimliği sıfırlanmalı; işletme adı ile son analiz bağlantısı korunmalı; doğrulama/ağ hatası veya iptalde kullanıcının girdileri yeniden deneme için kalmalı; sonuç ekranındaki yeni analiz eylemi temiz forma götürmeli.
+
+Doğrulama: lint, frontend ve Functions production build, 39 uygulama ve 7 Functions/parser testi geçti. Firebase emülatörlü tam kayıt → hazırlama → yeni analiz → son iş → geçmiş → silme → çıkış akışı masaüstü ve mobilde 2/2 geçti; başarılı işlemde dosya/başlık temizliği ve işletme adı korunması, başarısız doğrulamada taslağın kalması doğrulandı.
+
 ### 2026-09-26 — Furkan / Codex: arşiv özeti açıklamaları
 
 - [x] Sahip: Furkan — Geçmiş özet kartlarının anlamını hover, klavye odağı ve ekran okuyucu kullanımında kısa açıklama balonlarıyla göster.
