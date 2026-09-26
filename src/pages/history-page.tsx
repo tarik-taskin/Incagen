@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { httpsCallable } from "firebase/functions";
-import { Archive, ArrowRight, ArrowUpRight, CheckCheck, CircleCheckBig, FileClock, FilePlus2, LoaderCircle, MoreHorizontal, Sparkles, Trash2, TriangleAlert, X } from "lucide-react";
+import { Archive, ArrowRight, ArrowUpRight, CheckCheck, CircleCheckBig, FileClock, FilePlus2, LoaderCircle, MoreHorizontal, RotateCcw, Search, SlidersHorizontal, Sparkles, Trash2, TriangleAlert, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Analysis } from "../../functions/src/contracts";
 import { Button } from "../components/ui/button";
-import { summarizeHistory } from "../features/history/history-view";
+import { buildHistoryView, summarizeHistory, type HistoryPeriodFilter, type HistorySort, type HistoryStatusFilter } from "../features/history/history-view";
 import { useAnalyses } from "../hooks/use-analyses";
 import { tr } from "../i18n/tr";
 import { userError } from "../lib/errors";
@@ -81,11 +81,17 @@ export function HistoryPage() {
   const [target, setTarget] = useState<DeleteTarget | null>(null);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<HistoryStatusFilter>("all");
+  const [periodFilter, setPeriodFilter] = useState<HistoryPeriodFilter>("all");
+  const [sort, setSort] = useState<HistorySort>("newest");
   const dialogRef = useRef<HTMLDialogElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
-  const selectedRows = rows.filter(row => selectedIds.has(row.id));
-  const allSelected = rows.length > 0 && selectedRows.length === rows.length;
+  const visibleRows = buildHistoryView(rows, { query, status: statusFilter, period: periodFilter, sort });
+  const selectedRows = visibleRows.filter(row => selectedIds.has(row.id));
+  const allSelected = visibleRows.length > 0 && selectedRows.length === visibleRows.length;
   const summary = summarizeHistory(rows);
+  const hasFilters = query.trim() !== "" || statusFilter !== "all" || periodFilter !== "all" || sort !== "newest";
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -111,6 +117,14 @@ export function HistoryPage() {
       else next.add(id);
       return next;
     });
+  }
+
+  function clearFilters() {
+    setQuery("");
+    setStatusFilter("all");
+    setPeriodFilter("all");
+    setSort("newest");
+    setSelectedIds(new Set());
   }
 
   // Onaydan sonra her analizi ayrı siler; kısmi hatada yalnız başarısız kayıtları seçili bırakır.
@@ -180,11 +194,45 @@ export function HistoryPage() {
       </div>)}
     </section>}
 
-    {selectionMode && rows.length > 0 && <div className="mt-7 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/[0.04] p-4 dark:border-secondary/20 dark:bg-secondary/[0.04] sm:p-5" aria-label="Toplu silme işlemleri">
+    {!loading && !error && rows.length > 0 && <section className="mt-6 rounded-2xl border border-border/80 bg-card p-4 shadow-sm sm:p-5" aria-labelledby="history-filter-title">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2"><SlidersHorizontal className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" /><h2 id="history-filter-title" className="text-sm font-semibold">Arşivde bul</h2></div>
+        <p className="text-xs text-muted-foreground" aria-live="polite">{visibleRows.length.toLocaleString("tr-TR")} / {rows.length.toLocaleString("tr-TR")} analiz gösteriliyor</p>
+      </div>
+      <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(15rem,1fr)_repeat(3,minmax(9rem,auto))]">
+        <label className="relative block">
+          <span className="sr-only">Arşivde ara</span>
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+          <input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Başlık, işletme veya belge ara"
+            className="min-h-11 w-full rounded-xl border border-border bg-background py-2 pl-10 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:border-secondary dark:focus:ring-secondary/20" />
+        </label>
+        <label>
+          <span className="sr-only">Duruma göre filtrele</span>
+          <select value={statusFilter} onChange={event => setStatusFilter(event.target.value as HistoryStatusFilter)} className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:border-secondary dark:focus:ring-secondary/20">
+            <option value="all">Tüm durumlar</option><option value="completed">Analize hazır</option><option value="active">Devam ediyor</option><option value="failed">Dikkat istiyor</option>
+          </select>
+        </label>
+        <label>
+          <span className="sr-only">Tarihe göre filtrele</span>
+          <select value={periodFilter} onChange={event => setPeriodFilter(event.target.value as HistoryPeriodFilter)} className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:border-secondary dark:focus:ring-secondary/20">
+            <option value="all">Tüm tarihler</option><option value="7d">Son 7 gün</option><option value="30d">Son 30 gün</option><option value="90d">Son 90 gün</option>
+          </select>
+        </label>
+        <label>
+          <span className="sr-only">Analizleri sırala</span>
+          <select value={sort} onChange={event => setSort(event.target.value as HistorySort)} className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:border-secondary dark:focus:ring-secondary/20">
+            <option value="newest">En yeni</option><option value="oldest">En eski</option><option value="title">Başlığa göre</option>
+          </select>
+        </label>
+      </div>
+      {hasFilters && <button type="button" className="mt-3 inline-flex min-h-9 items-center gap-2 rounded-lg px-2 text-xs font-semibold text-primary hover:bg-primary/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary dark:hover:bg-secondary/[0.08]" onClick={clearFilters}><RotateCcw className="h-3.5 w-3.5" aria-hidden="true" /> Filtreleri temizle</button>}
+    </section>}
+
+    {selectionMode && visibleRows.length > 0 && <div className="mt-7 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/[0.04] p-4 dark:border-secondary/20 dark:bg-secondary/[0.04] sm:p-5" aria-label="Toplu silme işlemleri">
       <div><p className="font-semibold">{selectedRows.length} analiz seçildi</p><p className="mt-1 text-xs text-muted-foreground">Seçtiklerinizi silmeden önce onay isteyeceğiz.</p></div>
       <div className="flex flex-wrap items-center gap-2">
-        <Button variant="ghost" className="gap-2 rounded-xl" disabled={progress !== null} onClick={() => setSelectedIds(allSelected ? new Set() : new Set(rows.map(row => row.id)))}>
-          <CheckCheck className="h-4 w-4" aria-hidden="true" />{allSelected ? "Seçimi temizle" : "Tümünü seç"}
+        <Button variant="ghost" className="gap-2 rounded-xl" disabled={progress !== null} onClick={() => setSelectedIds(allSelected ? new Set() : new Set(visibleRows.map(row => row.id)))}>
+          <CheckCheck className="h-4 w-4" aria-hidden="true" />{allSelected ? "Seçimi temizle" : "Görünenleri seç"}
         </Button>
         <Button variant="outline" className="gap-2 rounded-xl border-red-500/30 text-red-700 hover:bg-red-500/10 dark:text-red-300" disabled={selectedRows.length === 0 || progress !== null}
           onClick={() => setTarget({ items: selectedRows.map(row => ({ id: row.id, title: row.title })) })}>
@@ -193,7 +241,7 @@ export function HistoryPage() {
       </div>
     </div>}
 
-    {loading ? <p role="status" className="mt-8">Geçmiş yükleniyor…</p> : error ? <p role="alert" className="mt-8">{error}</p> : rows.length ? <ul className="mt-7 space-y-3" aria-label="Analiz geçmişi">{rows.map(analysis => <li key={analysis.id} className="relative rounded-2xl border border-border/80 bg-card shadow-sm transition-colors hover:border-primary/25 dark:hover:border-secondary/25">
+    {loading ? <p role="status" className="mt-8">Geçmiş yükleniyor…</p> : error ? <p role="alert" className="mt-8">{error}</p> : rows.length && visibleRows.length ? <ul className="mt-7 space-y-3" aria-label="Analiz geçmişi">{visibleRows.map(analysis => <li key={analysis.id} className="relative rounded-2xl border border-border/80 bg-card shadow-sm transition-colors hover:border-primary/25 dark:hover:border-secondary/25">
       {selectionMode ? <label className="flex min-h-24 cursor-pointer flex-wrap items-center gap-4 rounded-2xl p-4 transition-colors hover:bg-muted/40 sm:p-5">
         <input type="checkbox" className="h-5 w-5 shrink-0 accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           checked={selectedIds.has(analysis.id)} disabled={progress !== null} onChange={() => toggleSelected(analysis.id)} aria-label={analysis.title + " seç"} />
@@ -209,7 +257,9 @@ export function HistoryPage() {
           <HistoryActions analysis={analysis} disabled={progress !== null} onDelete={() => setTarget({ items: [{ id: analysis.id, title: analysis.title }] })} />
         </div>
       </div>}
-    </li>)}</ul> : <div className="relative mt-8 overflow-hidden rounded-[2rem] border border-primary/15 bg-gradient-to-br from-card via-card to-primary/[0.07] p-7 shadow-sm dark:border-secondary/20 dark:to-secondary/[0.07] sm:p-10">
+    </li>)}</ul> : rows.length ? <div className="mt-7 rounded-3xl border border-dashed border-border bg-card/60 px-6 py-12 text-center">
+      <Search className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden="true" /><h2 className="mt-4 text-xl font-semibold">Bu ölçütlerle eşleşen analiz yok</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">Arama ifadenizi veya seçtiğiniz durum ve tarih aralığını değiştirerek tekrar deneyin.</p><Button variant="outline" className="mt-5 gap-2 rounded-xl" onClick={clearFilters}><RotateCcw className="h-4 w-4" aria-hidden="true" /> Filtreleri temizle</Button>
+    </div> : <div className="relative mt-8 overflow-hidden rounded-[2rem] border border-primary/15 bg-gradient-to-br from-card via-card to-primary/[0.07] p-7 shadow-sm dark:border-secondary/20 dark:to-secondary/[0.07] sm:p-10">
       <span className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/10 blur-3xl dark:bg-secondary/10" aria-hidden="true" />
       <div className="relative flex flex-col items-start gap-8 md:flex-row md:items-center md:justify-between">
         <div className="max-w-xl"><span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-3 py-1.5 text-xs font-semibold text-primary dark:border-secondary/20 dark:bg-secondary/10 dark:text-secondary"><Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> İlk adım</span><h2 className="mt-5 text-2xl font-semibold tracking-tight sm:text-3xl">İş verilerinizi analize hazırlamaya başlayın.</h2><p className="mt-3 text-sm leading-7 text-muted-foreground">{tr.analysis.noHistory} İlk belgelerinizi eklediğinizde hazırladığınız analizleri burada yeniden açabilecek ve yönetebileceksiniz.</p><Link to="/app/new-analysis" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/90">İlk analizini hazırla <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></div>
