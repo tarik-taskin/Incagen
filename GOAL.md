@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-26 — Furkan / Codex: arşiv özeti açıklamaları
+
+- [x] Sahip: Furkan — Geçmiş özet kartlarının anlamını hover, klavye odağı ve ekran okuyucu kullanımında kısa açıklama balonlarıyla göster.
+
+Kabul: dört kartın açıklaması durum kapsamını doğru anlatmalı; balon kartın üstünde küçük ve okunaklı görünmeli; mobil genişlikte taşmamalı; yalnız renge veya fare kullanımına bağlı olmamalı.
+
+Doğrulama: lint, production build, 38 uygulama ve 7 Functions/parser testi geçti. Firebase emülatörlü geçmiş senaryosunda tooltip hover ve klavye odağıyla açıldı; masaüstü ve mobil koşu 2/2 geçti, iki tema erişilebilirliği ve yatay taşma kontrolü korundu.
+
 ### 2026-09-26 — Furkan / Codex: geçmiş arşivi keşif ve görünürlük
 
 - [x] Sahip: Furkan — Geçmiş ekranına arşiv özeti, yerel arama, durum/tarih filtreleri ve sıralama ekle; görünümü URL üzerinde korunabilir hale getir.

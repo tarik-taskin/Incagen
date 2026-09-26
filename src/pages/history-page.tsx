@@ -180,14 +180,17 @@ export function HistoryPage() {
 
     {!loading && !error && rows.length > 0 && <section className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Arşiv özeti">
       {[
-        { label: "Toplam analiz", value: summary.total, icon: Archive, tone: "border-primary/15 bg-primary/[0.05] text-primary dark:border-secondary/20 dark:bg-secondary/[0.06] dark:text-secondary" },
-        { label: "Analize hazır", value: summary.completed, icon: CircleCheckBig, tone: "border-emerald-500/20 bg-emerald-500/[0.06] text-emerald-700 dark:text-emerald-300" },
-        { label: "Devam ediyor", value: summary.active, icon: LoaderCircle, tone: "border-amber-500/20 bg-amber-500/[0.06] text-amber-700 dark:text-amber-300" },
-        { label: "Dikkat istiyor", value: summary.failed, icon: TriangleAlert, tone: "border-red-500/20 bg-red-500/[0.05] text-red-700 dark:text-red-300" },
-      ].map(item => <div key={item.label} className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm sm:p-5">
+        { label: "Toplam analiz", description: "Arşivinizde bulunan tüm analiz kayıtları.", value: summary.total, icon: Archive, tone: "border-primary/15 bg-primary/[0.05] text-primary dark:border-secondary/20 dark:bg-secondary/[0.06] dark:text-secondary" },
+        { label: "Analize hazır", description: "Belgeleri başarıyla ayrıştırılan ve açılmaya hazır analizler.", value: summary.completed, icon: CircleCheckBig, tone: "border-emerald-500/20 bg-emerald-500/[0.06] text-emerald-700 dark:text-emerald-300" },
+        { label: "Devam ediyor", description: "Taslak, yükleme, ayrıştırma veya silme işlemi süren analizler.", value: summary.active, icon: LoaderCircle, tone: "border-amber-500/20 bg-amber-500/[0.06] text-amber-700 dark:text-amber-300" },
+        { label: "Dikkat istiyor", description: "Hazırlama sırasında hata alan ve yeniden denenebilecek analizler.", value: summary.failed, icon: TriangleAlert, tone: "border-red-500/20 bg-red-500/[0.05] text-red-700 dark:text-red-300" },
+      ].map((item, index) => <div key={item.label} tabIndex={0} aria-describedby={`history-summary-help-${index}`} className="group relative rounded-2xl border border-border/80 bg-card p-4 shadow-sm outline-none transition-colors hover:border-primary/25 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25 dark:hover:border-secondary/25 dark:focus-visible:border-secondary dark:focus-visible:ring-secondary/25 sm:p-5">
         <div className="flex items-center justify-between gap-3">
           <div><p className="text-xs font-medium text-muted-foreground">{item.label}</p><p className="mt-2 text-2xl font-semibold tabular-nums">{item.value.toLocaleString("tr-TR")}</p></div>
           <span className={"flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border " + item.tone}><item.icon className="h-4.5 w-4.5" aria-hidden="true" /></span>
+        </div>
+        <div id={`history-summary-help-${index}`} role="tooltip" className="pointer-events-none invisible absolute bottom-[calc(100%+0.65rem)] left-1/2 z-30 w-64 max-w-[calc(100vw-3rem)] -translate-x-1/2 translate-y-1 rounded-xl border border-primary/15 bg-card px-3.5 py-2.5 text-center text-xs font-medium leading-5 text-foreground opacity-0 shadow-xl shadow-primary/10 transition duration-150 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 dark:border-secondary/20 dark:shadow-secondary/10">
+          {item.description}<span className="absolute left-1/2 top-full h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rotate-45 border-b border-r border-primary/15 bg-card dark:border-secondary/20" aria-hidden="true" />
         </div>
       </div>)}
     </section>}

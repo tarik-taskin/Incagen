@@ -93,6 +93,11 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
   const archiveSummary = page.getByRole("region", { name: "Arşiv özeti" });
   await expect(archiveSummary).toContainText("Toplam analiz3");
   await expect(archiveSummary).toContainText("Analize hazır3");
+  const completedSummary = archiveSummary.locator('[aria-describedby="history-summary-help-1"]');
+  await completedSummary.hover();
+  await expect(page.getByRole("tooltip", { name: "Belgeleri başarıyla ayrıştırılan ve açılmaya hazır analizler." })).toBeVisible();
+  await completedSummary.focus();
+  await expect(completedSummary).toBeFocused();
   await page.getByLabel("Arşivde ara").fill("Geçmiş testi 1");
   await expect(history.getByRole("listitem")).toHaveCount(1);
   await expect(page).toHaveURL(/q=Ge%C3%A7mi%C5%9F\+testi\+1/);
