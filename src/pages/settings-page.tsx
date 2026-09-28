@@ -8,6 +8,7 @@ import { useAuth } from "../lib/auth-context";
 import { getServices } from "../lib/firebase";
 import { userError } from "../lib/errors";
 import { tr } from "../i18n/tr";
+import { authOnlyPreview } from "../lib/deployment-mode";
 
 type ResetStatus = "idle" | "sending" | "sent";
 
@@ -63,6 +64,7 @@ export function SettingsPage() {
 
   // Yeniden kimlik doğrulayıp onaylı silme işlevini çağırır; başarılıysa oturumu kapatır.
   async function deleteAccount() {
+    if (authOnlyPreview) return;
     if (!user?.email || deleteConfirmation !== "HESABIMI SİL" || !deletePassword || deletePending) return;
     setDeleteError("");
     setDeletePending(true);
@@ -193,7 +195,7 @@ export function SettingsPage() {
 
       <section className="mt-6 flex flex-col gap-5 rounded-[2rem] border border-red-500/20 bg-red-500/[0.035] p-6 dark:bg-red-500/[0.06] sm:flex-row sm:items-center sm:justify-between sm:p-8" aria-labelledby="delete-account-title">
         <div className="flex items-start gap-4"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-500/10 text-red-700 dark:text-red-300"><Trash2 className="h-5 w-5" aria-hidden="true" /></span><div><p className="text-xs font-semibold uppercase tracking-[0.15em] text-red-700 dark:text-red-300">Tehlikeli alan</p><h2 id="delete-account-title" className="mt-1 text-lg font-semibold">Hesabı sil</h2><p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">Hesabınız, analiz geçmişiniz ve yüklediğiniz belgeler kalıcı olarak silinir. Bu işlem geri alınamaz.</p></div></div>
-        <Button type="button" variant="outline" className="h-11 shrink-0 rounded-xl border-red-500/30 px-5 text-red-700 hover:bg-red-500/10 dark:text-red-300" onClick={() => setDeleteOpen(true)}>Hesabı sil</Button>
+        <Button type="button" variant="outline" className="h-11 shrink-0 rounded-xl border-red-500/30 px-5 text-red-700 hover:bg-red-500/10 dark:text-red-300" onClick={() => authOnlyPreview ? setError("Bu önizlemede hesap silme henüz etkin değil.") : setDeleteOpen(true)}>Hesabı sil</Button>
       </section>
 
       <dialog ref={deleteDialogRef} role="alertdialog" aria-labelledby="delete-account-dialog-title" aria-describedby="delete-account-dialog-description" onCancel={event => { if (deletePending) event.preventDefault(); else closeDeleteDialog(); }} onClose={closeDeleteDialog}

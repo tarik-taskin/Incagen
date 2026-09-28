@@ -6,7 +6,7 @@ E-posta/parola kaydı → korumalı çalışma alanı → farklı iş belgelerin
 
 Tam analiz akışı yalnız `demo-incagen` Firebase emülatörleriyle çalışır; gerçek buluta fallback yoktur. Yerel akışta yalnız sentetik veriler kullanılmalıdır. Backend desteklenen belgelerin içeriğini deterministik olarak ayrıştırır; AI yorumu henüz eklenmedi.
 
-Canlı Netlify Auth önizlemesi ayrı bir derleme modudur: gerçek Firebase e-posta/parola kaydı, giriş, çıkış ve şifre yenileme bağlantısı çalışır. Bu modda yalnız hesap önizlemesi gösterilir; belge yükleme, analiz, geçmiş ve hesap silme erişime açılmaz. Tam bulut akışı için Storage, Cloud Functions ve güvenlik kuralları ayrıca dağıtılıp doğrulanmalıdır.
+Canlı Netlify derlemesi aynı uygulama ekranlarını ve rotalarını gösterir; gerçek Firebase e-posta/parola kaydı, giriş, çıkış ve şifre yenileme bağlantısı çalışır. Şimdilik yalnız Auth servisi etkin olduğundan belge hazırlama ve hesap silme sunucuya gönderilmez; geçmiş verisi okunmaz ve ekranda durum açıklanır. Tam bulut akışı için Storage, Cloud Functions ve güvenlik kuralları ayrıca dağıtılıp doğrulanmalıdır.
 
 ## Free ve Premium
 

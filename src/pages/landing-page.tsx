@@ -7,7 +7,6 @@ import { AuthModal } from "../components/auth-modal";
 import { ThemeToggle } from "../components/theme-toggle";
 import { Button } from "../components/ui/button";
 import { useAuth } from "../lib/auth-context";
-import { authOnlyPreview } from "../lib/deployment-mode";
 
 const valueItems = [
   { icon: FileSearch, title: "Verilerinizi birleştirin", description: "Tablo, belge ve görsellerinizi tek analiz alanında hazırlayın." },
@@ -20,7 +19,7 @@ export function LandingPage() {
   const pageRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const requested = location.state?.from;
-  const authDestination = authOnlyPreview ? "/app" : typeof requested === "string" && requested.startsWith("/app/") ? requested : "/app/new-analysis";
+  const authDestination = typeof requested === "string" && requested.startsWith("/app/") ? requested : "/app/new-analysis";
   const [authRequested, setAuthRequested] = useState(false);
   const authOpen = authRequested || location.state?.authOpen === true;
   const { user } = useAuth();
@@ -33,7 +32,7 @@ export function LandingPage() {
   // Oturum varsa çalışma alanına geçer; yoksa landing üzerinde kimlik modalını açar.
   function startAnalysis() {
     if (user) {
-      navigate(authOnlyPreview ? "/app" : "/app/new-analysis");
+      navigate("/app/new-analysis");
       return;
     }
 
@@ -89,13 +88,12 @@ export function LandingPage() {
           </p>
           <div data-reveal className="mt-8 flex flex-col gap-3 opacity-0 sm:flex-row">
             <Button type="button" size="default" className="h-12 rounded-xl px-6 text-base shadow-lg shadow-primary/20" onClick={startAnalysis}>
-              {authOnlyPreview ? (user ? "Hesabıma git" : "Giriş yap veya hesap oluştur") : "Analize başla"} <ArrowRight className="ml-2 h-4 w-4" />
+              Analize başla <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
             <Button asChild variant="outline" size="default" className="h-12 rounded-xl bg-card/60 px-6 text-base backdrop-blur-xl">
               <a href="#nasil-calisir">Nasıl çalışır?</a>
             </Button>
           </div>
-          {authOnlyPreview && <p data-reveal className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground opacity-0">Bu önizlemede hesap açma, giriş, çıkış ve şifre yenileme kullanılabilir. Analiz alanı henüz açılmadı.</p>}
         </section>
 
         <section id="nasil-calisir" data-reveal className="mx-auto mt-20 grid max-w-5xl gap-4 opacity-0 md:grid-cols-3" aria-labelledby="nasil-calisir-baslik">

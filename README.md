@@ -1,6 +1,6 @@
 # Incagen
 
-İşletme verilerinden analiz ve büyüme önerileri üretmeyi amaçlayan uygulama. Mevcut teslimat: yerel hesap, çoklu iş belgesi yükleme, gerçek içerik ayrıştırma, kaynak konumlu hazırlık özeti, geçmiş ve kaynaklarıyla silme. Canlı Netlify önizlemesinde yalnız Firebase hesabı kullanılabilir; Gemini ve bulut analiz altyapısı henüz yoktur.
+İşletme verilerinden analiz ve büyüme önerileri üretmeyi amaçlayan uygulama. Mevcut teslimat: yerel hesap, çoklu iş belgesi yükleme, gerçek içerik ayrıştırma, kaynak konumlu hazırlık özeti, geçmiş ve kaynaklarıyla silme. Canlı Netlify'da aynı uygulama ekranları ve Firebase Auth kullanılabilir; Gemini ve bulut analiz altyapısı henüz yoktur.
 
 ## Gereksinimler
 
@@ -63,9 +63,9 @@ Dosyalar iç navigasyonda korunur; tarayıcı yenilemesinde yeniden seçilir. Em
 
 Üretim derlemesi tek başına canlı kullanıma hazır değildir. Yerel üretim önizlemesi için build sırasında açıkça `VITE_FIREBASE_MODE=emulator` verilmelidir; aksi halde hesap ekranı yapılandırma uyarısı verir.
 
-### Canlı Auth önizlemesi
+### Canlı uygulama önizlemesi
 
-`incagen.netlify.app` derlemesi `VITE_FIREBASE_MODE=cloud`, Firebase Web App yapılandırması ve `VITE_AUTH_ONLY_PREVIEW=true` kullanır. Bu modda gerçek Firebase e-posta/parola kaydı, giriş, çıkış ve e-postayla şifre yenileme açıktır. Analiz, belge yükleme, geçmiş ve hesap silme yolları açılmaz; bunlar Storage ve Cloud Functions dağıtımından sonra ayrıca doğrulanacaktır. Web yapılandırması Netlify ortam değişkenlerinde tutulur, repoya eklenmez. Yerel emülatörlü tam akış bu moddan etkilenmez.
+`incagen.netlify.app` derlemesi `VITE_FIREBASE_MODE=cloud`, Firebase Web App yapılandırması ve `VITE_AUTH_ONLY_PREVIEW=true` kullanır. Yerel uygulamanın landing, Yeni analiz, Geçmiş, Ayarlar ve Plan ekranları aynı rotalarda açılır. Gerçek Firebase e-posta/parola kaydı, giriş, çıkış ve e-postayla şifre yenileme çalışır. Storage, Firestore ve Cloud Functions hazır olana kadar belge hazırlama, geçmiş verisi ve hesap silme isteği sunucuya gönderilmez; denendiğinde durum açıkça belirtilir. Web yapılandırması Netlify ortam değişkenlerinde tutulur, repoya eklenmez. `npm run dev` ise tüm Firebase emülatörlerini başlatır ve yerel tam akışı korur.
 
 ## Yapı ve teknoloji
 

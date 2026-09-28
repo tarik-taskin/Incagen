@@ -7,6 +7,7 @@ import { useFileSelectionState } from "../hooks/use-file-selection";
 import { WorkspaceContext, type Draft } from "../lib/workspace-context";
 import { getServices } from "../lib/firebase";
 import { userError } from "../lib/errors";
+import { authOnlyPreview } from "../lib/deployment-mode";
 import { tr } from "../i18n/tr";
 
 // Oturum boyunca dosya taslağını ve yüklemeyi yaşatır; sayfa değişimi işi kesmez.
@@ -27,6 +28,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   async function start() {
     if (lock.current) return;
     setError("");
+    if (authOnlyPreview) { setError("Bu önizlemede belge hazırlama henüz etkin değil."); return; }
     if (!selection.files.length) { setError(tr.analysis.empty); return; }
     const body = {
       title: draft.title,

@@ -5,7 +5,6 @@ import { tr } from "../i18n/tr";
 import { useAuth } from "../lib/auth-context";
 import { userError } from "../lib/errors";
 import { getServices, usesFirebaseEmulator } from "../lib/firebase";
-import { authOnlyPreview } from "../lib/deployment-mode";
 import { AnimatedLogo } from "./animated-logo";
 import { AuthSuccessTransition } from "./auth-success-transition";
 import { Button } from "./ui/button";
@@ -143,7 +142,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
     }
   }
 
-  // Seçili moda göre yerel Firebase hesabını açar veya mevcut hesaba giriş yapar.
+  // Seçili moda göre bağlı Firebase Auth projesinde hesap açar veya giriş yapar.
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setEmailTouched(true);
@@ -189,7 +188,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary dark:text-secondary">Veriden karara, tek çalışma alanı</p>
           <h1 id={titleId} className="mt-2 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">{register ? tr.auth.register : tr.auth.login}</h1>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            {authOnlyPreview ? (register ? "Incagen hesabınızı oluşturun." : "Incagen hesabınıza güvenle giriş yapın.") : register ? "Kişisel analiz alanınızı oluşturun ve raporlarınızı bir arada yönetin." : "Analizlerinize ve kayıtlı raporlarınıza kaldığınız yerden devam edin."}
+            {register ? "Kişisel analiz alanınızı oluşturun ve raporlarınızı bir arada yönetin." : "Analizlerinize ve kayıtlı raporlarınıza kaldığınız yerden devam edin."}
           </p>
           <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-primary/10 bg-primary/[0.05] px-2.5 py-1 text-xs font-medium text-primary dark:border-secondary/15 dark:bg-secondary/[0.07] dark:text-secondary">
             <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" /> {usesFirebaseEmulator ? "Yerel demo · Yalnız sentetik veri" : "Firebase ile korunan hesap"}
@@ -219,7 +218,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
               {emailValid && <BadgeCheck className="pointer-events-none absolute right-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />}
             </div>
             <p id="email-feedback" className={`mt-1.5 min-h-4 text-xs ${emailValid ? "text-emerald-700 dark:text-emerald-300" : emailTouched && email ? "text-red-700 dark:text-red-300" : "text-muted-foreground"}`} aria-live="polite">
-              {emailValid ? "E-posta formatı uygun" : emailTouched && email ? "Geçerli bir e-posta adresi girin" : authOnlyPreview ? "Hesabınız bu adresle eşleşir" : "Hesabınız ve raporlarınız bu adresle eşleşir"}
+              {emailValid ? "E-posta formatı uygun" : emailTouched && email ? "Geçerli bir e-posta adresi girin" : "Hesabınız ve raporlarınız bu adresle eşleşir"}
             </p>
           </div>
 

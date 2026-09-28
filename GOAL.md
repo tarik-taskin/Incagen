@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-28 — Furkan / Codex: Netlify'da tüm uygulama ekranları
+
+- [x] Sahip: Furkan — Auth-only yayında giriş sonrası tam uygulama navigasyonunu ve ekranlarını göster; Firebase tarafında yalnız Auth etkin kalsın.
+
+Kabul: Girişten sonra Yeni analiz, Geçmiş, Ayarlar ve Plan ekranları yerel uygulamayla aynı metinler ve rotalarla canlı URL'de gezilebilir olmalı; `npm run dev` emülatörlü tam akışı korunmalı. Canlıda Firestore/Storage/Functions hazır olmadığından bunlara istek gönderilmemeli; belge hazırlama ve hesap silme denenince durum açıklanmalı, geçmiş de veri varmış gibi gösterilmemeli. Kayıt, giriş, çıkış, şifre yenileme, doğrudan rota yenileme, masaüstü/mobil görünüm ve temel kontroller doğrulanmalı. Gerçek backend dağıtımı ayrı engelli iş olarak kalır; PR veya `main` push'u yapılmaz.
+
+Doğrulama: lint, 40 uygulama ve 7 Functions testi, üretim derlemesi ile yerel Firebase emülatörlerinde 10/10 masaüstü/mobil tarayıcı senaryosu geçti. Netlify üretim yayınına gerçek Firebase Auth ile geçici hesap açılıp masaüstü ve mobilde giriş, Yeni analiz, Geçmiş, Plan, Ayarlar ve çıkış doğrulandı; test hesabı temizlendi. Canlı akışta Firestore/Storage/Functions isteği çıkmadı. Belge hazırlama ve hesap silme açık durum mesajıyla engelleniyor. SPA rotaları doğrudan açılıyor; mobil navigasyonu örten Netlify rozeti site ayarından kaldırıldı. Tam canlı analiz ve hesap silme işi, Spark planındaki backend engeli nedeniyle ayrı kalıyor.
+
 ### 2026-09-28 — Furkan / Codex: Netlify üzerinde yalnız Auth önizlemesi
 
 - [x] Sahip: Furkan — Mevcut Netlify sitesinde gerçek Firebase e-posta/parola kaydı, giriş, çıkış ve şifre yenilemeyi yayınla; backend bağımlı sayfaları yalnız bu bulut önizlemesinde kapalı tut.
