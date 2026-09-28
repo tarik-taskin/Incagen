@@ -5,12 +5,23 @@ import { LandingPage } from "./pages/landing-page";
 import { NewAnalysisPage } from "./pages/new-analysis-page";
 import { PlanPage } from "./pages/plan-page";
 import { SettingsPage } from "./pages/settings-page";
+import { AuthPreviewPage } from "./pages/auth-preview-page";
 import { RequireAuth } from "./components/require-auth";
+import { authOnlyPreview } from "./lib/deployment-mode";
 import { lazy, Suspense } from "react";
 const AnalysisPage = lazy(() => import("./pages/analysis-page").then(module => ({ default: module.AnalysisPage })));
 
 // Genel landing rotasını ve uygulama çalışma alanının iç içe sayfalarını tanımlar.
 function App() {
+  if (authOnlyPreview) return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route element={<RequireAuth />}>
+        <Route path="/app/*" element={<AuthPreviewPage />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />

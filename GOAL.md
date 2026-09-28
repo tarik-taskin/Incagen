@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-28 — Furkan / Codex: Netlify üzerinde yalnız Auth önizlemesi
+
+- [x] Sahip: Furkan — Mevcut Netlify sitesinde gerçek Firebase e-posta/parola kaydı, giriş, çıkış ve şifre yenilemeyi yayınla; backend bağımlı sayfaları yalnız bu bulut önizlemesinde kapalı tut.
+
+Kabul: Netlify build'i `incagen-eeef4` Web App yapılandırmasını kullanmalı; yerel emülatörlü tam uygulama değişmemeli; oturum açan kullanıcı yalnız hesap önizlemesine ulaşmalı; analiz ve hesap silme eylemleri Cloud Functions/Storage hazır olmadan görünmemeli; canlı URL'de kayıt, giriş, çıkış, şifre yenileme ve SPA yenilemesi doğrulanmalı.
+
+Doğrulama: Netlify ortam değişkenleriyle üretim derlemesi ve `incagen.netlify.app` yayını geçti. Sentetik hesapla canlı kayıt, giriş, çıkış, oturumlu `/app` yenileme ve hem giriş formundan hem hesap sayfasından şifre yenileme isteği doğrulandı; test hesabı silindi. Analiz ve hesap silme yolları bu modda kapalı. Yerel lint, 42 uygulama ve 7 Functions testi, üretim derlemesi ve emülatörlere bağlı 10/10 masaüstü/mobil tarayıcı senaryosu geçti (bir senaryo ilk koşuda zaman aşımına uğrayıp otomatik tekrarda geçti).
+
 ### 2026-09-26 — Furkan / Codex: başarılı analiz sonrası temiz taslak
 
 - [x] Sahip: Furkan — Başarılı belge hazırlığından sonra dosya ve analiz başlığı taslağını temizle; işletme adını koru ve sonuçtan yeni analize açık geçiş ekle.
@@ -33,11 +41,11 @@ Doğrulama: lint, production build, 38 uygulama ve 7 Functions/parser testi geç
 
 ### 2026-09-21 — Furkan / Codex: çalışan Netlify önizlemesi
 
-- [~] Sahip: Furkan — `incagen.netlify.app` üzerinde e-posta/parola kimliği, çıkış ve hesap silme dahil gerçek Firebase servislerine bağlı manuel Netlify yayını hazırla.
+- [!] Sahip: Furkan — `incagen.netlify.app` üzerinde e-posta/parola kimliği, çıkış ve hesap silme dahil gerçek Firebase servislerine bağlı manuel Netlify yayını hazırla. Engel: `incagen-eeef4` Spark planında; Storage ve Cloud Functions için proje sahibi Blaze faturalandırmasını etkinleştirmeli.
 
 Kabul: localhost emülatör akışı korunmalı; canlı frontend yalnız açıkça verilen Firebase web yapılandırmasını kullanmalı; Auth, Firestore, Storage ve Functions aynı gerçek projeye bağlanmalı; Netlify SPA rotaları yenilemede çalışmalı; giriş, kayıt, çıkış, parola sıfırlama ve hesap silme URL üzerinde doğrulanmalı. Hazırlık `furkan` dalında commitlenebilir; canlı doğrulama tamamlanmadan `main`e push yapılmayacak ve PR açılmayacak.
 
-Durum: Netlify sitesi `https://incagen.netlify.app` olarak Pludo Juniors hesabında oluşturuldu ve klasöre yerel olarak bağlandı. Tarık'ın Firebase proje erişimi/yapılandırması ve canlı servis durumu bekleniyor.
+Durum (2026-09-28): Furkan'ın `incagen-eeef4` Firebase projesine erişimi doğrulandı. Web App yapılandırmasındaki yedi `VITE_FIREBASE_*` değeri Netlify sitesine eklendi ve panelde doğrulandı; gerçek değerler repoya yazılmadı. Firebase e-posta/parola sağlayıcısı ve `incagen.netlify.app` yetkili alan adı etkin; yalnız Auth önizlemesi canlıda yayınlandı ve doğrulandı. Firestore varsayılan veritabanı `eur3` konumunda hazır, ancak canlı kurallar henüz varsayılan `allow read, write: if false` durumunda. Storage konsolu Blaze gereksinimi gösteriyor; varsayılan bucket ve dört Cloud Function henüz dağıtılmadı. Faturalandırma açıldıktan sonra Storage bucket'ı oluşturulup repo kuralları/Functions dağıtılacak, ardından tam kullanıcı akışı canlıda doğrulanacak.
 
 ### 2026-09-20 — Furkan / Codex: main Quality CI onarımı
 

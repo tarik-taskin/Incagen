@@ -3,6 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { AuthCard } from "./auth-card";
 
+const sendPasswordResetEmailMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+vi.mock("firebase/auth", () => ({ sendPasswordResetEmail: sendPasswordResetEmailMock }));
+vi.mock("../lib/firebase", () => ({ getServices: () => ({ auth: { name: "test-auth" } }), usesFirebaseEmulator: true }));
 vi.mock("../lib/auth-context", () => ({ useAuth: () => ({ user: null, loading: false, error: "" }) }));
 
 // Kimlik kartını servis çağrısı gerektirmeyen test özellikleriyle oluşturur.
@@ -11,6 +14,19 @@ function renderAuthCard() {
 }
 
 describe("Kimlik kartı", () => {
+  it("giriş ekranında şifresini unutan kullanıcıya bağlantı yollar", async () => {
+    const user = userEvent.setup();
+    renderAuthCard();
+
+    await user.click(screen.getByRole("button", { name: "Şifremi unuttum" }));
+    expect(sendPasswordResetEmailMock).not.toHaveBeenCalled();
+    await user.type(screen.getByLabelText("E-posta", { exact: true }), "demo@example.test");
+    await user.click(screen.getByRole("button", { name: "Şifremi unuttum" }));
+
+    expect(sendPasswordResetEmailMock).toHaveBeenCalledWith({ name: "test-auth" }, "demo@example.test");
+    expect(await screen.findByRole("status")).toHaveTextContent("Şifre yenileme bağlantısı");
+  });
+
   it("kayıt alanlarını canlı doğrular ve pasif sosyal seçenekleri gösterir", async () => {
     const user = userEvent.setup();
     renderAuthCard();

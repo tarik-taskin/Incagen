@@ -1,10 +1,11 @@
 import { useState, type FormEvent, type ReactNode } from "react";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
 import { Apple, BadgeCheck, Check, Circle, Eye, EyeOff, KeyRound, Mail, ShieldCheck, Ticket, X } from "lucide-react";
 import { tr } from "../i18n/tr";
 import { useAuth } from "../lib/auth-context";
 import { userError } from "../lib/errors";
 import { getServices, usesFirebaseEmulator } from "../lib/firebase";
+import { authOnlyPreview } from "../lib/deployment-mode";
 import { AnimatedLogo } from "./animated-logo";
 import { AuthSuccessTransition } from "./auth-success-transition";
 import { Button } from "./ui/button";
@@ -99,6 +100,8 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
+  const [resetSending, setResetSending] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   const emailValid = emailPattern.test(email.trim());
   const passwordCriteria = [
@@ -120,6 +123,24 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
     setShowPassword(false);
     setShowPasswordConfirmation(false);
     setError("");
+    setResetSent(false);
+  }
+
+  // Girişte şifresini unutan kullanıcıya yalnız geçerli e-posta için Firebase bağlantısı gönderir.
+  async function requestPasswordReset() {
+    setEmailTouched(true);
+    if (!emailValid || resetSending) return;
+    setError("");
+    setResetSent(false);
+    setResetSending(true);
+    try {
+      await sendPasswordResetEmail(getServices().auth, email.trim());
+      setResetSent(true);
+    } catch (resetError) {
+      setError(userError(resetError));
+    } finally {
+      setResetSending(false);
+    }
   }
 
   // Seçili moda göre yerel Firebase hesabını açar veya mevcut hesaba giriş yapar.
@@ -168,7 +189,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary dark:text-secondary">Veriden karara, tek çalışma alanı</p>
           <h1 id={titleId} className="mt-2 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">{register ? tr.auth.register : tr.auth.login}</h1>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            {register ? "Kişisel analiz alanınızı oluşturun ve raporlarınızı bir arada yönetin." : "Analizlerinize ve kayıtlı raporlarınıza kaldığınız yerden devam edin."}
+            {authOnlyPreview ? (register ? "Incagen hesabınızı oluşturun." : "Incagen hesabınıza güvenle giriş yapın.") : register ? "Kişisel analiz alanınızı oluşturun ve raporlarınızı bir arada yönetin." : "Analizlerinize ve kayıtlı raporlarınıza kaldığınız yerden devam edin."}
           </p>
           <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-primary/10 bg-primary/[0.05] px-2.5 py-1 text-xs font-medium text-primary dark:border-secondary/15 dark:bg-secondary/[0.07] dark:text-secondary">
             <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" /> {usesFirebaseEmulator ? "Yerel demo · Yalnız sentetik veri" : "Firebase ile korunan hesap"}
@@ -189,7 +210,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
                 autoFocus
                 value={email}
                 onBlur={() => setEmailTouched(true)}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) => { setEmail(event.target.value); setResetSent(false); }}
                 aria-invalid={emailTouched && !emailValid}
                 aria-describedby="email-feedback"
                 className="form-control h-12 pl-10 pr-11"
@@ -198,7 +219,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
               {emailValid && <BadgeCheck className="pointer-events-none absolute right-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />}
             </div>
             <p id="email-feedback" className={`mt-1.5 min-h-4 text-xs ${emailValid ? "text-emerald-700 dark:text-emerald-300" : emailTouched && email ? "text-red-700 dark:text-red-300" : "text-muted-foreground"}`} aria-live="polite">
-              {emailValid ? "E-posta formatı uygun" : emailTouched && email ? "Geçerli bir e-posta adresi girin" : "Hesabınız ve raporlarınız bu adresle eşleşir"}
+              {emailValid ? "E-posta formatı uygun" : emailTouched && email ? "Geçerli bir e-posta adresi girin" : authOnlyPreview ? "Hesabınız bu adresle eşleşir" : "Hesabınız ve raporlarınız bu adresle eşleşir"}
             </p>
           </div>
 
@@ -212,6 +233,10 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
             onToggle={() => setShowPassword((current) => !current)}
             toggleLabel={showPassword ? "Parolayı gizle" : "Parolayı göster"}
           />
+
+          {!register && <div className="-mt-2 text-right"><button type="button" disabled={resetSending} className="rounded-md text-sm font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary" onClick={requestPasswordReset}>{resetSending ? "Bağlantı gönderiliyor…" : "Şifremi unuttum"}</button></div>}
+
+          {resetSent && <p role="status" className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-3 text-sm text-emerald-800 dark:text-emerald-200">Şifre yenileme bağlantısı e-posta adresinize gönderildi.</p>}
 
           {register && (
             <div className="rounded-2xl border border-border/80 bg-muted/55 p-3.5" aria-live="polite">
