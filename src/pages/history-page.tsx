@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { httpsCallable } from "firebase/functions";
-import { Archive, ArrowRight, ArrowUpRight, CheckCheck, CircleCheckBig, FileClock, FilePlus2, LoaderCircle, MoreHorizontal, RotateCcw, Search, SlidersHorizontal, Sparkles, Trash2, TriangleAlert, X } from "lucide-react";
+import { Archive, ArrowRight, ArrowUpRight, CheckCheck, CircleCheckBig, FileClock, FilePlus2, FolderOpen, Layers3, LoaderCircle, MoreHorizontal, RotateCcw, Search, ShieldCheck, SlidersHorizontal, Sparkles, Trash2, TriangleAlert, X } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import type { Analysis } from "../../functions/src/contracts";
 import { Button } from "../components/ui/button";
@@ -8,6 +8,7 @@ import { buildHistoryView, DEFAULT_HISTORY_VIEW, parseHistoryView, serializeHist
 import { useAnalyses } from "../hooks/use-analyses";
 import { tr } from "../i18n/tr";
 import { userError } from "../lib/errors";
+import { authOnlyPreview } from "../lib/deployment-mode";
 import { getServices } from "../lib/firebase";
 
 interface DeleteTarget {
@@ -159,20 +160,23 @@ export function HistoryPage() {
     }
   }
 
-  return <section aria-labelledby="history-title">
-    <div className="flex flex-wrap items-start justify-between gap-5">
-      <div className="flex items-start gap-4">
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-primary/15 bg-primary/10 text-primary dark:border-secondary/20 dark:bg-secondary/10 dark:text-secondary"><FileClock className="h-5 w-5" aria-hidden="true" /></span>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary dark:text-secondary">Çalışma alanı / Arşiv</p>
-          <h1 id="history-title" className="mt-1 text-3xl font-semibold tracking-tight">{tr.analysis.history}</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Analizlerinizi yeniden açın veya artık ihtiyacınız olmayan kayıtları kaynak belgeleriyle birlikte yönetin.</p>
+  return <section aria-labelledby="history-title" className="max-w-6xl">
+    <div className="relative overflow-hidden rounded-[1.75rem] bg-[#2c1645] p-6 text-white shadow-xl shadow-primary/10 sm:p-8 lg:p-10">
+      <div className="pointer-events-none absolute -right-14 -top-28 h-80 w-80 rounded-full border border-white/10 bg-violet-400/10" aria-hidden="true" />
+      <div className="pointer-events-none absolute -bottom-24 right-16 h-64 w-64 rounded-full bg-fuchsia-400/10 blur-3xl" aria-hidden="true" />
+      <div className="relative flex flex-wrap items-start justify-between gap-7">
+        <div className="max-w-2xl">
+          <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-violet-100"><FileClock className="h-5 w-5" aria-hidden="true" /></span>
+          <p className="mt-5 text-[11px] font-bold uppercase tracking-[0.22em] text-violet-200">Çalışma alanı / Arşiv</p>
+          <h1 id="history-title" className="mt-2 text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">{tr.analysis.history}</h1>
+          <p className="mt-3 max-w-xl text-sm leading-7 text-violet-100/80">Çalışmalarınızın düzenli adresi. Hazırladığınız analizleri yeniden açın, bulun ve ihtiyaç duymadıklarınızı yönetin.</p>
         </div>
+        {!loading && !error && rows.length > 0 && <Button variant="outline" className="gap-2 rounded-xl border-white/25 bg-white/10 text-white hover:bg-white/20 hover:text-white" disabled={progress !== null} onClick={toggleSelectionMode}>
+          {selectionMode ? <X className="h-4 w-4" aria-hidden="true" /> : <Trash2 className="h-4 w-4" aria-hidden="true" />}
+          {selectionMode ? "Seçimi bitir" : "Seç ve sil"}
+        </Button>}
       </div>
-      {!loading && !error && rows.length > 0 && <Button variant="outline" className="gap-2 rounded-xl" disabled={progress !== null} onClick={toggleSelectionMode}>
-        {selectionMode ? <X className="h-4 w-4" aria-hidden="true" /> : <Trash2 className="h-4 w-4" aria-hidden="true" />}
-        {selectionMode ? "Seçimi bitir" : "Seç ve sil"}
-      </Button>}
+      {!loading && !error && rows.length > 0 && <div className="relative mt-8 flex flex-wrap items-center gap-3 border-t border-white/15 pt-5 text-xs text-violet-100/80"><span className="inline-flex items-center gap-2"><Layers3 className="h-4 w-4" aria-hidden="true" /> {summary.total.toLocaleString("tr-TR")} kayıt</span><span className="hidden h-1 w-1 rounded-full bg-violet-200/60 sm:block" aria-hidden="true" /><span>Arama, filtreleme ve toplu yönetim bir arada</span></div>}
     </div>
 
     {notice && <p role={notice.kind === "error" ? "alert" : "status"}
@@ -242,15 +246,19 @@ export function HistoryPage() {
       </div>
     </div>}
 
-    {loading ? <p role="status" className="mt-8">Geçmiş yükleniyor…</p> : error ? <p role="alert" className="mt-8">{error}</p> : rows.length && visibleRows.length ? <ul className="mt-7 space-y-3" aria-label="Analiz geçmişi">{visibleRows.map(analysis => <li key={analysis.id} className="relative rounded-2xl border border-border/80 bg-card shadow-sm transition-colors hover:border-primary/25 dark:hover:border-secondary/25">
+    {loading ? <p role="status" className="mt-8 rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">Geçmiş yükleniyor…</p> : error ? authOnlyPreview ? <div className="mt-6 grid overflow-hidden rounded-[1.75rem] border border-border/80 bg-card shadow-sm lg:grid-cols-[minmax(0,1fr)_minmax(15rem,0.75fr)]" role="status">
+      <div className="p-7 sm:p-9"><span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-primary dark:border-secondary/20 dark:bg-secondary/[0.08] dark:text-secondary"><ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" /> Hesap önizlemesi</span><h2 className="mt-5 max-w-lg text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">Arşiviniz için yer hazır.</h2><p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">{error} Şu an yalnızca hesabınıza giriş yapabilirsiniz; belge hazırlama ve geçmiş kayıtları bulut ortamında açıldığında çalışmalarınız burada görünecek.</p><Link to="/#nasil-calisir" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl border border-border px-4 text-sm font-semibold transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Nasıl çalışır? <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link></div>
+      <div className="relative flex min-h-56 items-center justify-center overflow-hidden border-t border-border/70 bg-gradient-to-br from-primary/[0.06] via-background to-primary/[0.12] p-8 dark:from-secondary/[0.06] dark:to-secondary/[0.12] lg:border-l lg:border-t-0" aria-hidden="true"><div className="absolute h-52 w-52 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="absolute h-36 w-36 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="relative flex h-24 w-24 items-center justify-center rounded-[1.75rem] border border-primary/15 bg-card shadow-xl shadow-primary/10 dark:border-secondary/20"><FolderOpen className="h-11 w-11 text-primary dark:text-secondary" /></div><span className="absolute bottom-5 right-5 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-muted-foreground shadow-sm">Hazır olduğunda burada</span></div>
+    </div> : <div role="alert" className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/[0.05] p-6 text-sm text-red-700 dark:text-red-300"><TriangleAlert className="mb-3 h-5 w-5" aria-hidden="true" />{error}</div> : rows.length && visibleRows.length ? <ul className="mt-6 space-y-3" aria-label="Analiz geçmişi">{visibleRows.map(analysis => <li key={analysis.id} className="relative overflow-visible rounded-[1.35rem] border border-border/80 bg-card shadow-[0_12px_35px_-32px_rgba(55,20,95,0.7)] transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_40px_-27px_rgba(55,20,95,0.35)] dark:hover:border-secondary/30">
       {selectionMode ? <label className="flex min-h-24 cursor-pointer flex-wrap items-center gap-4 rounded-2xl p-4 transition-colors hover:bg-muted/40 sm:p-5">
         <input type="checkbox" className="h-5 w-5 shrink-0 accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           checked={selectedIds.has(analysis.id)} disabled={progress !== null} onChange={() => toggleSelected(analysis.id)} aria-label={analysis.title + " seç"} />
         <span className="min-w-0 flex-1"><span className="block break-words font-semibold">{analysis.title}</span><span className="mt-1 block text-xs text-muted-foreground">{analysis.business} · {new Date(analysis.createdAt).toLocaleString("tr-TR")}</span></span>
         <span className={"rounded-full border px-3 py-1 text-xs font-medium " + statusTone(analysis.status)}>{tr.status[analysis.status]}</span>
-      </label> : <div className="flex min-h-24 items-center gap-2 p-2 sm:gap-3">
-        <Link className="flex min-w-0 flex-1 items-center justify-between gap-3 rounded-xl px-2 py-3 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:px-3" to={"/app/analyses/" + analysis.id}>
-          <span className="min-w-0"><span className="block break-words font-semibold">{analysis.title}</span><span className="mt-1 block text-xs text-muted-foreground">{analysis.business} · {new Date(analysis.createdAt).toLocaleString("tr-TR")}</span><span className={"mt-2 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium sm:hidden " + statusTone(analysis.status)}>{tr.status[analysis.status]}</span></span>
+      </label> : <div className="flex min-h-28 items-center gap-2 p-2 sm:gap-3">
+        <Link className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl px-2 py-3 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:gap-5 sm:px-4" to={"/app/analyses/" + analysis.id}>
+          <span className="hidden h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-primary/[0.07] text-primary dark:bg-secondary/[0.08] dark:text-secondary sm:flex"><span className="text-lg font-bold leading-none">{new Date(analysis.createdAt).toLocaleDateString("tr-TR", { day: "2-digit" })}</span><span className="mt-1 text-[10px] font-semibold uppercase">{new Date(analysis.createdAt).toLocaleDateString("tr-TR", { month: "short" })}</span></span>
+          <span className="min-w-0 flex-1"><span className="block break-words text-sm font-semibold tracking-tight sm:text-base">{analysis.title}</span><span className="mt-1.5 block break-words text-xs text-muted-foreground">{analysis.business} <span aria-hidden="true">·</span> {new Date(analysis.createdAt).toLocaleString("tr-TR")}</span><span className={"mt-2 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium sm:hidden " + statusTone(analysis.status)}>{tr.status[analysis.status]}</span></span>
           <ArrowUpRight className="hidden h-4 w-4 shrink-0 text-muted-foreground sm:block" aria-hidden="true" />
         </Link>
         <div className="flex shrink-0 items-center gap-1 pr-1 sm:gap-2 sm:pr-2">
@@ -258,13 +266,12 @@ export function HistoryPage() {
           <HistoryActions analysis={analysis} disabled={progress !== null} onDelete={() => setTarget({ items: [{ id: analysis.id, title: analysis.title }] })} />
         </div>
       </div>}
-    </li>)}</ul> : rows.length ? <div className="mt-7 rounded-3xl border border-dashed border-border bg-card/60 px-6 py-12 text-center">
+    </li>)}</ul> : rows.length ? <div className="mt-6 rounded-[1.75rem] border border-dashed border-border bg-card/70 px-6 py-16 text-center shadow-sm">
       <Search className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden="true" /><h2 className="mt-4 text-xl font-semibold">Bu ölçütlerle eşleşen analiz yok</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">Arama ifadenizi veya seçtiğiniz durum ve tarih aralığını değiştirerek tekrar deneyin.</p><Button variant="outline" className="mt-5 gap-2 rounded-xl" onClick={clearFilters}><RotateCcw className="h-4 w-4" aria-hidden="true" /> Filtreleri temizle</Button>
-    </div> : <div className="relative mt-8 overflow-hidden rounded-[2rem] border border-primary/15 bg-gradient-to-br from-card via-card to-primary/[0.07] p-7 shadow-sm dark:border-secondary/20 dark:to-secondary/[0.07] sm:p-10">
-      <span className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/10 blur-3xl dark:bg-secondary/10" aria-hidden="true" />
-      <div className="relative flex flex-col items-start gap-8 md:flex-row md:items-center md:justify-between">
-        <div className="max-w-xl"><span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-3 py-1.5 text-xs font-semibold text-primary dark:border-secondary/20 dark:bg-secondary/10 dark:text-secondary"><Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> İlk adım</span><h2 className="mt-5 text-2xl font-semibold tracking-tight sm:text-3xl">İş verilerinizi analize hazırlamaya başlayın.</h2><p className="mt-3 text-sm leading-7 text-muted-foreground">{tr.analysis.noHistory} İlk belgelerinizi eklediğinizde hazırladığınız analizleri burada yeniden açabilecek ve yönetebileceksiniz.</p><Link to="/app/new-analysis" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/90">İlk analizini hazırla <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></div>
-        <div className="relative flex h-40 w-full shrink-0 items-center justify-center rounded-3xl border border-primary/10 bg-background/65 md:h-48 md:w-52 dark:border-secondary/10" aria-hidden="true"><div className="absolute left-9 top-7 h-28 w-28 rotate-[-10deg] rounded-2xl border border-primary/15 bg-card shadow-sm dark:border-secondary/20" /><div className="relative flex h-28 w-28 rotate-[7deg] flex-col items-center justify-center rounded-2xl border border-primary/20 bg-card shadow-lg shadow-primary/10 dark:border-secondary/20"><FilePlus2 className="h-9 w-9 text-primary dark:text-secondary" /><span className="mt-2 h-1.5 w-14 rounded-full bg-primary/15 dark:bg-secondary/20" /><span className="mt-1.5 h-1.5 w-9 rounded-full bg-primary/10 dark:bg-secondary/15" /></div></div>
+    </div> : <div className="relative mt-6 overflow-hidden rounded-[1.75rem] border border-border/80 bg-card shadow-sm">
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(17rem,0.8fr)]">
+        <div className="p-7 sm:p-10"><span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.15em] text-primary dark:border-secondary/20 dark:bg-secondary/10 dark:text-secondary"><Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Yeni bir başlangıç</span><h2 className="mt-5 max-w-lg text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">İlk çalışmanız burada yerini alsın.</h2><p className="mt-3 max-w-lg text-sm leading-7 text-muted-foreground">{tr.analysis.noHistory} Belgelerinizi hazırladığınızda her çalışmaya, kaynaklarına ve durumuna bu arşivden ulaşabilirsiniz.</p><Link to="/app/new-analysis" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/90">İlk analizini hazırla <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></div>
+        <div className="relative flex min-h-60 items-center justify-center overflow-hidden border-t border-border/70 bg-gradient-to-br from-primary/[0.04] via-background to-primary/[0.12] p-8 dark:from-secondary/[0.04] dark:to-secondary/[0.12] lg:border-l lg:border-t-0" aria-hidden="true"><div className="absolute h-56 w-56 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="absolute h-40 w-40 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="absolute left-1/2 top-1/2 flex h-28 w-28 -translate-x-[65%] -translate-y-[58%] rotate-[-10deg] items-center justify-center rounded-2xl border border-primary/15 bg-card shadow-sm dark:border-secondary/20"><FilePlus2 className="h-8 w-8 text-primary/35 dark:text-secondary/35" /></div><div className="relative flex h-32 w-32 rotate-[7deg] flex-col items-center justify-center rounded-2xl border border-primary/20 bg-card shadow-xl shadow-primary/10 dark:border-secondary/20"><FolderOpen className="h-10 w-10 text-primary dark:text-secondary" /><span className="mt-3 h-1.5 w-16 rounded-full bg-primary/15 dark:bg-secondary/20" /><span className="mt-1.5 h-1.5 w-10 rounded-full bg-primary/10 dark:bg-secondary/15" /></div></div>
       </div>
     </div>}
 

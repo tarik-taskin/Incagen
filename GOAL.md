@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-09-30 — Furkan / Codex: tanıtım ve geçmiş deneyimi
+
+- [x] Sahip: Furkan — “Nasıl çalışır?” anlatımını, boş ve dolu geçmiş ekranlarını yenile; oturumlu logoyu yeni analize yönlendir ve anlatıma geri dönüş yolu sun.
+
+Kabul: anlatım gerçek belge hazırlama aşamasını doğru göstermeli; canlı Auth önizlemesinde etkin olmayan arşiv veri varmış gibi sunulmamalı; dolu arşivde arama, filtre, seçim ve silme erişimi korunmalı. Masaüstü/mobil, açık/koyu tema, klavye ve azaltılmış hareket kullanımı doğrulanmalı; lint, test ve build geçmeli.
+
+Doğrulama: lint, 40 uygulama ve 7 Functions testi, üretim derlemesi ve Firebase emülatörlerinde 12/12 masaüstü/mobil tarayıcı senaryosu geçti. Boş ve dolu geçmiş ekranları ile anlatım ekranı görsel olarak incelendi; iki temada erişilebilirlik, klavye menüsü, responsive taşma ve azaltılmış hareket kontrolleri geçti. Logo ve yardım bağlantısı masaüstü/mobilde ayrıca doğrulandı. Canlı Auth önizlemesi etkin olmayan arşivi açık durum kartıyla anlatır; canlı hesapla bu turda yeni bir oturum testi yapılmadı.
+
 ### 2026-09-30 — Furkan / Codex: yerelde canlı Auth önizlemesi
 
 - [x] Sahip: Furkan — `npm run dev` ile Netlify'daki Firebase Auth projesini yerelde kullan; emülatörlü tam akışı ayrı komutta koru.

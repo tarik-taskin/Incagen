@@ -80,6 +80,27 @@ test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru y
   await expect(page.getByRole("heading", { name: "Verilerinizdeki büyüme fırsatlarını keşfedin." })).toBeVisible();
 });
 
+test("Nasıl çalışır bağlantısı ve oturumlu logo çalışma alanına döner", async ({ page }, testInfo) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Nasıl çalışır?" }).click();
+  await expect(page.getByRole("heading", { name: /Dağınık dosyalardan/ })).toBeVisible();
+  await expectNoAccessibilityViolations(page);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath("how-it-works-light.png"), fullPage: true });
+  await page.getByRole("link", { name: "Incagen ana sayfa" }).click();
+  await page.getByRole("button", { name: /Analize başla/ }).click();
+  await register(page);
+  await page.getByRole("link", { name: "Nasıl çalışır?" }).click();
+  await expect(page).toHaveURL(/\/#nasil-calisir$/);
+  await expect(page.getByRole("heading", { name: /Dağınık dosyalardan/ })).toBeVisible();
+  await page.getByRole("link", { name: "Yeni analize git" }).click();
+  await expect(page).toHaveURL(/\/app\/new-analysis$/);
+  await expect(page.getByRole("heading", { name: "Belgelerinizi analize hazırlayın" })).toBeVisible();
+  await getAppNavigation(page).getByRole("link", { name: "Geçmiş" }).click();
+  await page.getByRole("link", { name: "Yeni analize git" }).click();
+  await expect(page).toHaveURL(/\/app\/new-analysis$/);
+});
+
 test("farklı belge türleri hazırlanır ve listeden kaldırılabilir", async ({ page }, testInfo) => {
   await page.goto("/app/new-analysis");
   await register(page);
@@ -122,7 +143,7 @@ test("boş geçmiş, bağlantı taslakları ve doğrulanmış hesap silme", asyn
   await expect(page.getByText("Premium ödeme, High AI analizi", { exact: false })).toHaveCount(0);
 
   await navigation.getByRole("link", { name: "Geçmiş" }).click();
-  await expect(page.getByRole("heading", { name: "İş verilerinizi analize hazırlamaya başlayın." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "İlk çalışmanız burada yerini alsın." })).toBeVisible();
   await expect(page.getByRole("link", { name: "İlk analizini hazırla" })).toBeVisible();
   await expectNoAccessibilityViolations(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

@@ -8,6 +8,8 @@ Tam analiz akışı `npm run dev:emulator` ile yalnız `demo-incagen` Firebase e
 
 Canlı Netlify derlemesi ve `npm run dev` ile açılan yerel önizleme aynı uygulama ekranlarını ve rotalarını gösterir; gerçek Firebase e-posta/parola kaydı, giriş, çıkış ve şifre yenileme bağlantısı çalışır. Oturumsuz “Analize başla” landing üzerindeki giriş modalını açar; geçerli oturum varsa doğrudan çalışma alanına geçer. Şimdilik yalnız Auth servisi etkin olduğundan belge hazırlama ve hesap silme sunucuya gönderilmez; geçmiş verisi okunmaz ve ekranda durum açıklanır. Tam bulut akışı için Storage, Cloud Functions ve güvenlik kuralları ayrıca dağıtılıp doğrulanmalıdır.
 
+Oturumlu çalışma alanında Incagen logosu yeni analiz ekranına gider. Tanıtımdaki “Nasıl çalışır?” bölümü çalışma alanının ayrı yardım bağlantısından yeniden açılabilir. Bölüm mevcut belge hazırlama ve arşiv adımlarını açıklar; henüz etkin olmayan AI yorumlarını çalışan özellik gibi göstermez. Canlı Auth önizlemesinde arşiv boş veri görünümü yerine açık bir hizmet durumu gösterir.
+
 ## Free ve Premium
 
 Ürün limitlerinin belge kaynağı bu tablodur. Frontend plan bilgileri merkezi plan kurallarında, backend uygulanmış Free sınırları ortak analiz sözleşmesinde tutulur; değişiklikte üçü birlikte doğrulanır.
