@@ -5,7 +5,7 @@
 ## Gereksinimler
 
 - Node.js 22.19+ (22 LTS önerilir; yerel testler Node 24 ile de çalışır), npm 10+, Git.
-- Java 21+; `java -version` ve `node --version` ile kontrol edin.
+- Tam emülatör akışı için Java 21+; `java -version` ve `node --version` ile kontrol edin.
 - İlk kurulumda npm, Firebase emülatörleri ve Playwright indirmeleri için internet.
 - Boş yerel portlar: 9099, 8080, 9199, 5001; emülatör yardımcı portları 4400, 4500, 9150. Test Vite sunucusu 4173 kullanır.
 
@@ -17,21 +17,29 @@ npm --prefix functions ci
 npx playwright install chromium
 ```
 
-Frontend ve tüm yerel Firebase servislerini tek terminalde başlatın:
+Canlı Firebase Auth ve Netlify ile aynı, yalnız Auth'un açık olduğu arayüz önizlemesini başlatın:
 
 ```bash
 npm run dev
 ```
 
-Komut önce Functions'ı derler ve emülatörleri hazırlar, ardından Vite adresini gösterir. Servisleri ayrı terminallerde izlemek isterseniz backend'i `npm run emulators`, frontend'i ikinci terminalde şu komutla başlatabilirsiniz:
+İlk çalıştırmadan önce `.env.example` içindeki sekiz `VITE_` değişkenini `.env.cloud-preview.local` dosyasına koyun; değerleri Netlify sitesinin ortam ayarlarından alın. Bu dosya Git tarafından yok sayılır. `npm run dev` yalnız Vite'ı açar, `incagen-eeef4` Firebase Auth'a bağlanır ve canlı Storage/Functions hazır olmadığından belge hazırlama, geçmiş ve hesap silme işlemlerini kapalı tutar. Netlify ve localhost farklı tarayıcı kökenleri olduğundan her birinde ayrı oturum açılır.
+
+Sentetik verilerle tam belge/analiz akışını emülatörlerde çalıştırmak için:
+
+```bash
+npm run dev:emulator
+```
+
+Bu komut önce Functions'ı derler ve dört emülatörü hazırlar, ardından Vite adresini gösterir. Servisleri ayrı terminallerde izlemek isterseniz backend'i `npm run emulators`, frontend'i ikinci terminalde şu komutla başlatabilirsiniz:
 
 ```bash
 npm run dev:web
 ```
 
-Vite'ın gösterdiği yerel adresi açın. Yeni hesap oluşturun; gerçek e-posta/parola yerine sentetik test bilgileri kullanın. Firebase login, API anahtarı veya faturalandırma gerekmez.
+Emülatör modunda Vite'ın gösterdiği yerel adresi açın ve sentetik test hesabı oluşturun; canlı Firebase hesabı emülatörde bulunmaz. Emülatör için Firebase CLI girişi, gerçek API anahtarı veya faturalandırma gerekmez.
 
-Varsayılan geliştirme modu emülatördür. İsteğe bağlı `.env.example` dosyasını `.env.local` olarak kopyalayabilirsiniz. Bu sürüm yalnız `demo-incagen`, loopback adresi ve emülatör modunu kabul eder; eksik servisleri gerçek bulutla tamamlamaz.
+`dev:emulator` ve `dev:web`, `.env.emulator` içindeki `demo-incagen` projesini yalnız loopback adresinde kullanır; eksik servisleri gerçek bulutla tamamlamaz.
 
 ### İlk belge hazırlığı
 
@@ -47,7 +55,8 @@ Dosyalar iç navigasyonda korunur; tarayıcı yenilemesinde yeniden seçilir. Em
 
 | Komut | Amaç |
 |---|---|
-| `npm run dev` | Frontend ve tüm yerel Firebase servisleri |
+| `npm run dev` | Canlı Firebase Auth'lu, backend işlemleri kapalı yerel önizleme |
+| `npm run dev:emulator` | Frontend ve tüm yerel Firebase servisleri |
 | `npm run dev:web` | Zaten çalışan emülatörlerle yalnız frontend |
 | `npm run emulators` | Backend derleme ve yerel servisler |
 | `npm run lint` | Kod kalite kontrolü |
@@ -61,11 +70,11 @@ Dosyalar iç navigasyonda korunur; tarayıcı yenilemesinde yeniden seçilir. Em
 
 `test:integration` ve `test:local` öncesinde manuel emülatörü kapatın; bu komutları aynı anda çalıştırmayın. Testler sentetik hesaplar oluşturur. GitHub Actions bu kontrolleri temiz ortamda yürütür.
 
-Üretim derlemesi tek başına canlı kullanıma hazır değildir. Yerel üretim önizlemesi için build sırasında açıkça `VITE_FIREBASE_MODE=emulator` verilmelidir; aksi halde hesap ekranı yapılandırma uyarısı verir.
+Üretim derlemesi tek başına canlı kullanıma hazır değildir. Yerel emülatör üretim önizlemesi için build sırasında açıkça `--mode emulator` verilmelidir; aksi halde hesap ekranı yapılandırma uyarısı verir.
 
 ### Canlı uygulama önizlemesi
 
-`incagen.netlify.app` derlemesi `VITE_FIREBASE_MODE=cloud`, Firebase Web App yapılandırması ve `VITE_AUTH_ONLY_PREVIEW=true` kullanır. Yerel uygulamanın landing, Yeni analiz, Geçmiş, Ayarlar ve Plan ekranları aynı rotalarda açılır. Gerçek Firebase e-posta/parola kaydı, giriş, çıkış ve e-postayla şifre yenileme çalışır. Storage, Firestore ve Cloud Functions hazır olana kadar belge hazırlama, geçmiş verisi ve hesap silme isteği sunucuya gönderilmez; denendiğinde durum açıkça belirtilir. Web yapılandırması Netlify ortam değişkenlerinde tutulur, repoya eklenmez. `npm run dev` ise tüm Firebase emülatörlerini başlatır ve yerel tam akışı korur.
+`incagen.netlify.app` ve `npm run dev` aynı `VITE_FIREBASE_MODE=cloud`, Firebase Web App yapılandırması ve `VITE_AUTH_ONLY_PREVIEW=true` ayarlarını kullanır. Landing, Yeni analiz, Geçmiş, Ayarlar ve Plan ekranları aynı rotalarda açılır. Gerçek Firebase e-posta/parola kaydı, giriş, çıkış ve e-postayla şifre yenileme çalışır. Storage, Firestore ve Cloud Functions hazır olana kadar belge hazırlama, geçmiş verisi ve hesap silme isteği sunucuya gönderilmez; denendiğinde durum açıkça belirtilir. Netlify ayarları serviste, yerel kopyaları Git dışındaki `.env.cloud-preview.local` dosyasında tutulur. Tam sentetik akış `npm run dev:emulator` ile korunur.
 
 ## Yapı ve teknoloji
 

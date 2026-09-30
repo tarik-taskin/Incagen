@@ -5,7 +5,7 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 ## Kalıcı bağlam
 
 - React, TypeScript, Vite, React Router, Tailwind, shadcn/ui yaklaşımı ve Anime.js.
-- Yerel Firebase Auth/Firestore/Storage ve TypeScript Functions; canlı Netlify'da aynı ekranlar ve yalnız etkin Firebase Auth. Gemini entegrasyonu gelecekteki iştir.
+- `npm run dev` ve canlı Netlify aynı Firebase Auth önizlemesini kullanır; tam sentetik Auth/Firestore/Storage/Functions akışı `npm run dev:emulator` ile çalışır. Gemini entegrasyonu gelecekteki iştir.
 - Ana renkler `#4c2a85`, `#bcedf6`; yardımcı renkler `#320E3B`, `#ff0035`, `#DDFBD2`.
 - Çalışma kuralları AGENTS.md, teknik kurallar RULES.md, davranış/limitler FLOW.md içindedir.
 
