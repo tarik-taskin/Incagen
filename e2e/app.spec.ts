@@ -88,8 +88,9 @@ test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru y
 
 test("Nasıl çalışır bölümü ve oturumlu logo çalışma alanına döner", async ({ page }, testInfo) => {
   await page.goto("/");
-  await page.getByRole("navigation", { name: "Ana sayfa navigasyonu" }).getByRole("link", { name: "Nasıl çalışır?" }).click();
-  await expect(page).toHaveURL(/#nasil-calisir$/);
+  await expect(page.getByRole("link", { name: "Nasıl çalışır?" })).toHaveCount(0);
+  await page.goto("/#nasil-calisir");
+  await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole("heading", { name: /Dağınık dosyalardan/ })).toBeVisible();
   await expect(page.getByText("Bugün kullanılabilir")).toHaveCount(0);
   await expect(page.getByText("Bir konu. Daha net bir bakış.")).toBeVisible();

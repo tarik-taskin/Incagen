@@ -55,12 +55,12 @@ export function LandingPage() {
     };
   }, []);
 
-  // İç sayfalardan gelen bağlantıyı bölüm yüklendikten sonra doğru konuma taşır.
+  // Eski bölüm bağlantılarını temiz ana sayfa adresine taşıyarak açılışı en üstten başlatır.
   useEffect(() => {
     if (location.hash !== "#nasil-calisir") return;
-    const frame = requestAnimationFrame(() => document.getElementById("nasil-calisir")?.scrollIntoView());
-    return () => cancelAnimationFrame(frame);
-  }, [location.hash]);
+    navigate("/", { replace: true, state: location.state });
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [location.hash, location.state, navigate]);
 
   return (
     <div ref={pageRef} className="relative min-h-screen overflow-hidden bg-background text-foreground">
@@ -75,12 +75,7 @@ export function LandingPage() {
           <AnimatedLogo className="h-9 w-9" compact />
           <span className="text-xl font-semibold tracking-[-0.04em]">Incagen</span>
         </Link>
-        <div className="flex items-center gap-3 sm:gap-5">
-          <nav aria-label="Ana sayfa navigasyonu">
-            <Link to="/#nasil-calisir" className="inline-flex min-h-10 items-center rounded-xl px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-primary/[0.06] hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:hover:bg-secondary/[0.08] dark:hover:text-secondary">Nasıl çalışır?</Link>
-          </nav>
-          <ThemeToggle />
-        </div>
+        <ThemeToggle />
       </header>
 
       <main className="relative z-10 mx-auto w-full max-w-7xl px-5 pb-20 pt-5 sm:px-8 lg:px-10 lg:pt-10">

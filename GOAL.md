@@ -7,6 +7,15 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-01 — Furkan / Codex: ana ekran adresi ve boş geçmiş çağrısı
+
+- [x] Sahip: Furkan — Ana ekranı yalnız `/` adresinde aç; üstteki yinelenen “Nasıl çalışır?” düğmesini kaldır ve eski bölüm hash'ini temizle.
+- [x] Sahip: Furkan — Canlı Auth arşiv kartındaki önizleme dilini kaldır; dürüst, güçlü bir boş durum ve “Analize başla” yönlendirmesi tasarla.
+
+Kabul: Ana ekran ve çalışma alanındaki yardım bağlantısı temiz `/` adresini göstermeli; eski hash yenilemede korunmamalı. Boş durum analize geçiş sunmalı, henüz açık olmayan bulut işlemlerinin çalıştığını iddia etmemeli. Mobil/masaüstü, tema ve klavye erişimi ile testler doğrulanmalı.
+
+Doğrulama: lint, 41 uygulama ve 7 Functions testi, üretim derlemesi, 3 Firebase entegrasyon testi ve 12/12 masaüstü/mobil tarayıcı senaryosu geçti. Canlı Auth boş kartının metni ve yeni analiz bağlantısı ayrıca bileşen testinde doğrulandı.
+
 ### 2026-10-01 — Furkan / Codex: navigasyon ve metin son rötuşları
 
 - [x] Sahip: Furkan — Ana sayfa üst navigasyonuna “Nasıl çalışır?” bağlantısını taşı, bölüm içindeki etiketi ve “Bugün kullanılabilir” kutusunu yenile; Auth önizlemesi geçmiş boş durumunu anlaşılır biçimde düzenle.
