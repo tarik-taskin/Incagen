@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { animate, stagger } from "animejs";
-import { ArrowRight, FileCheck2, FileSearch, Files, FolderOpen, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, FileCheck2, FileSearch, Files, FolderOpen, Lightbulb, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AnimatedLogo } from "../components/animated-logo";
 import { AuthModal } from "../components/auth-modal";
@@ -75,7 +75,12 @@ export function LandingPage() {
           <AnimatedLogo className="h-9 w-9" compact />
           <span className="text-xl font-semibold tracking-[-0.04em]">Incagen</span>
         </Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-3 sm:gap-5">
+          <nav aria-label="Ana sayfa navigasyonu">
+            <Link to="/#nasil-calisir" className="inline-flex min-h-10 items-center rounded-xl px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-primary/[0.06] hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:hover:bg-secondary/[0.08] dark:hover:text-secondary">Nasıl çalışır?</Link>
+          </nav>
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className="relative z-10 mx-auto w-full max-w-7xl px-5 pb-20 pt-5 sm:px-8 lg:px-10 lg:pt-10">
@@ -94,8 +99,7 @@ export function LandingPage() {
           </section>
 
           <section id="nasil-calisir" className="min-w-0 scroll-mt-8 rounded-[2rem] border border-border/80 bg-card/90 p-7 shadow-[0_24px_80px_-55px_rgba(70,35,110,0.3)] sm:p-10 lg:p-12" aria-labelledby="nasil-calisir-baslik">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.05] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary dark:border-secondary/20 dark:text-secondary"><Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Nasıl çalışır?</span>
-            <h2 id="nasil-calisir-baslik" className="mt-5 max-w-xl text-balance text-3xl font-semibold leading-[1.1] tracking-[-0.05em] sm:text-4xl">Dağınık dosyalardan <span className="text-primary dark:text-secondary">düzenli bir başlangıca.</span></h2>
+            <h2 id="nasil-calisir-baslik" className="max-w-xl text-balance text-3xl font-semibold leading-[1.1] tracking-[-0.05em] sm:text-4xl">Dağınık dosyalardan <span className="text-primary dark:text-secondary">düzenli bir başlangıca.</span></h2>
             <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground">Belge hazırlığının her adımı anlaşılır: konuyu seçin, kaynakları koruyarak düzenleyin, çalışmanıza dilediğinizde geri dönün.</p>
             <div className="relative mt-7 space-y-3 before:absolute before:bottom-8 before:left-5 before:top-8 before:w-px before:bg-primary/15 dark:before:bg-secondary/20">
               {steps.map(({ number, icon: Icon, title, description }) => (
@@ -105,7 +109,10 @@ export function LandingPage() {
                 </article>
               ))}
             </div>
-            <div className="mt-6 rounded-2xl border border-primary/10 bg-gradient-to-r from-primary/[0.07] to-transparent p-5 dark:border-secondary/15 dark:from-secondary/[0.08]"><p className="text-xs font-bold uppercase tracking-[0.18em] text-primary dark:text-secondary">Bugün kullanılabilir</p><p className="mt-2 text-sm font-semibold">Belge hazırlığı ve kaynak takibi</p><p className="mt-1 text-xs leading-5 text-muted-foreground">AI yorumları ve otomatik öneriler henüz etkin değil; hazırlama özeti kaynak belgeleriyle birlikte sunulur.</p></div>
+            <div className="mt-6 rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/[0.08] via-primary/[0.03] to-card p-5 dark:border-secondary/20 dark:from-secondary/[0.09]">
+              <div className="flex items-start gap-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-card text-primary shadow-sm dark:text-secondary"><Lightbulb className="h-4 w-4" aria-hidden="true" /></span><div><p className="text-sm font-semibold">Bir konu. Daha net bir bakış.</p><p className="mt-1.5 text-xs leading-5 text-muted-foreground sm:text-sm sm:leading-6">Tek bir soruya ait belgeleri birlikte hazırlayın; kaynakları korunmuş içerik, sonraki değerlendirme için sağlam bir temel oluştursun.</p></div></div>
+              <div className="mt-4 flex flex-wrap gap-2" aria-label="Örnek analiz konuları"><span className="rounded-full border border-primary/10 bg-card/80 px-2.5 py-1 text-[11px] font-medium text-muted-foreground dark:border-secondary/15">Müşteri deneyimi</span><span className="rounded-full border border-primary/10 bg-card/80 px-2.5 py-1 text-[11px] font-medium text-muted-foreground dark:border-secondary/15">Finansal görünüm</span><span className="rounded-full border border-primary/10 bg-card/80 px-2.5 py-1 text-[11px] font-medium text-muted-foreground dark:border-secondary/15">Operasyon</span></div>
+            </div>
           </section>
         </div>
 

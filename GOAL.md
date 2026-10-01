@@ -7,6 +7,13 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-01 — Furkan / Codex: navigasyon ve metin son rötuşları
+
+- [x] Sahip: Furkan — Ana sayfa üst navigasyonuna “Nasıl çalışır?” bağlantısını taşı, bölüm içindeki etiketi ve “Bugün kullanılabilir” kutusunu yenile; Auth önizlemesi geçmiş boş durumunu anlaşılır biçimde düzenle.
+- [x] Sahip: Furkan — Free kartı üstüne ana sayfa yardım bağlantısını geri koy; çalışma alanı rotaları arasında tarayıcı geri/ileri geçmişini koru; AI karşılaştırma değerlerini Standard ve High olarak göster.
+
+Kabul: Landing navigasyonu ve yardım bağlantısı doğru hedefe gitmeli; geçmiş/plan/ayarlar gezinmesi geri/ileri düğmeleriyle korunmalı. Auth-only geçmiş, kayıt varmış gibi davranmamalı. AI seviyesi gelecekteki kapasite olarak açıkça işaretlenmeli. Açık/koyu tema, mobil/masaüstü ve klavye erişimi korunmalı; lint, birim, tarayıcı ve build kontrolleri geçmeli.
+
 ### 2026-10-01 — Furkan / Codex: tanıtım arayüzü ve plan sınırları
 
 - [x] Sahip: Furkan — Landing ve geçmiş başlığını açık tonlu, tutarlı bir düzene taşı; landing anlatımını responsive iki sütunda genişlet ve gereksiz “Nasıl çalışır?”/Free rozetlerini sadeleştir.

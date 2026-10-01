@@ -53,7 +53,7 @@ export function PlanPage() {
     { label: "Günlük analiz", icon: Gauge, free: free.dailyAnalysisLimit + " analiz", premium: premium.dailyAnalysisLimit + " analiz" },
     { label: "Analiz başına dosya", icon: FileStack, free: free.filesPerAnalysis + " dosya", premium: premium.filesPerAnalysis + " dosya" },
     { label: "Analiz başına toplam", icon: FileStack, free: megabytes(free.totalBytes), premium: megabytes(premium.totalBytes) },
-    { label: "AI analiz katmanı", icon: Sparkles, free: "Henüz etkin değil", premium: "Henüz etkin değil" },
+    { label: "AI analiz katmanı", icon: Sparkles, free: free.analysisDepth, premium: premium.analysisDepth },
     { label: "Harici veri bağlantıları", icon: Link2, free: free.externalSources, premium: premium.externalSources + " · henüz etkin değil" },
   ];
 
@@ -88,6 +88,7 @@ export function PlanPage() {
           <dd className="text-sm font-medium"><span className="mb-1 block text-xs text-muted-foreground sm:hidden">Premium</span>{premiumValue}</dd>
         </div>)}
       </dl>
+      <p className="mt-4 text-xs leading-5 text-muted-foreground">AI analiz katmanı henüz kullanıma açılmadı. Standard ve High seviyeleri, ilgili planlarda hedeflenen kapsamı gösterir.</p>
     </section>
 
   </section>;

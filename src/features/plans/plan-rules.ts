@@ -6,7 +6,7 @@ export const PLAN_RULES = {
     dailyAnalysisLimit: LIMITS.daily,
     filesPerAnalysis: LIMITS.files,
     totalBytes: LIMITS.totalBytes,
-    analysisDepth: "Medium",
+    analysisDepth: "Standard",
     externalSources: "Bulunmaz",
   },
   premium: {

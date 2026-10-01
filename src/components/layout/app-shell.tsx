@@ -1,4 +1,4 @@
-import { Crown, FileBarChart2, History, Settings } from "lucide-react";
+import { ArrowUpRight, CircleHelp, Crown, FileBarChart2, History, Settings } from "lucide-react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { AnimatedLogo } from "../animated-logo";
 import { PremiumUpgrade } from "../premium-upgrade";
@@ -47,14 +47,17 @@ export function AppShell() {
 
         <nav className="mt-10 space-y-1.5" aria-label="Ana navigasyon">
           {navigationItems.map(({ to, label, icon: Icon }) => (
-            <NavLink key={to} to={to} replace className={({ isActive }) => getDesktopLinkClass(isActive)}>
+            <NavLink key={to} to={to} className={({ isActive }) => getDesktopLinkClass(isActive)}>
               <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
               {label}
             </NavLink>
           ))}
         </nav>
 
-        <div className="mt-auto rounded-2xl border border-primary/10 bg-primary/[0.05] p-4 dark:border-secondary/10 dark:bg-secondary/[0.05]">
+        <Link to="/" className="mt-auto mb-4 flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card px-3 text-sm font-medium text-muted-foreground transition-colors hover:border-primary/25 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:hover:text-secondary">
+          <CircleHelp className="h-4 w-4" aria-hidden="true" /> Nasıl çalışır? <ArrowUpRight className="ml-auto h-4 w-4" aria-hidden="true" />
+        </Link>
+        <div className="rounded-2xl border border-primary/10 bg-primary/[0.05] p-4 dark:border-secondary/10 dark:bg-secondary/[0.05]">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm font-semibold">{PLAN_RULES.free.label} plan</span>
             <span className="rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold text-primary dark:bg-secondary/10 dark:text-secondary">{PLAN_RULES.free.dailyAnalysisLimit}/gün</span>
@@ -75,6 +78,7 @@ export function AppShell() {
               <p className="text-xs text-muted-foreground">Verilerinizi güvenle hazırlayın ve analiz edin.</p>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
+              <Link to="/" aria-label="Nasıl çalışır?" className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:hidden"><CircleHelp className="h-4 w-4" aria-hidden="true" /></Link>
               <PremiumUpgrade />
               <ThemeToggle />
             </div>
@@ -92,7 +96,6 @@ export function AppShell() {
           <NavLink
             key={to}
             to={to}
-            replace
             className={({ isActive }) => cn(
               "flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl px-2 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               isActive ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",

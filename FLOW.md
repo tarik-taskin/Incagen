@@ -8,7 +8,7 @@ Tam analiz akışı `npm run dev:emulator` ile yalnız `demo-incagen` Firebase e
 
 Canlı Netlify derlemesi ve `npm run dev` ile açılan yerel önizleme aynı uygulama ekranlarını ve rotalarını gösterir; gerçek Firebase e-posta/parola kaydı, giriş, çıkış ve şifre yenileme bağlantısı çalışır. Oturumsuz “Analize başla” landing üzerindeki giriş modalını açar; geçerli oturum varsa doğrudan çalışma alanına geçer. Şimdilik yalnız Auth servisi etkin olduğundan belge hazırlama ve hesap silme sunucuya gönderilmez; geçmiş verisi okunmaz ve ekranda durum açıklanır. Tam bulut akışı için Storage, Cloud Functions ve güvenlik kuralları ayrıca dağıtılıp doğrulanmalıdır.
 
-Oturumlu çalışma alanında Incagen logosu yeni analiz ekranına gider. Tanıtımdaki “Nasıl çalışır?” bölümü açılış ekranında adım adım görünür; uygulama içinde tekrar eden yardım bağlantısı yoktur. Bölüm mevcut belge hazırlama ve arşiv adımlarını açıklar; henüz etkin olmayan AI yorumlarını çalışan özellik gibi göstermez. Canlı Auth önizlemesinde arşiv boş veri görünümü yerine açık bir hizmet durumu gösterir.
+Oturumlu çalışma alanında Incagen logosu yeni analiz ekranına gider. “Nasıl çalışır?” bağlantısı açılış ekranının üst navigasyonunda ve çalışma alanında yardım bağlantısı olarak bulunur; çalışma alanından seçildiğinde ana sayfayı açar. İç sayfa gezinmesi tarayıcı geçmişine eklenir, böylece geri/ileri düğmeleri gerçek ekranlar arasında çalışır. Tanıtım bölümü mevcut belge hazırlama ve arşiv adımlarını açıklar; henüz etkin olmayan AI yorumlarını çalışan özellik gibi göstermez. Canlı Auth önizlemesinde geçmiş kayıtları okunamadığından boş durum kartı hizmetin henüz açık olmadığını da belirtir.
 
 ## Free ve Premium
 
@@ -20,7 +20,7 @@ Oturumlu çalışma alanında Incagen logosu yeni analiz ekranına gider. Tanıt
 | Analiz başına dosya | 5 | 10 |
 | Analiz başına toplam boyut | 25 MB | 50 MB |
 | Belge formatları | Tablo, belge, sunum, veri ve görsel | Tablo, belge, sunum, veri ve görsel |
-| AI derinliği | Medium | High |
+| AI derinliği (henüz etkin değil) | Standard | High |
 | Harici kaynak | Yok | Önce Google Analytics, sonra Microsoft Clarity |
 
 Premium ödeme ve yetkilendirmeleri henüz uygulanmadı. Mevcut oturumlar Free kabul edilir. Günlük kota sunucunun `Europe/Istanbul` takvim gününe göredir; işlem başında transaction ile rezerve edilir. Başarısız işlemde iade edilir; tamamlanmış analizi silmek kotayı geri getirmez. Aynı istek ve tekrarlanan çalıştırmalar çift kota tüketmez.
