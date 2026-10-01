@@ -32,7 +32,7 @@ const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function PasswordField({ autoComplete, id, label, onChange, onToggle, show, toggleLabel, value }: PasswordFieldProps) {
   return (
     <div>
-      <label htmlFor={id} className="text-sm font-medium text-foreground">{label}</label>
+      <label htmlFor={id} className="text-[13.5px] font-medium text-foreground sm:text-sm">{label}</label>
       <div className="relative mt-2">
         <KeyRound className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <input
@@ -175,7 +175,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
               <AnimatedLogo compact className="h-8 w-8" />
             </span>
             <div>
-              <p className="font-semibold tracking-[-0.02em]">Incagen</p>
+              <p className="text-[15.5px] font-semibold tracking-[-0.02em] sm:text-base">Incagen</p>
               <p className="flex items-center gap-1 text-xs text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" /> {usesFirebaseEmulator ? "Yerel analiz alanı" : "Güvenli analiz alanı"}</p>
             </div>
           </div>
@@ -185,19 +185,21 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
         </header>
 
         <div className="mt-7">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary dark:text-secondary">Veriden karara, tek çalışma alanı</p>
-          <h1 id={titleId} className="mt-2 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">{register ? tr.auth.register : tr.auth.login}</h1>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          <p className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-primary dark:text-secondary sm:text-xs">Veriden karara, tek çalışma alanı</p>
+          <h1 id={titleId} className="mt-2 text-[29px] font-semibold tracking-[-0.04em] sm:text-4xl">{register ? tr.auth.register : tr.auth.login}</h1>
+          <p className="mt-2 text-[13.5px] leading-6 text-muted-foreground sm:text-sm">
             {register ? "Kişisel analiz alanınızı oluşturun ve raporlarınızı bir arada yönetin." : "Analizlerinize ve kayıtlı raporlarınıza kaldığınız yerden devam edin."}
           </p>
-          <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-primary/10 bg-primary/[0.05] px-2.5 py-1 text-xs font-medium text-primary dark:border-secondary/15 dark:bg-secondary/[0.07] dark:text-secondary">
-            <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" /> {usesFirebaseEmulator ? "Yerel demo · Yalnız sentetik veri" : "Firebase ile korunan hesap"}
-          </span>
+          {usesFirebaseEmulator && (
+            <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-primary/10 bg-primary/[0.05] px-2.5 py-1 text-xs font-medium text-primary dark:border-secondary/15 dark:bg-secondary/[0.07] dark:text-secondary">
+              <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" /> Yerel demo · Yalnız sentetik veri
+            </span>
+          )}
         </div>
 
         <form onSubmit={submit} className="mt-6 space-y-5" noValidate>
           <div>
-            <label htmlFor="email" className="text-sm font-medium text-foreground">{tr.auth.email}</label>
+            <label htmlFor="email" className="text-[13.5px] font-medium text-foreground sm:text-sm">{tr.auth.email}</label>
             <div className="relative mt-2">
               <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <input
@@ -233,7 +235,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
             toggleLabel={showPassword ? "Parolayı gizle" : "Parolayı göster"}
           />
 
-          {!register && <div className="-mt-2 text-right"><button type="button" disabled={resetSending} className="rounded-md text-sm font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary" onClick={requestPasswordReset}>{resetSending ? "Bağlantı gönderiliyor…" : "Şifremi unuttum"}</button></div>}
+          {!register && <div className="-mt-2 text-right"><button type="button" disabled={resetSending} className="rounded-md text-[13.5px] font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary sm:text-sm" onClick={requestPasswordReset}>{resetSending ? "Bağlantı gönderiliyor…" : "Şifremi unuttum"}</button></div>}
 
           {resetSent && <p role="status" className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-3 text-sm text-emerald-800 dark:text-emerald-200">Şifre yenileme bağlantısı e-posta adresinize gönderildi.</p>}
 
@@ -277,7 +279,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
           {register && (
             <div>
               <div className="flex items-center justify-between gap-3">
-                <label htmlFor="invite-code" className="text-sm font-medium text-foreground">Davet kodu</label>
+                <label htmlFor="invite-code" className="text-[13.5px] font-medium text-foreground sm:text-sm">Davet kodu</label>
                 <span className="text-xs text-muted-foreground">İsteğe bağlı</span>
               </div>
               <div className="relative mt-2">
@@ -306,7 +308,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
           <SocialOption action={action} name="Microsoft" icon={<MicrosoftMark />} />
         </div>
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
+        <p className="mt-6 text-center text-[13.5px] text-muted-foreground sm:text-sm">
           {register ? "Zaten hesabınız var mı?" : "Henüz hesabınız yok mu?"}{" "}
           <button type="button" className="rounded-md font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary" onClick={() => changeMode(!register)}>
             {register ? tr.auth.login : tr.auth.register}

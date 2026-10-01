@@ -7,6 +7,15 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-01 — Furkan / Codex: kimlik kartı mobil rötuşu ve güncel yayın
+
+- [x] Sahip: Furkan — Giriş ve kayıt ekranındaki “Firebase ile korunan hesap” rozetini kaldır; mobil yazıları çok hafif küçült, masaüstü düzenini koru.
+- [x] Sahip: Furkan — Kontrollerin ardından local/remote `main` ve `furkan` dallarını eşitle, güncel uygulamayı Netlify üretimine yayınla.
+
+Kabul: Canlı Auth giriş/kayıt ekranlarında istenmeyen rozet görünmemeli; emülatörün sentetik veri uyarısı korunmalı. Mobil yazı ayarı iki modda okunabilir ve taşmasız olmalı; giriş akışı bozulmamalı. Lint, test, build, entegrasyon ve yerel tarayıcı kontrolleri geçmeli; dört dal aynı commit'te, Netlify yayını bu commit'in derlemesinde olmalı.
+
+Doğrulama: lint, 41 uygulama ve 7 Functions testi, üretim derlemesi, 3 Firebase entegrasyon testi ve 12/12 masaüstü/mobil tarayıcı senaryosu geçti. Canlı Auth rozeti kaldırıldı; emülatörün sentetik veri uyarısı korundu.
+
 ### 2026-10-01 — Furkan / Codex: ana ekran adresi ve boş geçmiş çağrısı
 
 - [x] Sahip: Furkan — Ana ekranı yalnız `/` adresinde aç; üstteki yinelenen “Nasıl çalışır?” düğmesini kaldır ve eski bölüm hash'ini temizle.
