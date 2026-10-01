@@ -40,13 +40,13 @@ export function NewAnalysisPage() {
           <label className="block text-sm">{tr.analysis.business}<input className="form-control mt-1" maxLength={100} value={draft.business} onChange={e => setDraft(d => ({ ...d, business: e.target.value }))} /></label>
           <label className="block text-sm">{tr.analysis.titleLabel}<input className="form-control mt-1" maxLength={100} value={draft.title} onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} /></label>
         </fieldset>
-        <p className="mt-5 text-xs leading-5 text-muted-foreground">Tüm planlar aynı belge formatlarını kabul eder.</p>
+        <p className="mt-5 rounded-xl border border-primary/10 bg-primary/[0.04] px-3.5 py-3 text-xs leading-5 text-muted-foreground dark:border-secondary/15 dark:bg-secondary/[0.05]"><span className="font-semibold text-foreground">Bir konuya odaklanın.</span> Müşteri geri bildirimleri ya da finans verileri gibi birbiriyle ilişkili belgeleri aynı analizde toplayın.</p>
         {busy && <div role="status" className="mt-4 text-sm"><p>{progress < 100 ? `Yükleniyor: %${progress}` : tr.status.processing}</p><progress aria-label="Yükleme ilerlemesi" className="mt-2 w-full accent-purple-700" value={progress} max={100} /></div>}
         {error && <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{error}</p>}
         <Button className="mt-5 w-full" disabled={busy || files.length === 0} onClick={submit}>{tr.analysis.start}</Button>
         {busy && progress < 100 && <Button variant="ghost" className="mt-2 w-full" onClick={cancel}>{tr.analysis.cancel}</Button>}
         {activeId && <Link className="mt-4 block text-sm underline" to={"/app/analyses/" + activeId}>Son işlemi aç</Link>}
-        <p className="mt-3 text-xs leading-5 text-muted-foreground">Belgeler yerel backend’de içerik imzasıyla doğrulanır, ayrıştırılır ve kaynak konumlarıyla hazırlanır. Bu aşamada analiz henüz başlamaz.</p>
+        <p className="mt-3 text-xs leading-5 text-muted-foreground">Hazırlama başladığında dosyaların gerçek içerik türü doğrulanır; okunabilir bölümler kaynakları korunarak düzenlenir. Yorum ve öneriler bu aşamada üretilmez.</p>
       </aside>
     </div>
   </section>;

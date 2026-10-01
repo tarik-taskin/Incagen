@@ -29,24 +29,23 @@ describe("Belge hazırlama sözleşmesi", () => {
     }
   });
 
-  it("çalıştırılabilir dosyayı ve dosya boyutu sınırı ihlalini reddeder", () => {
+  it("çalıştırılabilir dosyayı ve toplam boyut ihlalini reddeder", () => {
     const unsupported = request();
     unsupported.files[0] = { name: "program.exe", size: 100, contentType: "application/octet-stream" };
     expect(createSchema.safeParse(unsupported).success).toBe(false);
 
     const oversized = request();
-    oversized.files[0].size = 6 * 1024 * 1024;
+    oversized.files[0].size = 25 * 1024 * 1024;
     expect(createSchema.safeParse(oversized).success).toBe(false);
   });
 
-  it("Free 30 MB sınırını uygular ve Premium 60 MB'ı ayrı plan sınırı olarak tutar", () => {
+  it("Free 25 MB sınırını uygular; Premium 50 MB kapasitesini ayrı tutar", () => {
     const full = request();
-    full.files = Array.from({ length: 6 }, (_, index) => ({ name: `belge-${index}.pdf`, size: 5 * 1024 * 1024, contentType: "application/pdf" }));
+    full.files = [{ name: "tek-belge.pdf", size: 25 * 1024 * 1024, contentType: "application/pdf" }];
     expect(createSchema.safeParse(full).success).toBe(true);
     expect(createSchema.safeParse({ ...full, files: [...full.files, { name: "fazla.pdf", size: 1, contentType: "application/pdf" }] }).success).toBe(false);
-    expect(LIMITS.totalBytes).toBe(30 * 1024 * 1024);
-    expect(PREMIUM_LIMITS.totalBytes).toBe(60 * 1024 * 1024);
-    expect(PREMIUM_LIMITS.fileBytes).toBe(LIMITS.fileBytes);
+    expect(LIMITS).toEqual({ files: 5, totalBytes: 25 * 1024 * 1024, daily: 2 });
+    expect(PREMIUM_LIMITS).toEqual({ files: 10, totalBytes: 50 * 1024 * 1024, daily: 5 });
   });
 
   it("eski para birimi alanını sözleşmede kabul etmez", () => {

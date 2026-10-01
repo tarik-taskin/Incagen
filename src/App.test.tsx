@@ -81,7 +81,7 @@ describe("App routes", () => {
     expect(screen.getByRole("heading", { name: "Planınızı ve sınırlarınızı görün" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Free" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Premium" })).toBeInTheDocument();
-    expect(screen.getByText("Google Analytics ve Microsoft Clarity · planlanan")).toBeInTheDocument();
+    expect(screen.getByText("Google Analytics ve Microsoft Clarity · henüz etkin değil")).toBeInTheDocument();
   });
 
   it("Premium geçiş çağrısında kısa üyelik bilgisini gösterir", async () => {
@@ -91,7 +91,7 @@ describe("App routes", () => {
     await user.click(screen.getByRole("button", { name: "Premium’a geç" }));
     const premiumNotice = screen.getByRole("region", { name: "Premium üyelik yakında" });
     expect(premiumNotice).toHaveTextContent("PayTR");
-    expect(premiumNotice).toHaveTextContent("toplam 60 MB");
+    expect(premiumNotice).toHaveTextContent("toplam 50 MB");
     expect(within(premiumNotice).getByRole("link", { name: "Planları karşılaştır" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("heading", { name: "Belgelerinizi analize hazırlayın" }));

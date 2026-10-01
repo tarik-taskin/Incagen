@@ -27,13 +27,12 @@ describe("NewAnalysisPage", () => {
 
     expect(screen.getByText("faaliyet.xlsx")).toBeInTheDocument();
     expect(screen.getByText("rapor.pdf")).toBeInTheDocument();
-    expect(screen.getByText("2/10 dosya analize hazırlanıyor")).toBeInTheDocument();
+    expect(screen.getByText("2/5 dosya analize hazırlanıyor")).toBeInTheDocument();
     expect(screen.queryByText("Para birimi")).not.toBeInTheDocument();
     expect(screen.queryByText(/sütun eşleştirme/i)).not.toBeInTheDocument();
-    expect(screen.getByText("Tüm planlar aynı belge formatlarını kabul eder.")).toBeInTheDocument();
+    expect(screen.getByText(/Müşteri geri bildirimleri ya da finans verileri/)).toBeInTheDocument();
     expect(screen.queryByText(/Yerel geliştirme ortamı/)).not.toBeInTheDocument();
-    expect(screen.queryByText("5 MB/dosya · 30 MB/analiz")).not.toBeInTheDocument();
-    expect(screen.queryByText("5 MB/dosya · 60 MB/analiz")).not.toBeInTheDocument();
+    expect(screen.queryByText(/dosya başına.*MB/i)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "faaliyet.xlsx dosyasını kaldır" }));
     expect(screen.queryByText("faaliyet.xlsx")).not.toBeInTheDocument();
@@ -59,12 +58,12 @@ describe("NewAnalysisPage", () => {
     const user = setupUser();
     renderPage();
     const input = screen.getByLabelText("Analiz edilecek dosyaları seç");
-    const files = Array.from({ length: 11 }, (_, index) => new File([String(index)], `belge-${index}.pdf`, { type: "application/pdf", lastModified: index }));
+    const files = Array.from({ length: 6 }, (_, index) => new File([String(index)], `belge-${index}.pdf`, { type: "application/pdf", lastModified: index }));
 
     await user.upload(input, files);
 
-    expect(screen.getByText("10/10 dosya analize hazırlanıyor")).toBeInTheDocument();
-    expect(screen.getByText(/belge-10.pdf:/)).toBeInTheDocument();
+    expect(screen.getByText("5/5 dosya analize hazırlanıyor")).toBeInTheDocument();
+    expect(screen.getByText(/belge-5.pdf:/)).toBeInTheDocument();
     expect(input).toBeDisabled();
   });
 

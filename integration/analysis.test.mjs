@@ -36,11 +36,15 @@ test("belge hazırlığı, izolasyon, idempotency, doğrulama ve silme", { timeo
     const prepare = httpsCallable(a.functions, "prepareAnalysis");
     const remove = httpsCallable(a.functions, "deleteAnalysis");
     const request = input();
-    await assert.rejects(create({ ...request, files: Array.from({ length: 11 }, () => request.files[0]) }));
-    const limitFiles = Array.from({ length: 6 }, (_, index) => ({ name: `belge-${index}.txt`, size: 5 * 1024 * 1024, contentType: "text/plain" }));
+    await assert.rejects(create({ ...request, files: Array.from({ length: 6 }, () => request.files[0]) }));
+    const limitFiles = Array.from({ length: 5 }, (_, index) => ({ name: `belge-${index}.txt`, size: 5 * 1024 * 1024, contentType: "text/plain" }));
     await assert.rejects(create({ ...input(), files: [...limitFiles, { name: "fazla.txt", size: 1, contentType: "text/plain" }] }));
     const atLimit = (await create({ ...input(), files: limitFiles })).data;
     await remove({ id: atLimit.id });
+    const largerBody = Buffer.alloc(6 * 1024 * 1024, 97);
+    const larger = (await create({ ...input(), files: [{ name: "buyuk.txt", size: largerBody.length, contentType: "text/plain" }] })).data;
+    await uploadBytes(ref(a.storage, larger.paths[0]), largerBody, { contentType: "text/plain" });
+    await remove({ id: larger.id });
     const { data } = await create(request);
     const again = await create(request);
     assert.equal(data.id, again.data.id);
@@ -93,16 +97,16 @@ test("belge hazırlığı, izolasyon, idempotency, doğrulama ve silme", { timeo
   } finally { await deleteApp(a.app); await deleteApp(b.app); }
 });
 
-test("günlük kota on hazırlıktan sonra sunucuda engellenir", { timeout: 120000 }, async () => {
+test("günlük kota iki hazırlıktan sonra sunucuda engellenir", { timeout: 120000 }, async () => {
   const a = await client();
   try {
     const create = httpsCallable(a.functions, "createAnalysis");
     const prepare = httpsCallable(a.functions, "prepareAnalysis");
     const remove = httpsCallable(a.functions, "deleteAnalysis");
-    for (let i = 0; i < 11; i++) {
+    for (let i = 0; i < 3; i++) {
       const { data } = await create(input());
       await uploadBytes(ref(a.storage, data.paths[0]), documentBody, { contentType: "text/plain" });
-      if (i < 10) await prepare({ id: data.id });
+      if (i < 2) await prepare({ id: data.id });
       else await assert.rejects(prepare({ id: data.id }), error => error.code === "functions/resource-exhausted");
       await remove({ id: data.id });
     }

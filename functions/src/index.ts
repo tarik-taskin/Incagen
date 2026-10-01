@@ -70,7 +70,7 @@ export const prepareAnalysis = onCall(options, async request => {
     const oldRef = data.status === "processing" && data.quotaDay ? db.doc(`users/${uid}/quotas/${data.quotaDay}`) : null;
     const oldQuota = oldRef && oldRef.path !== quotaRef.path ? await tx.get(oldRef) : null;
     const used = Math.max(0, (quota.data()?.used ?? 0) - (oldRef?.path === quotaRef.path ? 1 : 0));
-    if (used >= LIMITS.daily) throw new HttpsError("resource-exhausted", "Günlük 10 analiz hakkınız doldu.");
+    if (used >= LIMITS.daily) throw new HttpsError("resource-exhausted", `Günlük ${LIMITS.daily} analiz hakkınız doldu.`);
     if (oldRef && oldQuota) tx.set(oldRef, { used: Math.max(0, (oldQuota.data()?.used ?? 0) - 1) });
     tx.set(quotaRef, { used: used + 1 });
     tx.update(ref, { status: "processing", attempt, quotaDay: day, error: null, updatedAt: Date.now(), attempts: (data.attempts ?? 0) + 1 });
@@ -87,7 +87,7 @@ export const prepareAnalysis = onCall(options, async request => {
       const [metadata] = await file.getMetadata();
       const size = Number(metadata.size);
       totalBytes += size;
-      if (size !== entry.size || size > LIMITS.fileBytes || totalBytes > LIMITS.totalBytes || metadata.contentType !== entry.contentType) {
+      if (size !== entry.size || totalBytes > LIMITS.totalBytes || metadata.contentType !== entry.contentType) {
         throw new FileValidationError(`${entry.name}: Dosya boyutu veya içerik türü manifest ile eşleşmiyor.`);
       }
       const [data] = await file.download();

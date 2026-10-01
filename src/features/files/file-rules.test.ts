@@ -54,20 +54,20 @@ describe("file rules", () => {
   });
 
   it("plan sınırını aynı seçim grubunda da uygular", () => {
-    const files = Array.from({ length: 11 }, (_, index) => createFile(`belge-${index}.pdf`, index + 1, index));
-    const result = validateFileSelection([], files, 10);
+    const files = Array.from({ length: 6 }, (_, index) => createFile(`belge-${index}.pdf`, index + 1, index));
+    const result = validateFileSelection([], files, 5);
 
-    expect(result.accepted).toHaveLength(10);
+    expect(result.accepted).toHaveLength(5);
     expect(result.rejected).toHaveLength(1);
-    expect(result.rejected[0]?.reason).toContain("en fazla 10 dosya");
+    expect(result.rejected[0]?.reason).toContain("en fazla 5 dosya");
   });
 
-  it("Free planda toplam 30 MB'ı kabul edip fazlasını reddeder", () => {
-    const files = Array.from({ length: 6 }, (_, index) => sizedFile(`belge-${index}.pdf`, 5 * 1024 * 1024));
-    const result = validateFileSelection([], [...files, sizedFile("fazla.pdf", 1)]);
+  it("Free planda tek dosyada 25 MB'ı kabul edip toplamda fazlasını reddeder", () => {
+    const full = sizedFile("tek-belge.pdf", 25 * 1024 * 1024);
+    const result = validateFileSelection([], [full, sizedFile("fazla.pdf", 1)]);
 
-    expect(result.accepted).toHaveLength(6);
-    expect(result.rejected[0]?.reason).toContain("30 MB");
+    expect(result.accepted).toHaveLength(1);
+    expect(result.rejected[0]?.reason).toContain("25 MB");
   });
 
   it("dosya boyutlarını okunabilir biçimde gösterir", () => {

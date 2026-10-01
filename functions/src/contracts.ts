@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-export const LIMITS = { files: 10, fileBytes: 5 * 1024 * 1024, totalBytes: 30 * 1024 * 1024, daily: 10 } as const;
-export const PREMIUM_LIMITS = { files: 30, fileBytes: LIMITS.fileBytes, totalBytes: 60 * 1024 * 1024, daily: 30 } as const;
+export const LIMITS = { files: 5, totalBytes: 25 * 1024 * 1024, daily: 2 } as const;
+export const PREMIUM_LIMITS = { files: 10, totalBytes: 50 * 1024 * 1024, daily: 5 } as const;
 
 export type DocumentCategory = "Tablo" | "Belge" | "Sunum" | "Veri" | "Görsel";
 export type ParserKind = "delimited" | "xlsx" | "pdf" | "image" | "text" | "json" | "docx" | "pptx";
@@ -73,10 +73,10 @@ export const createSchema = z.object({
   business: z.string().trim().min(1).max(100),
   files: z.array(z.object({
     name: z.string().min(1).max(200).refine(hasSupportedExtension, "Bu dosya türü desteklenmiyor."),
-    size: z.number().int().positive().max(LIMITS.fileBytes),
+    size: z.number().int().positive(),
     contentType: z.string().trim().min(1).max(200),
   }).strict()).min(1).max(LIMITS.files),
-}).strict().refine(v => v.files.reduce((n, f) => n + f.size, 0) <= LIMITS.totalBytes, "Free planda toplam boyut 30 MB'ı aşamaz.");
+}).strict().refine(v => v.files.reduce((n, f) => n + f.size, 0) <= LIMITS.totalBytes, "Free planda bir analizin toplam boyutu 25 MB'ı aşamaz.");
 
 export type CreateAnalysis = z.infer<typeof createSchema>;
 export type AnalysisStatus = "draft" | "uploading" | "processing" | "completed" | "failed" | "deleting";

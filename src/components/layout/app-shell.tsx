@@ -1,4 +1,4 @@
-import { ArrowUpRight, CircleHelp, Crown, FileBarChart2, History, Settings } from "lucide-react";
+import { Crown, FileBarChart2, History, Settings } from "lucide-react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { AnimatedLogo } from "../animated-logo";
 import { PremiumUpgrade } from "../premium-upgrade";
@@ -54,15 +54,12 @@ export function AppShell() {
           ))}
         </nav>
 
-        <Link to="/#nasil-calisir" className="mt-auto mb-4 flex min-h-11 items-center justify-between gap-2 rounded-xl border border-border/80 bg-background/70 px-3 text-sm font-medium text-muted-foreground transition-colors hover:border-primary/25 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:hover:border-secondary/25">
-          <span className="flex items-center gap-2.5"><CircleHelp className="h-4 w-4" aria-hidden="true" /> Nasıl çalışır?</span><ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-        </Link>
-        <div className="rounded-2xl border border-primary/10 bg-primary/[0.05] p-4 dark:border-secondary/10 dark:bg-secondary/[0.05]">
+        <div className="mt-auto rounded-2xl border border-primary/10 bg-primary/[0.05] p-4 dark:border-secondary/10 dark:bg-secondary/[0.05]">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm font-semibold">{PLAN_RULES.free.label} plan</span>
             <span className="rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold text-primary dark:bg-secondary/10 dark:text-secondary">{PLAN_RULES.free.dailyAnalysisLimit}/gün</span>
           </div>
-          <p className="mt-2 text-xs leading-5 text-muted-foreground">Her analizde en fazla {PLAN_RULES.free.filesPerAnalysis} dosya, dosya başına {PLAN_RULES.free.fileBytes / 1024 ** 2} MB ve toplam {PLAN_RULES.free.totalBytes / 1024 ** 2} MB kullanabilirsiniz.</p>
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">Her analizde en fazla {PLAN_RULES.free.filesPerAnalysis} dosya ve toplam {PLAN_RULES.free.totalBytes / 1024 ** 2} MB kullanabilirsiniz.</p>
         </div>
       </aside>
 
@@ -78,9 +75,7 @@ export function AppShell() {
               <p className="text-xs text-muted-foreground">Verilerinizi güvenle hazırlayın ve analiz edin.</p>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
-              <Link to="/#nasil-calisir" aria-label="Nasıl çalışır?" title="Nasıl çalışır?" className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:hidden"><CircleHelp className="h-4 w-4" aria-hidden="true" /></Link>
               <PremiumUpgrade />
-              <span className="hidden rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground md:inline-flex">{PLAN_RULES.free.label} plan</span>
               <ThemeToggle />
             </div>
           </div>

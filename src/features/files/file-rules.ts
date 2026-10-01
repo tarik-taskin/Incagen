@@ -76,8 +76,8 @@ export function validateFileSelection(
 
     if (!isSupportedFile(file)) {
       reason = "Bu dosya türü şu anda desteklenmiyor.";
-    } else if (file.size === 0 || file.size > LIMITS.fileBytes) {
-      reason = `Dosya boş olamaz ve ${LIMITS.fileBytes / 1024 ** 2} MB sınırını aşamaz.`;
+    } else if (file.size === 0) {
+      reason = "Dosya boş olamaz.";
     } else if (knownIds.has(id)) {
       reason = "Bu dosya zaten seçili.";
     } else if (existingFiles.length + accepted.length >= limit) {

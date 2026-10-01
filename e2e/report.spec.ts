@@ -82,7 +82,7 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
   await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Belgelerinizi analize hazırlayın" })).toBeVisible();
 
-  for (let index = 1; index <= 3; index++) {
+  for (let index = 1; index <= 2; index++) {
     if (index > 1) await page.goto("/app/new-analysis");
     await page.getByLabel("Analiz edilecek dosyaları seç").setInputFiles({
       name: "ornek-" + index + ".txt", mimeType: "text/plain",
@@ -96,10 +96,10 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
 
   await page.goto("/app/history");
   const history = page.getByRole("list", { name: "Analiz geçmişi" });
-  await expect(history.getByRole("listitem")).toHaveCount(3);
+  await expect(history.getByRole("listitem")).toHaveCount(2);
   const archiveSummary = page.getByRole("region", { name: "Arşiv özeti" });
-  await expect(archiveSummary).toContainText("Toplam analiz3");
-  await expect(archiveSummary).toContainText("Analize hazır3");
+  await expect(archiveSummary).toContainText("Toplam analiz2");
+  await expect(archiveSummary).toContainText("Analize hazır2");
   const completedSummary = archiveSummary.locator('[aria-describedby="history-summary-help-1"]');
   await completedSummary.hover();
   await expect(page.getByRole("tooltip", { name: "Belgeleri başarıyla ayrıştırılan ve açılmaya hazır analizler." })).toBeVisible();
@@ -112,7 +112,7 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
   await expect(page.getByLabel("Arşivde ara")).toHaveValue("Geçmiş testi 1");
   await expect(history.getByRole("listitem")).toHaveCount(1);
   await page.getByRole("button", { name: "Filtreleri temizle" }).click();
-  await expect(history.getByRole("listitem")).toHaveCount(3);
+  await expect(history.getByRole("listitem")).toHaveCount(2);
   await expect(page).toHaveURL(/\/app\/history$/);
   await page.screenshot({ path: testInfo.outputPath("history-light.png"), fullPage: true });
   const menuTrigger = page.getByRole("button", { name: "Geçmiş testi 1 için diğer işlemler" });
@@ -139,18 +139,18 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
   await expect(confirmation).toContainText("Bu işlem geri alınamaz");
   await confirmation.getByRole("button", { name: "Vazgeç" }).click();
   await expect(confirmation).not.toBeVisible();
-  await expect(history.getByRole("listitem")).toHaveCount(3);
+  await expect(history.getByRole("listitem")).toHaveCount(2);
 
   await menuTrigger.click();
   await expect(menuTrigger).toHaveAttribute("aria-expanded", "true");
   await menu.getByRole("button", { name: "Analizi sil", exact: true }).click();
   await confirmation.getByRole("button", { name: "Analizi sil", exact: true }).click();
   await expect(page.getByRole("status").filter({ hasText: "1 analiz ve kaynak belgeleri silindi." })).toBeVisible({ timeout: 30_000 });
-  await expect(history.getByRole("listitem")).toHaveCount(2, { timeout: 30_000 });
+  await expect(history.getByRole("listitem")).toHaveCount(1, { timeout: 30_000 });
 
   await page.getByRole("button", { name: "Seç ve sil" }).click();
   await page.getByRole("button", { name: "Görünenleri seç" }).click();
-  await expect(page.getByText("2 analiz seçildi")).toBeVisible();
+  await expect(page.getByText("1 analiz seçildi")).toBeVisible();
   await page.getByRole("button", { name: "Karanlık moda geç" }).click();
   await page.screenshot({ path: testInfo.outputPath("history-dark-selection.png"), fullPage: true });
   const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
@@ -158,13 +158,13 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 
   await page.getByRole("button", { name: "Seçilenleri sil" }).click();
-  await expect(confirmation).toContainText("2 analizi silmek istiyor musunuz?");
+  await expect(confirmation).toContainText("Bu analizi silmek istiyor musunuz?");
   await confirmation.getByRole("button", { name: "Vazgeç" }).click();
-  await expect(history.getByRole("listitem")).toHaveCount(2);
-  await expect(page.getByText("2 analiz seçildi")).toBeVisible();
+  await expect(history.getByRole("listitem")).toHaveCount(1);
+  await expect(page.getByText("1 analiz seçildi")).toBeVisible();
   await page.getByRole("button", { name: "Seçilenleri sil" }).click();
-  await confirmation.getByRole("button", { name: "2 analizi sil" }).click();
-  await expect(page.getByRole("status").filter({ hasText: "2 analiz ve kaynak belgeleri silindi." })).toBeVisible({ timeout: 30_000 });
+  await confirmation.getByRole("button", { name: "Analizi sil" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "1 analiz ve kaynak belgeleri silindi." })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText("Henüz analiziniz yok.")).toBeVisible({ timeout: 30_000 });
   expect(errors).toEqual([]);
 });

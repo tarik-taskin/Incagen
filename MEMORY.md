@@ -17,7 +17,7 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 - Yerel yükleme; MIME/imza ve güvenli arşiv doğrulaması; metin, tablo, PDF, modern Office ve görsel ayrıştırma.
 - Kaynak hash'i ve sayfa/çalışma sayfası/slayt/satır konumlarını taşıyan normalize, sıkıştırılmış server-only artefaktlar.
 - Kullanıcıya özel canlı geçmiş, rapor açma ve kaynaklarla silme.
-- Free/Premium karşılaştırması; planlanan Premium toplamı 60 MB. Google Analytics ve Microsoft Clarity bağlantıları Ayarlar'da pasif taslaktır.
+- Free/Premium karşılaştırması; Free 2 analiz/gün, 5 dosya/analiz, 25 MB toplam; gelecekteki Premium 5 analiz/gün, 10 dosya/analiz, 50 MB toplam. Ayrı dosya başı MB sınırı yoktur. Google Analytics ve Microsoft Clarity bağlantıları Ayarlar'da pasif taslaktır.
 - Backend kota/idempotency, kullanıcı izolasyonu ve otomatik test altyapısı.
 
 Tam belge/analiz akışı yalnız demo emülatörleri ve sentetik veriler içindir. Canlı Netlify tüm ekranları gösterir, fakat backend işlemleri etkin değildir; AI analizi yoktur. Kurulum README.md, kalan işler GOAL.md üzerinden takip edilir.

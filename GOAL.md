@@ -7,6 +7,15 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-01 — Furkan / Codex: tanıtım arayüzü ve plan sınırları
+
+- [x] Sahip: Furkan — Landing ve geçmiş başlığını açık tonlu, tutarlı bir düzene taşı; landing anlatımını responsive iki sütunda genişlet ve gereksiz “Nasıl çalışır?”/Free rozetlerini sadeleştir.
+- [x] Sahip: Furkan — Free sınırlarını 2 analiz/gün, 5 dosya/analiz, 25 MB/analiz; Premium kapasitesini 5 analiz/gün, 10 dosya/analiz, 50 MB/analiz yap. Bağımsız dosya boyutu üst sınırını kaldır; istemci, backend, Storage kuralları, ürün metni ve testleri eşitle.
+
+Kabul: dosya başına ayrı MB sınırı olmamalı; tek dosya toplam analiz sınırına kadar kabul edilmeli, boş dosya ve parser güvenlik sınırları korunmalı. Free kotası sunucuda uygulanmalı; Premium ödeme/yetkilendirme açılmadan kullanıma açılmamalı. Plan karşılaştırması etkin olmayan özellikleri açık anlatmalı, arayüzde “planlanan” sözcüğü görünmemeli. İki tema, mobil/masaüstü yerleşim, klavye ve mevcut arşiv işlemleri korunmalı; lint, birim, Functions, entegrasyon, tarayıcı ve build kontrolleri geçmeli.
+
+Doğrulama: lint, 40 uygulama ve 7 Functions testi, üretim ve Functions derlemeleri, 3 Firebase entegrasyon testi ve 12/12 masaüstü/mobil tarayıcı senaryosu geçti. Tek dosyada 25 MB sözleşme sınırı, Storage'da 6 MB yükleme, günlük iki hazırlık sonrası kota reddi, iki tema ve mobil taşma kontrol edildi. Canlı Auth önizlemesi nedeniyle bulut veri işlemleri hâlâ etkin değil.
+
 ### 2026-09-30 — Furkan / Codex: tanıtım ve geçmiş deneyimi
 
 - [x] Sahip: Furkan — “Nasıl çalışır?” anlatımını, boş ve dolu geçmiş ekranlarını yenile; oturumlu logoyu yeni analize yönlendir ve anlatıma geri dönüş yolu sun.

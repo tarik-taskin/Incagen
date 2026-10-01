@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { animate, stagger } from "animejs";
-import { ArrowRight, Check, FileCheck2, FileSearch, Files, FolderOpen, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, FileCheck2, FileSearch, Files, FolderOpen, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AnimatedLogo } from "../components/animated-logo";
 import { AuthModal } from "../components/auth-modal";
@@ -9,9 +9,9 @@ import { Button } from "../components/ui/button";
 import { useAuth } from "../lib/auth-context";
 
 const steps = [
-  { number: "01", icon: Files, title: "Belgeleri bir araya getirin", description: "Tabloları, sunumları, metinleri ve görselleri aynı çalışma alanında seçin. Hangi dosyaların hazırlanacağını siz belirlersiniz." },
-  { number: "02", icon: FileSearch, title: "İçeriği kaynaklarıyla hazırlayın", description: "Belgeler doğrulanır ve okunabilir bölümlere ayrılır. Hazırlık özetinde kaynak dosyaları ve konumları korunur." },
-  { number: "03", icon: FolderOpen, title: "Çalışmanıza geri dönün", description: "Hazırlanan kayıtları geçmişten yeniden açın; artık ihtiyacınız olmayanları kaynaklarıyla birlikte yönetin." },
+  { number: "01", icon: Files, title: "Bir konunun belgelerini toplayın", description: "Müşteri geri bildirimleri veya finans verileri gibi ilişkili tabloları, sunumları ve metinleri tek çalışmada bir araya getirin." },
+  { number: "02", icon: FileSearch, title: "Kaynağı kaybetmeden hazırlayın", description: "Dosyaların gerçek türü doğrulanır, içerik okunabilir bölümlere ayrılır ve her bölümün kaynak konumu korunur." },
+  { number: "03", icon: FolderOpen, title: "Çalışmanıza yeniden dönün", description: "Hazırlık özetini geçmişten açın. İhtiyacınız kalmayan kayıtları ve kaynak dosyaları kendi çalışma alanınızdan yönetin." },
 ];
 
 // Marka giriş sayfasını animasyonlu tanıtım, güven mesajları ve uygulama çağrısıyla sunar.
@@ -78,62 +78,42 @@ export function LandingPage() {
         <ThemeToggle />
       </header>
 
-      <main className="relative z-10 mx-auto w-full max-w-7xl px-5 pb-20 pt-10 sm:px-8 lg:px-10 lg:pt-16">
-        <section className="mx-auto flex max-w-4xl flex-col items-center text-center">
-          <div data-reveal className="mb-5 opacity-0">
-            <AnimatedLogo className="h-24 w-24 sm:h-28 sm:w-28" />
-          </div>
-          <div data-reveal className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-3.5 py-1.5 text-sm font-medium text-primary opacity-0 dark:border-secondary/20 dark:bg-secondary/[0.08] dark:text-secondary">
-            <Sparkles className="h-3.5 w-3.5" />
-            Yapay zekâ destekli iş zekâsı
-          </div>
-          <h1 data-reveal className="max-w-3xl text-balance text-4xl font-semibold leading-[1.08] tracking-[-0.055em] opacity-0 sm:text-6xl lg:text-7xl">
-            Verilerinizdeki büyüme fırsatlarını keşfedin.
-          </h1>
-          <p data-reveal className="mt-6 max-w-2xl text-pretty text-base leading-7 text-muted-foreground opacity-0 sm:text-lg">
-            İşletme verilerinizi tek çalışma alanında hazırlayın; Incagen analizleri, içgörüleri ve uygulanabilir önerileri anlaşılır sonuçlara dönüştürsün.
-          </p>
-          <div data-reveal className="mt-8 flex flex-col gap-3 opacity-0 sm:flex-row">
-            <Button type="button" size="default" className="h-12 rounded-xl px-6 text-base shadow-lg shadow-primary/20" onClick={startAnalysis}>
-              Analize başla <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            <Button asChild variant="outline" size="default" className="h-12 rounded-xl bg-card/60 px-6 text-base backdrop-blur-xl">
-              <a href="#nasil-calisir">Nasıl çalışır?</a>
-            </Button>
-          </div>
-        </section>
-
-        <section id="nasil-calisir" className="relative mx-auto mt-28 max-w-6xl scroll-mt-8 sm:mt-36" aria-labelledby="nasil-calisir-baslik">
-          <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:items-end">
-            <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-card/80 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary shadow-sm dark:border-secondary/20 dark:text-secondary"><Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Nasıl çalışır?</span>
-              <h2 id="nasil-calisir-baslik" className="mt-5 max-w-xl text-balance text-3xl font-semibold leading-[1.12] tracking-[-0.045em] sm:text-5xl">Dağınık dosyalardan <span className="text-primary dark:text-secondary">düzenli bir başlangıca.</span></h2>
+      <main className="relative z-10 mx-auto w-full max-w-7xl px-5 pb-20 pt-5 sm:px-8 lg:px-10 lg:pt-10">
+        <div className="grid items-stretch gap-5 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-6">
+          <section className="relative flex min-w-0 flex-col overflow-hidden rounded-[2rem] border border-primary/10 bg-gradient-to-br from-card via-card to-primary/[0.08] p-7 shadow-[0_24px_80px_-55px_rgba(70,35,110,0.35)] dark:border-secondary/10 dark:to-secondary/[0.07] sm:p-10 lg:min-h-[44rem] lg:p-12" aria-labelledby="landing-title">
+            <div className="pointer-events-none absolute -right-28 -top-24 h-80 w-80 rounded-full border border-primary/10 bg-primary/[0.04] dark:border-secondary/10" aria-hidden="true" />
+            <div data-reveal className="relative opacity-0"><AnimatedLogo className="h-20 w-20 sm:h-24 sm:w-24" /></div>
+            <div data-reveal className="relative mt-7 inline-flex w-fit items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-3.5 py-1.5 text-xs font-semibold text-primary opacity-0 dark:border-secondary/20 dark:text-secondary"><Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Yapay zekâ destekli iş zekâsı</div>
+            <h1 id="landing-title" data-reveal className="relative mt-6 max-w-2xl text-balance text-[clamp(2.6rem,4vw,4.6rem)] font-semibold leading-[1.05] tracking-[-0.065em] opacity-0">Verilerinizdeki büyüme fırsatlarını keşfedin.</h1>
+            <p data-reveal className="relative mt-6 max-w-xl text-pretty text-base leading-7 text-muted-foreground opacity-0">Bir konunun belgelerini aynı çalışma alanında toplayın. Incagen, içeriği kaynaklarıyla düzenli bir başlangıca dönüştürür; içgörü ve öneri katmanı sonraki aşamada açılacak.</p>
+            <div data-reveal className="relative mt-8 opacity-0"><Button type="button" className="h-12 rounded-xl px-6 text-base shadow-lg shadow-primary/20" onClick={startAnalysis}>Analize başla <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" /></Button></div>
+            <div className="relative mt-auto grid gap-3 pt-12 sm:grid-cols-2">
+              <div className="rounded-2xl border border-border/70 bg-background/70 p-4 backdrop-blur-sm"><FileCheck2 className="h-5 w-5 text-primary dark:text-secondary" aria-hidden="true" /><p className="mt-3 text-sm font-semibold">Kaynağı belli içerik</p><p className="mt-1 text-xs leading-5 text-muted-foreground">Her bölümün hangi belgeden geldiğini görün.</p></div>
+              <div className="rounded-2xl border border-border/70 bg-background/70 p-4 backdrop-blur-sm"><LockKeyhole className="h-5 w-5 text-primary dark:text-secondary" aria-hidden="true" /><p className="mt-3 text-sm font-semibold">Kontrol sizde</p><p className="mt-1 text-xs leading-5 text-muted-foreground">Hazırlamayı siz başlatın, kayıtları siz yönetin.</p></div>
             </div>
-            <p className="max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">İlk adımda belgelerinizi güvenle hazırlarsınız. Hangi dosyanın nereden geldiğini kaybetmeden aynı çalışma alanında ilerlersiniz. Yapay zekâ yorumları ve öneriler sonraki aşamada eklenecek.</p>
-          </div>
+          </section>
 
-          <div className="mt-9 grid gap-4 lg:grid-cols-3">
-            {steps.map(({ number, icon: Icon, title, description }) => (
-              <article key={number} className="group relative overflow-hidden rounded-[1.75rem] border border-border/80 bg-card/90 p-6 shadow-[0_16px_50px_-38px_rgba(55,20,95,0.6)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_22px_55px_-34px_rgba(55,20,95,0.42)] dark:hover:border-secondary/35 sm:p-7">
-                <div className="pointer-events-none absolute -right-9 -top-12 h-36 w-36 rounded-full bg-primary/[0.06] blur-2xl dark:bg-secondary/[0.08]" aria-hidden="true" />
-                <div className="relative flex items-start justify-between gap-4"><span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:bg-secondary/10 dark:text-secondary"><Icon className="h-6 w-6" aria-hidden="true" /></span><span className="text-4xl font-semibold tracking-[-0.06em] text-primary/15 dark:text-secondary/20" aria-hidden="true">{number}</span></div>
-                <h3 className="relative mt-9 text-xl font-semibold tracking-[-0.035em]">{title}</h3>
-                <p className="relative mt-3 min-h-20 text-sm leading-6 text-muted-foreground">{description}</p>
-                <div className="relative mt-8 flex items-center gap-2 border-t border-border/70 pt-4 text-xs font-semibold text-primary dark:text-secondary"><Check className="h-3.5 w-3.5" aria-hidden="true" /> Adım {number}</div>
-              </article>
-            ))}
-          </div>
-
-          <div className="relative mt-5 overflow-hidden rounded-[1.75rem] bg-[#2c1645] p-6 text-white shadow-xl shadow-primary/10 sm:p-8 lg:p-10">
-            <div className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full bg-violet-400/20 blur-3xl" aria-hidden="true" />
-            <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-              <div className="max-w-2xl"><span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-violet-200"><ShieldCheck className="h-4 w-4" aria-hidden="true" /> Kontrol sizde</span><h3 className="mt-3 text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">Verinizin yolculuğu görünür, karar sizin.</h3><p className="mt-3 text-sm leading-6 text-violet-100/80">Dosyalar yalnız siz hazırlama işlemini başlattığınızda işlenir. Kaynaklarınızı ve kayıtlarınızı çalışma alanından yönetirsiniz.</p></div>
-              <div className="flex shrink-0 flex-col gap-3 sm:flex-row lg:flex-col"><span className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm"><FileCheck2 className="h-4 w-4 text-violet-200" aria-hidden="true" /> Kaynakları takip edin</span><span className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm"><LockKeyhole className="h-4 w-4 text-violet-200" aria-hidden="true" /> Kayıtları siz yönetin</span></div>
+          <section id="nasil-calisir" className="min-w-0 scroll-mt-8 rounded-[2rem] border border-border/80 bg-card/90 p-7 shadow-[0_24px_80px_-55px_rgba(70,35,110,0.3)] sm:p-10 lg:p-12" aria-labelledby="nasil-calisir-baslik">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.05] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary dark:border-secondary/20 dark:text-secondary"><Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Nasıl çalışır?</span>
+            <h2 id="nasil-calisir-baslik" className="mt-5 max-w-xl text-balance text-3xl font-semibold leading-[1.1] tracking-[-0.05em] sm:text-4xl">Dağınık dosyalardan <span className="text-primary dark:text-secondary">düzenli bir başlangıca.</span></h2>
+            <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground">Belge hazırlığının her adımı anlaşılır: konuyu seçin, kaynakları koruyarak düzenleyin, çalışmanıza dilediğinizde geri dönün.</p>
+            <div className="relative mt-7 space-y-3 before:absolute before:bottom-8 before:left-5 before:top-8 before:w-px before:bg-primary/15 dark:before:bg-secondary/20">
+              {steps.map(({ number, icon: Icon, title, description }) => (
+                <article key={number} className="relative flex gap-4 rounded-2xl border border-border/70 bg-background/65 p-4 transition-colors hover:border-primary/25 hover:bg-background dark:hover:border-secondary/25 sm:p-5">
+                  <span className="z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/10 bg-card text-primary dark:border-secondary/20 dark:text-secondary"><Icon className="h-5 w-5" aria-hidden="true" /></span>
+                  <div className="min-w-0"><span className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary dark:text-secondary">Adım {number}</span><h3 className="mt-1 text-base font-semibold tracking-tight">{title}</h3><p className="mt-1.5 text-xs leading-5 text-muted-foreground sm:text-sm sm:leading-6">{description}</p></div>
+                </article>
+              ))}
             </div>
-          </div>
+            <div className="mt-6 rounded-2xl border border-primary/10 bg-gradient-to-r from-primary/[0.07] to-transparent p-5 dark:border-secondary/15 dark:from-secondary/[0.08]"><p className="text-xs font-bold uppercase tracking-[0.18em] text-primary dark:text-secondary">Bugün kullanılabilir</p><p className="mt-2 text-sm font-semibold">Belge hazırlığı ve kaynak takibi</p><p className="mt-1 text-xs leading-5 text-muted-foreground">AI yorumları ve otomatik öneriler henüz etkin değil; hazırlama özeti kaynak belgeleriyle birlikte sunulur.</p></div>
+          </section>
+        </div>
 
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-border/70 pt-7"><p className="text-sm text-muted-foreground">Hazır olduğunuzda ilk çalışma alanınızı açın.</p><Button onClick={startAnalysis} className="h-11 gap-2 rounded-xl px-5">Çalışma alanına geç <ArrowRight className="h-4 w-4" aria-hidden="true" /></Button></div>
+        <section className="mt-6 grid gap-5 rounded-[2rem] border border-primary/10 bg-gradient-to-br from-primary/[0.06] via-card to-card p-7 shadow-sm dark:border-secondary/15 dark:from-secondary/[0.07] sm:p-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-10" aria-labelledby="control-title">
+          <div><span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-primary dark:text-secondary"><ShieldCheck className="h-4 w-4" aria-hidden="true" /> Kontrol sizde</span><h2 id="control-title" className="mt-3 max-w-2xl text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">Verinizin yolculuğu görünür, karar sizin.</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">Dosyalar yalnız hazırlama işlemini başlattığınızda işlenir. İçerik türü kontrol edilir, kaynak konumları korunur ve kayıtları çalışma alanınızdan yönetirsiniz.</p></div>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1"><span className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm"><FileCheck2 className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" /> Kaynakları takip edin</span><span className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm"><LockKeyhole className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" /> Kayıtları siz yönetin</span></div>
         </section>
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-border/70 pt-7"><p className="text-sm text-muted-foreground">Hazır olduğunuzda ilk çalışma alanınızı açın.</p><Button onClick={startAnalysis} className="h-11 gap-2 rounded-xl px-5">Çalışma alanına geç <ArrowRight className="h-4 w-4" aria-hidden="true" /></Button></div>
       </main>
       <AuthModal open={authOpen} onClose={closeAuth} onAuthenticated={() => navigate(authDestination)} />
     </div>

@@ -8,7 +8,7 @@ Tam analiz akışı `npm run dev:emulator` ile yalnız `demo-incagen` Firebase e
 
 Canlı Netlify derlemesi ve `npm run dev` ile açılan yerel önizleme aynı uygulama ekranlarını ve rotalarını gösterir; gerçek Firebase e-posta/parola kaydı, giriş, çıkış ve şifre yenileme bağlantısı çalışır. Oturumsuz “Analize başla” landing üzerindeki giriş modalını açar; geçerli oturum varsa doğrudan çalışma alanına geçer. Şimdilik yalnız Auth servisi etkin olduğundan belge hazırlama ve hesap silme sunucuya gönderilmez; geçmiş verisi okunmaz ve ekranda durum açıklanır. Tam bulut akışı için Storage, Cloud Functions ve güvenlik kuralları ayrıca dağıtılıp doğrulanmalıdır.
 
-Oturumlu çalışma alanında Incagen logosu yeni analiz ekranına gider. Tanıtımdaki “Nasıl çalışır?” bölümü çalışma alanının ayrı yardım bağlantısından yeniden açılabilir. Bölüm mevcut belge hazırlama ve arşiv adımlarını açıklar; henüz etkin olmayan AI yorumlarını çalışan özellik gibi göstermez. Canlı Auth önizlemesinde arşiv boş veri görünümü yerine açık bir hizmet durumu gösterir.
+Oturumlu çalışma alanında Incagen logosu yeni analiz ekranına gider. Tanıtımdaki “Nasıl çalışır?” bölümü açılış ekranında adım adım görünür; uygulama içinde tekrar eden yardım bağlantısı yoktur. Bölüm mevcut belge hazırlama ve arşiv adımlarını açıklar; henüz etkin olmayan AI yorumlarını çalışan özellik gibi göstermez. Canlı Auth önizlemesinde arşiv boş veri görünümü yerine açık bir hizmet durumu gösterir.
 
 ## Free ve Premium
 
@@ -16,10 +16,9 @@ Oturumlu çalışma alanında Incagen logosu yeni analiz ekranına gider. Tanıt
 
 | Özellik | Free | Premium (planlanan) |
 |---|---|---|
-| Günlük analiz | 10 | 30 |
-| Analiz başına dosya | 10 | 30 |
-| Dosya başına boyut | 5 MB | 5 MB |
-| Analiz başına toplam boyut | 30 MB | 60 MB |
+| Günlük analiz | 2 | 5 |
+| Analiz başına dosya | 5 | 10 |
+| Analiz başına toplam boyut | 25 MB | 50 MB |
 | Belge formatları | Tablo, belge, sunum, veri ve görsel | Tablo, belge, sunum, veri ve görsel |
 | AI derinliği | Medium | High |
 | Harici kaynak | Yok | Önce Google Analytics, sonra Microsoft Clarity |
@@ -33,7 +32,7 @@ Uygulamadaki Plan sekmesi aktif Free sınırlarını ve Premium için planlanan 
 - Free ve Premium aynı gerçek format kapsamını kullanır: CSV/TSV/XLSX, PDF/DOCX/TXT/Markdown, PPTX, JSON ve PNG/JPEG/WebP.
 - Eski DOC/XLS/PPT, ODS, RTF, XML, GIF, SVG ve HEIC/HEIF güvenli dönüştürme hattı eklenene kadar kabul edilmez.
 - Çalıştırılabilir veya ürün kapsamı dışındaki dosya türleri kabul edilmez. Uzantı kontrolü istemcide ve backend sözleşmesinde aynı listeden uygulanır.
-- Geçici geliştirme sınırları iki planda da 5 MB/dosya; analiz toplamı Free için 30 MB, planlanan Premium için 60 MB'dır. Analiz başına adet sınırı Free için 10, Premium için 30'dur. Premium yetkilendirmesi gelene kadar backend yalnız Free sınırını uygular.
+- Dosya başına ayrı MB sınırı yoktur; tek dosya da analiz toplamına kadar çıkabilir. Analiz toplamı Free için 25 MB, gelecekteki Premium kapasitesi için 50 MB'dır. Analiz başına adet sınırı Free için 5, Premium için 10'dur. Premium yetkilendirmesi gelene kadar backend yalnız Free sınırını uygular.
 - Dosya adı, boyutu ve içerik türü değişmez manifestte tutulur. Storage yalnız manifestte bulunan ve manifestle tam eşleşen kaynağı kabul eder; backend ayrıca gerçek dosya imzasını doğrular.
 - Metin ve JSON UTF-8; tablolar satır/sütun; XLSX çalışma sayfası; PDF sayfa; PPTX slayt; görseller boyut konumuyla normalize edilir. DOCX okunabilir metne dönüştürülür.
 - Formüller ve makrolar çalıştırılmaz. Parolalı, bozuk, türü uyuşmayan, yol geçişli, aşırı genişleyen veya gömülü çalıştırılabilir nesne taşıyan dosyalar reddedilir.

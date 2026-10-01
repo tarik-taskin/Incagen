@@ -30,8 +30,8 @@ async function register(page: Page) {
   await expect(page.getByRole("heading", { name: "Belgelerinizi analize hazırlayın" })).toBeVisible();
   await expect(page).toHaveURL(/\/app\/new-analysis$/);
 
-  await expect(page.getByText("Tüm planlar aynı belge formatlarını kabul eder.")).toBeVisible();
-  await expect(page.getByText("5 MB/dosya · 30 MB/analiz")).toHaveCount(0);
+  await expect(page.getByText(/Müşteri geri bildirimleri ya da finans verileri/)).toBeVisible();
+  await expect(page.getByText(/dosya başına.*MB/i)).toHaveCount(0);
   await expect(page.getByText("Yerel geliştirme ortamı — yalnız sentetik veriler kullanın.")).toHaveCount(0);
 }
 
@@ -54,7 +54,7 @@ test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru y
   const navigation = getAppNavigation(page);
   await navigation.getByRole("link", { name: "Plan" }).click();
   await expect(page.getByRole("heading", { name: "Planınızı ve sınırlarınızı görün" })).toBeVisible();
-  await expect(page.getByText("Google Analytics ve Microsoft Clarity · planlanan")).toBeVisible();
+  await expect(page.getByText("Google Analytics ve Microsoft Clarity · henüz etkin değil")).toBeVisible();
   await expectNoAccessibilityViolations(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath("plan-dark.png"), fullPage: true });
@@ -80,9 +80,8 @@ test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru y
   await expect(page.getByRole("heading", { name: "Verilerinizdeki büyüme fırsatlarını keşfedin." })).toBeVisible();
 });
 
-test("Nasıl çalışır bağlantısı ve oturumlu logo çalışma alanına döner", async ({ page }, testInfo) => {
-  await page.goto("/");
-  await page.getByRole("link", { name: "Nasıl çalışır?" }).click();
+test("Nasıl çalışır bölümü ve oturumlu logo çalışma alanına döner", async ({ page }, testInfo) => {
+  await page.goto("/#nasil-calisir");
   await expect(page.getByRole("heading", { name: /Dağınık dosyalardan/ })).toBeVisible();
   await expectNoAccessibilityViolations(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -90,12 +89,6 @@ test("Nasıl çalışır bağlantısı ve oturumlu logo çalışma alanına dön
   await page.getByRole("link", { name: "Incagen ana sayfa" }).click();
   await page.getByRole("button", { name: /Analize başla/ }).click();
   await register(page);
-  await page.getByRole("link", { name: "Nasıl çalışır?" }).click();
-  await expect(page).toHaveURL(/\/#nasil-calisir$/);
-  await expect(page.getByRole("heading", { name: /Dağınık dosyalardan/ })).toBeVisible();
-  await page.getByRole("link", { name: "Yeni analize git" }).click();
-  await expect(page).toHaveURL(/\/app\/new-analysis$/);
-  await expect(page.getByRole("heading", { name: "Belgelerinizi analize hazırlayın" })).toBeVisible();
   await getAppNavigation(page).getByRole("link", { name: "Geçmiş" }).click();
   await page.getByRole("link", { name: "Yeni analize git" }).click();
   await expect(page).toHaveURL(/\/app\/new-analysis$/);
@@ -121,7 +114,7 @@ test("farklı belge türleri hazırlanır ve listeden kaldırılabilir", async (
     { name: "rapor.pdf", mimeType: "application/pdf", buffer: Buffer.from("report") },
   ]);
 
-  await expect(page.getByText("2/10 dosya analize hazırlanıyor")).toBeVisible();
+  await expect(page.getByText("2/5 dosya analize hazırlanıyor")).toBeVisible();
   await expect(page.getByText("faaliyet.xlsx", { exact: true })).toBeVisible();
   await expect(page.getByText("rapor.pdf")).toBeVisible();
   await page.getByRole("button", { name: "faaliyet.xlsx dosyasını kaldır" }).click();
@@ -132,11 +125,11 @@ test("farklı belge türleri hazırlanır ve listeden kaldırılabilir", async (
 test("boş geçmiş, bağlantı taslakları ve doğrulanmış hesap silme", async ({ page }, testInfo) => {
   await page.goto("/app/new-analysis");
   await register(page);
-  await expect(page.getByText("Bu aşamada analiz henüz başlamaz.", { exact: false })).toBeVisible();
+  await expect(page.getByText("Yorum ve öneriler bu aşamada üretilmez.", { exact: false })).toBeVisible();
   await expect(page.getByText("AI çağrısı henüz yapılmaz.")).toHaveCount(0);
   const navigation = getAppNavigation(page);
   await navigation.getByRole("link", { name: "Plan" }).click();
-  await expect(page.getByText("60 MB")).toHaveCount(2);
+  await expect(page.getByText("50 MB")).toHaveCount(2);
   await expect(page.getByRole("button", { name: "Premium'a geç" })).toBeDisabled();
   await expect(page.getByText("Premium özellikler planlama aşamasında")).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "Belge formatları iki planda da aynı" })).toHaveCount(0);

@@ -15,7 +15,7 @@ service firebase.storage {
         && analysis().status in ['draft', 'uploading', 'failed']
         && fileId in analysis().manifest
         && request.resource.size == analysis().manifest[fileId].size
-        && request.resource.size > 0 && request.resource.size <= 5 * 1024 * 1024
+        && request.resource.size > 0
         && request.resource.contentType == analysis().manifest[fileId].contentType;
       allow delete: if false;
     }
