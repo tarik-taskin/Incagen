@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Building2, Check, Pencil } from "lucide-react";
 import { FileDropzone } from "../components/upload/file-dropzone";
 import { SelectedFileList } from "../components/upload/selected-file-list";
 import { Button } from "../components/ui/button";
@@ -11,6 +13,7 @@ export function NewAnalysisPage() {
   const { selection, draft, setDraft, busy, progress, error, activeId, start, completeDraft, cancel } = useWorkspace();
   const { files, rejections, addFiles, removeFile, clearFiles, dismissRejections } = selection;
   const navigate = useNavigate();
+  const [editingBusiness, setEditingBusiness] = useState(() => !draft.business);
   async function submit() {
     const id = await start();
     if (id) {
@@ -35,10 +38,27 @@ export function NewAnalysisPage() {
         </fieldset>
       </div>
       <aside className="rounded-3xl border border-border bg-card p-5 shadow-sm xl:sticky xl:top-24" aria-label="Analiz ayarları">
-        <h2 className="text-lg font-semibold">Analiz ayarları</h2>
-        <fieldset disabled={busy} className="mt-5 space-y-4">
-          <label className="block text-sm">{tr.analysis.business}<input className="form-control mt-1" maxLength={100} value={draft.business} onChange={e => setDraft(d => ({ ...d, business: e.target.value }))} /></label>
-          <label className="block text-sm">{tr.analysis.titleLabel}<input className="form-control mt-1" maxLength={100} value={draft.title} onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} /></label>
+        <h2 className="text-lg font-semibold">Çalışma ayrıntıları</h2>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">Kaynaklarınızı doğru çalışma alanında, konuya özel bir başlıkla düzenleyin.</p>
+        <div className="mt-5 rounded-2xl border border-border bg-muted/35 p-3.5">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground"><Building2 className="h-4 w-4" aria-hidden="true" /> Çalışma alanı</div>
+          {editingBusiness ? (
+            <div className="mt-3">
+              <label htmlFor="business-name" className="block text-sm font-medium">{tr.analysis.business}</label>
+              <input id="business-name" className="form-control mt-1.5" maxLength={100} value={draft.business} disabled={busy} placeholder="Örn. İşletmenizin adı" onChange={e => setDraft(d => ({ ...d, business: e.target.value }))} />
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">Bir kez belirtin; sonraki çalışmalarınızda burada hazır kalsın.</p>
+              {draft.business.trim() && <button type="button" disabled={busy} className="mt-2 inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary" onClick={() => setEditingBusiness(false)}><Check className="h-3.5 w-3.5" aria-hidden="true" /> Bu adı kullan</button>}
+            </div>
+          ) : (
+            <div className="mt-3 flex min-w-0 items-center justify-between gap-2">
+              <p className="min-w-0 truncate text-sm font-semibold" title={draft.business}>{draft.business}</p>
+              <button type="button" disabled={busy} className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary" onClick={() => setEditingBusiness(true)}><Pencil className="h-3.5 w-3.5" aria-hidden="true" /> Değiştir</button>
+            </div>
+          )}
+        </div>
+        <fieldset disabled={busy} className="mt-5">
+          <label className="block text-sm font-medium">{tr.analysis.titleLabel}<input className="form-control mt-1.5" maxLength={100} value={draft.title} placeholder="Örn. Müşteri geri bildirimleri" onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} /></label>
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">Konuyu anlatan kısa bir başlık seçin; çalışmanızı geçmişte bu adla bulacaksınız.</p>
         </fieldset>
         <p className="mt-5 rounded-xl border border-primary/10 bg-primary/[0.04] px-3.5 py-3 text-xs leading-5 text-muted-foreground dark:border-secondary/15 dark:bg-secondary/[0.05]"><span className="font-semibold text-foreground">Bir konuya odaklanın.</span> Müşteri geri bildirimleri ya da finans verileri gibi birbiriyle ilişkili belgeleri aynı analizde toplayın.</p>
         {busy && <div role="status" className="mt-4 text-sm"><p>{progress < 100 ? `Yükleniyor: %${progress}` : tr.status.processing}</p><progress aria-label="Yükleme ilerlemesi" className="mt-2 w-full accent-purple-700" value={progress} max={100} /></div>}

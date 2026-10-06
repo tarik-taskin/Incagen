@@ -44,7 +44,7 @@ Emülatör modunda Vite'ın gösterdiği yerel adresi açın ve sentetik test he
 ### İlk belge hazırlığı
 
 1. Yeni analiz ekranından sentetik PDF/DOCX/PPTX, CSV/TSV/XLSX, TXT/MD/JSON veya PNG/JPEG/WebP seçin.
-2. İşletme ve analiz başlığını doldurun.
+2. Çalışma alanı için işletme adını oturumda ilk kullanımda belirtin; aynı oturumun sonraki analizlerinde bu ad hazır gelir ve gerektiğinde değiştirilebilir. Her analiz için konuya özel bir başlık girin.
 3. Belgeleri ayrıştırın; backend manifestin yanında dosya imzasını, arşiv güvenliğini ve gerçek içeriği doğrular.
 4. Sonuçta kaynak hash'i, gerçek MIME, parça/karakter ve sayfa/çalışma sayfası/slayt bilgilerini inceleyin.
 5. Geçmişten hazırlık özetini tekrar açın; silme ham kaynakları ve türetilmiş içerikleri birlikte kaldırır.

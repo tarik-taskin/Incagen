@@ -7,6 +7,16 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-06 — Furkan / Codex: özetleme öncesi arayüz düzeni
+
+- [x] Sahip: Furkan — Giriş/kayıt üst boşluğunu sıkılaştır; Plan karşılaştırmasındaki henüz sunulmayan AI ve dış bağlantı satırlarını kaldır, Premium metinlerini vaat etmeden sadeleştir.
+- [x] Sahip: Furkan — Ayarlar ekranında hesap, bağlantı, oturum ve tehlikeli alan sırasını yeniden tasarla; analiz oluştururken işletme bilgisini çalışma alanı bağlamı olarak gösterip her seferinde yeniden isteme.
+- [x] Sahip: Furkan — Mobil/masaüstü ve iki tema doğrulamasından sonra local/remote `main` ile `furkan` dallarını eşitle.
+
+Kabul: Canlı olmayan AI/bağlantı özellikleri aktifmiş gibi sunulmamalı; PayTR sağlayıcısı ve istenmeyen “henüz etkin değil/açık değil” ifadeleri belirtilmemeli. Giriş akışı, Free kotası, işletme ve başlık backend sözleşmesi, taslak korunumu, erişilebilirlik ve hesap silme güvenliği değişmemeli. Lint, test, build ve ilgili tarayıcı/entegrasyon kontrolleri geçmeli.
+
+Doğrulama: lint, 41 uygulama ve 7 Functions testi, üretim derlemesi, 3 Firebase entegrasyon testi ve 12/12 masaüstü/mobil tarayıcı senaryosu geçti. Planın açık tema, ayarların açık/koyu tema ve işletme adının yeniden kullanıldığı analiz ekranının masaüstü/mobil görüntüleri incelendi; iki tema, yatay taşma ve erişilebilirlik tarayıcı kontrolleri geçti.
+
 ### 2026-10-01 — Furkan / Codex: kimlik kartı mobil rötuşu ve güncel yayın
 
 - [x] Sahip: Furkan — Giriş ve kayıt ekranındaki “Firebase ile korunan hesap” rozetini kaldır; mobil yazıları çok hafif küçült, masaüstü düzenini koru.

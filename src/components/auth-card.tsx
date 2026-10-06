@@ -184,9 +184,9 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
           </Button>
         </header>
 
-        <div className="mt-7">
+        <div className="mt-5">
           <p className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-primary dark:text-secondary sm:text-xs">Veriden karara, tek çalışma alanı</p>
-          <h1 id={titleId} className="mt-2 text-[29px] font-semibold tracking-[-0.04em] sm:text-4xl">{register ? tr.auth.register : tr.auth.login}</h1>
+          <h1 id={titleId} className="mt-1.5 text-[29px] font-semibold tracking-[-0.04em] sm:text-4xl">{register ? tr.auth.register : tr.auth.login}</h1>
           <p className="mt-2 text-[13.5px] leading-6 text-muted-foreground sm:text-sm">
             {register ? "Kişisel analiz alanınızı oluşturun ve raporlarınızı bir arada yönetin." : "Analizlerinize ve kayıtlı raporlarınıza kaldığınız yerden devam edin."}
           </p>

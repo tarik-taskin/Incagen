@@ -34,9 +34,14 @@ test("kayıt, belge hazırlığı, geçmiş, silme ve çıkış", async ({ page 
   await expect(page.getByText("Sentetik faaliyet özeti".length.toLocaleString("tr-TR"), { exact: true })).toBeVisible();
   const completedReportUrl = page.url();
   await page.getByRole("link", { name: "Yeni analiz oluştur" }).click();
+  await expect(page.getByText("Sentetik İşletme", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("İşletme adı", { exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "Değiştir" }).click();
   await expect(page.getByLabel("İşletme adı", { exact: true })).toHaveValue("Sentetik İşletme");
+  await page.getByRole("button", { name: "Bu adı kullan" }).click();
   await expect(page.getByLabel("Analiz başlığı", { exact: true })).toHaveValue("");
   await expect(page.getByText("faaliyet-ozeti.txt", { exact: true })).toHaveCount(0);
+  await page.screenshot({ path: testInfo.outputPath("new-analysis-reused-business.png"), fullPage: true });
   await page.getByRole("link", { name: "Son işlemi aç" }).click();
   await expect(page).toHaveURL(completedReportUrl);
   for (const mode of ["light", "dark"]) {

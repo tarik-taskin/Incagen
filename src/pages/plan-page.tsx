@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Crown, FileStack, Gauge, Link2, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Crown, FileStack, Gauge, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PLAN_RULES } from "../features/plans/plan-rules";
 
@@ -9,7 +9,7 @@ function megabytes(bytes: number) {
   return (bytes / 1024 ** 2).toLocaleString("tr-TR") + " MB";
 }
 
-// Aynı plan verisini kartlarda kullanır; Premium'un henüz etkin olmadığını görünür tutar.
+// Aynı plan verisini kartlarda kullanır; Premium kapasitesini aktif üyelik gibi sunmaz.
 function PlanCard({ plan, premium }: { plan: Plan; premium: boolean }) {
   return <article className={"relative flex h-full flex-col overflow-hidden rounded-[2rem] border bg-card p-6 shadow-sm sm:p-8 " + (premium ? "border-primary/35 shadow-primary/10 dark:border-secondary/35" : "border-border")}>
     {premium && <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-fuchsia-500 to-rose-400" aria-hidden="true" />}
@@ -18,12 +18,12 @@ function PlanCard({ plan, premium }: { plan: Plan; premium: boolean }) {
         {premium ? <Crown className="h-6 w-6" aria-hidden="true" /> : <ShieldCheck className="h-6 w-6" aria-hidden="true" />}
       </span>
       <span className={"rounded-full border px-3 py-1.5 text-xs font-semibold " + (premium ? "border-primary/20 bg-primary/5 text-primary dark:border-secondary/25 dark:bg-secondary/10 dark:text-secondary" : "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300")}>
-        {premium ? "Henüz açık değil" : "Aktif planınız"}
+        {premium ? "Genişletilmiş kapasite" : "Aktif planınız"}
       </span>
     </div>
     <h2 className="mt-6 text-2xl font-semibold tracking-tight">{plan.label}</h2>
     <p className="mt-2 min-h-12 max-w-md text-sm leading-6 text-muted-foreground">
-      {premium ? "Daha fazla belge için öngörülen kapasite. Premium üyelik ve ek özellikler henüz etkin değil." : "Belgeleri güvenle hazırlamaya ve analiz geçmişinizi oluşturmaya başlamak için mevcut plan."}
+      {premium ? "Daha kapsamlı çalışmalar için tasarlanan günlük analiz ve belge kapasitesi." : "Belgeleri güvenle hazırlamaya ve analiz geçmişinizi oluşturmaya başlamak için mevcut plan."}
     </p>
     <div className="mt-7 flex items-end gap-2 border-b border-border pb-6">
       <span className="text-5xl font-semibold tracking-[-0.07em]">{plan.dailyAnalysisLimit}</span>
@@ -53,8 +53,6 @@ export function PlanPage() {
     { label: "Günlük analiz", icon: Gauge, free: free.dailyAnalysisLimit + " analiz", premium: premium.dailyAnalysisLimit + " analiz" },
     { label: "Analiz başına dosya", icon: FileStack, free: free.filesPerAnalysis + " dosya", premium: premium.filesPerAnalysis + " dosya" },
     { label: "Analiz başına toplam", icon: FileStack, free: megabytes(free.totalBytes), premium: megabytes(premium.totalBytes) },
-    { label: "AI analiz katmanı", icon: Sparkles, free: free.analysisDepth, premium: premium.analysisDepth },
-    { label: "Harici veri bağlantıları", icon: Link2, free: free.externalSources, premium: premium.externalSources + " · henüz etkin değil" },
   ];
 
   return <section className="mx-auto w-full max-w-6xl" aria-labelledby="plan-title">
@@ -88,7 +86,6 @@ export function PlanPage() {
           <dd className="text-sm font-medium"><span className="mb-1 block text-xs text-muted-foreground sm:hidden">Premium</span>{premiumValue}</dd>
         </div>)}
       </dl>
-      <p className="mt-4 text-xs leading-5 text-muted-foreground">AI analiz katmanı henüz kullanıma açılmadı. Standard ve High seviyeleri, ilgili planlarda hedeflenen kapsamı gösterir.</p>
     </section>
 
   </section>;

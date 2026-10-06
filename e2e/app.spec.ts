@@ -54,17 +54,18 @@ test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru y
   const navigation = getAppNavigation(page);
   await navigation.getByRole("link", { name: "Plan" }).click();
   await expect(page.getByRole("heading", { name: "Planınızı ve sınırlarınızı görün" })).toBeVisible();
-  await expect(page.getByText("Google Analytics ve Microsoft Clarity · henüz etkin değil")).toBeVisible();
+  await expect(page.getByText("AI analiz katmanı")).toHaveCount(0);
+  await expect(page.getByText("Harici veri bağlantıları")).toHaveCount(0);
   await expectNoAccessibilityViolations(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath("plan-dark.png"), fullPage: true });
   await navigation.getByRole("link", { name: "Yeni analiz" }).click();
 
   await page.getByRole("button", { name: "Premium’a geç" }).click();
-  await expect(page.getByRole("region", { name: "Premium üyelik yakında" })).toContainText("PayTR");
+  await expect(page.getByRole("region", { name: "Premium ile daha geniş alan" })).toContainText("toplam 50 MB");
   await expectNoAccessibilityViolations(page);
   await page.mouse.click(12, 300);
-  await expect(page.getByRole("region", { name: "Premium üyelik yakında" })).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Premium ile daha geniş alan" })).toHaveCount(0);
   await page.getByRole("button", { name: "Premium’a geç" }).click();
   await page.getByRole("link", { name: "Planları karşılaştır" }).click();
   await expect(page.getByRole("heading", { name: "Planınızı ve sınırlarınızı görün" })).toBeVisible();
@@ -115,9 +116,8 @@ test("farklı belge türleri hazırlanır ve listeden kaldırılabilir", async (
   await navigation.getByRole("link", { name: "Plan" }).click();
   await expect(page.getByRole("heading", { name: "Free" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Premium" })).toBeVisible();
-  const aiComparison = page.locator("dt", { hasText: "AI analiz katmanı" }).locator("..");
-  await expect(aiComparison.locator("dd").nth(0)).toContainText("Standard");
-  await expect(aiComparison.locator("dd").nth(1)).toContainText("High");
+  await expect(page.getByText("AI analiz katmanı")).toHaveCount(0);
+  await expect(page.getByText("Harici veri bağlantıları")).toHaveCount(0);
   await expectNoAccessibilityViolations(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath("plan-light.png"), fullPage: true });
@@ -165,6 +165,8 @@ test("boş geçmiş, bağlantı taslakları ve doğrulanmış hesap silme", asyn
   await navigation.getByRole("link", { name: "Ayarlar" }).click();
   await expect(page.getByRole("heading", { name: "Google Analytics" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Microsoft Clarity" })).toBeVisible();
+  const settingsOrder = await page.locator("#connections-title, #session-settings-title").allTextContents();
+  expect(settingsOrder).toEqual(["Kaynakları bir araya getirin", "Aktif oturum"]);
   await expect(page.getByText("Yerel demo ortamı")).toHaveCount(0);
   await expect(page.getByText("Yakında", { exact: true })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Hesabı bağla" })).toHaveCount(2);

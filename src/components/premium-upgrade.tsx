@@ -59,8 +59,8 @@ export function PremiumUpgrade() {
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
-          <p id="premium-upgrade-title" className="pr-8 text-sm font-semibold" role="status" aria-live="polite">Premium üyelik yakında</p>
-          <p className="mt-1.5 text-xs leading-5 text-muted-foreground">PayTR ödeme akışı ve üyelik açıldığında günde {PLAN_RULES.premium.dailyAnalysisLimit} analiz, analiz başına {PLAN_RULES.premium.filesPerAnalysis} dosya ve toplam {PLAN_RULES.premium.totalBytes / 1024 ** 2} MB kapasite sunulacak. AI yorumları ve {PLAN_RULES.premium.externalSources} henüz etkin değil.</p>
+          <p id="premium-upgrade-title" className="pr-8 text-sm font-semibold" role="status" aria-live="polite">Premium ile daha geniş alan</p>
+          <p className="mt-1.5 text-xs leading-5 text-muted-foreground">Daha kapsamlı çalışmalar için günde {PLAN_RULES.premium.dailyAnalysisLimit} analiz, analiz başına {PLAN_RULES.premium.filesPerAnalysis} belge ve toplam {PLAN_RULES.premium.totalBytes / 1024 ** 2} MB kapasite öngörüyoruz. Planın ayrıntılarını karşılaştırabilirsiniz.</p>
           <Link to="/app/plan" onClick={() => setIsOpen(false)} className="mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-lg text-xs font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary">Planları karşılaştır <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></Link>
         </div>
       )}
