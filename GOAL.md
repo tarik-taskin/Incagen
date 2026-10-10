@@ -7,6 +7,15 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-10 — Furkan / Codex: geliştirici rehberi ve referans kalitesi
+
+- [x] Sahip: Furkan — README'yi mevcut teslimat, iki çalışma modu, tekrarlanabilir kurulum/doğrulama ve belge sahipliği açısından kodla uyumlu bir giriş rehberine dönüştür.
+- [x] Sahip: Furkan — Referans setinin iş tanımlarını, kaynak kanıtını ve insan değerlendirmesini kesinleştir; yanlış kaynak/payda/grafik bağlarını yakalayan kontrollerle güçlendir.
+
+Kabul: README çalışmayan yetenekleri vaat etmemeli; komutlar/ortamlar gerçek yapılandırmayla uyuşmalı, sırlar belgelenmemeli. Referans cevapları model girdisinden ayrı tutulmalı; nesnel hesap, insan etiketi ve semantik değerlendirme ayrılmalı. Mevcut v1 verileri/cevapları korunmalı; sürümün anlamını değiştiriyorsa yeni sürüm kullanılmalı. AI bağlantısı, Python kurulumu veya yeni servis eklenmemeli. Lint, test ve build geçmeli.
+
+Doğrulama: 46 yerel belge/bölüm bağlantısı ve 20 komut kullanımı doğrulandı. Lint, 43 uygulama ve 15 Functions testi (8 referans testi dahil), frontend ve Functions derlemeleri geçti. Ham v1 CSV'leri ve cevap anahtarları değişmedi; yanlış kaynak/payda, satır kapsamı, öneri dayanağı, grafik birimi/değeri ve şema sürümü için negatif kontroller geçti. Minimum içerik, puanla telafi edilemeyen ayrı kabul kapısıdır. Protokol/model sonuçları henüz ölçülmedi; üretim doğrulayıcısı veya AI servisi eklenmedi. Asıl değerlendirme kaynağı [referans setidir](fixtures/analysis-reference/README.md).
+
 ### 2026-10-10 — Furkan / Codex: analiz hedefi ve özetleme referansları
 
 - [x] Sahip: Furkan — Zorunlu analiz hedefini forma, taslak yaşam döngüsüne ve backend kayıt sözleşmesine ekle; kaydedilmiş çalışmada göster.

@@ -1,99 +1,56 @@
 # Incagen
 
-İşletme verilerinden analiz ve büyüme önerileri üretmeyi amaçlayan uygulama. Mevcut teslimat: yerel hesap, çoklu iş belgesi yükleme, gerçek içerik ayrıştırma, kaynak konumlu hazırlık özeti, geçmiş ve kaynaklarıyla silme. Canlı Netlify'da aynı uygulama ekranları ve Firebase Auth kullanılabilir; Gemini ve bulut analiz altyapısı henüz yoktur.
+İşletme belgelerini, tablolarını ve geri bildirimlerini kaynağı izlenebilir bir çalışma alanında hazırlayan uygulama. Hedef, bu içerikleri doğrulanmış hesaplar ve kaynaklı yapay zekâ yorumlarıyla karar desteğine dönüştürmek.
 
-## Gereksinimler
+**Mevcut teslimat:** belge seçimi, güvenli içerik ayrıştırma, kaynaklı hazırlık özeti ve analiz arşivi. AI özetleme, OCR ve grafik üretimi henüz uygulanmadı.
 
-- Node.js 22.19+ (22 LTS önerilir; yerel testler Node 24 ile de çalışır), npm 10+, Git.
-- Tam emülatör akışı için Java 21+; `java -version` ve `node --version` ile kontrol edin.
-- İlk kurulumda npm, Firebase emülatörleri ve Playwright indirmeleri için internet.
-- Boş yerel portlar: 9099, 8080, 9199, 5001; emülatör yardımcı portları 4400, 4500, 9150. Test Vite sunucusu 4173 kullanır.
+[Canlı arayüz](https://incagen.netlify.app) · [Ürün ve sistem akışı](FLOW.md) · [Yol haritası](GOAL.md) · [Özetleme referansları](fixtures/analysis-reference/README.md)
 
-## Kurulum ve çalıştırma
+## Nerede ne çalışıyor?
+
+| Yetenek | Canlı site / `npm run dev` | Yerel emülatör |
+| --- | --- | --- |
+| Landing, çalışma alanı, tema ve mobil navigasyon | Kullanılabilir | Kullanılabilir |
+| E-posta/parola kaydı, giriş ve çıkış | Gerçek Firebase Auth | Sentetik test hesabı |
+| Şifre yenileme | Gerçek e-posta bağlantısı | E-posta teslimatı yapılmaz |
+| Belge yükleme, ayrıştırma ve kaynak özeti | Backend işlemleri kapalı | Çalışır |
+| Kayıtlı geçmiş, belge/analiz ve hesap silme | Backend işlemleri kapalı | Çalışır |
+| AI özetleme, OCR, öneri ve grafik üretimi | Uygulanmadı | Uygulanmadı |
+
+Canlı site şu anda **Auth önizlemesidir**. Tam belge hattı `demo-incagen` emülatörlerinde doğrulanır; canlı Firebase hesabınız emülatörde bulunmaz. Google/Apple/Microsoft giriş entegrasyonları, dış veri bağlantıları ve Premium ödeme tamamlanmış özellikler değildir. Güncel geliştirme kapsamının asıl kaynağı [GOAL.md](GOAL.md), ürün davranışının asıl kaynağı [FLOW.md](FLOW.md)'dir.
+
+## Yerelde tam akışı çalıştırın
+
+Gereksinimler: Git, npm, **Node.js 22.19+ (22 serisi) veya 24**, **Java 21+**. Functions çalışma zamanı ve CI Node 22 kullanır. İlk kurulumda paket, Chromium ve Firebase emülatör indirmeleri için internet gerekir.
+
+Repo kökünde:
 
 ```bash
 npm ci
 npm --prefix functions ci
 npx playwright install chromium
-```
-
-Canlı Firebase Auth ve Netlify ile aynı, yalnız Auth'un açık olduğu arayüz önizlemesini başlatın:
-
-```bash
-npm run dev
-```
-
-İlk çalıştırmadan önce `.env.example` içindeki sekiz `VITE_` değişkenini `.env.cloud-preview.local` dosyasına koyun; değerleri Netlify sitesinin ortam ayarlarından alın. Bu dosya Git tarafından yok sayılır. `npm run dev` yalnız Vite'ı açar, `incagen-eeef4` Firebase Auth'a bağlanır ve canlı Storage/Functions hazır olmadığından belge hazırlama, geçmiş ve hesap silme işlemlerini kapalı tutar. Netlify ve localhost farklı tarayıcı kökenleri olduğundan her birinde ayrı oturum açılır.
-
-Sentetik verilerle tam belge/analiz akışını emülatörlerde çalıştırmak için:
-
-```bash
 npm run dev:emulator
 ```
 
-Bu komut önce Functions'ı derler ve dört emülatörü hazırlar, ardından Vite adresini gösterir. Servisleri ayrı terminallerde izlemek isterseniz backend'i `npm run emulators`, frontend'i ikinci terminalde şu komutla başlatabilirsiniz:
+Vite'ın terminalde gösterdiği adresi açıp sentetik bir hesap oluşturun. Bu mod Firebase CLI hesabı, gerçek servis anahtarı veya faturalandırma gerektirmez. Takip edilen [.env.emulator](.env.emulator) yalnız `demo-incagen` ve loopback adreslerine izin verir; eksik servisi canlı bulutla tamamlamaz.
+
+İlk deneme için [satış CSV'sini](fixtures/analysis-reference/v1/sales.csv) veya [müşteri yorumlarını](fixtures/analysis-reference/v1/customer-feedback.csv) seçin. İşletme adını çalışma alanı için bir kez belirtin; her çalışma için başlık ve **1–500 karakterlik analiz hedefi** girin. “Belgeleri ayrıştır” sonrası kaynak hash'i, içerik türü ve parça/konum bilgilerini inceleyin. Bu sonuç **AI özeti değildir**.
+
+Taslak sayfalar arasında korunur. Başarılı hazırlık dosya, başlık ve hedefi temizler; işletme adı aynı oturumda kalır. Sayfa yenilemesinde yerel dosyalar yeniden seçilmelidir. Normal emülatör kapanışında test verileri kalıcı değildir.
+
+## Canlı Auth ile arayüzü çalıştırın
+
+[.env.example](.env.example) dosyasını Git dışında tutulan `.env.cloud-preview.local` olarak kopyalayın; Firebase Web App değerlerini mevcut Netlify projesinin ortam ayarlarından alın. Mod `cloud`, `VITE_AUTH_ONLY_PREVIEW` değeri `true` olmalıdır.
 
 ```bash
-npm run dev:web
+cp .env.example .env.cloud-preview.local
+# Dosyadaki boş Firebase Web App değerlerini doldurun.
+npm run dev
 ```
 
-Emülatör modunda Vite'ın gösterdiği yerel adresi açın ve sentetik test hesabı oluşturun; canlı Firebase hesabı emülatörde bulunmaz. Emülatör için Firebase CLI girişi, gerçek API anahtarı veya faturalandırma gerekmez.
+Bu komut yalnız Vite'ı başlatır; Java ve emülatör gerekmez. Yerel arayüz ve canlı site aynı Auth projesini kullanır, ancak farklı tarayıcı kökenlerinde ayrı oturum açılır. Storage/Firestore/Functions işlemleri bu modda gönderilmez. Web App yapılandırmasıyla servis hesabı/özel anahtar birbirine karıştırılmamalıdır; backend sırları hiçbir `VITE_` değişkenine veya Git'e yazılmaz.
 
-`dev:emulator` ve `dev:web`, `.env.emulator` içindeki `demo-incagen` projesini yalnız loopback adresinde kullanır; eksik servisleri gerçek bulutla tamamlamaz.
-
-### İlk belge hazırlığı
-
-1. Yeni analiz ekranından sentetik PDF/DOCX/PPTX, CSV/TSV/XLSX, TXT/MD/JSON veya PNG/JPEG/WebP seçin.
-2. Çalışma alanı için işletme adını oturumda ilk kullanımda belirtin; aynı oturumun sonraki analizlerinde bu ad hazır gelir ve gerektiğinde değiştirilebilir. Her analiz için konuya özel bir başlık girin. 1–500 karakter arasında bir analiz hedefi belirtin; bu hedef taslakla korunur ve kaydedilen çalışmada gösterilir.
-3. Belgeleri ayrıştırın; backend manifestin yanında dosya imzasını, arşiv güvenliğini ve gerçek içeriği doğrular.
-4. Sonuçta kaynak hash'i, gerçek MIME, parça/karakter ve sayfa/çalışma sayfası/slayt bilgilerini inceleyin.
-5. Geçmişten hazırlık özetini tekrar açın; silme ham kaynakları ve türetilmiş içerikleri birlikte kaldırır.
-
-Dosyalar iç navigasyonda korunur; tarayıcı yenilemesinde yeniden seçilir. Emülatör kapandığında test hesap ve raporları normalde kaybolur. Kalıcı müşteri depolaması değildir.
-
-## Komutlar
-
-| Komut | Amaç |
-|---|---|
-| `npm run dev` | Canlı Firebase Auth'lu, backend işlemleri kapalı yerel önizleme |
-| `npm run dev:emulator` | Frontend ve tüm yerel Firebase servisleri |
-| `npm run dev:web` | Zaten çalışan emülatörlerle yalnız frontend |
-| `npm run emulators` | Backend derleme ve yerel servisler |
-| `npm run lint` | Kod kalite kontrolü |
-| `npm run test:run` | Birim/bileşen testleri |
-| `npm run test:functions` | Belge parser fixture testleri |
-| `npm run build` | Frontend üretim derlemesi |
-| `npm run build:functions` | Backend derlemesi |
-| `npm run test:integration` | Kendi emülatörünü açan güvenlik/kota/rapor testleri |
-| `npm run test:local` | Kendi emülatörünü açan masaüstü/mobil tarayıcı testleri |
-| `npm run test:e2e` | Zaten çalışan emülatörlerle tarayıcı testleri |
-
-`test:integration` ve `test:local` öncesinde manuel emülatörü kapatın; bu komutları aynı anda çalıştırmayın. Testler sentetik hesaplar oluşturur. GitHub Actions bu kontrolleri temiz ortamda yürütür.
-
-Üretim derlemesi tek başına canlı kullanıma hazır değildir. Yerel emülatör üretim önizlemesi için build sırasında açıkça `--mode emulator` verilmelidir; aksi halde hesap ekranı yapılandırma uyarısı verir.
-
-### Canlı uygulama önizlemesi
-
-`incagen.netlify.app` ve `npm run dev` aynı `VITE_FIREBASE_MODE=cloud`, Firebase Web App yapılandırması ve `VITE_AUTH_ONLY_PREVIEW=true` ayarlarını kullanır. Landing, Yeni analiz, Geçmiş, Ayarlar ve Plan ekranları aynı rotalarda açılır. Gerçek Firebase e-posta/parola kaydı, giriş, çıkış ve e-postayla şifre yenileme çalışır. Storage, Firestore ve Cloud Functions hazır olana kadar belge hazırlama, geçmiş verisi ve hesap silme isteği sunucuya gönderilmez; denendiğinde durum açıkça belirtilir. Netlify ayarları serviste, yerel kopyaları Git dışındaki `.env.cloud-preview.local` dosyasında tutulur. Tam sentetik akış `npm run dev:emulator` ile korunur.
-
-## Yapı ve teknoloji
-
-React, TypeScript, Vite, React Router, Tailwind, shadcn/ui yaklaşımı, Anime.js ve Firebase. Vitest/Testing Library, Playwright/axe ve Firebase emülatör testleri kullanılır.
-
-Sonraki AI aşamasının kabul edilen mimarisi ve kalite kriterleri [FLOW.md](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) içindedir. Python işçisi ve ECharts bu hedefin parçalarıdır; mevcut kurulumda henüz kullanılmazlar.
-
-Özetleme için sentetik satış ve müşteri yorumu [referans seti](fixtures/analysis-reference/README.md), kaynaklı beklenen sonuçlar ve değerlendirme şablonuyla hazırdır. `npm run test:functions` parser/kaynak/hesap tutarlılığını doğrular; LLM veya Python çalıştırmaz.
-
-- `src/pages`, `src/components`: ekranlar ve ortak arayüz.
-- `src/hooks`, `src/lib`: oturum, taslak, servis ve canlı kayıt bağları.
-- `src/i18n`: Türkçe mesaj sözlüğü temeli; İngilizce henüz yoktur.
-- `functions/src/parsing`: metin, tablo, PDF, modern Office ve görsel ayrıştırıcıları.
-- `functions/src`: paylaşılan belge sözleşmesi, içerik doğrulama ve backend uçları.
-- `integration`, `e2e`: güvenlik/yaşam döngüsü ve tarayıcı testleri.
-
-Belgeler: [hedefler](GOAL.md), [akış](FLOW.md), [kurallar](RULES.md), [kalıcı bağlam](MEMORY.md), [ekip düzeni](AGENTS.md).
-
-Değişiklikleri `main`e göndermeden önce en az şu kontrolleri çalıştırın:
+## Doğrulama
 
 ```bash
 npm run lint
@@ -101,12 +58,52 @@ npm run test:run
 npm run build
 ```
 
-Functions değiştiyse `npm run build:functions`; backend veya kullanıcı akışı değiştiyse ilgili `npm run test:integration` ve `npm run test:local` kontrollerini de çalıştırın.
+`test:run` hem uygulama hem Functions/parser testlerini kapsar. Functions değişikliklerinde ayrıca `npm run build:functions`; backend veya kullanıcı akışı değişikliklerinde aşağıdaki iki komut da çalıştırılır:
 
-## Bilinen sınırlar
+```bash
+npm run test:integration
+npm run test:local
+```
 
-AI yorumu ve görsel OCR henüz yapılmaz; metin katmanı olmayan sayfalar sonraki AI aşaması için işaretlenir. Eski Office/ODS/RTF/XML/GIF/SVG/HEIC formatları güvenli dönüştürme hattı gelene kadar kabul edilmez. Format, parser, boyut ve kota sınırları FLOW.md'dedir. Google Analytics, Microsoft Clarity, Google girişi, Premium ödeme ve canlı yayına geçiş tamamlanmadı. Emülatör testi bulut IAM/App Check testi yerine geçmez.
+Bu iki komut kendi emülatörlerini başlatır; **sırayla çalıştırın ve önce manuel emülatörleri kapatın**. Güvenlik/kota/yaşam döngüsü testleri ve Chromium masaüstü/mobil, tema, erişilebilirlik kontrolleri sentetik verilerle yürütülür. [GitHub Actions](.github/workflows/quality.yml) aynı kalite kapılarını `main` push'ları ve `main` hedefli PR'larda çalıştırır.
 
-Ayarlar'daki hesap silme işlemi yalnız yerel emülatörde çalışır. Parola ve açık onay ister; hesabı, analiz kayıtlarını, kaynak belgeleri ve hazırlanmış içerikleri kalıcı olarak kaldırır.
+| Ek komut | Kullanımı |
+| --- | --- |
+| `npm run emulators` + ayrı terminalde `npm run dev:web` | Backend ve frontend'i ayrı izleme |
+| `npm run test:functions` | Tüm parser ve referans bütünlük testleri |
+| `npm run test:references` | Yalnız özetleme referans seti kontrolleri |
+| `npm run test:e2e` | Zaten çalışan emülatörler üzerinde tarayıcı testleri |
+| `npm run build -- --mode emulator` | Yerel emülatör için frontend derlemesi |
+| `npm run build -- --mode cloud-preview` | Git dışındaki canlı Auth ayarlarıyla frontend derlemesi |
+| `npm run preview` | Son derlenmiş frontend'i yerelde inceleme; backend başlatmaz |
 
-Bağımlılık denetiminde uygulama ve Functions üretim bağımlılıkları temizdir; Firebase CLI geliştirme zincirinde orta önem seviyesinde uyarılar bulunmaktadır. CLI'yi eski ana sürüme zorlayan `audit fix --force` uygulanmadı. `gaxios → uuid` ve `express → qs` için kontrollü override'lar mevcut API kullanımıyla test edilmiştir.
+Düz `npm run build`, derleme kontrolüdür; Firebase ortamı verilmeden çalışır ama bu paket tek başına kullanıma hazır bir canlı yayın değildir. Netlify [yapılandırması](netlify.toml) `dist` dizinini yayınlar ve SPA rotalarını `index.html`'e yönlendirir. Canlı build aynı Auth ortam değişkenleriyle hazırlanmalıdır; yalnız frontend yayını Firebase backend'i dağıtmaz.
+
+## Mimari ve kaynak haritası
+
+Bugünkü hat: **Auth → doğrulanmış analiz isteği → manifestle eşleşen yükleme → format ayrıştırıcıları → kaynaklı hazırlık özeti → kullanıcıya özel arşiv**. Normalize içerik server-only Storage alanında, kaynak özeti Firestore'da tutulur. İstemci kota, sonuç veya hazırlık durumunu yazamaz.
+
+| Konum | Sorumluluğu |
+| --- | --- |
+| [src](src) | React/TypeScript, Router, Tailwind, ortak UI, oturum ve taslak yönetimi |
+| [functions/src/contracts.ts](functions/src/contracts.ts) | Paylaşılan istek, format, limit ve belge sözleşmeleri |
+| [functions/src/parsing](functions/src/parsing) | CSV/XLSX, PDF, modern Office, metin/JSON ve görsel metadata ayrıştırma |
+| [functions/src/index.ts](functions/src/index.ts) | Yetkili oluşturma/hazırlama/silme uçları, kota ve idempotency |
+| [integration](integration) / [e2e](e2e) | Firebase izolasyonu, yaşam döngüsü ve tarayıcı doğrulaması |
+| [fixtures/analysis-reference](fixtures/analysis-reference/README.md) | Sentetik kaynaklar, beklenen sonuçlar ve LLM değerlendirme protokolü |
+
+Sonraki hattın kararı [FLOW.md hedef mimarisinde](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10): dosya türüne göre extraction/vision, Python ile deterministik hesaplar, kaynaklı LLM yorumlama, backend doğrulaması ve React/ECharts sunumu. Python/ECharts kurulumu veya LLM çağrısı mevcut teslimatın parçası değildir.
+
+## Sınırlar ve sorun giderme
+
+- Hazırlık metin ve tablo içeriğini ayrıştırır; metinsiz PDF/görselleri OCR ile okumaz. Desteklenen format, parser güvenlik sınırı ve Free/Premium kapasitesi [FLOW.md](FLOW.md#belge-hazırlama-davranışı) içindedir; uygulanan limitler [ortak sözleşmeden](functions/src/contracts.ts) gelir.
+- “Firebase ortamı yapılandırılmadı/eksik” hatasında çalışma modunu ve Git dışındaki ortam dosyasını kontrol edip Vite'ı yeniden başlatın.
+- Canlı hesabın emülatörde giriş yapamaması beklenir; emülatör için yeni sentetik hesap oluşturun.
+- Port çakışmasında kendi açık emülatörünüzü kapatın. Servis portları: 9099, 8080, 9199, 5001; yardımcı portlar: 4400, 4500, 9150. Tarayıcı test sunucusu 4173 kullanır.
+- Hesap silme yalnız tam yerel akışta çalışır; yeniden parola doğrulaması ve açık onay ister. Ham/türetilmiş içerikleri, analizleri ve Auth hesabını kaldırır. Bulut IAM/App Check ve gerçek saklama politikası emülatör testleriyle doğrulanmış sayılmaz.
+
+## Katkı ve belge düzeni
+
+İşe başlamadan [AGENTS.md](AGENTS.md)'deki dal/görev/commit akışını, teknik değişikliklerde [RULES.md](RULES.md)'yi izleyin. Sahiplik ve kabul kriterleri [GOAL.md](GOAL.md), ürün/teknik davranış [FLOW.md](FLOW.md), kısa kalıcı bağlam [MEMORY.md](MEMORY.md) içinde tutulur. README bu kaynakları çoğaltmak yerine projeye giriş sağlar.
+
+Sırlar, servis hesabı bilgileri ve gerçek müşteri verileri repoya eklenmez. Referans cevap anahtarları da model girdisine verilmez; [referans rehberi](fixtures/analysis-reference/README.md) bu ayrımı ve değerlendirme kapsamını tanımlar.

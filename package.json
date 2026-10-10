@@ -28,7 +28,8 @@
     "build:functions": "npm --prefix functions run build",
     "emulators": "npm run build:functions && firebase emulators:start --project demo-incagen --only auth,firestore,storage,functions",
     "test:integration": "npm run build:functions && firebase emulators:exec --project demo-incagen --only auth,firestore,storage,functions \"node --test integration/*.test.mjs\"",
-    "test:local": "npm run build:functions && firebase emulators:exec --project demo-incagen --only auth,firestore,storage,functions \"npm run test:e2e\""
+    "test:local": "npm run build:functions && firebase emulators:exec --project demo-incagen --only auth,firestore,storage,functions \"npm run test:e2e\"",
+    "test:references": "vitest run --config vitest.functions.config.ts functions/src/parsing/reference.test.ts"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.3.3",

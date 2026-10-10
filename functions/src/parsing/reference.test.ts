@@ -2,6 +2,9 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import sales from "../../../fixtures/analysis-reference/v1/sales.expected.json";
 import feedback from "../../../fixtures/analysis-reference/v1/customer-feedback.expected.json";
+import tasks from "../../../fixtures/analysis-reference/v1/tasks.json";
+import policy from "../../../fixtures/analysis-reference/evaluation-policy.json";
+import { validateReference, type Reference } from "../../../fixtures/analysis-reference/contract";
 import { parseDocument } from "./index";
 
 // Gerçek CSV parser'ını kullanır; cevap anahtarını girdi üretiminde veya hesaplamada kullanmaz.
@@ -28,7 +31,95 @@ function counts(values: string[], keys: string[]) {
   return Object.fromEntries(keys.map(key => [key, values.filter(value => value === key).length]));
 }
 
+// Satır numarası geçerli olsa da bulgu/grafik için yanlış kanıtı reddeder; seçimleri kaynak olaylarından türetir.
+function assertEvidence(reference: Reference, rows: Record<string, string>[]) {
+  const select = (predicate: (row: Record<string, string>) => boolean) => rows.flatMap((row, index) => predicate(row) ? [index + 1] : []);
+  const allRows = select(() => true);
+  const evidence: Record<string, number[]> = reference.caseId === "sales-net-revenue-v1" ? {
+    "sales-period-change": select(row => row.status !== "cancelled"),
+    "sales-category-leader": select(row => row.category === "Teknoloji" && row.status !== "cancelled"),
+    "sales-adjustments": allRows,
+  } : {
+    "feedback-delivery-problems": reference.annotations.filter(item => item.problemThemes.includes("delivery")).map(item => item.sourceRow),
+    "feedback-positive-experiences": reference.annotations.filter(item => item.sentiment === "positive").map(item => item.sourceRow),
+    "feedback-mixed-context": reference.annotations.filter(item => item.sentiment === "mixed").map(item => item.sourceRow),
+    "feedback-billing-signal": reference.annotations.filter(item => item.problemThemes.includes("billing")).map(item => item.sourceRow),
+  };
+  expect(reference.findings.map(item => item.id).sort()).toEqual(Object.keys(evidence).sort());
+  for (const finding of reference.findings) {
+    expect([...finding.sourceRows].sort((a, b) => a - b)).toEqual(evidence[finding.id]);
+    const needsDenominator = ["sales-category-leader", "feedback-delivery-problems"].includes(finding.id);
+    if (needsDenominator) expect(finding.denominatorRows).toEqual(reference.caseId === "sales-net-revenue-v1" ? evidence["sales-period-change"] : allRows);
+  }
+  const expectedChartRows = reference.caseId === "sales-net-revenue-v1" ? evidence["sales-period-change"]
+    : reference.annotations.filter(item => item.problemThemes.length > 0).map(item => item.sourceRow);
+  for (const chart of reference.charts) expect(chart.sourceRows).toEqual(expectedChartRows);
+}
+
 describe("sürümlü özetleme referansları (LLM olmadan)", () => {
+  it.each([sales, feedback])("$caseId cevap anahtarını sıkı değerlendirme sözleşmesi ve ilgili kanıtla doğrular", async input => {
+    const reference = validateReference(input);
+    const rows = await loadSource(reference.source);
+    assertEvidence(reference, rows);
+  });
+
+  it("görevlerin izin verilen alanlarını ve değerlendirme kapsamının gerçek metriklere bağlandığını doğrular", () => {
+    expect(tasks.version).toBe(1);
+    expect(policy.policyVersion).toBe(1);
+    expect(policy.status).toBe("proposed-not-model-tested");
+    const references = [sales, feedback];
+    expect(tasks.cases.map(item => item.caseId).sort()).toEqual(references.map(item => item.caseId).sort());
+    expect(policy.cases.map(item => item.caseId).sort()).toEqual(references.map(item => item.caseId).sort());
+    for (const reference of references) {
+      const task = tasks.cases.find(item => item.caseId === reference.caseId)!;
+      expect(Object.keys(task).sort()).toEqual(["businessRules", "caseId", "objective", "sourceFile", "title"]);
+      expect(task.objective).toBe(reference.objective);
+      expect(task.sourceFile).toBe(reference.source.file);
+      expect(task.businessRules.length).toBeGreaterThan(0);
+      const criteria = policy.cases.find(item => item.caseId === reference.caseId)!;
+      expect(criteria.requiredFindingIds).toEqual(reference.findings.map(item => item.id));
+      for (const path of criteria.requiredMetricPaths) expect(reference.metrics).toHaveProperty(path);
+      expect(criteria.requiredScopeNotes.length).toBeGreaterThan(0);
+    }
+    expect(new Set(policy.rubric.map(item => item.dimension)).size).toBe(policy.rubric.length);
+    expect(policy.rubric.reduce((sum, item) => sum + item.weight, 0)).toBe(100);
+    expect(policy.minimumScorePerRun).toBe(90);
+    expect(policy.hardGates).toContain("minimum-content");
+    expect(new Set(policy.hardGates).size).toBe(policy.hardGates.length);
+    expect(policy.runsPerCase).toBe(3);
+  });
+
+  it("yanlış kaynak, payda, öneri dayanağı, birim ve grafik değerini yeşil sonuç olarak kabul etmez", async () => {
+    const rows = await loadSource(sales.source);
+    const wrongEvidence = structuredClone(sales);
+    wrongEvidence.findings[1].sourceRows = [3, 8];
+    expect(() => assertEvidence(validateReference(wrongEvidence), rows)).toThrow();
+    const wrongDenominator = structuredClone(sales);
+    wrongDenominator.findings[1].denominatorRows = [2, 7];
+    expect(() => assertEvidence(validateReference(wrongDenominator), rows)).toThrow();
+    const mutations: Array<(copy: typeof sales) => void> = [
+      copy => { copy.findings[0].sourceRows = [0]; },
+      copy => { copy.findings[0].sourceRows = [1.5]; },
+      copy => { copy.findings[0].sourceRows = [1, 1]; },
+      copy => { copy.findings[0].sourceRows = [13]; },
+      copy => { copy.findings[0].metricPaths = ["missing"]; },
+      copy => { copy.recommendations[0].basisFindingIds = ["missing"]; },
+      copy => { copy.charts[0].unit = "yorum"; },
+      copy => { copy.charts[0].y[0] = 999; },
+      copy => { copy.charts[0].sourceRows = [13]; },
+    ];
+    for (const mutate of mutations) {
+      const copy = structuredClone(sales);
+      mutate(copy);
+      expect(() => validateReference(copy)).toThrow();
+    }
+    const recommendation = structuredClone(feedback);
+    recommendation.recommendations[0].sourceRows = [8];
+    expect(() => validateReference(recommendation)).toThrow();
+    const invalidReference = { ...sales, schemaVersion: 2 };
+    expect(() => validateReference(invalidReference)).toThrow();
+  });
+
   it("satış satırlarını, iade/iptal/indirim kurallarını ve bütün beklenen metrikleri bağımsız hesapla doğrular", async () => {
     const rows = await loadSource(sales.source);
     expect(new Set(rows.map(row => row.event_id)).size).toBe(rows.length);

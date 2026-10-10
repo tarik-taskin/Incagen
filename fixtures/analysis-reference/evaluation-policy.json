@@ -1,0 +1,35 @@
+{
+  "policyVersion": 1,
+  "status": "proposed-not-model-tested",
+  "scope": "Başlangıç sentetik CSV vakaları; üretim raporu şeması veya genel doğruluk garantisi değildir.",
+  "runsPerCase": 3,
+  "minimumScorePerRun": 90,
+  "tolerances": { "moneyMinorUnit": "TRY kuruş: tam eşitlik", "count": "tam eşitlik", "displayedPercentagePoints": 0.005 },
+  "hardGates": ["schema", "minimum-content", "numeric-integrity", "source-grounding", "scope-and-uncertainty", "mixed-and-counter-evidence", "chart-integrity"],
+  "cases": [
+    {
+      "caseId": "sales-net-revenue-v1",
+      "requiredFindingIds": ["sales-period-change", "sales-category-leader", "sales-adjustments"],
+      "requiredMetricPaths": ["netSalesTry", "monthlyNetSalesTry.2026-09", "monthlyNetSalesTry.2026-10", "monthlyChangeTry", "monthlyChangePercent", "categoryNetSalesTry.Teknoloji", "discountsTry", "refundsTry"],
+      "requiredScopeNotes": ["İptaller hariç, indirim ve iade dahil; dönem posted_date ile belirlenir.", "Kaynak sentetiktir ve iki yapay ayı kapsar.", "Kâr, büyüme nedeni ve gelecek dönem tahmini için veri yoktur."],
+      "humanReviewFocus": ["Net satış brüt satış/kârla karıştırılmış mı?", "İade Ekim'de mi düşülmüş?", "Kategori payının paydası iki ayın net toplamı mı?"]
+    },
+    {
+      "caseId": "feedback-themes-v1",
+      "requiredFindingIds": ["feedback-delivery-problems", "feedback-positive-experiences", "feedback-mixed-context", "feedback-billing-signal"],
+      "requiredMetricPaths": ["comments", "problemMentions.delivery", "problemMentionPercent.delivery"],
+      "requiredScopeNotes": ["Sekiz yorum sentetik örnektir; tüm müşteriler hakkında genelleme yapılamaz.", "Bir yorum birden çok tema içerebilir; tema ve sorun sayıları farklıdır.", "Fatura farkının tutarı ve nedeni bilinmiyor."],
+      "humanReviewFocus": ["Olumlu destek/teslimat örnekleri korunmuş mu?", "Tasarım övgüsü ve paket hasarı aynı yorumda korunmuş mu?", "Sıklık ticari önem veya ciddiyetle karıştırılmış mı?"]
+    }
+  ],
+  "rubric": [
+    { "dimension": "numeric", "weight": 25, "full": "Gerekli hesaplar ve gösterilen her sayı doğrulanmış metriklerle eşleşir.", "partial": "Sayı hatası yok; gerekli bir metrik sonuçta eksik veya birim gösterimi yetersiz.", "zero": "Yanlış sayı, iş kuralı, birim veya payda. numeric-integrity kapısı başarısız." },
+    { "dimension": "sources", "weight": 25, "full": "Her ana bulgu ilgili kanıta, oran paydasına ve öneri dayanağına izlenebilir.", "partial": "Ana bulgular kaynaklı; ikincil bir açıklamanın kanıtı eksik. Ana kaynak hatası yok.", "zero": "Uydurma veya ilgisiz ana kaynak. source-grounding kapısı başarısız." },
+    { "dimension": "scope", "weight": 20, "full": "Vaka kapsamı ve gerekli belirsizlikler açık; yasak çıkarım yok.", "partial": "Yanlış çıkarım yok; gerekli bir kapsam notu eksik.", "zero": "Sentetik örnekten genelleme, kanıtsız neden/tahmin veya uydurma ölçüm. scope-and-uncertainty kapısı başarısız." },
+    { "dimension": "findings", "weight": 15, "full": "Hedefi yanıtlayan tüm ana bulgular ve kaynaklı, ölçülü bir inceleme önerisi var.", "partial": "Bir ana bulgu veya öneri eksik; mevcut bulgular doğru, karma/karşı kanıt korunmuş.", "zero": "Hedef yanıtsız veya karma/karşı kanıt ters yorumlanmış. İlgili kapı başarısız." },
+    { "dimension": "charts", "weight": 10, "full": "Veriye uygun sütun grafiği; doğru seri/birim/kaynak, erişilebilir veri tablosu.", "partial": "Veri doğru; grafik/tablo sunumlarından biri eksik veya etiketleme yetersiz.", "zero": "Grafik veriyle çelişiyor, tahmin uyduruyor veya çoklu temayı tekil dağılım gösteriyor. chart-integrity kapısı başarısız." },
+    { "dimension": "communication", "weight": 5, "full": "Kısa, anlaşılır Türkçe; ölçüm, yorum ve öneri ayırt ediliyor.", "partial": "Doğru ama tekrar/jargon nedeniyle okumak zor.", "zero": "Anlaşılmaz veya yanıltıcı anlatım." }
+  ],
+  "scoringRule": "Boyut başına full=weight, partial=weight/2, zero=0. Kesinti örnekle gerekçelendirilir. Uygulanabilir hard gate fail ise puan kararı değiştirmez. Belirsiz semantik yorum needs-review kalır; ikinci insan incelemesi olmadan pass olmaz.",
+  "passRule": "Her baz vaka üç koşunun her birinde gerekli bulgular/metrikler/kapsam notlarını içerir, tüm uygulanabilir kapıları geçer ve en az 90 puan alır. İlgili kötü girdi varyantı ayrıca doğru kontrollü durumu üretir. N/A yalnız o varyantta uygulanmayan sunum alanları içindir; baz vakada kapı atlanamaz."
+}
