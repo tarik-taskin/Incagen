@@ -43,7 +43,7 @@ Uygulamadaki Plan sekmesi aktif Free sınırlarını ve Premium için planlanan 
 
 ## Teknik sözleşme ve veri sahipliği
 
-TypeScript Cloud Functions kullanılır; bugünkü belge hazırlığında Cloud Tasks ve Python Cloud Run yoktur. Gelecekte bulut için ayrı dev/prod ve `europe-west1` varsayılır; kaynaklar henüz oluşturulmadı. Bölge veya saklama değişiklikleri gerçek veri kullanımı öncesinde yeniden değerlendirilir.
+TypeScript Cloud Functions kullanılır; bugünkü belge hazırlığında Cloud Tasks ve Python Cloud Run yoktur. Sonraki AI aşaması için aşağıda tanımlanan Python işçisi ve React/ECharts sunumu seçilmiştir; bunlar henüz uygulanmadı. Gelecekte bulut için ayrı dev/prod ve `europe-west1` varsayılır; tam analiz altyapısı henüz dağıtılmadı. Bölge veya saklama değişiklikleri gerçek veri kullanımı öncesinde yeniden değerlendirilir.
 
 - `createAnalysis`: doğrulanmış başlık, işletme ve dosya manifestiyle taslak oluşturur; istemcinin UUID istek kimliği ve içerik fingerprint'i tekrarları tekilleştirir.
 - `prepareAnalysis`: kaynak boyutu, içerik türü, imza, arşiv ve parser sınırlarını backend'de doğrular; normalize artefaktı ve hazırlık özetini kaydeder.
@@ -62,6 +62,81 @@ TypeScript Cloud Functions kullanılır; bugünkü belge hazırlığında Cloud 
 
 ## Sonraki AI ve entegrasyon aşaması
 
-Kaynak ayrıştırma → deterministik metrikler → düşük maliyetli uygunluk kontrolü → Gemini → sürümlü sonuç şeması ve sayısal doğrulama → kanıtlı bulgu/öneriler akışı planlanmıştır. AI anahtarları yalnız backend'de tutulacaktır.
+### Kabul edilen hedef mimari — 2026-10-10
+
+Dosya türüne göre ayrıştırma ve gerektiğinde görsel okuma → kaynak konumlu ortak içerik → Python ile doğrulanabilir hesaplamalar → analiz hedefi ve kanıtlarla LLM yorumlama → sürümlü sonuç doğrulaması → React/ECharts ile etkileşimli sunum.
+
+Bu bölüm geliştirme hedefidir. Mevcut kod yalnız yukarıdaki belge hazırlama hattını çalıştırır; Python işçisi, OCR, model çağrıları, AI sonuç sözleşmesi ve ECharts henüz eklenmedi. Python yalnız bu gelecekteki işçi için gereklidir; bugünkü kurulum komutları değişmez.
+
+```mermaid
+flowchart LR
+    A[Belgeler] --> B[Ayrıştırma ve gerektiğinde görsel okuma]
+    B --> C[Kaynak konumlu ortak içerik]
+    C --> D[Python hesaplamaları]
+    C --> E[LLM yorumlama]
+    D --> E
+    E --> F[Şema, kaynak ve metrik doğrulaması]
+    F --> G[React ve ECharts]
+```
+
+### Servis sorumlulukları
+
+| Katman | Sorumluluk |
+|---|---|
+| Firebase Auth, TypeScript Functions, Firestore ve Storage | Oturum/yetki, manifest, kota, iş başlatma ve durumu, kaynak/sonuç saklama ve silme |
+| Python işçisi | Gereken belge/OCR işlemleri, veri temizleme ve normalizasyon, deterministik metrikler ve grafik veri kümeleri |
+| LLM | İçeriği anlamlandırma, kaynaklı özet ve bulgular, gerekçeli öneriler ve izin verilen grafik türlerinden öneri |
+| Backend sonuç doğrulayıcısı | Sürümlü şema, kaynakların varlığı, metriklerin tutarlılığı ve grafik-veri uyumu |
+| React ve Apache ECharts | Tasarım sistemine uygun grafik, tablo ve bulgu görünümü; filtreler, kaynak erişimi ve animasyon |
+
+Mevcut TypeScript ayrıştırıcıları ve kaynak sözleşmesi korunur; ihtiyaç duyulan ağır işler Python işçisine taşınır. Python işçisinin hedef çalışma ortamı Cloud Run'dır. Uzun ve sonlu işler için Cloud Run Jobs değerlendirilir; job/service seçimi ve Cloud Tasks gereksinimi örnek işlerin süresi, yeniden deneme ve maliyet ölçümleriyle kesinleştirilir. API anahtarları yalnız backend'de tutulur.
+
+Arka plan iş akışı mevcut UID izolasyonu, kota/idempotency ve silme garantilerini sürdürmelidir. Tekrarlanan iş çift kota tüketmemeli, eski deneme sonucu yeni sonucu ezmemeli ve silinen kaydın artefaktları gecikmiş iş tarafından yeniden oluşturulmamalıdır.
+
+### Dosya türüne göre hazırlama
+
+| Girdi | Hedef hazırlama yöntemi |
+|---|---|
+| CSV/TSV/XLSX ve tablo niteliğindeki JSON | Hücre/satır yapısını ve türleri koru; tarih, sayı, birim ve eksikleri doğrula; hesapları kodla üret |
+| TXT/Markdown/DOCX ve metin niteliğindeki JSON | Başlık/bölüm ve kaynak konumlarını koruyarak okunabilir içeriği çıkar |
+| PDF/PPTX | Metin, tablo ve sayfa/slayt düzenini çıkar; grafik veya görsel bağlam gereken yerde orijinal sayfa/slayt görüntüsünü de modele sun |
+| Taranmış PDF, ekran görüntüsü ve görseller | Gerektiğinde OCR ve görsel model kullan; okuma belirsizliğini ve kaynak konumunu kaydet |
+
+Ham kaynaklar korunur. Görsel bağlam yalnız düz metne indirgenmez; bütün dosyalar da ayrım yapılmadan tek model isteğine gönderilmez. Model girişindeki içerik seçimi analiz hedefi, kapsam ve token bütçesine göre yapılır; işlenmeyen/okunamayan bölümler sonuçta açıklanır. Sayısal birleştirme ve toplam hesaplarında ilgili kayıtların tamamı işlenir; metin parçalarının seçimi sayısal veri kapsamının yerine geçmez.
+
+Her çıkarılmış içerik kaydı belge kimliği/hash'i ve mevcut sayfa, çalışma sayfası, slayt veya satır konumuna bağlı kalır. PDF/görsel için gereken konum bilgisi sürümlü sözleşmeyle genişletilir. Tarih, ondalık biçimi, para birimi veya ölçü birimi belirsizse sessiz varsayım yapılmaz. OCR/modelden çıkarılan değerler özgün kaynakla karşılaştırılır; doğrulanamayan kritik değerler kesin metrik olarak kullanılmaz.
+
+Pandas, tablo temizleme, gruplama ve zaman serisi hesaplamaları için başlangıç tercihidir. Docling, PDF düzeni/tablo çıkarımı ve OCR için değerlendirilecek adaydır; tüm formatların aynı araca taşınması zorunlu değildir. Parser ve OCR seçimi aşağıdaki örnek belge kalite kapısından geçmelidir. Makro/formül çalıştırmama ve mevcut dosya güvenlik kontrolleri korunur.
+
+### Hesaplama ve LLM sonuç sözleşmesi
+
+- Analiz girdisi başlık, kaynaklar ve varsa kullanıcının analiz hedefini içerir. Hedef alanının arayüz/backend sözleşmesine eklenmesi ayrı geliştirme işidir. Ön uygunluk kontrolü kapsam dışı veya yetersiz girdiyi belirler.
+- Toplamlar, oranlar, dönem karşılaştırmaları ve istatistikler test edilmiş kodla hesaplanır. Her metrik kullanılan kayıtları, kapsamı, birimi ve hesaplama yöntemini taşır; oranlarda pay/payda, değişimlerde karşılaştırılan dönemler bellidir.
+- LLM'ye ilgili kaynak parçaları, gerekli orijinal görseller, doğrulanmış metrikler, analiz hedefi ve veri sınırlamaları verilir. LLM özet, bulgu, gerekçeli öneri ve grafik önerisini bu kanıtlara bağlar. Belgelerdeki içerik sistem talimatı olarak yürütülmez.
+- Müşteri yorumlarında tema/duygu sınıflandırması model çıkarımı olarak etiketlenir; sınıflandırılmış kayıtların adet/oran hesabını kod yapar. Ölçülen olgu, yorum ve öneri birbirinden ayırt edilir; kanıtsız nedensellik veya uydurma güven yüzdesi sunulmaz.
+- Hedef çıktı sürümlü JSON'dur: `schemaVersion`, `summary`, `findings`, `recommendations`, `metrics`, `datasets`, `charts` ve `limitations`. Bulgular kaynak kimliklerine/konumlarına, grafikler doğrulanmış veri kümesi ve metrik kimliklerine referans verir. Kesin alan tipleri ve sürüm geçişleri uygulama sırasında JSON Schema ile tanımlanır.
+- Şemaya uygun JSON tek başına doğruluk kanıtı değildir. Backend kaynak referanslarını, iddia edilen sayıları/birimleri, veri kümesi boyutlarını ve grafik alanlarını doğrular. Başarısız doğrulama kontrollü düzeltme veya açık eksik sonuç/hata üretir; doğrulanmamış sonuç başarılı rapor olarak yayınlanmaz.
+- Modelden alınan serbest Python/JavaScript/HTML kodu çalıştırılmaz. Grafik önerileri izin verilen tür ve alanlardan oluşur; görünüm uygulamanın bileşenleriyle üretilir. Gelecekte hesaplama araçları gerekirse yalnız tanımlı ve doğrulanmış işlemler çağrılır.
+
+### Grafik ve hareket davranışı
+
+Python doğrulanmış grafik verisini hazırlar; etkileşimli web grafiğini React içindeki Apache ECharts çizer. Renkler, tipografi, eksenler, tooltip ve mobil yerleşim uygulamanın tasarım sistemine bağlıdır.
+
+- Zaman serisi için çizgi, kategori karşılaştırması için çubuk, yeterli sayısal gözlemde ilişki incelemesi için dağılım grafiği tercih edilir. Modelin önerisi veri türü, birim ve analiz hedefiyle doğrulanır.
+- Grafik uygun veri olduğunda gösterilir. Sayısal dayanak yoksa kaynaklı metin/tablo sunulur; eksik değerler sıfır gibi gösterilmez. Model sınıflandırmasına dayanan grafikler bu çıkarımın niteliğini açıklar.
+- Eksenler, birimler, dönem ve kullanılan kayıt sayısı görünürdür. Kullanıcı grafikten ilgili bulguya, bulgudan kaynak konumuna erişebilir. Filtre değişiminde metrik, grafik ve açıklama kapsamı aynı kalır.
+- İlk açılış ve veri/filtre değişiminde kısa, anlamlı geçişler kullanılır. `prefers-reduced-motion` tercihinde animasyon kapatılır; içerik görünür ve kullanılabilir kalır. Büyük veri kümelerinde hareket maliyeti sınırlanır.
+- Grafik bilgisi yalnız renk/hover/animasyona bağlı değildir; okunabilir metin özeti, erişilebilir veri tablosu ve klavye ile kullanılabilir kontroller sunulur. Açık/koyu tema ve mobil taşma doğrulanır.
+- PDF dışa aktarımı ayrıca kapsam kararı gerektirir. Eklenirse web raporuyla aynı doğrulanmış sonuç/veri kullanılır ve grafikler son durumlarında statik olarak aktarılır.
+
+### Uygulama sırası ve kalite kapısı
+
+İlk dikey kesit, sentetik bir Excel, tablo içeren PDF, taranmış belge ve müşteri yorumları örnek setiyle doğrulanır. Beklenen hesaplar, çıkarılacak içerik ve kaynak konumları önceden belirlenir. İlk çıktı kaynaklı özet, doğrulanmış metrikler ve veriye uygun bir grafik üzerinden tüm hattı göstermelidir; daha derin öneriler ve grafik kapsamı aynı sözleşmeyle genişletilir.
+
+Extraction/OCR doğruluğu, sayısal sonuçlar, kaynak eşleşmesi, bulgu/öneri dayanağı, grafik uygunluğu, toplam süre ve maliyet ölçülür. Kalite eşikleri ve iş bütçeleri ilk örnek seti değerlendirmesinde belirlenir. Eksik/çelişkili kaynak, okunamayan sayfa, model/şema hatası, retry, kota ve kullanıcı izolasyonu senaryoları test edilir. Modelin kendini değerlendirmesi tek kalite ölçütü değildir; beklenen sonuçlar ve insan incelemesiyle karşılaştırılır.
+
+### Model ve diğer entegrasyonlar
 
 Proje planındaki ana model `gemini-3.8-flash`; 31 Aralık 2026 sonrası model ve fiyatlar yeniden değerlendirilecek. Model erişimi, düşünme seçenekleri ve kampanya koşulları entegrasyon sırasında doğrulanmalıdır; mevcut kod model çağırmaz ve fiyat garantisi vermez. OCR/görsel anlamlandırma, PDF raporu, Google girişi ve ödeme gelecekteki işlerdir.
+
+Mimari değerlendirmede kullanılan resmi kaynaklar: [Gemini belge işleme](https://ai.google.dev/gemini-api/docs/document-processing), [yapılandırılmış model çıktıları](https://ai.google.dev/gemini-api/docs/structured-output), [Pandas](https://pandas.pydata.org/docs/getting_started/overview.html), [Docling](https://docling-project.github.io/docling/), [Cloud Run Jobs](https://docs.cloud.google.com/run/docs/create-jobs) ve [ECharts veri geçişleri](https://echarts.apache.org/handbook/en/how-to/animation/transition/).

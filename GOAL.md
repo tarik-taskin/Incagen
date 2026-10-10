@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-10 — Furkan / Codex: kaynaklı AI analiz ve grafik mimarisi
+
+- [x] Sahip: Furkan — Onaylanan dosya türüne göre ayrıştırma, Python hesaplama, LLM yorumlama ve React/ECharts sunum akışını FLOW.md içinde belgele; roadmap ve kalıcı bağlamı bu karara bağla.
+
+Kabul: Bugünkü TypeScript hazırlama hattı ile gelecekte uygulanacak mimari ayrılmalı; kaynak takibi, sayısal doğrulama, kontrollü grafik seçimi, erişilebilir animasyon ve örnek belge kalite kapısı tanımlanmalı. Python/OCR/LLM/ECharts çalışan özellik olarak gösterilmemeli; mevcut komutlar ve plan sınırları değişmemeli.
+
+Doğrulama: FLOW.md, GOAL.md, MEMORY.md ve README.md tutarlılığı incelendi; 12 yerel belge/bölüm bağlantısı ve kod bloklarının kapanışı doğrulandı, `git diff --check` geçti. Değişiklik yalnız belgelerdedir; hedef mimarinin geliştirme işleri açık bırakıldı.
+
 ### 2026-10-06 — Furkan / Codex: özetleme öncesi arayüz düzeni
 
 - [x] Sahip: Furkan — Giriş/kayıt üst boşluğunu sıkılaştır; Plan karşılaştırmasındaki henüz sunulmayan AI ve dış bağlantı satırlarını kaldır, Premium metinlerini vaat etmeden sadeleştir.
@@ -295,18 +303,20 @@ Kalite kapısı: format fixture'ları, kota sınırları, yetkilendirme ve kısm
 
 ## M3 — AI analiz hattı
 
-- [ ] Sahip: Atanmadı — Servis seçimi sonrası arka plan iş yönetimi.
+- [ ] Sahip: Atanmadı — [FLOW.md hedef mimarisi](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) için Cloud Run üzerinde Python işçisi ve arka plan iş yönetimi.
+- [ ] Sahip: Atanmadı — Dosya türüne göre OCR/görsel okuma, kaynaklı normalizasyon ve Python ile deterministik metrikler; parser/OCR adaylarını örnek belge setiyle değerlendir.
 - [ ] Sahip: Atanmadı — Uygunluk kontrolü ve FLOW.md ana model yapılandırması.
 - [ ] Sahip: Atanmadı — Sürümlü JSON Schema, kaynak ve sayısal metrik doğrulama.
 - [x] Sahip: Tarık — Hazırlama hattında idempotent kota, hata iadesi ve süre aşımı sonrası kullanıcı tetiklemeli retry.
 - [ ] Sahip: Atanmadı — AI için kalıcı kuyruk ve sınırlı otomatik retry.
 
-Kalite kapısı: şema, hata/retry, kota ve kullanıcı izolasyonu entegrasyon testleri başarılı.
+Kalite kapısı: [FLOW.md uygulama sırası ve kalite kapısı](FLOW.md#uygulama-sırası-ve-kalite-kapısı) üzerinden extraction, metrik/kaynak doğruluğu, bulgu dayanağı, süre ve maliyet ölçülmüş; şema, hata/retry, kota ve kullanıcı izolasyonu entegrasyon testleri başarılı.
 
 ## M4 — Sonuçlar ve geçmiş
 
 - [x] Sahip: Furkan — Genel belgeler için doğrulanmış kaynak ve hazırlık özeti; AI bulgu ve grafikleri sonraki aşamaya bırakıldı.
 - [ ] Sahip: Atanmadı — AI bulgu ve öneri ekranları.
+- [ ] Sahip: Atanmadı — [FLOW.md grafik ve hareket davranışı](FLOW.md#grafik-ve-hareket-davranışı) için React/ECharts sunumu, kaynak erişimi ve erişilebilir veri tablosu.
 - [ ] Sahip: Atanmadı — Kaynak referansı, güven düzeyi ve çıkarım etiketleri.
 - [x] Sahip: Tarık — Kullanıcıya özel Firestore geçmişini listeleme ve kayıtlı raporu açma.
 - [ ] Sahip: Atanmadı — Geçmiş arama ve filtreleme.
@@ -340,7 +350,8 @@ Kalite kapısı: ödeme/webhook, plan geçişi, kota ve bağlantı yetkilendirme
 Aşağıdakiler sonraki aşamanın açık kararlarıdır. Bugünkü yerel akışın kesinleşen seçimleri FLOW.md ve karar günlüğündedir.
 
 - İş orkestrasyonu: Firebase Functions yanında Cloud Tasks gerekli mi?
-- Uzun dosya/AI işleri: Python Cloud Run mı, başka bir servis mi?
+- Python işçisi için Cloud Run Job mu, service mi; örnek işlerin süresi, retry ve maliyetine göre seçim.
+- Parser/OCR: Docling adayının örnek belgelerde doğrulanması; kalite eşikleri ve analiz başına süre/token/maliyet bütçeleri.
 - Beta erişimi: davetli mi, açık mı?
 - Authentication: e-posta/parolaya ek Google girişi ne zaman gerekli?
 - Ortamlar: ayrı dev/prod ve europe-west1 varsayımının gerçek veri/gizlilik gereksinimleriyle doğrulanması.
@@ -362,6 +373,7 @@ Aşağıdakiler sonraki aşamanın açık kararlarıdır. Bugünkü yerel akış
 
 ## Karar günlüğü
 
+- 2026-10-10 — Furkan'ın onayıyla [FLOW.md hedef mimarisi](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) kabul edildi: dosya türüne göre ayrıştırma/görsel okuma, Python işçisiyle hesaplama, kaynaklı LLM yorumlama ve React/ECharts ile doğrulanmış grafik sunumu. Mevcut TypeScript hazırlama hattı korunur; bu karar uygulama teslimatı değildir. Cloud Run job/service, parser/OCR ve kalite bütçeleri örnek seti değerlendirmesinde kesinleştirilir.
 - 2026-09-18 — Tarık/Codex teslimatında destek kapsamı gerçekten ayrıştırılan CSV/TSV/XLSX, PDF/DOCX/TXT/Markdown, PPTX, JSON ve PNG/JPEG/WebP ile sınırlandı. Ortak sürümlü belge modeli, server-only sıkıştırılmış türetilmiş içerik ve kaynak özeti mevcut hazırlama akışına bağlandı. OCR, görsel anlamlandırma, Gemini, tavsiye ve grafik üretimi sonraki M3/M4 işidir.
 - 2026-09-11 — Tarık'ın karar yetkisiyle bugünkü işler Tarık/Codex'e aittir; Furkan'a yeni iş atanmadı. Yerel emülatör, e-posta/parola, UID izolasyonu, TypeScript Functions ve deterministik tablo raporu prototipi uygulandı. Bu prototip daha sonra genel belge hazırlama hattıyla değiştirildi. Kota, geçici sınırlar ve silme davranışı FLOW.md'dedir; AI, gerçek bulut ve ödeme kapsam dışıdır.
 - 2026-09-07 — Tarık'ın onayıyla PR incelemesindeki ürün düzeltmeleri kabul edildi; plan limitleri FLOW.md'de merkezileştirildi, ödeme işi M6'da güncellendi, müşteri segmenti kısıtı kaldırıldı ve ortak değerlendirme gerektiren seçimler açık kararlara taşındı.

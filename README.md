@@ -80,6 +80,8 @@ Dosyalar iç navigasyonda korunur; tarayıcı yenilemesinde yeniden seçilir. Em
 
 React, TypeScript, Vite, React Router, Tailwind, shadcn/ui yaklaşımı, Anime.js ve Firebase. Vitest/Testing Library, Playwright/axe ve Firebase emülatör testleri kullanılır.
 
+Sonraki AI aşamasının kabul edilen mimarisi ve kalite kriterleri [FLOW.md](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) içindedir. Python işçisi ve ECharts bu hedefin parçalarıdır; mevcut kurulumda henüz kullanılmazlar.
+
 - `src/pages`, `src/components`: ekranlar ve ortak arayüz.
 - `src/hooks`, `src/lib`: oturum, taslak, servis ve canlı kayıt bağları.
 - `src/i18n`: Türkçe mesaj sözlüğü temeli; İngilizce henüz yoktur.

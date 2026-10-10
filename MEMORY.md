@@ -8,6 +8,7 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 - `npm run dev` ve canlı Netlify aynı Firebase Auth önizlemesini kullanır; tam sentetik Auth/Firestore/Storage/Functions akışı `npm run dev:emulator` ile çalışır. Gemini entegrasyonu gelecekteki iştir.
 - Ana renkler `#4c2a85`, `#bcedf6`; yardımcı renkler `#320E3B`, `#ff0035`, `#DDFBD2`.
 - Çalışma kuralları AGENTS.md, teknik kurallar RULES.md, davranış/limitler FLOW.md içindedir.
+- Kabul edilen sonraki AI mimarisi ve kalite kapısı [FLOW.md](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) içindedir; Python işçisi, kaynaklı LLM sonuçları ve React/ECharts sunumu geliştirme hedefidir.
 
 ## Tamamlanan özellikler
 
