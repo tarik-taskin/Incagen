@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-10 — Furkan / Codex: ürün odaklı GitHub README
+
+- [x] Sahip: Furkan — README'yi ürün amacı, çalışma akışı ve kaynak haritasına odakla; ortam karşılaştırması ve ayrıntılı kurulum bilgilerini ayrı geliştirici rehberine taşı.
+
+Kabul: README emülatör/ortam ayrıntılarıyla açılmamalı; uygulanmamış AI özellikleri tamamlanmış gibi gösterilmemeli. Teknik kurulum bilgileri kaybolmamalı, bağlantılar ve komutlar geçerli olmalı. Uygulama ve referans verileri değişmemeli; lint, birim testleri ve derleme geçmeli.
+
+Doğrulama: README'de ortam karşılaştırması, emülatör komutları ve port ayrıntıları yoktur; mevcut teknik rehber [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) içine doğru göreli bağlantılarla taşındı. 41 yerel belge/bölüm bağlantısı, 18 komut kullanımı ve Markdown kod blokları doğrulandı. Lint, 43 uygulama ve 15 Functions testi ile frontend derlemesi geçti; değişiklik yalnız belgelerdedir.
+
 ### 2026-10-10 — Furkan / Codex: geliştirici rehberi ve referans kalitesi
 
 - [x] Sahip: Furkan — README'yi mevcut teslimat, iki çalışma modu, tekrarlanabilir kurulum/doğrulama ve belge sahipliği açısından kodla uyumlu bir giriş rehberine dönüştür.
