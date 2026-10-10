@@ -16,6 +16,19 @@ function setupUser() {
 }
 
 describe("NewAnalysisPage", () => {
+  it("hedef boşsa hazırlığı başlatmaz; kullanıcı girdilerini koruyarak soruyu belirtmesini ister", async () => {
+    const user = setupUser();
+    renderPage();
+    await user.upload(screen.getByLabelText("Analiz edilecek dosyaları seç"), new File(["test"], "faaliyet.txt", { type: "text/plain" }));
+    await user.type(screen.getByLabelText("İşletme adı"), "Sentetik İşletme");
+    await user.type(screen.getByLabelText("Analiz başlığı"), "Aylık çalışma");
+    await user.click(screen.getByRole("button", { name: "Belgeleri ayrıştır" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("Analiz hedefini belirtin");
+    expect(screen.getByText("faaliyet.txt")).toBeInTheDocument();
+    expect(screen.getByLabelText("Analiz başlığı")).toHaveValue("Aylık çalışma");
+    expect(screen.getByLabelText("Analiz hedefi")).toBeRequired();
+    expect(screen.queryByText("Gerekli")).not.toBeInTheDocument();
+  });
   it("farklı belge türlerini birlikte listeler ve dosya kaldırır", async () => {
     const user = setupUser();
     renderPage();
@@ -72,11 +85,16 @@ describe("NewAnalysisPage", () => {
     renderPage();
     await user.upload(screen.getByLabelText("Analiz edilecek dosyaları seç"), new File(["test"], "faaliyet.txt", { type: "text/plain" }));
     await user.type(screen.getByLabelText("Analiz başlığı"), "Korunacak taslak");
+    await user.click(screen.getByRole("button", { name: "Satış değişimi" }));
+    const objective = screen.getByLabelText("Analiz hedefi");
+    await user.clear(objective);
+    await user.type(objective, "Aylık değişimi görmek istiyorum.");
 
     await user.click(screen.getByRole("button", { name: "Belgeleri ayrıştır" }));
 
     expect(screen.getByRole("alert")).toHaveTextContent("İşletme ve analiz başlığını doldurun");
     expect(screen.getByText("faaliyet.txt")).toBeInTheDocument();
     expect(screen.getByLabelText("Analiz başlığı")).toHaveValue("Korunacak taslak");
+    expect(objective).toHaveValue("Aylık değişimi görmek istiyorum.");
   });
 });

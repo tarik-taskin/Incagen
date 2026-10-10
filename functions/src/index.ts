@@ -43,7 +43,7 @@ export const createAnalysis = onCall(options, async request => {
       if (existing.data()?.status === "deleting") throw new HttpsError("failed-precondition", "Analiz siliniyor.");
       return;
     }
-    tx.create(ref, { title: input.title, business: input.business, manifest, fingerprint, status: "uploading", attempts: 0, createdAt: Date.now(), updatedAt: Date.now() });
+    tx.create(ref, { title: input.title, business: input.business, objective: input.objective, manifest, fingerprint, status: "uploading", attempts: 0, createdAt: Date.now(), updatedAt: Date.now() });
   });
   return { id: input.requestId, paths: Object.keys(manifest).map(key => `users/${uid}/analyses/${input.requestId}/${key}`) };
 });

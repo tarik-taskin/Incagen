@@ -1,0 +1,140 @@
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+import sales from "../../../fixtures/analysis-reference/v1/sales.expected.json";
+import feedback from "../../../fixtures/analysis-reference/v1/customer-feedback.expected.json";
+import { parseDocument } from "./index";
+
+// Gerçek CSV parser'ını kullanır; cevap anahtarını girdi üretiminde veya hesaplamada kullanmaz.
+async function loadSource(source: typeof sales.source) {
+  const data = readFileSync(new URL(`../../../fixtures/analysis-reference/v1/${source.file}`, import.meta.url));
+  const document = await parseDocument({ sourceId: source.sourceId, fileName: source.file, contentType: "text/csv", data });
+  expect(document.sha256).toBe(source.sha256);
+  expect(document.chunks).toHaveLength(1);
+  const chunk = document.chunks[0];
+  expect(chunk.id).toBe(source.chunkId);
+  expect(chunk.locator).toMatchObject({ rowStart: source.rowStart, rowEnd: source.rowEnd });
+  expect(chunk.table?.rows).toHaveLength(source.dataRows);
+  return chunk.table!.rows.map(row => Object.fromEntries(chunk.table!.columns.map((key, index) => [key, String(row[index])])));
+}
+
+// Ondalık TRY girdisini kuruşa çevirir; test hesabında metin, boşluk veya NaN sessizce sayı sayılmaz.
+function cents(value: string) {
+  expect(value).toMatch(/^\d+(?:\.\d{1,2})?$/);
+  return Math.round(Number(value) * 100);
+}
+
+// İnsan etiketlerini deterministik olarak sayar; duygu veya konu sınıflandırması yapmaz.
+function counts(values: string[], keys: string[]) {
+  return Object.fromEntries(keys.map(key => [key, values.filter(value => value === key).length]));
+}
+
+describe("sürümlü özetleme referansları (LLM olmadan)", () => {
+  it("satış satırlarını, iade/iptal/indirim kurallarını ve bütün beklenen metrikleri bağımsız hesapla doğrular", async () => {
+    const rows = await loadSource(sales.source);
+    expect(new Set(rows.map(row => row.event_id)).size).toBe(rows.length);
+    const amounts: Record<string, number> = {};
+    const monthly: Record<string, number> = {};
+    const units: Record<string, number> = {};
+    const categories: Record<string, number> = {};
+    let gross = 0, discounts = 0, refunds = 0, netUnits = 0;
+    for (const row of rows) {
+      expect(row.posted_date).toMatch(/^2026-(09|10)-\d{2}$/);
+      expect(["completed", "refunded", "cancelled"]).toContain(row.status);
+      const quantity = Number(row.quantity);
+      expect(Number.isInteger(quantity)).toBe(true);
+      const price = cents(row.unit_price_try);
+      const discount = cents(row.discount_try);
+      if (row.status === "refunded") {
+        const original = rows.find(item => item.event_id === row.original_event_id);
+        expect(original?.status).toBe("completed");
+        expect(quantity).toBeLessThan(0);
+        expect(-quantity).toBeLessThanOrEqual(Number(original?.quantity));
+        expect(price).toBe(cents(original!.unit_price_try));
+        expect(discount).toBe(0);
+      } else expect(quantity).toBeGreaterThan(0);
+      const amount = row.status === "cancelled" ? 0 : quantity * price - discount;
+      amounts[row.event_id] = amount / 100;
+      if (row.status === "cancelled") continue;
+      const month = row.posted_date.slice(0, 7);
+      monthly[month] = (monthly[month] ?? 0) + amount;
+      units[month] = (units[month] ?? 0) + quantity;
+      categories[row.category] = (categories[row.category] ?? 0) + amount;
+      netUnits += quantity;
+      if (row.status === "completed") { gross += quantity * price; discounts += discount; }
+      else refunds -= amount;
+    }
+    const net = Object.values(monthly).reduce((sum, value) => sum + value, 0);
+    const difference = monthly["2026-10"] - monthly["2026-09"];
+    expect(monthly["2026-09"]).toBeGreaterThan(0);
+    const toTry = (data: Record<string, number>) => Object.fromEntries(Object.entries(data).map(([key, value]) => [key, value / 100]));
+    expect(amounts).toEqual(sales.rowAmountsTry);
+    const { monthlyChangePercent, leadingCategorySharePercent, ...expectedMetrics } = sales.metrics;
+    expect(difference / monthly["2026-09"] * 100).toBeCloseTo(monthlyChangePercent, 8);
+    expect(Math.max(...Object.values(categories)) / net * 100).toBeCloseTo(leadingCategorySharePercent, 8);
+    expect({
+      rawEvents: rows.length,
+      completedSales: rows.filter(row => row.status === "completed").length,
+      refundEvents: rows.filter(row => row.status === "refunded").length,
+      cancelledEvents: rows.filter(row => row.status === "cancelled").length,
+      grossCompletedSalesTry: gross / 100, discountsTry: discounts / 100, refundsTry: refunds / 100,
+      netSalesTry: net / 100, netUnits,
+      monthlyNetSalesTry: toTry(monthly), monthlyNetUnits: units,
+      monthlyChangeTry: difference / 100,
+      categoryNetSalesTry: toTry(categories),
+    }).toEqual(expectedMetrics);
+    expect(gross - discounts - refunds).toBe(net);
+    expect(Object.values(categories).reduce((sum, value) => sum + value, 0)).toBe(net);
+  });
+
+  it("yorum kanıtlarını ve insan etiketlerinden hesaplanan paydaları doğrular; etiketleri NLP sonucu saymaz", async () => {
+    const rows = await loadSource(feedback.source);
+    expect(new Set(rows.map(row => row.feedback_id)).size).toBe(rows.length);
+    expect(feedback.annotations).toHaveLength(rows.length);
+    expect(new Set(feedback.annotations.map(item => item.sourceRow)).size).toBe(rows.length);
+    const themes = Object.keys(feedback.definitions.themeAliases);
+    for (const item of feedback.annotations) {
+      const row = rows[item.sourceRow - 1];
+      expect(row.feedback_id).toBe(item.id);
+      expect(row.comment).toContain(item.quote);
+      expect(item.themes.length).toBeGreaterThan(0);
+      expect(new Set(item.themes).size).toBe(item.themes.length);
+      for (const theme of item.themes) expect(themes).toContain(theme);
+      for (const problem of item.problemThemes) expect(item.themes).toContain(problem);
+      expect(["negative", "positive", "mixed"]).toContain(item.sentiment);
+    }
+    const themeMentions = counts(feedback.annotations.flatMap(item => item.themes), themes);
+    const problemMentions = counts(feedback.annotations.flatMap(item => item.problemThemes), themes);
+    const sentimentCounts = counts(feedback.annotations.map(item => item.sentiment), ["negative", "positive", "mixed"]);
+    const percentages = (data: Record<string, number>) => Object.fromEntries(Object.entries(data).map(([key, value]) => [key, value / rows.length * 100]));
+    expect({ comments: rows.length,
+      themeAssignments: Object.values(themeMentions).reduce((sum, value) => sum + value, 0),
+      themeMentions, themeMentionPercent: percentages(themeMentions),
+      problemMentions, problemMentionPercent: percentages(problemMentions),
+      sentimentCounts, negativeCommentPercent: sentimentCounts.negative / rows.length * 100,
+    }).toEqual(feedback.metrics);
+  });
+
+  it.each([sales, feedback])("$caseId bulgu/öneri kaynaklarını ve grafiklerin metrikle eşleşmesini doğrular", reference => {
+    expect(reference.schemaVersion).toBe(1);
+    expect(reference.synthetic).toBe(true);
+    const findingIds = reference.findings.map(finding => finding.id);
+    expect(new Set(findingIds).size).toBe(findingIds.length);
+    for (const finding of reference.findings) {
+      for (const path of finding.metricPaths) expect(reference.metrics).toHaveProperty(path);
+      const rows = [...finding.sourceRows, ...("denominatorRows" in finding ? finding.denominatorRows : [])];
+      expect(finding.sourceRows.length).toBeGreaterThan(0);
+      for (const row of rows) { expect(row).toBeGreaterThanOrEqual(1); expect(row).toBeLessThanOrEqual(reference.source.dataRows); }
+    }
+    for (const recommendation of reference.recommendations) {
+      expect(recommendation.basisFindingIds.length).toBeGreaterThan(0);
+      for (const id of recommendation.basisFindingIds) expect(findingIds).toContain(id);
+    }
+    for (const chart of reference.charts) {
+      const dataset = (reference.metrics as Record<string, unknown>)[chart.metricPath] as Record<string, number>;
+      expect(chart.x.map(key => dataset[key])).toEqual(chart.y);
+      expect(chart.x).toHaveLength(chart.y.length);
+      expect(chart.sourceRows.length).toBeGreaterThan(0);
+      for (const row of chart.sourceRows) { expect(row).toBeGreaterThanOrEqual(1); expect(row).toBeLessThanOrEqual(reference.source.dataRows); }
+    }
+  });
+});

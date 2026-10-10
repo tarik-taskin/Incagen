@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "caseId": "feedback-themes-v1",
+  "synthetic": true,
+  "objective": "Yorumlardaki tekrar eden sorunları, olumlu deneyimleri ve iyileştirme önceliklerini kaynaklarıyla özetle.",
+  "source": { "sha256": "d696f7a74c8912e1d1be0ea4947f418efa5ddcd83b2125eb0aa66da7a0249165", "file": "customer-feedback.csv", "sourceId": "reference-feedback", "chunkId": "reference-feedback:table:0001", "dataRows": 8, "rowStart": 1, "rowEnd": 8 },
+  "definitions": {
+    "annotationKind": "Elle yazılmış insan değerlendirme referansı; otomatik LLM sonucu veya nesnel gerçek değildir",
+    "denominator": "8 benzersiz yorum; bir yorum birden çok temaya atanabilir",
+    "themeAliases": { "delivery": "Teslimat/paketleme", "support": "Destek", "quality": "Ürün/tasarım", "billing": "Faturalandırma" },
+    "sentiment": "negative, positive, mixed; duygu ile tema ayrı değerlendirilir",
+    "priorityBasis": "Örnekteki sorun sıklığı; maliyet veya etki verisi olmadan ticari önem sırası iddia edilmez"
+  },
+  "annotations": [
+    { "id": "F001", "sourceRow": 1, "quote": "Teslimat üç gün gecikti.", "themes": ["delivery"], "problemThemes": ["delivery"], "sentiment": "negative" },
+    { "id": "F002", "sourceRow": 2, "quote": "Destek talebime iki gün boyunca yanıt alamadım.", "themes": ["support"], "problemThemes": ["support"], "sentiment": "negative" },
+    { "id": "F003", "sourceRow": 3, "quote": "Ürün ilk kullanımda bozuldu.", "themes": ["quality"], "problemThemes": ["quality"], "sentiment": "negative" },
+    { "id": "F004", "sourceRow": 4, "quote": "Paket söz verilen tarihten sonra geldi.", "themes": ["delivery"], "problemThemes": ["delivery"], "sentiment": "negative" },
+    { "id": "F005", "sourceRow": 5, "quote": "Destek ekibi sorunumu aynı gün çözdü.", "themes": ["support"], "problemThemes": [], "sentiment": "positive" },
+    { "id": "F006", "sourceRow": 6, "quote": "Siparişim zamanında ve sorunsuz teslim edildi.", "themes": ["delivery"], "problemThemes": [], "sentiment": "positive" },
+    { "id": "F007", "sourceRow": 7, "quote": "Ürünün tasarımını çok beğendim ama paket ezilmiş geldi.", "themes": ["quality", "delivery"], "problemThemes": ["delivery"], "sentiment": "mixed" },
+    { "id": "F008", "sourceRow": 8, "quote": "Faturadaki tutarla ödediğim tutar farklı.", "themes": ["billing"], "problemThemes": ["billing"], "sentiment": "negative" }
+  ],
+  "metrics": {
+    "comments": 8, "themeAssignments": 9,
+    "themeMentions": { "delivery": 4, "support": 2, "quality": 2, "billing": 1 },
+    "themeMentionPercent": { "delivery": 50, "support": 25, "quality": 25, "billing": 12.5 },
+    "problemMentions": { "delivery": 3, "support": 1, "quality": 1, "billing": 1 },
+    "problemMentionPercent": { "delivery": 37.5, "support": 12.5, "quality": 12.5, "billing": 12.5 },
+    "sentimentCounts": { "negative": 5, "positive": 2, "mixed": 1 },
+    "negativeCommentPercent": 62.5
+  },
+  "findings": [
+    { "id": "feedback-delivery-problems", "claim": "Teslimat/paketleme sorunları bu örnekte 3/8 yorumda (%37.5) yer alıyor; sorunlar arasında en sık tekrar eden tema.", "metricPaths": ["problemMentions", "problemMentionPercent"], "sourceRows": [1, 4, 7], "denominatorRows": [1, 2, 3, 4, 5, 6, 7, 8] },
+    { "id": "feedback-positive-experiences", "claim": "F005'te aynı gün çözülen destek, F006'da zamanında teslimat olumlu deneyimler; her destek veya teslimat yorumu şikâyet değil.", "metricPaths": ["sentimentCounts"], "sourceRows": [5, 6] },
+    { "id": "feedback-mixed-context", "claim": "F007 tasarımı beğeniyor ve paket hasarından şikâyet ediyor; iki tema ve karma duygu korunmalı.", "metricPaths": ["themeAssignments", "sentimentCounts"], "sourceRows": [7] },
+    { "id": "feedback-billing-signal", "claim": "F008 bir fatura tutarı uyuşmazlığı bildiriyor; tutar veya finansal kayıp kaynakta yok.", "metricPaths": ["problemMentions"], "sourceRows": [8] }
+  ],
+  "recommendations": [
+    { "id": "delivery-follow-up", "action": "Gecikme, takip bilgisi ve paketleme süreçlerini inceleyin; bulguları gerçek operasyon verileriyle doğrulayın.", "basisFindingIds": ["feedback-delivery-problems"], "kind": "investigation", "sourceRows": [1, 4, 7] },
+    { "id": "billing-follow-up", "action": "F008'in tutar uyuşmazlığını belge ve ödeme kayıtlarıyla kontrol edin; kayıp tutarı varsaymayın.", "basisFindingIds": ["feedback-billing-signal"], "kind": "investigation", "sourceRows": [8] }
+  ],
+  "charts": [
+    { "id": "problem-themes", "type": "horizontal-bar", "x": ["delivery", "support", "quality", "billing"], "y": [3, 1, 1, 1], "unit": "yorum", "metricPath": "problemMentions", "sourceRows": [1, 2, 3, 4, 7, 8], "rules": ["Sorun sayısını tüm tema sözlerinden ayır.", "Bir yorum birden çok temaya atanabilir; pasta grafik kullanma.", "Eşit sayılı temalar arasında veriye dayanmayan önem sırası kurma."] }
+  ],
+  "limitations": ["Sekiz sentetik yorum müşteri kitlesini temsil etmez; %62.5 değeri genel memnuniyetsizlik oranı değildir.", "Tema/duygu etiketleri insan referansıdır; makul alternatif ifadeler anlam üzerinden değerlendirilir.", "Çoklu tema yüzdeleri %100'ü aşabilir; hata veya tekil müşteri dağılımı değildir.", "F007 ürün arızası bildirmez; tasarım olumlu, paket hasarı olumsuzdur.", "Puan, müşteri sayısı, NPS, CSAT, kayıp tutarı ve ortalama yanıt süresi için veri yoktur."],
+  "forbiddenClaims": ["Tüm müşterilerin %62.5'i memnun değil", "NPS/CSAT değeri", "F005 destek şikâyeti", "F006 teslimat sorunu", "F007 ürün bozuk", "3/4 yerine 3/8 olan sorun oranını %75 diye sunmak", "Ortalama destek süresi iki gün", "Fatura uyuşmazlığı tutarı veya dolandırıcılık iddiası"]
+}

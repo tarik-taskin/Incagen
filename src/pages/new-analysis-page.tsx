@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Building2, Check, Pencil } from "lucide-react";
+import { Building2, Check, Pencil, Target } from "lucide-react";
+import { ANALYSIS_OBJECTIVE_MAX_LENGTH } from "../../functions/src/contracts";
 import { FileDropzone } from "../components/upload/file-dropzone";
 import { SelectedFileList } from "../components/upload/selected-file-list";
 import { Button } from "../components/ui/button";
@@ -14,6 +15,7 @@ export function NewAnalysisPage() {
   const { files, rejections, addFiles, removeFile, clearFiles, dismissRejections } = selection;
   const navigate = useNavigate();
   const [editingBusiness, setEditingBusiness] = useState(() => !draft.business);
+  // Başarılı hazırlığın kaydını açar; hata durumunda kullanıcının taslağını korur.
   async function submit() {
     const id = await start();
     if (id) {
@@ -59,6 +61,23 @@ export function NewAnalysisPage() {
         <fieldset disabled={busy} className="mt-5">
           <label className="block text-sm font-medium">{tr.analysis.titleLabel}<input className="form-control mt-1.5" maxLength={100} value={draft.title} placeholder="Örn. Müşteri geri bildirimleri" onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} /></label>
           <p className="mt-2 text-xs leading-5 text-muted-foreground">Konuyu anlatan kısa bir başlık seçin; çalışmanızı geçmişte bu adla bulacaksınız.</p>
+          <div className="mt-5 border-t border-border pt-5">
+            <div className="flex items-center justify-between gap-2">
+              <label htmlFor="analysis-objective" className="flex items-center gap-2 text-sm font-medium"><Target className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" /> Analiz hedefi</label>
+            </div>
+            <textarea id="analysis-objective" className="form-control mt-2 min-h-28 resize-y text-sm leading-6" rows={3} required maxLength={ANALYSIS_OBJECTIVE_MAX_LENGTH} value={draft.objective} placeholder="Bu belgelerden ne öğrenmek istiyorsunuz?" aria-describedby="objective-help objective-count" onChange={e => setDraft(d => ({ ...d, objective: e.target.value }))} />
+            <div className="mt-2 flex items-start justify-between gap-3 text-xs text-muted-foreground">
+              <p id="objective-help" className="leading-5">Yanıt aradığınız soruyu yazın. Hedefiniz bu çalışmayla birlikte saklanır.</p>
+              <span id="objective-count" className="shrink-0 tabular-nums">{draft.objective.length}/{ANALYSIS_OBJECTIVE_MAX_LENGTH}</span>
+            </div>
+            <p className="mt-3 text-xs font-medium text-muted-foreground">Başlangıç için bir örnek</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {[
+                { label: "Satış değişimi", value: "Satışların dönemler arasında nasıl değiştiğini ve hangi kategorilerin öne çıktığını görmek istiyorum." },
+                { label: "Müşteri geri bildirimleri", value: "Müşteri yorumlarındaki tekrar eden sorunları ve iyileştirme önceliklerini anlamak istiyorum." },
+              ].map(example => <button key={example.label} type="button" className="min-h-9 rounded-full border border-border bg-muted/40 px-3 py-1.5 text-xs font-medium transition-colors hover:border-primary/30 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50 dark:focus-visible:ring-secondary" onClick={() => setDraft(d => ({ ...d, objective: example.value }))}>{example.label}</button>)}
+            </div>
+          </div>
         </fieldset>
         <p className="mt-5 rounded-xl border border-primary/10 bg-primary/[0.04] px-3.5 py-3 text-xs leading-5 text-muted-foreground dark:border-secondary/15 dark:bg-secondary/[0.05]"><span className="font-semibold text-foreground">Bir konuya odaklanın.</span> Müşteri geri bildirimleri ya da finans verileri gibi birbiriyle ilişkili belgeleri aynı analizde toplayın.</p>
         {busy && <div role="status" className="mt-4 text-sm"><p>{progress < 100 ? `Yükleniyor: %${progress}` : tr.status.processing}</p><progress aria-label="Yükleme ilerlemesi" className="mt-2 w-full accent-purple-700" value={progress} max={100} /></div>}

@@ -25,6 +25,7 @@ function input() {
     requestId: crypto.randomUUID(),
     title: "Sentetik faaliyet analizi",
     business: "Test",
+    objective: "Belgedeki ana konuları kaynaklarıyla açıkla.",
     files: [{ name: "faaliyet.txt", size: documentBody.length, contentType: "text/plain" }],
   };
 }
@@ -36,6 +37,10 @@ test("belge hazırlığı, izolasyon, idempotency, doğrulama ve silme", { timeo
     const prepare = httpsCallable(a.functions, "prepareAnalysis");
     const remove = httpsCallable(a.functions, "deleteAnalysis");
     const request = input();
+    request.objective = "  Faaliyet belgesindeki ana konuları bul.  ";
+    await assert.rejects(create({ ...request, objective: undefined }), { code: "functions/invalid-argument" });
+    await assert.rejects(create({ ...request, objective: "   " }), { code: "functions/invalid-argument" });
+    await assert.rejects(create({ ...request, objective: "x".repeat(501) }), { code: "functions/invalid-argument" });
     await assert.rejects(create({ ...request, files: Array.from({ length: 6 }, () => request.files[0]) }));
     const limitFiles = Array.from({ length: 5 }, (_, index) => ({ name: `belge-${index}.txt`, size: 5 * 1024 * 1024, contentType: "text/plain" }));
     await assert.rejects(create({ ...input(), files: [...limitFiles, { name: "fazla.txt", size: 1, contentType: "text/plain" }] }));
@@ -48,6 +53,7 @@ test("belge hazırlığı, izolasyon, idempotency, doğrulama ve silme", { timeo
     const { data } = await create(request);
     const again = await create(request);
     assert.equal(data.id, again.data.id);
+    await assert.rejects(create({ ...request, objective: "Farklı bir hedef" }), { code: "functions/already-exists" });
     const record = doc(a.db, "users", a.auth.currentUser.uid, "analyses", data.id);
     await assert.rejects(setDoc(record, { status: "completed" }));
     await assert.rejects(getDoc(doc(b.db, record.path)));
@@ -61,6 +67,7 @@ test("belge hazırlığı, izolasyon, idempotency, doğrulama ve silme", { timeo
     await prepare({ id: data.id });
     const completed = (await getDoc(record)).data();
     assert.equal(completed.status, "completed");
+    assert.equal(completed.objective, request.objective.trim());
     assert.equal(completed.report.version, 3);
     assert.equal(completed.report.fileCount, 1);
     assert.equal(completed.report.totalBytes, documentBody.length);

@@ -7,6 +7,15 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-10 — Furkan / Codex: analiz hedefi ve özetleme referansları
+
+- [x] Sahip: Furkan — Zorunlu analiz hedefini forma, taslak yaşam döngüsüne ve backend kayıt sözleşmesine ekle; kaydedilmiş çalışmada göster.
+- [x] Sahip: Furkan — Sentetik satış ve müşteri yorumları için sürümlü, kaynaklı referans seti; bağımsız beklenen hesaplar, bulgular, sınırlamalar ve LLM değerlendirme ölçütleri hazırla.
+
+Kabul: Eski kayıtlar hedef olmadan açılmalı; yeni hazırlıklarda hedef zorunlu olmalı; hedef sayfalar arasında/hatalarda korunmalı, başarılı hazırlıkta temizlenmeli ve sunucuda uzunluğu doğrulanmalı. Referanslarda gerçek müşteri verisi bulunmamalı; hesaplar mevcut parser üzerinden doğrulanmalı, yorum sınıflandırmaları insan referansı olarak ayrılmalı. AI bağlantısı, Python kurulumu ve yeni servis bu işin kapsamında değildir. Lint, birim, Functions/build, entegrasyon ve yerel tarayıcı kontrolleri geçmeli.
+
+Doğrulama: lint, 43 uygulama ve 11 Functions testi, uygulama/Functions derlemeleri, 3 Firebase entegrasyon testi ve 12/12 masaüstü/mobil tarayıcı senaryosu geçti. Boş/eksik/uzun hedef reddi, hedef değişiminde idempotency koruması, taslak/hata korunumu, kaydetme/yenileme ve başarılı hazırlıkta temizleme doğrulandı. Hedef arayüzü iki temada görsel, erişilebilirlik ve taşma kontrollerinden geçti; “Gerekli” etiketi gösterilmez. Referansların hash, kaynak satırı, bağımsız hesap, insan etiketi sayımı ve grafik/metrik eşleşmesi doğrulandı; gerçek LLM değerlendirmesi yapılmadı. Set ve kalite protokolü [fixtures/analysis-reference](fixtures/analysis-reference/README.md) içindedir.
+
 ### 2026-10-10 — Furkan / Codex: kaynaklı AI analiz ve grafik mimarisi
 
 - [x] Sahip: Furkan — Onaylanan dosya türüne göre ayrıştırma, Python hesaplama, LLM yorumlama ve React/ECharts sunum akışını FLOW.md içinde belgele; roadmap ve kalıcı bağlamı bu karara bağla.

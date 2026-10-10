@@ -20,14 +20,26 @@ test("kayıt, belge hazırlığı, geçmiş, silme ve çıkış", async ({ page 
   });
   await page.getByLabel("İşletme adı", { exact: true }).fill("Sentetik İşletme");
   await page.getByLabel("Analiz başlığı", { exact: true }).fill("Eylül faaliyet analizi");
+  await page.getByRole("button", { name: "Müşteri geri bildirimleri", exact: true }).click();
+  const objective = "Faaliyet belgesindeki ana konuları ve kaynaklarını görmek istiyorum.";
+  await page.getByLabel("Analiz hedefi", { exact: true }).fill(objective);
+  for (const mode of ["light", "dark"]) {
+    const dark = await page.locator("html").evaluate(e => e.classList.contains("dark"));
+    if (dark !== (mode === "dark")) await page.getByRole("button", { name: /moda geç/ }).click();
+    expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze()).violations).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath("objective-" + mode + ".png"), fullPage: true });
+  }
   const nav = page.getByRole("navigation", { name: (page.viewportSize()?.width ?? 0) >= 1024 ? "Ana navigasyon" : "Mobil navigasyon" });
   await nav.getByRole("link", { name: "Ayarlar" }).click();
   await nav.getByRole("link", { name: "Yeni analiz" }).click();
   await expect(page.getByLabel("Analiz başlığı", { exact: true })).toHaveValue("Eylül faaliyet analizi");
+  await expect(page.getByLabel("Analiz hedefi", { exact: true })).toHaveValue(objective);
   await expect(page.getByText("faaliyet-ozeti.txt", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Belgeleri ayrıştır", exact: true }).click();
   await expect(page).toHaveURL(/\/app\/analyses\//, { timeout: 30000 });
   await expect(page.getByText("Analize hazır", { exact: true })).toBeVisible();
+  await expect(page.getByText(objective, { exact: true })).toBeVisible();
   await expect(page.getByText("Belge içerikleri ayrıştırıldı — AI yorumu henüz eklenmedi")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Belgelerin içeriği ayrıştırıldı" })).toBeVisible();
   await expect(page.getByText("faaliyet-ozeti.txt", { exact: true })).toBeVisible();
@@ -40,6 +52,7 @@ test("kayıt, belge hazırlığı, geçmiş, silme ve çıkış", async ({ page 
   await expect(page.getByLabel("İşletme adı", { exact: true })).toHaveValue("Sentetik İşletme");
   await page.getByRole("button", { name: "Bu adı kullan" }).click();
   await expect(page.getByLabel("Analiz başlığı", { exact: true })).toHaveValue("");
+  await expect(page.getByLabel("Analiz hedefi", { exact: true })).toHaveValue("");
   await expect(page.getByText("faaliyet-ozeti.txt", { exact: true })).toHaveCount(0);
   await page.screenshot({ path: testInfo.outputPath("new-analysis-reused-business.png"), fullPage: true });
   await page.getByRole("link", { name: "Son işlemi aç" }).click();
@@ -60,6 +73,7 @@ test("kayıt, belge hazırlığı, geçmiş, silme ve çıkış", async ({ page 
   const reportUrl = page.url();
   await page.reload();
   await expect(page.getByRole("heading", { name: "Eylül faaliyet analizi" })).toBeVisible();
+  await expect(page.getByText(objective, { exact: true })).toBeVisible();
   await nav.getByRole("link", { name: "Geçmiş" }).click();
   await page.getByRole("link", { name: /Eylül faaliyet analizi/ }).click();
   await expect(page).toHaveURL(reportUrl);
@@ -95,6 +109,7 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
     });
     await page.getByLabel("İşletme adı", { exact: true }).fill("Sentetik İşletme");
     await page.getByLabel("Analiz başlığı", { exact: true }).fill("Geçmiş testi " + index);
+    await page.getByLabel("Analiz hedefi", { exact: true }).fill("Belgedeki ana konuları açıkla.");
     await page.getByRole("button", { name: "Belgeleri ayrıştır" }).click();
     await expect(page.getByText("Analize hazır", { exact: true })).toBeVisible({ timeout: 30_000 });
   }

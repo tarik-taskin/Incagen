@@ -3,6 +3,7 @@ import type { useFileSelectionState } from "../hooks/use-file-selection";
 export interface Draft {
   title: string;
   business: string;
+  objective: string;
 }
 export interface WorkspaceState {
   selection: ReturnType<typeof useFileSelectionState>;

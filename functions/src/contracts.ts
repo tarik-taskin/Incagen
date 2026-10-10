@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const LIMITS = { files: 5, totalBytes: 25 * 1024 * 1024, daily: 2 } as const;
 export const PREMIUM_LIMITS = { files: 10, totalBytes: 50 * 1024 * 1024, daily: 5 } as const;
+export const ANALYSIS_OBJECTIVE_MAX_LENGTH = 500;
 
 export type DocumentCategory = "Tablo" | "Belge" | "Sunum" | "Veri" | "Görsel";
 export type ParserKind = "delimited" | "xlsx" | "pdf" | "image" | "text" | "json" | "docx" | "pptx";
@@ -71,6 +72,7 @@ export const createSchema = z.object({
   requestId: z.string().uuid(),
   title: z.string().trim().min(1).max(100),
   business: z.string().trim().min(1).max(100),
+  objective: z.string().trim().min(1, "Analiz hedefini belirtin.").max(ANALYSIS_OBJECTIVE_MAX_LENGTH),
   files: z.array(z.object({
     name: z.string().min(1).max(200).refine(hasSupportedExtension, "Bu dosya türü desteklenmiyor."),
     size: z.number().int().positive(),
@@ -153,6 +155,7 @@ export interface Analysis {
   id: string;
   title: string;
   business: string;
+  objective?: string;
   status: AnalysisStatus;
   createdAt: number;
   updatedAt: number;

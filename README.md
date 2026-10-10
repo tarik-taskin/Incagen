@@ -44,7 +44,7 @@ Emülatör modunda Vite'ın gösterdiği yerel adresi açın ve sentetik test he
 ### İlk belge hazırlığı
 
 1. Yeni analiz ekranından sentetik PDF/DOCX/PPTX, CSV/TSV/XLSX, TXT/MD/JSON veya PNG/JPEG/WebP seçin.
-2. Çalışma alanı için işletme adını oturumda ilk kullanımda belirtin; aynı oturumun sonraki analizlerinde bu ad hazır gelir ve gerektiğinde değiştirilebilir. Her analiz için konuya özel bir başlık girin.
+2. Çalışma alanı için işletme adını oturumda ilk kullanımda belirtin; aynı oturumun sonraki analizlerinde bu ad hazır gelir ve gerektiğinde değiştirilebilir. Her analiz için konuya özel bir başlık girin. 1–500 karakter arasında bir analiz hedefi belirtin; bu hedef taslakla korunur ve kaydedilen çalışmada gösterilir.
 3. Belgeleri ayrıştırın; backend manifestin yanında dosya imzasını, arşiv güvenliğini ve gerçek içeriği doğrular.
 4. Sonuçta kaynak hash'i, gerçek MIME, parça/karakter ve sayfa/çalışma sayfası/slayt bilgilerini inceleyin.
 5. Geçmişten hazırlık özetini tekrar açın; silme ham kaynakları ve türetilmiş içerikleri birlikte kaldırır.
@@ -81,6 +81,8 @@ Dosyalar iç navigasyonda korunur; tarayıcı yenilemesinde yeniden seçilir. Em
 React, TypeScript, Vite, React Router, Tailwind, shadcn/ui yaklaşımı, Anime.js ve Firebase. Vitest/Testing Library, Playwright/axe ve Firebase emülatör testleri kullanılır.
 
 Sonraki AI aşamasının kabul edilen mimarisi ve kalite kriterleri [FLOW.md](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) içindedir. Python işçisi ve ECharts bu hedefin parçalarıdır; mevcut kurulumda henüz kullanılmazlar.
+
+Özetleme için sentetik satış ve müşteri yorumu [referans seti](fixtures/analysis-reference/README.md), kaynaklı beklenen sonuçlar ve değerlendirme şablonuyla hazırdır. `npm run test:functions` parser/kaynak/hesap tutarlılığını doğrular; LLM veya Python çalıştırmaz.
 
 - `src/pages`, `src/components`: ekranlar ve ortak arayüz.
 - `src/hooks`, `src/lib`: oturum, taslak, servis ve canlı kayıt bağları.

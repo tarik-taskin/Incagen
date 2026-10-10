@@ -7,6 +7,7 @@ function request() {
     requestId: crypto.randomUUID(),
     title: "Aylık faaliyet analizi",
     business: "Sentetik İşletme",
+    objective: "Satış değişimini kaynaklarıyla açıkla.",
     files: [
       { name: "faaliyet.pdf", size: 1024, contentType: "application/pdf" },
       { name: "veriler.xlsx", size: 2048, contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
@@ -15,6 +16,15 @@ function request() {
 }
 
 describe("Belge hazırlama sözleşmesi", () => {
+  it("zorunlu hedefi normalleştirir ve backend uzunluk sınırını uygular", () => {
+    const legacy = request();
+    expect(createSchema.safeParse({ ...legacy, objective: "  " }).success).toBe(false);
+    expect(createSchema.safeParse({ ...legacy, objective: undefined }).success).toBe(false);
+    expect(createSchema.parse({ ...legacy, objective: "  Satış değişimini bul.  " }).objective).toBe("Satış değişimini bul.");
+    expect(createSchema.safeParse({ ...legacy, objective: "x".repeat(500) }).success).toBe(true);
+    expect(createSchema.safeParse({ ...legacy, objective: "x".repeat(501) }).success).toBe(false);
+    expect(createSchema.safeParse({ ...legacy, objective: 42 }).success).toBe(false);
+  });
   it("kotayı İstanbul gece yarısında sıfırlar", () => {
     expect(getQuotaDay(new Date("2026-09-11T20:59:59Z"))).toBe("2026-09-11");
     expect(getQuotaDay(new Date("2026-09-11T21:00:00Z"))).toBe("2026-09-12");

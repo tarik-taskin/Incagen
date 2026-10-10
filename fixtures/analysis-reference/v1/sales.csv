@@ -1,0 +1,13 @@
+event_id,posted_date,category,status,quantity,unit_price_try,discount_try,original_event_id
+S001,2026-09-01,Kirtasiye,completed,2,100,0,
+S002,2026-09-10,Teknoloji,completed,1,500,0,
+S003,2026-09-15,Kirtasiye,completed,3,50,0,
+S004,2026-09-25,Aksesuar,completed,1,150,0,
+C001,2026-09-26,Teknoloji,cancelled,1,900,0,
+S005,2026-10-01,Kirtasiye,completed,3,100,0,
+S006,2026-10-10,Teknoloji,completed,1,600,0,
+S007,2026-10-15,Kirtasiye,completed,4,50,0,
+S008,2026-10-25,Aksesuar,completed,2,200,0,
+S009,2026-10-26,Aksesuar,completed,1,200,50,
+R001,2026-10-27,Kirtasiye,refunded,-1,100,0,S001
+C002,2026-10-28,Aksesuar,cancelled,1,500,0,

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { httpsCallable } from "firebase/functions";
 import { ref, uploadBytesResumable, type UploadTask } from "firebase/storage";
 import { getDoc, doc } from "firebase/firestore";
-import { createSchema, LIMITS, type CreateAnalysis } from "../../functions/src/contracts";
+import { ANALYSIS_OBJECTIVE_MAX_LENGTH, createSchema, LIMITS, type CreateAnalysis } from "../../functions/src/contracts";
 import { useFileSelectionState } from "../hooks/use-file-selection";
 import { WorkspaceContext, type Draft } from "../lib/workspace-context";
 import { getServices } from "../lib/firebase";
@@ -13,7 +13,7 @@ import { tr } from "../i18n/tr";
 // Oturum boyunca dosya taslağını ve yüklemeyi yaşatır; sayfa değişimi işi kesmez.
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const selection = useFileSelectionState();
-  const [draft, setDraft] = useState<Draft>({ title: "", business: "" });
+  const [draft, setDraft] = useState<Draft>({ title: "", business: "", objective: "" });
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
@@ -33,12 +33,18 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     const body = {
       title: draft.title,
       business: draft.business,
+      objective: draft.objective,
       files: selection.files.map(({ file }) => ({ name: file.name, size: file.size, contentType: file.type || "application/octet-stream" })),
     };
     const signature = JSON.stringify({ body, ids: selection.files.map(f => f.id) });
     if (!request.current || request.current.signature !== signature) request.current = { signature, id: crypto.randomUUID() };
     const parsed = createSchema.safeParse({ ...body, requestId: request.current.id });
-    if (!parsed.success) { setError(`İşletme ve analiz başlığını doldurun. Free sınırları: ${LIMITS.files} dosya ve toplam ${LIMITS.totalBytes / 1024 ** 2} MB/analiz.`); return; }
+    if (!parsed.success) {
+      setError(parsed.error.issues.some(issue => issue.path[0] === "objective")
+        ? `Analiz hedefini belirtin (en fazla ${ANALYSIS_OBJECTIVE_MAX_LENGTH} karakter).`
+        : `İşletme ve analiz başlığını doldurun. Free sınırları: ${LIMITS.files} dosya ve toplam ${LIMITS.totalBytes / 1024 ** 2} MB/analiz.`);
+      return;
+    }
     lock.current = true; cancelled.current = false; setBusy(true); setProgress(0);
     try {
       const services = getServices();
@@ -67,10 +73,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     } catch (e) { if (!cancelled.current) setError(userError(e)); else setError("Yükleme iptal edildi; dosyalarınız korundu."); }
     finally { task.current = null; lock.current = false; setBusy(false); }
   }
-  // Başarılı hazırlıktan sonra yeni iş için dosya ve başlığı temizler; oturumdaki işletme ve son iş bağlantısını korur.
+  // Başarılı hazırlıktan sonra dosya, başlık ve hedefi temizler; işletme ve son iş bağlantısını korur.
   function completeDraft() {
     selection.clearFiles();
-    setDraft(current => ({ ...current, title: "" }));
+    setDraft(current => ({ ...current, title: "", objective: "" }));
     setProgress(0);
     setError("");
     request.current = null;

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "caseId": "sales-net-revenue-v1",
+  "synthetic": true,
+  "objective": "İadeleri, iptalleri ve indirimleri dikkate alarak aylık net satış değişimini ve kategori dağılımını açıkla.",
+  "source": { "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d", "file": "sales.csv", "sourceId": "reference-sales", "chunkId": "reference-sales:table:0001", "dataRows": 12, "rowStart": 1, "rowEnd": 12 },
+  "definitions": {
+    "currency": "TRY",
+    "period": "2026-09 ve 2026-10; yapay tam aylar",
+    "dateBasis": "posted_date; iade işlendiği ayda düşülür",
+    "rowAmount": "completed/refunded: quantity * unit_price_try - discount_try; cancelled: 0",
+    "discountBasis": "Satırın tamamına ait TRY indirimi; adet başına değildir",
+    "scope": "Yalnız bu tablo; vergi, maliyet, kâr, tekil müşteri ve gerçek işletme performansı bilinmiyor",
+    "counts": "Her satır bir olay; completed satış, refunded iade, cancelled iptal. Olay sayısı müşteri sayısı değildir."
+  },
+  "rowAmountsTry": { "S001": 200, "S002": 500, "S003": 150, "S004": 150, "C001": 0, "S005": 300, "S006": 600, "S007": 200, "S008": 400, "S009": 150, "R001": -100, "C002": 0 },
+  "metrics": {
+    "rawEvents": 12, "completedSales": 9, "refundEvents": 1, "cancelledEvents": 2,
+    "grossCompletedSalesTry": 2700, "discountsTry": 50, "refundsTry": 100,
+    "netSalesTry": 2550, "netUnits": 17,
+    "monthlyNetSalesTry": { "2026-09": 1000, "2026-10": 1550 },
+    "monthlyNetUnits": { "2026-09": 7, "2026-10": 10 },
+    "monthlyChangeTry": 550, "monthlyChangePercent": 55,
+    "categoryNetSalesTry": { "Kirtasiye": 750, "Teknoloji": 1100, "Aksesuar": 700 },
+    "leadingCategorySharePercent": 43.13725490196079
+  },
+  "findings": [
+    { "id": "sales-period-change", "claim": "Bu örnekte Eylül net satışları 1000 TRY, Ekim net satışları 1550 TRY; artış 550 TRY ve %55.", "metricPaths": ["monthlyNetSalesTry", "monthlyChangeTry", "monthlyChangePercent"], "sourceRows": [1, 2, 3, 4, 6, 7, 8, 9, 10, 11] },
+    { "id": "sales-category-leader", "claim": "İki aylık net satışta Teknoloji 1100 TRY ile önde; toplamın yaklaşık %43.14'ü.", "metricPaths": ["categoryNetSalesTry", "leadingCategorySharePercent"], "sourceRows": [2, 7], "denominatorRows": [1, 2, 3, 4, 6, 7, 8, 9, 10, 11] },
+    { "id": "sales-adjustments", "claim": "2700 TRY tamamlanmış brüt satıştan 50 TRY indirim ve 100 TRY iade düşülür. İki iptal satışa katılmaz; net 2550 TRY kalır.", "metricPaths": ["grossCompletedSalesTry", "discountsTry", "refundsTry", "cancelledEvents", "netSalesTry"], "sourceRows": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }
+  ],
+  "recommendations": [
+    { "id": "investigate-growth", "action": "Büyümenin nedenini değerlendirmek için kampanya, trafik ve maliyet verilerini ayrıca inceleyin.", "basisFindingIds": ["sales-period-change"], "kind": "investigation", "mustNotClaim": "Kampanya büyümeye neden oldu veya aynı büyüme gelecek ay sürecek." }
+  ],
+  "charts": [
+    { "id": "monthly-net-sales", "type": "bar", "x": ["2026-09", "2026-10"], "y": [1000, 1550], "unit": "TRY", "metricPath": "monthlyNetSalesTry", "sourceRows": [1, 2, 3, 4, 6, 7, 8, 9, 10, 11], "rules": ["İki ayı karşılaştır; gelecek ay tahmini ve yumuşatılmış trend ekleme.", "Sütun ekseni sıfırdan başlasın; aynı veriyi erişilebilir tabloyla sun."] }
+  ],
+  "limitations": ["Yalnız 12 sentetik olay ve iki yapay ay; gerçek performans çıkarımı yapılamaz.", "Maliyet/vergi olmadığı için kâr hesaplanamaz.", "Müşteri kimliği olmadığı için müşteri sayısı, tekrar alışveriş veya müşteri tutma oranı hesaplanamaz.", "İadenin tarihi Ekim; S001'in Eylül kaydını geriye dönük değiştirme.", "Büyümenin nedeni ve gelecekteki değerler bu kaynakla kanıtlanamaz."],
+  "forbiddenClaims": ["İptalleri dahil ederek 3950 TRY satış", "İadeyi atlayarak 2650 TRY net satış", "İndirimleri atlayarak 2600 TRY net satış", "Ekim 1500 TRY ve büyüme %50", "12 müşteri", "2550 TRY kâr", "Kampanya etkisi veya gelecek ay tahmini"]
+}
