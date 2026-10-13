@@ -22,6 +22,8 @@ Firebase kontrolü (2026-10-13, yalnız GET): `incagen-eeef4` için `billingEnab
 
 Genel doğrulama: lint, 46 uygulama ve 51 Functions testi, frontend/Functions derlemeleri, 3 entegrasyon ve 14/14 masaüstü/mobil tarayıcı senaryosu geçti. Kapasite, ekleme/kaldırma/temizleme, 25 MB sınırı, eksik alan odağı, boşluklu alan reddi ve taslak yaşam döngüsü doğrulandı. Son görsel düzeltmeden sonra ilgili iki tarayıcı senaryosu ve minimum kontroller yeniden geçti. İki tema görüntüleri incelendi; erişilebilirlik, klavye, azaltılmış hareket ve taşma kontrolleri geçti. 50 belge/bölüm bağlantısı ve 20 komut kullanımı doğrulandı. Firebase ortam tablosu kaldırıldı; izole test komutları [test rehberinde](docs/TESTING.md) korunur. AI/Python kurulumu ve yeni servis eklenmedi.
 
+Kapasite sınırı rötuşu: 25 MB tamamen dolduğunda eklenebilir belge mesajı yerine boyut sınırı gösterilir; reddedilen dosya toplamı değiştirmez. Sınır regresyonu, lint, 97 birim testi ve canlı Auth derlemesi yeniden doğrulandı.
+
 ### 2026-10-10 — Furkan / Codex: ürün odaklı GitHub README
 
 - [x] Sahip: Furkan — README'yi ürün amacı, çalışma akışı ve kaynak haritasına odakla; ortam karşılaştırması ve ayrıntılı kurulum bilgilerini ayrı geliştirici rehberine taşı.

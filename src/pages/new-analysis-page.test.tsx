@@ -149,6 +149,8 @@ describe("NewAnalysisPage", () => {
     const summary = within(screen.getByRole("region", { name: "Belge kapasitesi" }));
     expect(summary.getByText("25 MB", { exact: true })).toBeInTheDocument();
     expect(summary.getByText("0 B")).toBeInTheDocument();
+    expect(summary.getByText("Boyut sınırına ulaştınız")).toBeInTheDocument();
+    expect(summary.queryByText("4 belge daha ekleyebilirsiniz")).not.toBeInTheDocument();
     await user.upload(input, new File(["1"], "asan.txt", { type: "text/plain" }));
     expect(screen.getByRole("alert")).toHaveTextContent("toplamı 25 MB sınırını aşamaz");
     expect(screen.queryByText("asan.txt", { exact: true })).not.toBeInTheDocument();
