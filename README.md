@@ -9,6 +9,7 @@ Incagen, işletme belgelerini, tablolarını ve müşteri geri bildirimlerini or
 ## Çalışma alanı
 
 - **Hedefi belli çalışmalar.** Analiz başlığı ve hedefi, aynı konuyla ilgili belgeleri tek bir çerçevede toplar.
+- **Görünür hazırlık.** Belge adedi, toplam boyut ve kalan kapasite seçiminizle güncellenir; eksik çalışma ayrıntılarına doğrudan ulaşabilirsiniz.
 - **Kaynağı izlenebilir içerik.** Ayrıştırılan içerik belge kimliği, dosya hash'i ve satır, sayfa veya slayt konumuyla ilişkilendirilir.
 - **Düzenli arşiv.** Çalışmalar başlık, kaynak, durum ve dönem üzerinden bulunabilir; seçimle veya tek tek yönetilebilir.
 - **Tutarlı deneyim.** Açık/koyu tema, mobil yerleşim, klavye erişimi ve azaltılmış hareket tercihi ortak arayüzün parçasıdır.
@@ -54,11 +55,12 @@ Kurulum, ortam yapılandırması, kaynak dizinleri ve test komutları [geliştir
 
 Kalite kontrolleri bileşen davranışını, dosya ayrıştırmayı, kullanıcı izolasyonunu, kota ve silme yaşam döngüsünü kapsar. Tarayıcı senaryoları masaüstü/mobil, tema ve erişilebilirlik davranışını doğrular. [CI iş akışı](.github/workflows/quality.yml) bu kontrolleri birleştirir.
 
-[Özetleme referans seti](fixtures/analysis-reference/README.md), kaynaklı AI aşaması için sentetik satış ve müşteri yorumu vakalarını içerir. Beklenen hesaplar, kaynak kanıtları ve değerlendirme ölçütleri birbirinden ayrıdır; referans bütünlüğü model çağrısından bağımsız test edilir. AI özetleme ve grafik mimarisi [FLOW](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10), uygulama kapsamı ve kabul kriterleri [GOAL](GOAL.md) üzerinden takip edilir.
+[AI sonuç sözleşmesi](docs/AI-RESULTS.md), özet, bulgu, öneri ve grafik verilerini güvenilir kaynak/metrik bağlamına bağlar. [Özetleme referans seti](fixtures/analysis-reference/README.md), sentetik satış ve müşteri yorumu vakalarıyla hesap, kaynak ve değerlendirme ölçütlerini ayrı tutar. Sözleşme ve referans bütünlüğü model çağrısından bağımsız test edilir; model entegrasyonu ve grafik sunumunun kapsamı [FLOW](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) ve [GOAL](GOAL.md) üzerinden takip edilir.
 
 | Belge | Başvuru konusu |
 | --- | --- |
 | [Geliştirici rehberi](docs/DEVELOPMENT.md) | Kurulum, komutlar ve teknik kaynak haritası |
+| [Test rehberi](docs/TESTING.md) / [AI sonuç sözleşmesi](docs/AI-RESULTS.md) | Kalite kapıları ve kaynak/metrik doğrulaması |
 | [FLOW](FLOW.md) | Ürün davranışı ve sistem mimarisi |
 | [GOAL](GOAL.md) | Görev sahipliği, kabul kriterleri ve açık kararlar |
 | [RULES](RULES.md) / [AGENTS](AGENTS.md) | Kod, stil ve ekip çalışma kuralları |

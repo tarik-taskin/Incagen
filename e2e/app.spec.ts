@@ -139,6 +139,45 @@ test("farklı belge türleri hazırlanır ve listeden kaldırılabilir", async (
   await expectNoAccessibilityViolations(page);
 });
 
+test("hazırlık özeti kapasiteyi ve eksik alan odağını iki temada korur", async ({ page }, testInfo) => {
+  await page.goto("/app/new-analysis");
+  await register(page);
+  const summary = page.getByRole("region", { name: "Belge kapasitesi" });
+  await page.getByLabel("Analiz edilecek dosyaları seç").setInputFiles([
+    { name: "kaynak.txt", mimeType: "text/plain", buffer: Buffer.alloc(2 * 1024 ** 2, "a") },
+    { name: "ikinci.txt", mimeType: "text/plain", buffer: Buffer.from("Sentetik örnek") },
+  ]);
+  await expect(summary.getByText("2 MB", { exact: true })).toBeVisible();
+  await expect(summary.getByText("23 MB", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Belgeleri ayrıştır", exact: true }).click();
+  await expect(page.getByLabel("İşletme adı", { exact: true })).toBeFocused();
+  await page.getByLabel("İşletme adı", { exact: true }).fill("Sentetik İşletme");
+  await page.getByRole("button", { name: "Analiz başlığı alanını tamamla" }).click();
+  await expect(page.getByLabel("Analiz başlığı", { exact: true })).toBeFocused();
+  await page.getByLabel("Analiz başlığı", { exact: true }).fill("Kaynak incelemesi");
+  await page.getByRole("button", { name: "Analiz hedefi alanını tamamla" }).click();
+  await expect(page.getByLabel("Analiz hedefi", { exact: true })).toBeFocused();
+  await page.getByLabel("Analiz hedefi", { exact: true }).fill("İlgili kaynakların ana konularını incele.");
+  await expect(page.getByText("Belgeleriniz ve çalışma ayrıntılarınız hazırlamaya hazır.")).toBeVisible();
+  for (const mode of ["light", "dark"]) {
+    const dark = await page.locator("html").evaluate(element => element.classList.contains("dark"));
+    if (dark !== (mode === "dark")) await page.getByRole("button", { name: /moda geç/ }).click();
+    await expectNoAccessibilityViolations(page);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.evaluate(async () => {
+      window.scrollTo(0, 0);
+      await document.fonts.ready;
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    });
+    await page.screenshot({ path: testInfo.outputPath(`preparation-${mode}.png`), fullPage: true });
+  }
+  await page.getByRole("button", { name: "kaynak.txt dosyasını kaldır" }).click();
+  await expect(summary.getByRole("progressbar")).toHaveAttribute("value", String(Buffer.byteLength("Sentetik örnek")));
+  await page.getByRole("button", { name: "Tümünü temizle" }).click();
+  await expect(summary.getByText("0 B", { exact: true })).toBeVisible();
+  await expect(page.getByText("Çalışma ayrıntıları hazır. Başlamak için belgelerinizi ekleyin.")).toBeVisible();
+});
+
 test("boş geçmiş, bağlantı taslakları ve doğrulanmış hesap silme", async ({ page }, testInfo) => {
   await page.goto("/app/new-analysis");
   await register(page);

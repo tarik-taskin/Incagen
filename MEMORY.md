@@ -11,6 +11,8 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 - Zorunlu analiz hedefi (1–500 karakter) taslakta korunur, hazırlık kaydında saklanır ve sonuçta gösterilir; başarılı hazırlık yeni iş için hedefi temizler.
 - Kabul edilen sonraki AI mimarisi ve kalite kapısı [FLOW.md](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) içindedir; Python işçisi, kaynaklı LLM sonuçları ve React/ECharts sunumu geliştirme hedefidir.
 - Özetleme başlangıç referansları [fixtures/analysis-reference](fixtures/analysis-reference/README.md) içindedir; sentetik satış/yorum kaynakları, elle yazılmış cevaplar ve kalite protokolü mevcut parser üzerinden doğrulanır. LLM değerlendirmesi henüz çalıştırılmadı.
+- Belge seçimi gerçek bayt toplamını ve kalan kapasiteyi gösterir; hazırlık kontrolü ortak alan kurallarıyla çalışır ve eksik alana odak verir.
+- Bağımsız AI sonuç v1 şeması ve güvenilir kaynak/metrik kapısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içindedir; model çağrısı, kayıt veya renderer bağlantısı yapılmadı.
 
 ## Tamamlanan özellikler
 
@@ -23,4 +25,4 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 - Free/Premium karşılaştırması; Free 2 analiz/gün, 5 dosya/analiz, 25 MB toplam; gelecekteki Premium 5 analiz/gün, 10 dosya/analiz, 50 MB toplam. Ayrı dosya başı MB sınırı yoktur. Google Analytics ve Microsoft Clarity bağlantıları Ayarlar'da pasif taslaktır.
 - Backend kota/idempotency, kullanıcı izolasyonu ve otomatik test altyapısı.
 
-Tam belge/analiz akışı yalnız demo emülatörleri ve sentetik veriler içindir. Canlı Netlify tüm ekranları gösterir, fakat backend işlemleri etkin değildir; AI analizi yoktur. Kurulum README.md, kalan işler GOAL.md üzerinden takip edilir.
+Tam belge/analiz akışı yalnız izole test ortamında ve sentetik veriler içindir. Canlı Netlify tüm ekranları gösterir, fakat backend işlemleri etkin değildir; AI analizi yoktur. Kurulum [geliştirici rehberi](docs/DEVELOPMENT.md), kalan işler GOAL.md üzerinden takip edilir.

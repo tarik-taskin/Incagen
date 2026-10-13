@@ -4,6 +4,8 @@ import { Building2, Check, Pencil, Target } from "lucide-react";
 import { ANALYSIS_OBJECTIVE_MAX_LENGTH } from "../../functions/src/contracts";
 import { FileDropzone } from "../components/upload/file-dropzone";
 import { SelectedFileList } from "../components/upload/selected-file-list";
+import { DraftReadiness, SelectionSummary } from "../components/upload/preparation-summary";
+import { getPreparationState, type DraftField } from "../features/files/preparation-state";
 import { Button } from "../components/ui/button";
 import { FREE_PLAN_FILE_LIMIT } from "../features/files/file-rules";
 import { useWorkspace } from "../lib/workspace-context";
@@ -15,11 +17,22 @@ export function NewAnalysisPage() {
   const { files, rejections, addFiles, removeFile, clearFiles, dismissRejections } = selection;
   const navigate = useNavigate();
   const [editingBusiness, setEditingBusiness] = useState(() => !draft.business);
+  const [attempted, setAttempted] = useState(false);
+  const preparation = getPreparationState(files, draft);
+  const localError = attempted ? preparation.firstInvalidField?.message : undefined;
+  // Kapalı çalışma alanı özetini gerektiğinde açar ve ilk eksik alana odağı taşır.
+  function focusField(field: DraftField) {
+    if (field === "business") setEditingBusiness(true);
+    requestAnimationFrame(() => document.getElementById({ business: "business-name", title: "analysis-title", objective: "analysis-objective" }[field])?.focus());
+  }
   // Başarılı hazırlığın kaydını açar; hata durumunda kullanıcının taslağını korur.
   async function submit() {
+    setAttempted(true);
+    if (preparation.firstInvalidField) { focusField(preparation.firstInvalidField.field); return; }
     const id = await start();
     if (id) {
       completeDraft();
+      setAttempted(false);
       navigate("/app/analyses/" + id);
     }
   }
@@ -29,6 +42,7 @@ export function NewAnalysisPage() {
     <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">Belgelerinizi, tablolarınızı, sunumlarınızı, veri dosyalarınızı ve görsellerinizi tek analiz alanında bir araya getirin.</p>
     <div className="mt-8 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
       <div className="min-w-0 space-y-6">
+        <SelectionSummary count={files.length} state={preparation} />
         <FileDropzone disabled={busy || files.length >= FREE_PLAN_FILE_LIMIT} onFilesSelected={addFiles} />
         {rejections.length > 0 && <div role="alert" className="rounded-2xl border border-red-500/30 bg-red-500/5 p-4 text-sm">
           <h2 className="font-semibold">Bazı dosyalar eklenemedi</h2>
@@ -47,7 +61,7 @@ export function NewAnalysisPage() {
           {editingBusiness ? (
             <div className="mt-3">
               <label htmlFor="business-name" className="block text-sm font-medium">{tr.analysis.business}</label>
-              <input id="business-name" className="form-control mt-1.5" maxLength={100} value={draft.business} disabled={busy} placeholder="Örn. İşletmenizin adı" onChange={e => setDraft(d => ({ ...d, business: e.target.value }))} />
+              <input id="business-name" className="form-control mt-1.5" maxLength={100} value={draft.business} disabled={busy} aria-invalid={attempted && !preparation.fields[0].valid} aria-describedby={attempted && preparation.firstInvalidField?.field === "business" ? "preparation-error" : undefined} placeholder="Örn. İşletmenizin adı" onChange={e => setDraft(d => ({ ...d, business: e.target.value }))} />
               <p className="mt-2 text-xs leading-5 text-muted-foreground">Bir kez belirtin; sonraki çalışmalarınızda burada hazır kalsın.</p>
               {draft.business.trim() && <button type="button" disabled={busy} className="mt-2 inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary" onClick={() => setEditingBusiness(false)}><Check className="h-3.5 w-3.5" aria-hidden="true" /> Bu adı kullan</button>}
             </div>
@@ -59,13 +73,13 @@ export function NewAnalysisPage() {
           )}
         </div>
         <fieldset disabled={busy} className="mt-5">
-          <label className="block text-sm font-medium">{tr.analysis.titleLabel}<input className="form-control mt-1.5" maxLength={100} value={draft.title} placeholder="Örn. Müşteri geri bildirimleri" onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} /></label>
+          <label className="block text-sm font-medium">{tr.analysis.titleLabel}<input id="analysis-title" className="form-control mt-1.5" maxLength={100} value={draft.title} aria-invalid={attempted && !preparation.fields[1].valid} aria-describedby={attempted && preparation.firstInvalidField?.field === "title" ? "preparation-error" : undefined} placeholder="Örn. Müşteri geri bildirimleri" onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} /></label>
           <p className="mt-2 text-xs leading-5 text-muted-foreground">Konuyu anlatan kısa bir başlık seçin; çalışmanızı geçmişte bu adla bulacaksınız.</p>
           <div className="mt-5 border-t border-border pt-5">
             <div className="flex items-center justify-between gap-2">
               <label htmlFor="analysis-objective" className="flex items-center gap-2 text-sm font-medium"><Target className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" /> Analiz hedefi</label>
             </div>
-            <textarea id="analysis-objective" className="form-control mt-2 min-h-28 resize-y text-sm leading-6" rows={3} required maxLength={ANALYSIS_OBJECTIVE_MAX_LENGTH} value={draft.objective} placeholder="Bu belgelerden ne öğrenmek istiyorsunuz?" aria-describedby="objective-help objective-count" onChange={e => setDraft(d => ({ ...d, objective: e.target.value }))} />
+            <textarea id="analysis-objective" className="form-control mt-2 min-h-28 resize-y text-sm leading-6" rows={3} required maxLength={ANALYSIS_OBJECTIVE_MAX_LENGTH} value={draft.objective} aria-invalid={attempted && !preparation.fields[2].valid} placeholder="Bu belgelerden ne öğrenmek istiyorsunuz?" aria-describedby={`objective-help objective-count${attempted && preparation.firstInvalidField?.field === "objective" ? " preparation-error" : ""}`} onChange={e => setDraft(d => ({ ...d, objective: e.target.value }))} />
             <div className="mt-2 flex items-start justify-between gap-3 text-xs text-muted-foreground">
               <p id="objective-help" className="leading-5">Yanıt aradığınız soruyu yazın. Hedefiniz bu çalışmayla birlikte saklanır.</p>
               <span id="objective-count" className="shrink-0 tabular-nums">{draft.objective.length}/{ANALYSIS_OBJECTIVE_MAX_LENGTH}</span>
@@ -80,9 +94,10 @@ export function NewAnalysisPage() {
           </div>
         </fieldset>
         <p className="mt-5 rounded-xl border border-primary/10 bg-primary/[0.04] px-3.5 py-3 text-xs leading-5 text-muted-foreground dark:border-secondary/15 dark:bg-secondary/[0.05]"><span className="font-semibold text-foreground">Bir konuya odaklanın.</span> Müşteri geri bildirimleri ya da finans verileri gibi birbiriyle ilişkili belgeleri aynı analizde toplayın.</p>
+        <DraftReadiness state={preparation} busy={busy} onFocusField={focusField} />
         {busy && <div role="status" className="mt-4 text-sm"><p>{progress < 100 ? `Yükleniyor: %${progress}` : tr.status.processing}</p><progress aria-label="Yükleme ilerlemesi" className="mt-2 w-full accent-purple-700" value={progress} max={100} /></div>}
-        {error && <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{error}</p>}
-        <Button className="mt-5 w-full" disabled={busy || files.length === 0} onClick={submit}>{tr.analysis.start}</Button>
+        {(localError || error) && <p id="preparation-error" role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{localError || error}</p>}
+        <Button className="mt-5 w-full" aria-describedby="preparation-help" disabled={busy || files.length === 0} onClick={submit}>{tr.analysis.start}</Button>
         {busy && progress < 100 && <Button variant="ghost" className="mt-2 w-full" onClick={cancel}>{tr.analysis.cancel}</Button>}
         {activeId && <Link className="mt-4 block text-sm underline" to={"/app/analyses/" + activeId}>Son işlemi aç</Link>}
         <p className="mt-3 text-xs leading-5 text-muted-foreground">Hazırlama başladığında dosyaların gerçek içerik türü doğrulanır; okunabilir bölümler kaynakları korunarak düzenlenir. Yorum ve öneriler bu aşamada üretilmez.</p>
