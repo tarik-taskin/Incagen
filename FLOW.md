@@ -66,7 +66,7 @@ TypeScript Cloud Functions kullanılır; bugünkü belge hazırlığında Cloud 
 
 Dosya türüne göre ayrıştırma ve gerektiğinde görsel okuma → kaynak konumlu ortak içerik → Python ile doğrulanabilir hesaplamalar → analiz hedefi ve kanıtlarla LLM yorumlama → sürümlü sonuç doğrulaması → React/ECharts ile etkileşimli sunum.
 
-Bu bölüm geliştirme hedefidir. Mevcut kod yalnız yukarıdaki belge hazırlama hattını çalıştırır; Python işçisi, OCR, model çağrıları, AI sonuç sözleşmesi ve ECharts henüz eklenmedi. Python yalnız bu gelecekteki işçi için gereklidir; bugünkü kurulum komutları değişmez.
+Bu bölüm geliştirme hedefidir. Mevcut kod belge hazırlama hattını çalıştırır; AI sonuç v1 şeması ve güvenilir kaynak/metrik doğrulayıcısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içinde tanımlanan bağımsız modüldür. Bu kapı henüz model çağrısına veya Functions uçlarına bağlanmadı. Python işçisi, OCR, model çağrıları ve ECharts sonraki aşamadadır; bugünkü kurulum komutları değişmez.
 
 ```mermaid
 flowchart LR
@@ -115,6 +115,7 @@ Pandas, tablo temizleme, gruplama ve zaman serisi hesaplamaları için başlang�
 - LLM'ye ilgili kaynak parçaları, gerekli orijinal görseller, doğrulanmış metrikler, analiz hedefi ve veri sınırlamaları verilir. LLM özet, bulgu, gerekçeli öneri ve grafik önerisini bu kanıtlara bağlar. Belgelerdeki içerik sistem talimatı olarak yürütülmez.
 - Müşteri yorumlarında tema/duygu sınıflandırması model çıkarımı olarak etiketlenir; sınıflandırılmış kayıtların adet/oran hesabını kod yapar. Ölçülen olgu, yorum ve öneri birbirinden ayırt edilir; kanıtsız nedensellik veya uydurma güven yüzdesi sunulmaz.
 - Hedef çıktı sürümlü JSON'dur: `schemaVersion`, `summary`, `findings`, `recommendations`, `metrics`, `datasets`, `charts` ve `limitations`. Bulgular kaynak kimliklerine/konumlarına, grafikler doğrulanmış veri kümesi ve metrik kimliklerine referans verir. Kesin alan tipleri ve sürüm geçişleri uygulama sırasında JSON Schema ile tanımlanır.
+- İlk v1 yapı ve güvenilir bağlam kapısı [result-contract.ts](functions/src/analysis/result-contract.ts) içindedir; [JSON Schema](docs/contracts/ai-result.v1.schema.json) koddan türetilir. Analiz kimliği/hedefi, kaynak hash/parça/konumları, metrik değer/birim/yöntem/kanıtları, veri kümeleri ve öneri bağlantıları doğrulanır. Mevcut hazırlık raporunun v3 yapısı değişmez; bu modül gerçek LLM çıktısının semantik doğruluğunu veya model entegrasyonunun tamamlandığını göstermez.
 - Şemaya uygun JSON tek başına doğruluk kanıtı değildir. Backend kaynak referanslarını, iddia edilen sayıları/birimleri, veri kümesi boyutlarını ve grafik alanlarını doğrular. Başarısız doğrulama kontrollü düzeltme veya açık eksik sonuç/hata üretir; doğrulanmamış sonuç başarılı rapor olarak yayınlanmaz.
 - Modelden alınan serbest Python/JavaScript/HTML kodu çalıştırılmaz. Grafik önerileri izin verilen tür ve alanlardan oluşur; görünüm uygulamanın bileşenleriyle üretilir. Gelecekte hesaplama araçları gerekirse yalnız tanımlı ve doğrulanmış işlemler çağrılır.
 

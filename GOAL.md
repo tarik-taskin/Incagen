@@ -7,6 +7,19 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-13 — Furkan / Codex: hazırlık deneyimi ve AI sonuç sözleşmesi
+
+- [~] Sahip: Furkan — Belge seçimini adet/boyut/kalan kapasite özetiyle güçlendir; başlık, çalışma alanı ve hedef eksiklerinde erişilebilir yönlendirme sun.
+- [x] Sahip: Furkan — AI sonuç v1 şemasını ve güvenilir kaynak/metrik bağlamıyla çalışan doğrulayıcısını kodla; olumlu ve olumsuz sonuçlarla test et.
+- [~] Sahip: Furkan — README ve geliştirici rehberindeki Firebase ortam karşılaştırma tablosunu kaldır; kurulum ve kalite bilgilerini ürün odaklı belge düzeninde koru.
+- [x] Sahip: Furkan — Firebase faturalandırma ve mevcut backend servislerini yalnız okuma ile kontrol et; erişim ve hazırlık durumunu ayır.
+
+Kabul: Dosya limitleri ortak sözleşmeden gelmeli; özet seçimle güncellenmeli; eksik alan odağı, hata/başarı taslağı ve backend doğrulaması korunmalı. AI sözleşmesi model çağırmamalı; bilinmeyen kaynak, yanlış hash/konum, bozuk şema ve metrik/grafik çelişkisini reddetmeli. Gerçek LLM metninin semantik doğruluğu otomatik kanıtlanmış sayılmamalı. Yeni servis, AI/Python kurulumu veya Firebase yapılandırma değişikliği yapılmamalı. Belge bağlantıları, lint, birim, Functions/build, entegrasyon ve yerel tarayıcı kontrolleri geçmeli; iki tema, mobil ve klavye davranışı incelenmeli.
+
+AI doğrulaması: 36 sonuç sözleşmesi testiyle iki baz vaka, şema dosyası eşitliği, bilinmeyen/yinelenen kimlik, kaynak hash/parça/konum, yanlış metrik/değer/birim/yöntem, eksik değer, kopuk öneri/grafik ve hatalı güvenilir bağlam reddi doğrulandı. Bağımsız modül mevcut hazırlık uçlarına veya kayıt şemasına bağlanmadı; gerçek LLM değerlendirmesi yapılmadı.
+
+Firebase kontrolü (2026-10-13, yalnız GET): `incagen-eeef4` için `billingEnabled=false`; bir billing hesabı bağlı. Firestore'da bir Native veritabanı var; Storage bucket listesi boş, Functions API `SERVICE_DISABLED` döndü. Bu kontrol faturalandırma/servis/erişim durumunu değiştirmedi; bulut belge hazırlama engeli sürüyor.
+
 ### 2026-10-10 — Furkan / Codex: ürün odaklı GitHub README
 
 - [x] Sahip: Furkan — README'yi ürün amacı, çalışma akışı ve kaynak haritasına odakla; ortam karşılaştırması ve ayrıntılı kurulum bilgilerini ayrı geliştirici rehberine taşı.
@@ -332,7 +345,7 @@ Kalite kapısı: format fixture'ları, kota sınırları, yetkilendirme ve kısm
 - [ ] Sahip: Atanmadı — [FLOW.md hedef mimarisi](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) için Cloud Run üzerinde Python işçisi ve arka plan iş yönetimi.
 - [ ] Sahip: Atanmadı — Dosya türüne göre OCR/görsel okuma, kaynaklı normalizasyon ve Python ile deterministik metrikler; parser/OCR adaylarını örnek belge setiyle değerlendir.
 - [ ] Sahip: Atanmadı — Uygunluk kontrolü ve FLOW.md ana model yapılandırması.
-- [ ] Sahip: Atanmadı — Sürümlü JSON Schema, kaynak ve sayısal metrik doğrulama.
+- [~] Sahip: Furkan — Sürümlü JSON Schema, kaynak ve sayısal metrik doğrulama. İlk bağımsız v1 kapısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içinde tamamlandı; model/hesaplayıcı ve sonuç kayıt hattına entegrasyon ile gerçek çıktı kabulü kaldı.
 - [x] Sahip: Tarık — Hazırlama hattında idempotent kota, hata iadesi ve süre aşımı sonrası kullanıcı tetiklemeli retry.
 - [ ] Sahip: Atanmadı — AI için kalıcı kuyruk ve sınırlı otomatik retry.
 
