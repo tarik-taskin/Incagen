@@ -7,6 +7,15 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-15 — Furkan / Codex: kapsamlı yönetim raporu deneyimi
+
+- [x] Sahip: Furkan — Örnek raporu 12 aylık çok boyutlu şirket veri seti, bütçe ve operasyon kaynaklarıyla genişlet; metrik/grafik/tablo hesaplarını ve kaynak kapsamlarını doğrula.
+- [x] Sahip: Furkan — Raporu çoklu grafik, finansal tablolar, filtreler ve Motion geçişleriyle yeniden tasarla; büyük kaynaklarda arama, sayfalama ve kanıt odağı sun.
+
+Kabul: Eski v1 referans verileri korunmalı; yeni şirket ve belgeler örnek olarak tanımlanmalı, gerçek işletme iddiası yapılmamalı. Kullanıcının istemediği tekrarlı uyarı metinleri kaldırılmalı. Her grafik/tablo gerçek örnek kaynaklardan hesaplanmalı; dönem filtreleri tüm ilgili çıktıları birlikte güncellemeli. Kaynaklarda arama/sayfalama doğru satır kimliğini korumalı; grafik, tablo ve kanıt eşleşmeli. Mobil, iki tema, klavye ve azaltılmış hareket doğrulanmalı; AI/Python/servis veya Firebase yapılandırması eklenmemeli. Lint, birim, build/Functions, entegrasyon ve tarayıcı kontrolleri geçmeli; local/remote main/furkan eşit ve Netlify güncel olmalı.
+
+Doğrulama: 46 uygulama + 84 Functions birim testi, lint, frontend/Functions derlemeleri, 3 entegrasyon ve 18/18 masaüstü/mobil senaryo geçti; son metin/para biçimi rötuşundan sonra ilgili 4 tarayıcı senaryosu yeniden geçti. Dört dönem için bağımsız dondurulmuş toplamlar, bütçe/marj/katkı ve ağırlıklı teslimat eşleşti. Tam yıl net satışı 22.591.022,62 TL; 948 kaynak kaydı korunur. Parça sınırını aşan 501. satır araması, belge seçimi, 25 satırlı sayfalama, URL/geri-ileri, ZIP indirme, iki tema, normal/azaltılmış hareket ve erişilebilirlik doğrulandı. Mobil geniş tablo taşması ve native dialog koordinatları düzeltildi; altı grafiğin tamamı görsel olarak incelendi. Halka türü sonuç sözleşmesine eksik/negatif/sıfır/tek parçayı reddeden kapıyla eklendi; JSON Schema eşitliği korundu. ZIP üretimi UTC ve yerel saat diliminde birebir doğrulandı; 51 belge bağlantısı geçerli. Eski referanslar, gerçek backend uçları ve Firebase yapılandırması değişmedi; AI/Python/model çağrısı eklenmedi.
+
 ### 2026-10-15 — Furkan / Codex: kaynaklı veri paketi ve etkileşimli örnek rapor
 
 - [x] Sahip: Furkan — Gerçek ayrıştırıcı çıktısından analiz hedefi, kaynak/hash/konum ve içerik paketini üret; güvenilir doğrulama bağlamını model girdisinden ayır ve iki referansla uçtan uca doğrula.

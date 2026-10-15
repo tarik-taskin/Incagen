@@ -14,7 +14,7 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 - Belge seçimi gerçek bayt toplamını ve kalan kapasiteyi gösterir; hazırlık kontrolü ortak alan kurallarıyla çalışır ve eksik alana odak verir.
 - Bağımsız AI sonuç v1 şeması ve güvenilir kaynak/metrik kapısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içindedir; model çağrısı veya gerçek kayıt bağlantısı yapılmadı. Analiz veri paketi içerik/konum/uyarıları ve güvenilir hesap bağlamını ayrı tutar; 256 KiB aşımında sessiz kesmez.
 
-- `/ornek-rapor`: ham satış CSV’sinden hesaplanan, kaynak satırları açılabilen sentetik satış raporu; AI üretimi değildir ve hesaba yazılmaz. Üretim/doğrulama ayrıntıları [AI sonuç rehberindedir](docs/AI-RESULTS.md).
+- `/ornek-rapor`: 12 aylık üç şirket CSV’sinden hesaplanan, altı grafik/üç finansal tablo ve aramalı/sayfalı kaynak paneli içeren örnek rapor; AI üretimi değildir ve hesaba yazılmaz. Üretim/doğrulama ayrıntıları [AI sonuç rehberindedir](docs/AI-RESULTS.md).
 
 ## Tamamlanan özellikler
 

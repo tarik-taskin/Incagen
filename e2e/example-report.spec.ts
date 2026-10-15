@@ -1,75 +1,115 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+import gold from "../fixtures/company-example/expected.json" with { type: "json" };
 
-test("sentetik raporda grafik, tablo ve kaynak aynı sayıları sunar; odak ve iki tema korunur", async ({ page }, testInfo) => {
+// Raporun tamamı ve açık dialog için kritik erişilebilirlik ihlallerini durdurur.
+async function accessibility(page: Page) {
+  const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+  expect(result.violations).toEqual([]);
+}
+const exactMoney = (n: number) => new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 2 }).format(n) + " TL";
+
+test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı kapsamda tutar", async ({ page }, testInfo) => {
   await page.goto("/");
   await page.getByRole("link", { name: "Örnek raporu incele" }).click();
-  await expect(page).toHaveURL(/\/ornek-rapor$/);
-  await expect(page.getByRole("heading", { name: "Satışların net resmi." })).toBeVisible();
-  await expect(page.getByText("Gerçek işletme verisi içermez. Hesabınıza kaydedilmez.")).toBeVisible();
-  await expect(page.getByTestId("report-chart").locator("svg")).toBeVisible();
-  await page.getByTestId("report-chart").locator("path[fill='#7351b5']").first().click();
-  await expect(page.getByRole("dialog", { name: "Eylül 2026" }).getByRole("row")).toHaveCount(5);
-  await page.keyboard.press("Escape");
-  const net = page.getByRole("button", { name: /Net satış 2.550 TL/ });
+  await expect(page.getByRole("heading", { name: "Performansın büyük resmi." })).toBeVisible();
+  await expect(page.getByText("Gerçek işletme verisi içermez. Hesabınıza kaydedilmez.")).toHaveCount(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+  const net = page.getByRole("button", { name: `Net satış ${exactMoney(gold.year.net)}`, exact: true });
   await expect(net).toBeVisible();
   await net.click();
-  const dialog = page.getByRole("dialog", { name: "Net satış" });
+  let dialog = page.getByRole("dialog", { name: "Net satış", exact: true });
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole("row")).toHaveCount(13);
-  await expect(dialog.getByText("Net tutar", { exact: true })).toHaveCount(0);
-  await expect(dialog.getByRole("region", { name: "sales.csv kaynak satırları" })).toContainText("S001");
-  let accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
-  expect(accessibility.violations).toEqual([]);
+  await expect(dialog.getByRole("row")).toHaveCount(26);
+  await expect(dialog.getByRole("status")).toHaveText("1–25 / 864 kayıt");
+  await dialog.getByRole("button", { name: "Sonraki kaynak sayfası" }).click();
+  await expect(dialog.getByRole("status")).toHaveText("26–50 / 864 kayıt");
+  await dialog.getByRole("textbox", { name: "Kaynak satırlarında ara" }).fill("ATL-00501");
+  await expect(dialog.getByRole("status")).toHaveText("1–1 / 1 kayıt");
+  await expect(dialog.getByRole("rowheader", { name: /501/ })).toBeVisible();
+  await dialog.getByRole("textbox", { name: "Kaynak satırlarında ara" }).fill("ATL-00864");
+  await expect(dialog.getByRole("rowheader", { name: /864/ })).toBeVisible();
+  await dialog.getByRole("textbox", { name: "Kaynak satırlarında ara" }).fill("olmayan-kayit");
+  await expect(dialog.getByText("Aramanızla eşleşen kaynak satırı yok.")).toBeVisible();
+  await accessibility(page);
+  await dialog.getByRole("button", { name: "Kaynak aramasını temizle" }).click();
+  await page.screenshot({ path: testInfo.outputPath("source-explorer.png") });
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
   await expect(net).toBeFocused();
 
-  await page.getByRole("button", { name: "Veri tablosu" }).click();
-  const table = page.getByRole("table", { name: "Dönemlere göre net satış, TRY" });
-  await expect(table).toContainText("1.000 TL");
-  await expect(table).toContainText("1.550 TL");
-  await page.getByRole("button", { name: "Ekim 2026 kaynağını incele" }).click();
-  await expect(page.getByRole("dialog", { name: "Ekim 2026" }).getByRole("row")).toHaveCount(7);
-  await page.getByLabel("Bağlam için tüm satırları göster").check();
-  await expect(page.getByRole("dialog").getByRole("row")).toHaveCount(13);
+  await page.getByTestId("chart-trend").scrollIntoViewIfNeeded();
+  await expect(page.getByTestId("chart-trend").locator("path[fill='#7351b5'], path[stroke='#7351b5']").first()).toBeVisible();
+  await page.getByRole("button", { name: "Aylık net satış veri tablosu" }).click();
+  await expect(page.getByRole("table", { name: "Aylık net satış, TRY" }).locator("tbody tr")).toHaveCount(12);
+  await page.getByRole("button", { name: "Aylık net satış Oca kaynağı" }).click();
+  await expect(page.getByRole("dialog", { name: "Oca", exact: true }).getByRole("status")).toHaveText("1–25 / 72 kayıt");
+  await page.getByLabel("Tüm kaynak satırları").check();
+  await expect(page.getByRole("dialog").getByRole("status")).toHaveText("1–25 / 864 kayıt");
   await page.keyboard.press("Escape");
 
-  await page.getByRole("button", { name: "Kategoriler", exact: true }).click();
-  await expect(page.getByRole("table", { name: "Kategorilere göre net satış, TRY" })).toContainText("1.100 TL");
-  await expect(page.getByRole("table", { name: "Kategorilere göre net satış, TRY" })).toContainText("750 TL");
-  await expect(page.getByRole("table", { name: "Kategorilere göre net satış, TRY" })).toContainText("700 TL");
-  await page.getByRole("button", { name: "Teknoloji kaynağını incele" }).click();
-  await expect(page.getByRole("dialog", { name: "Teknoloji" }).getByRole("row")).toHaveCount(3);
+  for (const id of ["category", "channel", "region", "profit", "service"]) {
+    await page.getByTestId(`chart-${id}`).scrollIntoViewIfNeeded();
+    await expect(page.getByTestId(`chart-${id}`).locator("path[fill='#7351b5'], path[stroke='#7351b5']").first()).toBeVisible();
+  }
+  await page.getByTestId("chart-category").locator("path[fill='#7351b5']").first().click();
+  await expect(page.getByRole("dialog", { name: "Elektronik", exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
-  await page.getByText("Kapsam, yöntem ve sınırlar", { exact: true }).click();
-  await expect(page.getByText(/net satış kâr olarak yorumlanamaz/)).toBeVisible();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
-  expect(accessibility.violations).toEqual([]);
-  await page.screenshot({ path: testInfo.outputPath("example-light.png"), fullPage: true });
+  await expect(page.getByRole("table", { name: "Kanal performansı", exact: true }).locator("tbody tr")).toHaveCount(3);
+  await expect(page.getByRole("table", { name: "Gelirden katkıya hesap mutabakatı" })).toContainText(exactMoney(gold.year.contribution));
 
+  await page.getByRole("button", { name: "Son çeyrek", exact: true }).click();
+  await expect(page).toHaveURL(/period=q4/);
+  await expect(page.getByRole("button", { name: `Net satış ${exactMoney(gold.q4.net)}`, exact: true })).toBeVisible();
+  await expect(page.getByRole("table", { name: "Aylık performans, 2025 · Son çeyrek" }).locator("tbody tr")).toHaveCount(3);
+  await expect(page.getByText("237 kayıt inceleniyor")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Son çeyrek", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Tam yıl", exact: true }).click();
+  await expect(page.getByRole("button", { name: `Net satış ${exactMoney(gold.year.net)}`, exact: true })).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole("button", { name: "Son çeyrek", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await page.goForward();
+  await expect(page.getByRole("button", { name: "Tam yıl", exact: true })).toHaveAttribute("aria-pressed", "true");
+
+  await page.getByRole("link", { name: "Kaynaklar", exact: true }).click();
+  await page.getByRole("button", { name: /Satış bütçesi atlas-butce/ }).click();
+  dialog = page.getByRole("dialog", { name: "Satış bütçesi", exact: true });
+  await expect(dialog.getByRole("row")).toHaveCount(13);
+  await page.keyboard.press("Escape");
+  for (const id of ["trend", "category", "channel", "region", "profit", "service"]) {
+    await page.getByTestId(`chart-${id}`).scrollIntoViewIfNeeded();
+    await expect(page.getByTestId(`chart-${id}`).locator("path[fill='#7351b5'], path[stroke='#7351b5']").first()).toBeVisible();
+  }
+  await page.getByRole("link", { name: "Genel bakış", exact: true }).click();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= (window.visualViewport?.width ?? innerWidth))).toBe(true);
+  await accessibility(page);
+  await page.screenshot({ path: testInfo.outputPath("company-overview-light.png") });
+  await page.screenshot({ path: testInfo.outputPath("company-full-light.png"), fullPage: true });
   await page.getByRole("button", { name: "Karanlık moda geç" }).click();
   await expect(page.locator("html")).toHaveClass(/dark/);
-  await expect(page.getByTestId("report-chart").locator("svg")).toBeVisible();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
-  expect(accessibility.violations).toEqual([]);
-  await page.screenshot({ path: testInfo.outputPath("example-dark.png"), fullPage: true });
-  await page.reload();
-  await expect(page.getByRole("heading", { name: "Satışların net resmi." })).toBeVisible();
-  await page.getByRole("link", { name: "Analize başla" }).click();
+  await accessibility(page);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= (window.visualViewport?.width ?? innerWidth))).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath("company-full-dark.png"), fullPage: true });
+  await page.getByRole("link", { name: "Analize başla", exact: true }).click();
   await expect(page.getByRole("dialog", { name: "Giriş yap" })).toBeVisible();
 });
 
-test("normal hareket tercihiyle grafik değişimi ve kaynak paneli kullanılabilir kalır", async ({ page }) => {
+test("hareketli raporda filtre, kaynak sekmeleri ve indirme kullanılabilir kalır", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/ornek-rapor");
-  await expect(page.getByTestId("report-chart").locator("svg")).toBeVisible();
-  await page.getByRole("button", { name: "Kategoriler", exact: true }).click();
-  await page.getByRole("button", { name: /Teknoloji 1.100 TL/ }).click();
-  await expect(page.getByRole("dialog", { name: "Teknoloji" })).toBeVisible();
+  await page.getByRole("button", { name: "İlk 6 ay", exact: true }).click();
+  await expect(page.getByRole("button", { name: `Net satış ${exactMoney(gold.h1.net)}`, exact: true })).toBeVisible();
+  await page.getByRole("button", { name: /Bütçe gerçekleşmesi/ }).click();
+  const dialog = page.getByRole("dialog", { name: "Bütçe gerçekleşmesi", exact: true });
+  await dialog.getByRole("button", { name: /Satış bütçesi 12 kaynak satırı/ }).click();
+  await expect(dialog.getByRole("status")).toHaveText("1–6 / 6 kayıt");
   await page.getByRole("button", { name: "Kaynak incelemesini kapat" }).click();
-  await expect(page.getByRole("dialog")).toHaveCount(0);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await expect(dialog).toHaveCount(0);
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("link", { name: /Örnek belgeleri indir/ }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("atlas-perakende-2025.zip");
+  expect(await download.failure()).toBeNull();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= (window.visualViewport?.width ?? innerWidth))).toBe(true);
 });

@@ -66,7 +66,7 @@ TypeScript Cloud Functions kullanılır; bugünkü belge hazırlığında Cloud 
 
 Dosya türüne göre ayrıştırma ve gerektiğinde görsel okuma → kaynak konumlu ortak içerik → Python ile doğrulanabilir hesaplamalar → analiz hedefi ve kanıtlarla LLM yorumlama → sürümlü sonuç doğrulaması → React/ECharts ile etkileşimli sunum.
 
-Bu bölüm geliştirme hedefidir. Mevcut kod belge hazırlama hattını çalıştırır; AI sonuç v1 şeması ve güvenilir kaynak/metrik doğrulayıcısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içinde tanımlanan bağımsız modüldür. Bu kapı henüz model çağrısına veya Functions uçlarına bağlanmadı. Python işçisi, OCR ve model çağrıları sonraki aşamadadır. Analiz veri paketi ile `/ornek-rapor` sentetik satış sunumu [AI sonuç rehberinde](docs/AI-RESULTS.md#analiz-veri-paketi--v1) tanımlıdır; mevcut hazırlık kayıtları veya bulut uçları bu rapora bağlanmaz.
+Bu bölüm geliştirme hedefidir. Mevcut kod belge hazırlama hattını çalıştırır; AI sonuç v1 şeması ve güvenilir kaynak/metrik doğrulayıcısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içinde tanımlanan bağımsız modüldür. Bu kapı henüz model çağrısına veya Functions uçlarına bağlanmadı. Python işçisi, OCR ve model çağrıları sonraki aşamadadır. Analiz veri paketi ile `/ornek-rapor` 12 aylık şirket sunumu [AI sonuç rehberinde](docs/AI-RESULTS.md#analiz-veri-paketi--v1) tanımlıdır; mevcut hazırlık kayıtları veya bulut uçları bu rapora bağlanmaz.
 
 ```mermaid
 flowchart LR

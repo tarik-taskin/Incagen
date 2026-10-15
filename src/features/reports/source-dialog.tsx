@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import { FileCheck2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, FileSpreadsheet, Search, X } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import type { AiResult } from "../../../functions/src/analysis/result-contract";
 
@@ -10,41 +10,54 @@ export interface ReportSource {
   chunks: { id: string; locator: { rowStart?: number; rowEnd?: number; page?: number; sheet?: string; section?: string; slide?: number }; text?: string; table?: { columns: string[]; rows: (string | number | boolean | null)[][] } }[];
 }
 export interface SourceSelection { title: string; evidence: Evidence; method?: string }
+const columnLabels: Record<string, string> = { record_id: "Kayıt kimliği", period: "Dönem", region: "Bölge", channel: "Kanal", category: "Kategori", segment: "Müşteri segmenti", orders: "Sipariş", units: "Ürün adedi", gross_sales_try: "Brüt satış · TL", discount_try: "İndirim · TL", refund_try: "İade · TL", cost_of_goods_try: "Mal maliyeti · TL", marketing_try: "Pazarlama · TL", fulfillment_try: "Karşılama · TL", net_sales_budget_try: "Satış bütçesi · TL", shipped_orders: "Sevk edilen", on_time_orders: "Zamanında teslim", late_orders: "Gecikmeli teslim" };
+const names: Record<string, string> = { "atlas-sales": "Satış kayıtları", "atlas-budget": "Satış bütçesi", "atlas-operations": "Teslimat operasyonu" };
+const PAGE_SIZE = 25;
 
-// Yerel dialog odak kilidini/Escape davranışını kullanır; yalnız seçili kanıtı ve değişmemiş kaynak satırlarını gösterir.
+// Büyük kaynaklarda sabit satır kimlikleriyle arama/sayfalama sunar; odak kilidi ve Escape yerel dialog'a aittir.
 export function SourceDialog({ selection, sources, onClose }: { selection: SourceSelection; sources: ReportSource[]; onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const available = sources.filter(source => selection.evidence.some(item => item.sourceId === source.sourceId));
+  const [sourceId, setSourceId] = useState(available[0]?.sourceId ?? "");
+  const [query, setQuery] = useState("");
   const [allRows, setAllRows] = useState(false);
-  const reducedMotion = useReducedMotion();
+  const [page, setPage] = useState(1);
+  const reduced = useReducedMotion();
   useEffect(() => {
     const previousFocus = document.activeElement as HTMLElement | null;
     const element = dialog.current!;
+    const wasLocked = document.body.classList.contains("overflow-hidden");
+    document.body.classList.add("overflow-hidden");
     element.showModal();
-    return () => { element.close(); previousFocus?.focus(); };
+    return () => { element.close(); if (!wasLocked) document.body.classList.remove("overflow-hidden"); previousFocus?.focus({ preventScroll: true }); };
   }, []);
-  const groups = sources.flatMap(source => source.chunks.flatMap(chunk => {
-    const anchors = selection.evidence.filter(item => item.sourceId === source.sourceId && item.chunkId === chunk.id);
-    if (!anchors.length) return [];
-    const isEvidence = (row: number) => anchors.some(item => item.locator.rowStart === undefined || (row >= item.locator.rowStart && row <= item.locator.rowEnd!));
-    const rows = chunk.table?.rows.map((cells, index) => ({ cells, row: (chunk.locator.rowStart ?? 1) + index })).filter(item => allRows || isEvidence(item.row));
-    return [{ source, chunk, rows, isEvidence }];
-  }));
-  return (
-    <motion.dialog ref={dialog} onCancel={event => { event.preventDefault(); onClose(); }} aria-labelledby="source-title" aria-describedby="source-description" initial={{ opacity: 0, y: reducedMotion ? 0 : 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: reducedMotion ? 0 : 0.2 }} className="m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-5xl overflow-auto rounded-3xl border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-foreground/35 backdrop:backdrop-blur-sm">
-      <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-border bg-card p-5 sm:p-7">
-        <div><p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary dark:text-secondary"><FileCheck2 className="h-4 w-4" aria-hidden="true" /> Kaynak incelemesi</p><h2 id="source-title" className="mt-2 text-xl font-semibold tracking-tight">{selection.title}</h2><p id="source-description" className="mt-2 text-sm leading-6 text-muted-foreground">Vurgulu satırlar bu sonucun dayanağıdır. Satır numaraları başlık hariç veri satırlarını gösterir.</p></div>
-        <Button variant="ghost" size="icon" aria-label="Kaynak incelemesini kapat" onClick={onClose} className="shrink-0"><X className="h-5 w-5" aria-hidden="true" /></Button>
+  const source = available.find(item => item.sourceId === sourceId)!;
+  const records = source.chunks.flatMap(chunk => chunk.table?.rows.map((cells, index) => {
+    const row = (chunk.locator.rowStart ?? 1) + index;
+    const evidence = selection.evidence.some(item => item.sourceId === sourceId && item.chunkId === chunk.id && (item.locator.rowStart === undefined || row >= item.locator.rowStart && row <= item.locator.rowEnd!));
+    return { cells, row, evidence, chunk };
+  }) ?? []);
+  const needle = query.trim().toLocaleLowerCase("tr-TR");
+  const filtered = records.filter(record => (allRows || record.evidence) && (!needle || [String(record.row), ...record.cells.map(String)].some(value => value.toLocaleLowerCase("tr-TR").includes(needle))));
+  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const current = Math.min(page, pages);
+  const shown = filtered.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
+  const columns = source.chunks.find(chunk => chunk.table)?.table?.columns ?? [];
+  // Native üst katmanda transform/kaydırma uygulanmaz; hareket yalnız iç panelde, taşma clip ile sınırlandırılır.
+  return <dialog ref={dialog} onCancel={event => { event.preventDefault(); onClose(); }} aria-labelledby="source-title" aria-describedby="source-description" className="fixed inset-0 m-auto h-[calc(100dvh-2rem)] max-h-[56rem] w-[calc(100%-1.5rem)] max-w-7xl overflow-clip rounded-3xl border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-foreground/35 backdrop:backdrop-blur-md">
+    <motion.div initial={{ opacity: 0, y: reduced ? 0 : 24, scale: reduced ? 1 : 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: reduced ? 0 : 12 }} transition={{ duration: reduced ? 0 : 0.25 }} className="flex h-full min-h-0 flex-col overflow-hidden">
+      <header className="relative z-20 flex shrink-0 items-start bg-card justify-between gap-4 border-b border-border p-5 sm:px-7 sm:py-6"><div><p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary dark:text-secondary"><span className="h-1.5 w-1.5 rounded-full bg-primary dark:bg-secondary" /> Kaynak çalışma alanı</p><h2 id="source-title" className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">{selection.title}</h2><p id="source-description" className="mt-2 text-xs leading-5 text-muted-foreground">Sonucu belgeye kadar takip edin. Dayanak satırları işaretlidir; satır numarası CSV başlığı hariç kaynak sırasıdır.</p></div><Button variant="ghost" size="icon" aria-label="Kaynak incelemesini kapat" onClick={onClose} className="shrink-0 rounded-full"><X className="h-5 w-5" aria-hidden="true" /></Button></header>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]">
+        <aside className="min-w-0 shrink-0 border-b border-border bg-muted/40 p-4 lg:border-b-0 lg:border-r lg:p-5" aria-label="Dayanak belgeleri"><p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Belgeler · {available.length}</p><div className="flex gap-2 overflow-x-auto pb-1 lg:flex-col">{available.map(item => <button key={item.sourceId} onClick={() => { setSourceId(item.sourceId); setQuery(""); setPage(1); }} aria-pressed={sourceId === item.sourceId} className={`flex min-w-[12rem] items-start gap-3 rounded-xl border p-3 text-left text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${sourceId === item.sourceId ? "border-primary/25 bg-card shadow-sm dark:border-secondary/25" : "border-transparent hover:bg-card/70"}`}><FileSpreadsheet className="mt-0.5 h-4 w-4 shrink-0 text-primary dark:text-secondary" aria-hidden="true" /><span className="min-w-0"><span className="block font-semibold">{names[item.sourceId] ?? item.fileName}</span><span className="mt-1 block text-[10px] text-muted-foreground">{item.chunks.reduce((n, chunk) => n + (chunk.table?.rows.length ?? 0), 0)} kaynak satırı · CSV</span></span></button>)}</div><div className="mt-5 hidden rounded-xl border border-border bg-card/70 p-3 lg:block"><p className="flex items-center gap-2 text-[11px] font-medium"><Check className="h-3 w-3 text-primary dark:text-secondary" aria-hidden="true" /> Kaynağa bağlı görünüm</p><p className="mt-2 text-[10px] leading-5 text-muted-foreground">Arama ve sayfalama özgün satır numaralarını değiştirmez.</p></div></aside>
+        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6">
+          {selection.method && <div className="mb-5 rounded-xl border border-primary/10 bg-primary/[0.04] px-4 py-3 dark:border-secondary/15 dark:bg-secondary/[0.04]"><p className="text-[10px] font-semibold uppercase tracking-widest text-primary dark:text-secondary">Hesap yöntemi</p><p className="mt-1.5 text-xs leading-6 text-muted-foreground">{selection.method}</p></div>}
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3"><div><h3 className="text-sm font-semibold">{names[sourceId] ?? source.fileName}</h3><p className="mt-1 text-[10px] text-muted-foreground">{source.fileName} · {records.length} kayıt · {records.filter(record => record.evidence).length} dayanak</p></div><label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={allRows} onChange={event => { setAllRows(event.target.checked); setPage(1); }} className="h-4 w-4 accent-primary" />Tüm kaynak satırları</label></div>
+          <div className="relative mb-4"><Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden="true" /><input aria-label="Kaynak satırlarında ara" value={query} onChange={event => { setQuery(event.target.value); setPage(1); }} placeholder="Kayıt kimliği, dönem, kanal veya kategori ara…" className="h-10 w-full rounded-xl border border-border bg-background pl-10 pr-10 text-base outline-none sm:text-xs focus-visible:ring-2 focus-visible:ring-primary" />{query && <button aria-label="Kaynak aramasını temizle" onClick={() => { setQuery(""); setPage(1); }} className="absolute right-2 top-2 rounded p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><X className="h-4 w-4" aria-hidden="true" /></button>}</div>
+          <div role="region" aria-label={`${source.fileName} kaynak satırları`} tabIndex={0} className="max-h-[43dvh] overflow-auto overscroll-contain rounded-xl border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:max-h-[48dvh]"><table className="w-full whitespace-nowrap text-left text-xs"><caption className="sr-only">{selection.title} için kaynak satırları</caption><thead className="sticky top-0 z-10 bg-muted"><tr><th scope="col" className="px-4 py-3 font-medium">Satır</th>{columns.map((column, index) => <th scope="col" key={index} title={column} className="px-4 py-3 font-medium">{columnLabels[column] ?? column}</th>)}</tr></thead><tbody>{shown.map(({ cells, row, evidence, chunk }) => <tr key={`${chunk.id}:${row}`} className="border-t border-border/60 transition-colors hover:bg-muted/50"><th scope="row" className="bg-card px-4 py-3 font-medium"><span className="inline-flex items-center gap-2">{evidence && <span className="h-1.5 w-1.5 rounded-full bg-primary dark:bg-secondary" aria-hidden="true" />}{row}{evidence && <span className="sr-only">, dayanak</span>}</span></th>{cells.map((cell, index) => <td key={index} className="px-4 py-3 text-muted-foreground" title={String(cell ?? "")}>{columns[index].endsWith("_try") ? new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(cell)) : cell === null ? "—" : String(cell)}</td>)}</tr>)}</tbody></table>{!shown.length && <p className="p-8 text-center text-sm text-muted-foreground">Aramanızla eşleşen kaynak satırı yok.</p>}</div>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><p role="status" className="text-xs text-muted-foreground">{filtered.length ? (current - 1) * PAGE_SIZE + 1 : 0}–{Math.min(current * PAGE_SIZE, filtered.length)} / {filtered.length} kayıt</p><div className="flex items-center gap-2"><Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" disabled={current === 1} onClick={() => setPage(current - 1)} aria-label="Önceki kaynak sayfası"><ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /></Button><span className="min-w-16 text-center text-xs tabular-nums">{current} / {pages}</span><Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" disabled={current >= pages} onClick={() => setPage(current + 1)} aria-label="Sonraki kaynak sayfası"><ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></Button></div></div>
+          <details className="mt-4 border-t border-border pt-3 text-[10px] text-muted-foreground"><summary className="w-fit cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Belge kimliği ve bütünlük</summary><p className="mt-2 break-all leading-5">SHA-256: {source.sha256}</p></details>
+        </div>
       </div>
-      <div className="space-y-6 p-5 sm:p-7">
-        {selection.method && <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4"><h3 className="text-sm font-semibold">Hesap yöntemi</h3><p className="mt-1 text-sm leading-6 text-muted-foreground">{selection.method}</p></div>}
-        <label className="flex w-fit cursor-pointer items-center gap-2 text-sm"><input type="checkbox" checked={allRows} onChange={event => setAllRows(event.target.checked)} className="h-4 w-4 accent-primary" /> Bağlam için tüm satırları göster</label>
-        {groups.map(({ source, chunk, rows, isEvidence }) => <section key={`${source.sourceId}:${chunk.id}`}>
-          <h3 className="text-sm font-semibold">{source.fileName}{chunk.locator.sheet ? ` · ${chunk.locator.sheet}` : ""}{chunk.locator.page ? ` · Sayfa ${chunk.locator.page}` : ""}</h3>
-          {chunk.table && <div role="region" aria-label={`${source.fileName} kaynak satırları`} tabIndex={0} className="mt-3 overflow-x-auto rounded-xl border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><table className="w-full whitespace-nowrap text-left text-xs"><caption className="sr-only">{selection.title} için kaynak satırları; işaretli satırlar dayanak kapsamındadır.</caption><thead className="bg-muted"><tr><th scope="col" className="p-3">Satır</th>{chunk.table.columns.map((column, index) => <th scope="col" key={`${index}:${column}`} className="p-3 font-medium">{column}</th>)}</tr></thead><tbody>{rows?.map(({ cells, row }) => <tr key={row} className={isEvidence(row) ? "border-t border-border bg-primary/[0.07] dark:bg-secondary/[0.07]" : "border-t border-border"}><th scope="row" className="p-3 font-semibold">{row}{isEvidence(row) && <span className="sr-only">, dayanak</span>}</th>{cells.map((cell, index) => <td key={index} className="p-3">{cell === null ? "—" : String(cell)}</td>)}</tr>)}</tbody></table></div>}
-          {chunk.text && <p className="mt-3 whitespace-pre-wrap rounded-xl bg-muted p-4 text-sm leading-7">{chunk.text}</p>}
-          <details className="mt-3 text-xs text-muted-foreground"><summary className="w-fit cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Kaynak kimliği ve bütünlük</summary><p className="mt-2 break-all leading-6">SHA-256: {source.sha256}<br />Parça: {chunk.id}</p></details>
-        </section>)}
-      </div>
-    </motion.dialog>
-  );
+    </motion.div>
+  </dialog>;
 }

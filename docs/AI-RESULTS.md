@@ -14,7 +14,7 @@ Kaynaklı özetleme hattının ilk kod sözleşmesi [result-contract.ts](../func
 | `recommendations` | Sonuçtaki bulgulara bağlı eylemler |
 | `metrics` | Güvenilir hesaplayıcının değer, birim, yöntem ve kanıt kayıtları |
 | `datasets` | Her noktası bir doğrulanmış metriğe bağlı veri kümeleri |
-| `charts` | Veri kümesi kimliği kullanan `bar`, `horizontal-bar`, `line` önerileri |
+| `charts` | Veri kümesi kimliği kullanan `bar`, `horizontal-bar`, `line`, `donut` önerileri |
 | `limitations` | Kapsam ve belirsizlikleri açıklayan, boş bırakılamayan alan |
 
 Özet ve bulgu ifadeleri `text`, `evidence` ve `metricIds` taşır. Sayısal bir iddia yapılandırılmış metriğe bağlanır; serbest metinden rakam çekip sessizce doğrulanmış sayılmaz. Sayısal içerik yoksa metrik/veri kümesi/grafik dizileri boş olabilir. Öneri yoksa boş dizi kullanılır; olmayan bir eylem uydurulmaz.
@@ -37,7 +37,7 @@ Doğrulayıcı şunları kontrol eder:
 - İfade kanıtının kullandığı metriğin kapsamını da taşıması; dosyada bulunan ilgisiz bir satır tek başına yeterli değildir.
 - Önerilerin mevcut bulgulara bağlanması; veri kümesi noktalarının aynı birim/değer/metrik kimliğiyle eşleşmesi.
 - Grafiğin sonuçtaki veri kümesine bağlanması ve metriklerinin kaynaklı özet/bulgularda bulunması.
-- Sayısal değeri bulunmayan veri kümesinden grafik önerilmemesi; çizgi için en az iki kullanılabilir nokta olması.
+- Sayısal değeri bulunmayan veri kümesinden grafik önerilmemesi; çizgi için en az iki kullanılabilir nokta olması. Halka için en az iki eksiksiz, negatif olmayan parça ve pozitif toplam gerekir; parçaların aynı bütünü temsil ettiğinin anlamsal kontrolü ayrıca yapılır.
 
 Hata durumunda doğrulayıcı istisna üretir; çağıran hatayı kontrollü eksik sonuç/hata durumuna çevirmelidir. Sadece JSON Schema kontrolünden geçen veri başarılı rapor olarak kaydedilmez. Bu modül mevcut Functions uçlarına bağlanmış değildir; model entegrasyonunda bu kapının çağrılması ayrıca zorunludur.
 
@@ -68,15 +68,21 @@ const { modelInput, validationContext, usage } = buildAnalysisPacket({
 
 Bu yardımcı fonksiyon bir güvenilir hesaplayıcı veya dosya doğrulama endpoint'i değildir. SHA-256 gerçek dosya baytlarından parser tarafından hesaplanır; pakete istemcinin oluşturduğu belge/metrik verilmez. Parser'ın önceden ürettiği sınır/eksik içerik uyarıları korunur. Görsel parçalarında OCR olmayan içerik metinmiş gibi sunulmaz. Kaynak içindeki talimat benzeri metin yalnız `data-only` içeriktir; bu etiket tek başına prompt injection koruması sayılmaz. Gerçek model entegrasyonunda sistem talimatı, veri ayrımı ve çıktı doğrulaması ayrıca gereklidir.
 
-## Sentetik rapor ve sunum
+## Örnek rapor ve sunum
 
-Herkese açık `/ornek-rapor`, yalnız [satış referansını](../fixtures/analysis-reference/README.md) kullanır. [`createSalesExample`](../functions/src/examples/sales-report.ts) sabit fixture hash'i/yapısıyla sınırlıdır; genel hesaplama motoru değildir. TRY tutarları kuruş üzerinden hesaplanır; iptaller hariç tutulur, indirim satırda ve iade işlendiği ayda uygulanır. Yüzdeler hesap sırasında korunur, gösterimde iki ondalığa yuvarlanır. Metinler editoryaldir; AI tarafından üretilmez.
+Herkese açık `/ornek-rapor`, [Atlas Perakende şirket örneğini](../fixtures/company-example/README.md) kullanır: 12 ay, 864 satış kırılımı, 12 bütçe ve 72 operasyon kaydı. Kaynaklar kurgusaldır; sayfa “Örnek rapor” etiketi taşır. Tekrarlayan kayıt/gizlilik uyarıları yerine dönem, belge kapsamı ve iş tanımları gösterilir.
+
+[`createCompanyReport`](../functions/src/examples/company-report.ts) bütün metrikleri gerçek parser çıktısından hesaplar. TRY işlemleri kuruşla yapılır. Brüt kâr, katkı, sipariş başına katkı, bütçe farkı ve ağırlıklı teslimat oranları ayrı tanımlanır. Dönem seçimi kartları, altı grafiği, üç finansal tabloyu ve üç bulguyu birlikte yeniden üretir; URL'de korunur. Bu saf hesaplayıcı yalnız örnektir; gerçek kullanıcı hesabı veya model/backend yetki sınırı değildir. Sayfa AI çağırmaz ve hesap kaydı yazmaz.
 
 ```bash
 npm run example:build
 node scripts/build-sales-example.cjs --check
 ```
 
-Üretici yalnız ham CSV ile `tasks.json` hedef/kurallarını okur. `sales.expected.json` sadece bağımsız test beklentisidir. Oluşan [statik artefakt](../src/features/reports/sales-example.json) parser, hesaplayıcı ve doğrulayıcıyla testte yeniden üretilir; sürüklenme CI'ı durdurur. Kaynaklar bütünüyle sentetiktir; bu sayfa hesaba yazmaz ve backend çağırmaz.
+Üretici CSV'leri mevcut parser'dan geçirip [normalize kaynakları](../src/features/reports/company-sources.json) ve üç CSV ile açıklama belgesini taşıyan ZIP'i üretir. [Dondurulmuş bağımsız beklentiler](../fixtures/company-example/expected.json) yalnız testte kullanılır; üretici/istemci bunları okumaz. Aynı dönemin metrik/kaynak bağlamı sonuç doğrulayıcısından geçer. Örneğin doğrulama bağlamı da kurgusaldır; gerçek analizde güvenilir defter backend'de kalmalıdır. Büyük belge görünümü 256 KiB model paketine zorla sığdırılmaz; herhangi bir model isteği hazırlanmaz.
 
-[React renderer](../src/features/reports/analysis-report.tsx) metrik, grafik, veri tablosu, bulgu ve kaynak incelemesini birleştirir. Grafiklerde [Apache ECharts](https://echarts.apache.org/handbook/en/how-to/chart-types/bar/basic-bar/), arayüz geçişlerinde [Motion](https://motion.dev/docs/react) kullanılır; paketler yalnız rapor rotasında yüklenir. Kaynak paneli yerel dialog ile odak kilidi, Escape ve tetikleyiciye odak dönüşü sunar. Eşdeğer tablo klavye erişimi sağlar; iki tema ve [azaltılmış hareket tercihi](https://motion.dev/docs/react-use-reduced-motion) korunur. Gerçek rapor bağlantısı, müşteri yorumu renderer'ı ve model kalitesi bu örneğin tamamlanmış özelliği değildir.
+Önceki [küçük satış/yorum referansları](../fixtures/analysis-reference/README.md), cevap anahtarları ve [satış artefaktı](../src/features/reports/sales-example.json) korunur. [`createSalesExample`](../functions/src/examples/sales-report.ts) bu ayrı küçük fixture için hesap ve paket sınırlarını test etmeye devam eder.
+
+[React renderer](../src/features/reports/analysis-report.tsx), metrik, grafik, tablo ve kaynak incelemesini birleştirir. [ECharts](https://echarts.apache.org/handbook/en/how-to/chart-types/pie/doughnut/) ile çizgi/alan, sütun, yatay çubuk ve kanal halkası; [Motion](https://motion.dev/docs/react-scroll-animations) ile görünürlük, sayı ve seçim geçişleri kullanılır. Grafikler görünürken başlar; eşdeğer tablolar ve kesin değerler klavyeyle erişilebilir. Sayı hareketi görsel katmandadır; ekran okuyucu kesin değeri okur. Azaltılmış hareket tercihi ve iki tema korunur.
+
+Kaynak paneli belge seçimi, Türkçe arama, 25 satırlık sayfalama ve dayanak filtresi sunar. Kaynak/parça sınırları korunur; yalnız bitişik gerçek satırlar kanıt aralığında birleştirilir. Native dialog odak kilidi, Escape ve tetikleyiciye odak dönüşü sağlar; geniş tablolar sayfayı büyütmez. Gerçek rapor kaydı, farklı belge türlerinin renderer kabulü ve LLM kalitesi ayrı işlerdir.
