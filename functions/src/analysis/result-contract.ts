@@ -31,7 +31,7 @@ export const aiResultSchema = z.object({
   findings: z.array(z.object({ id, title: z.string().trim().min(1).max(200), kind: z.enum(["observation", "interpretation"]), statements: z.array(statementSchema).min(1).max(10) }).strict()).min(1).max(50),
   recommendations: z.array(z.object({ id, action: text, basisFindingIds: ids.min(1) }).strict()).max(30),
   metrics: z.array(metricSchema).max(100), datasets: z.array(datasetSchema).max(20),
-  charts: z.array(z.object({ id, title: z.string().trim().min(1).max(200), type: z.enum(["bar", "horizontal-bar", "line"]), datasetId: id }).strict()).max(20),
+  charts: z.array(z.object({ id, title: z.string().trim().min(1).max(200), type: z.enum(["bar", "horizontal-bar", "line", "donut"]), datasetId: id }).strict()).max(20),
   limitations: z.array(text).min(1).max(30),
 }).strict();
 
@@ -159,6 +159,8 @@ export function validateAiResult(input: unknown, trustedInput: unknown): AiResul
     if (!dataset) throw new Error("Grafik veri kümesi sonuçta bulunamadı.");
     const available = dataset.points.filter(point => point.value !== null).length;
     if (!available || (chart.type === "line" && available < 2)) throw new Error("Grafik türü için yeterli doğrulanmış sayısal değer yok.");
+    if (chart.type === "donut" && (dataset.points.length < 2 || dataset.points.some(point => point.value === null || point.value < 0)
+      || dataset.points.reduce((total, point) => total + (point.value ?? 0), 0) <= 0)) throw new Error("Halka grafiği eksiksiz, negatif olmayan ve pozitif toplamlı en az iki parça gerektirir.");
     for (const point of dataset.points) if (!usedMetricIds.has(point.metricId)) throw new Error("Grafik metriği kaynaklı bulgu/özette kullanılmıyor.");
   }
   return result;

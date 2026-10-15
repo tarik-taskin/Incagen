@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "synthetic": true,
+  "company": "Atlas Perakende",
+  "year": 2025,
+  "files": [
+    {
+      "sourceId": "atlas-sales",
+      "file": "atlas-satis-2025.csv",
+      "rows": 864,
+      "sha256": "361d3ea28a48f17c07afa09fa8b32dab82474f79a7cfca7e88d0ecd749e158da"
+    },
+    {
+      "sourceId": "atlas-budget",
+      "file": "atlas-butce-2025.csv",
+      "rows": 12,
+      "sha256": "7de8a24b5d4ad675d171594bda119682f240064846a25aa393ae96c866d23958"
+    },
+    {
+      "sourceId": "atlas-operations",
+      "file": "atlas-operasyon-2025.csv",
+      "rows": 72,
+      "sha256": "d5965b0e7f224aed8964edd992620584c6a8093bd76576c6c1d9b4f47b5d1c8c"
+    }
+  ]
+}

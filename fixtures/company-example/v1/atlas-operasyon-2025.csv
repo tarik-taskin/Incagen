@@ -1,0 +1,73 @@
+record_id,period,region,channel,shipped_orders,on_time_orders,late_orders
+OPS-2025-01-0-0,2025-01,Marmara,Web mağazası,379,360,19
+OPS-2025-01-0-1,2025-01,Marmara,Pazaryeri,327,308,19
+OPS-2025-01-0-2,2025-01,Marmara,Mağaza,286,266,20
+OPS-2025-01-1-0,2025-01,Anadolu,Web mağazası,295,279,16
+OPS-2025-01-1-1,2025-01,Anadolu,Pazaryeri,256,240,16
+OPS-2025-01-1-2,2025-01,Anadolu,Mağaza,224,208,16
+OPS-2025-02-0-0,2025-02,Marmara,Web mağazası,396,379,17
+OPS-2025-02-0-1,2025-02,Marmara,Pazaryeri,341,323,18
+OPS-2025-02-0-2,2025-02,Marmara,Mağaza,296,278,18
+OPS-2025-02-1-0,2025-02,Anadolu,Web mağazası,308,293,15
+OPS-2025-02-1-1,2025-02,Anadolu,Pazaryeri,265,250,15
+OPS-2025-02-1-2,2025-02,Anadolu,Mağaza,234,219,15
+OPS-2025-03-0-0,2025-03,Marmara,Web mağazası,432,416,16
+OPS-2025-03-0-1,2025-03,Marmara,Pazaryeri,369,352,17
+OPS-2025-03-0-2,2025-03,Marmara,Mağaza,324,306,18
+OPS-2025-03-1-0,2025-03,Anadolu,Web mağazası,333,320,13
+OPS-2025-03-1-1,2025-03,Anadolu,Pazaryeri,289,275,14
+OPS-2025-03-1-2,2025-03,Anadolu,Mağaza,252,237,15
+OPS-2025-04-0-0,2025-04,Marmara,Web mağazası,446,421,25
+OPS-2025-04-0-1,2025-04,Marmara,Pazaryeri,384,359,25
+OPS-2025-04-0-2,2025-04,Marmara,Mağaza,334,309,25
+OPS-2025-04-1-0,2025-04,Anadolu,Web mağazası,345,324,21
+OPS-2025-04-1-1,2025-04,Anadolu,Pazaryeri,298,277,21
+OPS-2025-04-1-2,2025-04,Anadolu,Mağaza,260,239,21
+OPS-2025-05-0-0,2025-05,Marmara,Web mağazası,486,462,24
+OPS-2025-05-0-1,2025-05,Marmara,Pazaryeri,419,394,25
+OPS-2025-05-0-2,2025-05,Marmara,Mağaza,367,342,25
+OPS-2025-05-1-0,2025-05,Anadolu,Web mağazası,377,357,20
+OPS-2025-05-1-1,2025-05,Anadolu,Pazaryeri,326,305,21
+OPS-2025-05-1-2,2025-05,Anadolu,Mağaza,288,267,21
+OPS-2025-06-0-0,2025-06,Marmara,Web mağazası,492,471,21
+OPS-2025-06-0-1,2025-06,Marmara,Pazaryeri,422,400,22
+OPS-2025-06-0-2,2025-06,Marmara,Mağaza,366,344,22
+OPS-2025-06-1-0,2025-06,Anadolu,Web mağazası,380,362,18
+OPS-2025-06-1-1,2025-06,Anadolu,Pazaryeri,328,309,19
+OPS-2025-06-1-2,2025-06,Anadolu,Mağaza,283,264,19
+OPS-2025-07-0-0,2025-07,Marmara,Web mağazası,520,501,19
+OPS-2025-07-0-1,2025-07,Marmara,Pazaryeri,447,427,20
+OPS-2025-07-0-2,2025-07,Marmara,Mağaza,387,366,21
+OPS-2025-07-1-0,2025-07,Anadolu,Web mağazası,401,385,16
+OPS-2025-07-1-1,2025-07,Anadolu,Pazaryeri,347,330,17
+OPS-2025-07-1-2,2025-07,Anadolu,Mağaza,302,284,18
+OPS-2025-08-0-0,2025-08,Marmara,Web mağazası,504,475,29
+OPS-2025-08-0-1,2025-08,Marmara,Pazaryeri,434,405,29
+OPS-2025-08-0-2,2025-08,Marmara,Mağaza,380,351,29
+OPS-2025-08-1-0,2025-08,Anadolu,Web mağazası,390,366,24
+OPS-2025-08-1-1,2025-08,Anadolu,Pazaryeri,337,313,24
+OPS-2025-08-1-2,2025-08,Anadolu,Mağaza,297,273,24
+OPS-2025-09-0-0,2025-09,Marmara,Web mağazası,557,529,28
+OPS-2025-09-0-1,2025-09,Marmara,Pazaryeri,478,450,28
+OPS-2025-09-0-2,2025-09,Marmara,Mağaza,416,388,28
+OPS-2025-09-1-0,2025-09,Anadolu,Web mağazası,428,405,23
+OPS-2025-09-1-1,2025-09,Anadolu,Pazaryeri,370,347,23
+OPS-2025-09-1-2,2025-09,Anadolu,Mağaza,321,298,23
+OPS-2025-10-0-0,2025-10,Marmara,Web mağazası,598,572,26
+OPS-2025-10-0-1,2025-10,Marmara,Pazaryeri,512,485,27
+OPS-2025-10-0-2,2025-10,Marmara,Mağaza,444,417,27
+OPS-2025-10-1-0,2025-10,Anadolu,Web mağazası,460,438,22
+OPS-2025-10-1-1,2025-10,Anadolu,Pazaryeri,396,374,22
+OPS-2025-10-1-2,2025-10,Anadolu,Mağaza,343,321,22
+OPS-2025-11-0-0,2025-11,Marmara,Web mağazası,755,728,27
+OPS-2025-11-0-1,2025-11,Marmara,Pazaryeri,644,615,29
+OPS-2025-11-0-2,2025-11,Marmara,Mağaza,561,531,30
+OPS-2025-11-1-0,2025-11,Anadolu,Web mağazası,575,552,23
+OPS-2025-11-1-1,2025-11,Anadolu,Pazaryeri,494,470,24
+OPS-2025-11-1-2,2025-11,Anadolu,Mağaza,432,407,25
+OPS-2025-12-0-0,2025-12,Marmara,Web mağazası,711,671,40
+OPS-2025-12-0-1,2025-12,Marmara,Pazaryeri,606,566,40
+OPS-2025-12-0-2,2025-12,Marmara,Mağaza,526,487,39
+OPS-2025-12-1-0,2025-12,Anadolu,Web mağazası,544,511,33
+OPS-2025-12-1-1,2025-12,Anadolu,Pazaryeri,468,435,33
+OPS-2025-12-1-2,2025-12,Anadolu,Mağaza,406,374,32

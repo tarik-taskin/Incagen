@@ -1,0 +1,114 @@
+{
+  "year": {
+    "net": 22591022.62,
+    "gross": 23902400.0,
+    "discounts": 928664.21,
+    "refunds": 382713.17,
+    "profit": 9214897.6,
+    "margin": 40.790086199293974,
+    "budget": 21972590.78,
+    "orders": 28998,
+    "onTime": 94.35823160217946,
+    "contribution": 6729274.29,
+    "rows": 948,
+    "category": {
+      "Elektronik": 10405749.55,
+      "Ev ve yaşam": 5444511.62,
+      "Ofis": 4145064.48,
+      "Aksesuar": 2595696.97
+    },
+    "channel": {
+      "Web mağazası": 8752436.03,
+      "Pazaryeri": 7432651.24,
+      "Mağaza": 6405935.35
+    },
+    "region": {
+      "Marmara": 12747351.93,
+      "Anadolu": 9843670.69
+    }
+  },
+  "h1": {
+    "net": 9534907.44,
+    "gross": 10056910.0,
+    "discounts": 360802.15,
+    "refunds": 161200.41,
+    "profit": 3885776.5,
+    "margin": 40.75316435373808,
+    "budget": 9568042.22,
+    "orders": 12207,
+    "onTime": 94.33112148767101,
+    "contribution": 2838088.66,
+    "rows": 474,
+    "category": {
+      "Elektronik": 4407860.8,
+      "Ev ve yaşam": 2296540.16,
+      "Ofis": 1742112.0,
+      "Aksesuar": 1088394.48
+    },
+    "channel": {
+      "Web mağazası": 3684354.92,
+      "Pazaryeri": 3139223.2,
+      "Mağaza": 2711329.32
+    },
+    "region": {
+      "Marmara": 5367466.72,
+      "Anadolu": 4167440.72
+    }
+  },
+  "h2": {
+    "net": 13056115.18,
+    "gross": 13845490.0,
+    "discounts": 567862.06,
+    "refunds": 221512.76,
+    "profit": 5329121.1,
+    "margin": 40.817050298111724,
+    "budget": 12404548.56,
+    "orders": 16791,
+    "onTime": 94.37794056339706,
+    "contribution": 3891185.63,
+    "rows": 474,
+    "category": {
+      "Elektronik": 5997888.75,
+      "Ev ve yaşam": 3147971.46,
+      "Ofis": 2402952.48,
+      "Aksesuar": 1507302.49
+    },
+    "channel": {
+      "Web mağazası": 5068081.11,
+      "Pazaryeri": 4293428.04,
+      "Mağaza": 3694606.03
+    },
+    "region": {
+      "Marmara": 7379885.21,
+      "Anadolu": 5676229.97
+    }
+  },
+  "q4": {
+    "net": 7341237.13,
+    "gross": 7817940.0,
+    "discounts": 351712.47,
+    "refunds": 124990.4,
+    "profit": 2998318.36,
+    "margin": 40.842140185710086,
+    "budget": 6829057.79,
+    "orders": 9475,
+    "onTime": 94.50131926121372,
+    "contribution": 2188459.14,
+    "rows": 237,
+    "category": {
+      "Elektronik": 3363531.65,
+      "Ev ve yaşam": 1772195.8,
+      "Ofis": 1354717.8,
+      "Aksesuar": 850791.88
+    },
+    "channel": {
+      "Web mağazası": 2855477.01,
+      "Pazaryeri": 2413040.95,
+      "Mağaza": 2072719.17
+    },
+    "region": {
+      "Marmara": 4153824.97,
+      "Anadolu": 3187412.16
+    }
+  }
+}

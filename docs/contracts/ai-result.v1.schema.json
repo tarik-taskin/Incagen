@@ -595,7 +595,8 @@
             "enum": [
               "bar",
               "horizontal-bar",
-              "line"
+              "line",
+              "donut"
             ]
           },
           "datasetId": {

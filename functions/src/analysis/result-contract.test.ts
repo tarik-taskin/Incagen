@@ -137,3 +137,25 @@ describe("AI sonuç v1: yapı, kaynak ve doğrulanmış hesap bağları", () => 
     expect(() => validateAiResult(result, context)).toThrow();
   });
 });
+
+
+describe("halka grafiği kapsamı", () => {
+  it("doğrulanmış pozitif parçaları kabul eder", () => {
+    const { result, context } = sample("sales");
+    result.charts[0].type = "donut";
+    expect(validateAiResult(result, context).charts[0].type).toBe("donut");
+  });
+  it.each(["negative", "missing", "zero", "single"])("uygunsuz parçaları reddeder: %s", kind => {
+    const { result, context } = sample("sales");
+    result.charts[0].type = "donut";
+    if (kind === "single") { context.datasets[0].points.pop(); result.datasets[0].points.pop(); }
+    else {
+      for (const target of [context, result]) {
+        target.metrics[0] = kind === "missing" ? { ...target.metrics[0], status: "unavailable", value: null, reason: "Eksik" } : { ...target.metrics[0], status: "available", value: kind === "negative" ? -1 : 0 };
+        target.datasets[0].points[0].value = target.metrics[0].value;
+        if (kind === "zero") { target.metrics[1].value = 0; target.datasets[0].points[1].value = 0; }
+      }
+    }
+    expect(() => validateAiResult(result, context)).toThrow(/Halka/);
+  });
+});
