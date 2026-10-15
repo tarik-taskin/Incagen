@@ -7,6 +7,18 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-15 — Furkan / Codex: kaynaklı veri paketi ve etkileşimli örnek rapor
+
+- [x] Sahip: Furkan — Gerçek ayrıştırıcı çıktısından analiz hedefi, kaynak/hash/konum ve içerik paketini üret; güvenilir doğrulama bağlamını model girdisinden ayır ve iki referansla uçtan uca doğrula.
+- [x] Sahip: Furkan — Motion ve ECharts ile açıkça sentetik “Örnek rapor” deneyimi sun; doğrulanmış metrikler, grafikler, bulgular ve kaynak satırları aynı veri üzerinden çalışsın.
+- [x] Sahip: Furkan — Firebase faturalandırma, Storage, Firestore ve Functions hazırlığını yalnız okuma ile yeniden kontrol et.
+
+Kabul: Kaynak paketinde kesilme/satır atlama sessiz yapılmamalı; yanlış kimlik/hash/konum ve bütçe aşımı reddedilmeli; cevap anahtarları model girdisine alınmamalı. Örnek rapor gerçek kullanıcı analizi veya AI üretimi gibi gösterilmemeli; sunumu kaynak ve metrik doğrulamasından geçmeli. Motion/ECharts yalnız rapor rotasında yüklenmeli, tema ve azaltılmış hareket tercihi korunmalı. Klavye/odak, mobil taşma, kaynak kapsamı ve grafik/veri tablosu eşitliği doğrulanmalı. AI/Python kurulumu, model çağrısı, yeni servis veya Firebase yapılandırma değişikliği yapılmamalı. Lint, birim, Functions/build, entegrasyon ve yerel tarayıcı kontrolleri geçmeli.
+
+Doğrulama: 46 uygulama + 71 Functions birim testi, lint, frontend/Functions derlemeleri, 3 entegrasyon ve son sabit kod turunda 18/18 masaüstü/mobil tarayıcı senaryosu geçti. Doğrudan grafik tıklaması eklendikten sonra ilgili 4 rapor senaryosu ayrıca geçti. Net 2.550 TL, dönemler 1.000/1.550 TL, %55 değişim ve indirim/iade/iptal kapsamları ham CSV hesabı ile bağımsız cevap anahtarı arasında eşleşti; statik artefakt birebir yeniden üretildi. İki tema görselleri, klavye/odak, Escape, normal/azaltılmış hareket ve mobil taşma incelendi. 68 yerel belge bağlantısı doğrulandı. Motion ve grafik kodu ana sayfanın başlangıç ön yüklemelerine dahil değil. Model/Python çağrısı, gerçek hesap kaydı ve Firebase değişikliği yapılmadı.
+
+Firebase kontrolü (2026-10-15 14:18 TRT, yalnız GET): `incagen-eeef4` için `billingEnabled=false`, bir billing hesabı bağlı; Firestore'da bir veritabanı var. Storage bucket sayısı 0; Functions API `403 SERVICE_DISABLED` döndü. Canlı belge backend'i için mevcut engel sürüyor; yapılandırmaya dokunulmadı.
+
 ### 2026-10-13 — Furkan / Codex: hazırlık deneyimi ve AI sonuç sözleşmesi
 
 - [x] Sahip: Furkan — Belge seçimini adet/boyut/kalan kapasite özetiyle güçlendir; başlık, çalışma alanı ve hedef eksiklerinde erişilebilir yönlendirme sun.
@@ -359,7 +371,7 @@ Kalite kapısı: [FLOW.md uygulama sırası ve kalite kapısı](FLOW.md#uygulama
 
 - [x] Sahip: Furkan — Genel belgeler için doğrulanmış kaynak ve hazırlık özeti; AI bulgu ve grafikleri sonraki aşamaya bırakıldı.
 - [ ] Sahip: Atanmadı — AI bulgu ve öneri ekranları.
-- [ ] Sahip: Atanmadı — [FLOW.md grafik ve hareket davranışı](FLOW.md#grafik-ve-hareket-davranışı) için React/ECharts sunumu, kaynak erişimi ve erişilebilir veri tablosu.
+- [~] Sahip: Furkan — [FLOW.md grafik ve hareket davranışı](FLOW.md#grafik-ve-hareket-davranışı) için React/ECharts sunumu, kaynak erişimi ve erişilebilir veri tablosu. Sentetik `/ornek-rapor` kesiti doğrulandı; gerçek doğrulanmış analiz kayıtlarına bağlama ve farklı belge/çıktı türlerinin kabulü kaldı.
 - [ ] Sahip: Atanmadı — Kaynak referansı, güven düzeyi ve çıkarım etiketleri.
 - [x] Sahip: Tarık — Kullanıcıya özel Firestore geçmişini listeleme ve kayıtlı raporu açma.
 - [ ] Sahip: Atanmadı — Geçmiş arama ve filtreleme.

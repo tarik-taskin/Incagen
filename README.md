@@ -45,7 +45,7 @@ Dosya türüne göre ayrıştırma kapsamı, içerik sınırları ve plan kurall
 | Katman | Teknolojiler |
 | --- | --- |
 | Arayüz | React, TypeScript, Vite, React Router |
-| Tasarım ve hareket | Tailwind CSS, shadcn/ui, Lucide, Anime.js |
+| Tasarım ve hareket | Tailwind CSS, shadcn/ui, Lucide, Anime.js, Motion, Apache ECharts |
 | Backend ve veri | Firebase Auth, Firestore, Storage, TypeScript Cloud Functions |
 | Sözleşmeler ve doğrulama | Zod, ESLint, Vitest, Testing Library, Playwright, GitHub Actions |
 
@@ -55,7 +55,7 @@ Kurulum, ortam yapılandırması, kaynak dizinleri ve test komutları [geliştir
 
 Kalite kontrolleri bileşen davranışını, dosya ayrıştırmayı, kullanıcı izolasyonunu, kota ve silme yaşam döngüsünü kapsar. Tarayıcı senaryoları masaüstü/mobil, tema ve erişilebilirlik davranışını doğrular. [CI iş akışı](.github/workflows/quality.yml) bu kontrolleri birleştirir.
 
-[AI sonuç sözleşmesi](docs/AI-RESULTS.md), özet, bulgu, öneri ve grafik verilerini güvenilir kaynak/metrik bağlamına bağlar. [Özetleme referans seti](fixtures/analysis-reference/README.md), sentetik satış ve müşteri yorumu vakalarıyla hesap, kaynak ve değerlendirme ölçütlerini ayrı tutar. Sözleşme ve referans bütünlüğü model çağrısından bağımsız test edilir; model entegrasyonu ve grafik sunumunun kapsamı [FLOW](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) ve [GOAL](GOAL.md) üzerinden takip edilir.
+[AI sonuç sözleşmesi](docs/AI-RESULTS.md), özet, bulgu, öneri ve grafik verilerini güvenilir kaynak/metrik bağlamına bağlar. [Özetleme referans seti](fixtures/analysis-reference/README.md), sentetik satış ve müşteri yorumu vakalarıyla hesap, kaynak ve değerlendirme ölçütlerini ayrı tutar. Sözleşme ve referans bütünlüğü model çağrısından bağımsız test edilir; bağımsız [sentetik örnek rapor](https://incagen.netlify.app/ornek-rapor) hesap ve kaynak incelemesini gösterir. Gerçek model entegrasyonunun kapsamı [FLOW](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) ve [GOAL](GOAL.md) üzerinden takip edilir.
 
 | Belge | Başvuru konusu |
 | --- | --- |

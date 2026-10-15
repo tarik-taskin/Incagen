@@ -9,11 +9,14 @@ import { RequireAuth } from "./components/require-auth";
 import { lazy, Suspense } from "react";
 const AnalysisPage = lazy(() => import("./pages/analysis-page").then(module => ({ default: module.AnalysisPage })));
 
+const ExampleReportPage = lazy(() => import("./pages/example-report-page").then(module => ({ default: module.ExampleReportPage })));
+
 // Genel landing rotasını ve uygulama çalışma alanının iç içe sayfalarını tanımlar.
 function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/ornek-rapor" element={<Suspense fallback={<p role="status" className="p-8">Örnek rapor yükleniyor…</p>}><ExampleReportPage /></Suspense>} />
       <Route element={<RequireAuth />}>
       <Route path="/app" element={<AppShell />}>
         <Route index element={<Navigate to="new-analysis" replace />} />

@@ -28,10 +28,11 @@ Terminaldeki adresi açın. Varsayılan geliştirme komutu gerçek Firebase Auth
 | --- | --- |
 | [src/pages](../src/pages) | Ürün ekranları ve rota davranışı |
 | [src/components](../src/components) | Ortak arayüz, kimlik ve çalışma taslağı |
+| [src/features/reports](../src/features/reports) | Doğrulanmış sonuç görünümü, grafik ve kaynak paneli |
 | [src/features/files](../src/features/files) | Dosya seçimi, kapasite ve hazırlık kontrolü |
 | [functions/src/contracts.ts](../functions/src/contracts.ts) | İstek, format, limit ve belge sözleşmeleri |
 | [functions/src/parsing](../functions/src/parsing) | İçerik doğrulama ve kaynak konumlu ayrıştırma |
-| [functions/src/analysis](../functions/src/analysis) | AI sonuç v1 şeması ve güvenilir bağlam doğrulaması |
+| [functions/src/analysis](../functions/src/analysis) | Analiz veri paketi, AI sonuç v1 şeması ve güvenilir bağlam doğrulaması |
 | [functions/src/index.ts](../functions/src/index.ts) | Yetkili oluşturma, hazırlama ve silme uçları |
 | [integration](../integration) / [e2e](../e2e) | Yetki, yaşam döngüsü ve tarayıcı kontrolleri |
 

@@ -1,0 +1,3957 @@
+{
+  "exampleVersion": 1,
+  "synthetic": true,
+  "title": "Satışların net resmi.",
+  "period": "Eylül — Ekim 2026",
+  "packet": {
+    "modelInput": {
+      "packetVersion": 1,
+      "analysisId": "synthetic-sales-v1",
+      "objective": "İadeleri, iptalleri ve indirimleri dikkate alarak aylık net satış değişimini ve kategori dağılımını açıkla.",
+      "sourceContentPolicy": "data-only",
+      "businessRules": [
+        "Kaynak tamamen sentetiktir. Tarihler iki yapay tam ayı temsil eder; takvimdeki bugünle karşılaştırma yapma.",
+        "Tüm tutarlar TRY. discount_try satırın toplam indirimidir; adet başına değildir.",
+        "completed satış, refunded negatif adetli iade, cancelled iptal olayıdır. İptaller net satış ve net adet hesaplarına girmez.",
+        "Dahil edilen satırın net tutarı quantity * unit_price_try - discount_try şeklinde hesaplanır.",
+        "Dönemi posted_date belirler. İade, original_event_id ile önceki satışa bağlanır ve işlendiği dönemde düşülür; eski dönem yeniden yazılmaz.",
+        "Olay sayısı, ürün adedi ve tekil müşteri sayısı ayrı kavramlardır. Kaynakta olmayan müşteri, maliyet, vergi veya neden-sonuç bilgisini varsayma."
+      ],
+      "documents": [
+        {
+          "sourceId": "reference-sales",
+          "fileName": "sales.csv",
+          "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+          "detectedMime": "text/csv",
+          "parserVersion": "1.0.0",
+          "metadata": {},
+          "chunks": [
+            {
+              "id": "reference-sales:table:0001",
+              "kind": "table",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 1,
+                "rowEnd": 12
+              },
+              "table": {
+                "columns": [
+                  "event_id",
+                  "posted_date",
+                  "category",
+                  "status",
+                  "quantity",
+                  "unit_price_try",
+                  "discount_try",
+                  "original_event_id"
+                ],
+                "rows": [
+                  [
+                    "S001",
+                    "2026-09-01",
+                    "Kirtasiye",
+                    "completed",
+                    "2",
+                    "100",
+                    "0",
+                    ""
+                  ],
+                  [
+                    "S002",
+                    "2026-09-10",
+                    "Teknoloji",
+                    "completed",
+                    "1",
+                    "500",
+                    "0",
+                    ""
+                  ],
+                  [
+                    "S003",
+                    "2026-09-15",
+                    "Kirtasiye",
+                    "completed",
+                    "3",
+                    "50",
+                    "0",
+                    ""
+                  ],
+                  [
+                    "S004",
+                    "2026-09-25",
+                    "Aksesuar",
+                    "completed",
+                    "1",
+                    "150",
+                    "0",
+                    ""
+                  ],
+                  [
+                    "C001",
+                    "2026-09-26",
+                    "Teknoloji",
+                    "cancelled",
+                    "1",
+                    "900",
+                    "0",
+                    ""
+                  ],
+                  [
+                    "S005",
+                    "2026-10-01",
+                    "Kirtasiye",
+                    "completed",
+                    "3",
+                    "100",
+                    "0",
+                    ""
+                  ],
+                  [
+                    "S006",
+                    "2026-10-10",
+                    "Teknoloji",
+                    "completed",
+                    "1",
+                    "600",
+                    "0",
+                    ""
+                  ],
+                  [
+                    "S007",
+                    "2026-10-15",
+                    "Kirtasiye",
+                    "completed",
+                    "4",
+                    "50",
+                    "0",
+                    ""
+                  ],
+                  [
+                    "S008",
+                    "2026-10-25",
+                    "Aksesuar",
+                    "completed",
+                    "2",
+                    "200",
+                    "0",
+                    ""
+                  ],
+                  [
+                    "S009",
+                    "2026-10-26",
+                    "Aksesuar",
+                    "completed",
+                    "1",
+                    "200",
+                    "50",
+                    ""
+                  ],
+                  [
+                    "R001",
+                    "2026-10-27",
+                    "Kirtasiye",
+                    "refunded",
+                    "-1",
+                    "100",
+                    "0",
+                    "S001"
+                  ],
+                  [
+                    "C002",
+                    "2026-10-28",
+                    "Aksesuar",
+                    "cancelled",
+                    "1",
+                    "500",
+                    "0",
+                    ""
+                  ]
+                ]
+              }
+            }
+          ],
+          "warnings": []
+        }
+      ],
+      "verifiedMetrics": [
+        {
+          "id": "net-sales",
+          "label": "Net satış",
+          "unit": "TRY",
+          "method": "İptaller hariç; satır indirimi ve işlendiği dönemdeki iade dahil net tutarların toplamı.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 1,
+                "rowEnd": 1
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 2,
+                "rowEnd": 2
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 3,
+                "rowEnd": 3
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 4,
+                "rowEnd": 4
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 5,
+                "rowEnd": 5
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 6,
+                "rowEnd": 6
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 7,
+                "rowEnd": 7
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 8,
+                "rowEnd": 8
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 9,
+                "rowEnd": 9
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 10,
+                "rowEnd": 10
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 11,
+                "rowEnd": 11
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 12,
+                "rowEnd": 12
+              }
+            }
+          ],
+          "status": "available",
+          "value": 2550
+        },
+        {
+          "id": "september",
+          "label": "Eylül 2026",
+          "unit": "TRY",
+          "method": "posted_date Eylül olan, iptal edilmemiş satırların net toplamı.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 1,
+                "rowEnd": 1
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 2,
+                "rowEnd": 2
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 3,
+                "rowEnd": 3
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 4,
+                "rowEnd": 4
+              }
+            }
+          ],
+          "status": "available",
+          "value": 1000
+        },
+        {
+          "id": "october",
+          "label": "Ekim 2026",
+          "unit": "TRY",
+          "method": "posted_date Ekim olan, iptal edilmemiş satırların net toplamı; iade Ekim'de düşülür.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 6,
+                "rowEnd": 6
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 7,
+                "rowEnd": 7
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 8,
+                "rowEnd": 8
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 9,
+                "rowEnd": 9
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 10,
+                "rowEnd": 10
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 11,
+                "rowEnd": 11
+              }
+            }
+          ],
+          "status": "available",
+          "value": 1550
+        },
+        {
+          "id": "change",
+          "label": "Net satış farkı",
+          "unit": "TRY",
+          "method": "Ekim net toplamı eksi Eylül net toplamı.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 1,
+                "rowEnd": 1
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 2,
+                "rowEnd": 2
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 3,
+                "rowEnd": 3
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 4,
+                "rowEnd": 4
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 6,
+                "rowEnd": 6
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 7,
+                "rowEnd": 7
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 8,
+                "rowEnd": 8
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 9,
+                "rowEnd": 9
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 10,
+                "rowEnd": 10
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 11,
+                "rowEnd": 11
+              }
+            }
+          ],
+          "status": "available",
+          "value": 550
+        },
+        {
+          "id": "growth-percent",
+          "label": "Dönem değişimi",
+          "unit": "%",
+          "method": "(Ekim − Eylül) / Eylül × 100; payda Eylül net satışıdır.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 1,
+                "rowEnd": 1
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 2,
+                "rowEnd": 2
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 3,
+                "rowEnd": 3
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 4,
+                "rowEnd": 4
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 6,
+                "rowEnd": 6
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 7,
+                "rowEnd": 7
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 8,
+                "rowEnd": 8
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 9,
+                "rowEnd": 9
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 10,
+                "rowEnd": 10
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 11,
+                "rowEnd": 11
+              }
+            }
+          ],
+          "status": "available",
+          "value": 55
+        },
+        {
+          "id": "category-0",
+          "label": "Teknoloji",
+          "unit": "TRY",
+          "method": "İki dönemde aynı kategorideki iptal edilmemiş satırların net toplamı.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 2,
+                "rowEnd": 2
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 7,
+                "rowEnd": 7
+              }
+            }
+          ],
+          "status": "available",
+          "value": 1100
+        },
+        {
+          "id": "category-1",
+          "label": "Kırtasiye",
+          "unit": "TRY",
+          "method": "İki dönemde aynı kategorideki iptal edilmemiş satırların net toplamı.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 1,
+                "rowEnd": 1
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 3,
+                "rowEnd": 3
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 6,
+                "rowEnd": 6
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 8,
+                "rowEnd": 8
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 11,
+                "rowEnd": 11
+              }
+            }
+          ],
+          "status": "available",
+          "value": 750
+        },
+        {
+          "id": "category-2",
+          "label": "Aksesuar",
+          "unit": "TRY",
+          "method": "İki dönemde aynı kategorideki iptal edilmemiş satırların net toplamı.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 4,
+                "rowEnd": 4
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 9,
+                "rowEnd": 9
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 10,
+                "rowEnd": 10
+              }
+            }
+          ],
+          "status": "available",
+          "value": 700
+        },
+        {
+          "id": "leading-share",
+          "label": "Lider kategori payı",
+          "unit": "%",
+          "method": "Lider kategori net toplamı / iki dönemin tüm net satışı × 100.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 1,
+                "rowEnd": 1
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 2,
+                "rowEnd": 2
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 3,
+                "rowEnd": 3
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 4,
+                "rowEnd": 4
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 6,
+                "rowEnd": 6
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 7,
+                "rowEnd": 7
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 8,
+                "rowEnd": 8
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 9,
+                "rowEnd": 9
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 10,
+                "rowEnd": 10
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 11,
+                "rowEnd": 11
+              }
+            }
+          ],
+          "status": "available",
+          "value": 43.13725490196079
+        },
+        {
+          "id": "net-units",
+          "label": "Net ürün adedi",
+          "unit": "adet",
+          "method": "İptal hariç, negatif iade adedi dahil miktarların toplamı; müşteri sayısı değildir.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 1,
+                "rowEnd": 1
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 2,
+                "rowEnd": 2
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 3,
+                "rowEnd": 3
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 4,
+                "rowEnd": 4
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 6,
+                "rowEnd": 6
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 7,
+                "rowEnd": 7
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 8,
+                "rowEnd": 8
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 9,
+                "rowEnd": 9
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 10,
+                "rowEnd": 10
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 11,
+                "rowEnd": 11
+              }
+            }
+          ],
+          "status": "available",
+          "value": 17
+        },
+        {
+          "id": "gross-sales",
+          "label": "Brüt tamamlanmış satış",
+          "unit": "TRY",
+          "method": "Tamamlanan satırlarda adet × fiyat toplamı; indirim/iade düşülmeden önce.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 1,
+                "rowEnd": 1
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 2,
+                "rowEnd": 2
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 3,
+                "rowEnd": 3
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 4,
+                "rowEnd": 4
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 6,
+                "rowEnd": 6
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 7,
+                "rowEnd": 7
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 8,
+                "rowEnd": 8
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 9,
+                "rowEnd": 9
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 10,
+                "rowEnd": 10
+              }
+            }
+          ],
+          "status": "available",
+          "value": 2700
+        },
+        {
+          "id": "discounts",
+          "label": "İndirim",
+          "unit": "TRY",
+          "method": "Tamamlanan satışların satır indirimleri toplamı; adet başına uygulanmaz.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 10,
+                "rowEnd": 10
+              }
+            }
+          ],
+          "status": "available",
+          "value": 50
+        },
+        {
+          "id": "refunds",
+          "label": "İade",
+          "unit": "TRY",
+          "method": "İşlenen negatif iade olaylarının mutlak net toplamı.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 11,
+                "rowEnd": 11
+              }
+            }
+          ],
+          "status": "available",
+          "value": 100
+        },
+        {
+          "id": "cancelled",
+          "label": "İptal edilen olay",
+          "unit": "olay",
+          "method": "cancelled durumundaki olay sayısı; satış toplamına girmez.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 5,
+                "rowEnd": 5
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 12,
+                "rowEnd": 12
+              }
+            }
+          ],
+          "status": "available",
+          "value": 2
+        }
+      ],
+      "verifiedDatasets": [
+        {
+          "id": "monthly",
+          "label": "Dönemlere göre net satış",
+          "unit": "TRY",
+          "points": [
+            {
+              "label": "Eylül 2026",
+              "metricId": "september",
+              "value": 1000
+            },
+            {
+              "label": "Ekim 2026",
+              "metricId": "october",
+              "value": 1550
+            }
+          ]
+        },
+        {
+          "id": "categories",
+          "label": "Kategorilere göre net satış",
+          "unit": "TRY",
+          "points": [
+            {
+              "label": "Teknoloji",
+              "metricId": "category-0",
+              "value": 1100
+            },
+            {
+              "label": "Kırtasiye",
+              "metricId": "category-1",
+              "value": 750
+            },
+            {
+              "label": "Aksesuar",
+              "metricId": "category-2",
+              "value": 700
+            }
+          ]
+        }
+      ]
+    },
+    "validationContext": {
+      "analysisId": "synthetic-sales-v1",
+      "objective": "İadeleri, iptalleri ve indirimleri dikkate alarak aylık net satış değişimini ve kategori dağılımını açıkla.",
+      "sources": [
+        {
+          "id": "reference-sales",
+          "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+          "chunks": [
+            {
+              "id": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 1,
+                "rowEnd": 12
+              }
+            }
+          ]
+        }
+      ],
+      "metrics": [
+        {
+          "id": "net-sales",
+          "label": "Net satış",
+          "unit": "TRY",
+          "method": "İptaller hariç; satır indirimi ve işlendiği dönemdeki iade dahil net tutarların toplamı.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 1,
+                "rowEnd": 1
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 2,
+                "rowEnd": 2
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 3,
+                "rowEnd": 3
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 4,
+                "rowEnd": 4
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 5,
+                "rowEnd": 5
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 6,
+                "rowEnd": 6
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 7,
+                "rowEnd": 7
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 8,
+                "rowEnd": 8
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 9,
+                "rowEnd": 9
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 10,
+                "rowEnd": 10
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 11,
+                "rowEnd": 11
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 12,
+                "rowEnd": 12
+              }
+            }
+          ],
+          "status": "available",
+          "value": 2550
+        },
+        {
+          "id": "september",
+          "label": "Eylül 2026",
+          "unit": "TRY",
+          "method": "posted_date Eylül olan, iptal edilmemiş satırların net toplamı.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 1,
+                "rowEnd": 1
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 2,
+                "rowEnd": 2
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 3,
+                "rowEnd": 3
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 4,
+                "rowEnd": 4
+              }
+            }
+          ],
+          "status": "available",
+          "value": 1000
+        },
+        {
+          "id": "october",
+          "label": "Ekim 2026",
+          "unit": "TRY",
+          "method": "posted_date Ekim olan, iptal edilmemiş satırların net toplamı; iade Ekim'de düşülür.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 6,
+                "rowEnd": 6
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 7,
+                "rowEnd": 7
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 8,
+                "rowEnd": 8
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 9,
+                "rowEnd": 9
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 10,
+                "rowEnd": 10
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 11,
+                "rowEnd": 11
+              }
+            }
+          ],
+          "status": "available",
+          "value": 1550
+        },
+        {
+          "id": "change",
+          "label": "Net satış farkı",
+          "unit": "TRY",
+          "method": "Ekim net toplamı eksi Eylül net toplamı.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 1,
+                "rowEnd": 1
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 2,
+                "rowEnd": 2
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 3,
+                "rowEnd": 3
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 4,
+                "rowEnd": 4
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 6,
+                "rowEnd": 6
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 7,
+                "rowEnd": 7
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 8,
+                "rowEnd": 8
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 9,
+                "rowEnd": 9
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 10,
+                "rowEnd": 10
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 11,
+                "rowEnd": 11
+              }
+            }
+          ],
+          "status": "available",
+          "value": 550
+        },
+        {
+          "id": "growth-percent",
+          "label": "Dönem değişimi",
+          "unit": "%",
+          "method": "(Ekim − Eylül) / Eylül × 100; payda Eylül net satışıdır.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 1,
+                "rowEnd": 1
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 2,
+                "rowEnd": 2
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 3,
+                "rowEnd": 3
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 4,
+                "rowEnd": 4
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 6,
+                "rowEnd": 6
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 7,
+                "rowEnd": 7
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 8,
+                "rowEnd": 8
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 9,
+                "rowEnd": 9
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 10,
+                "rowEnd": 10
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 11,
+                "rowEnd": 11
+              }
+            }
+          ],
+          "status": "available",
+          "value": 55
+        },
+        {
+          "id": "category-0",
+          "label": "Teknoloji",
+          "unit": "TRY",
+          "method": "İki dönemde aynı kategorideki iptal edilmemiş satırların net toplamı.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 2,
+                "rowEnd": 2
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 7,
+                "rowEnd": 7
+              }
+            }
+          ],
+          "status": "available",
+          "value": 1100
+        },
+        {
+          "id": "category-1",
+          "label": "Kırtasiye",
+          "unit": "TRY",
+          "method": "İki dönemde aynı kategorideki iptal edilmemiş satırların net toplamı.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 1,
+                "rowEnd": 1
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 3,
+                "rowEnd": 3
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 6,
+                "rowEnd": 6
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 8,
+                "rowEnd": 8
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 11,
+                "rowEnd": 11
+              }
+            }
+          ],
+          "status": "available",
+          "value": 750
+        },
+        {
+          "id": "category-2",
+          "label": "Aksesuar",
+          "unit": "TRY",
+          "method": "İki dönemde aynı kategorideki iptal edilmemiş satırların net toplamı.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 4,
+                "rowEnd": 4
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 9,
+                "rowEnd": 9
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 10,
+                "rowEnd": 10
+              }
+            }
+          ],
+          "status": "available",
+          "value": 700
+        },
+        {
+          "id": "leading-share",
+          "label": "Lider kategori payı",
+          "unit": "%",
+          "method": "Lider kategori net toplamı / iki dönemin tüm net satışı × 100.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 1,
+                "rowEnd": 1
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 2,
+                "rowEnd": 2
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 3,
+                "rowEnd": 3
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 4,
+                "rowEnd": 4
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 6,
+                "rowEnd": 6
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 7,
+                "rowEnd": 7
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 8,
+                "rowEnd": 8
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 9,
+                "rowEnd": 9
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 10,
+                "rowEnd": 10
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 11,
+                "rowEnd": 11
+              }
+            }
+          ],
+          "status": "available",
+          "value": 43.13725490196079
+        },
+        {
+          "id": "net-units",
+          "label": "Net ürün adedi",
+          "unit": "adet",
+          "method": "İptal hariç, negatif iade adedi dahil miktarların toplamı; müşteri sayısı değildir.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 1,
+                "rowEnd": 1
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 2,
+                "rowEnd": 2
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 3,
+                "rowEnd": 3
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 4,
+                "rowEnd": 4
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 6,
+                "rowEnd": 6
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 7,
+                "rowEnd": 7
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 8,
+                "rowEnd": 8
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 9,
+                "rowEnd": 9
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 10,
+                "rowEnd": 10
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 11,
+                "rowEnd": 11
+              }
+            }
+          ],
+          "status": "available",
+          "value": 17
+        },
+        {
+          "id": "gross-sales",
+          "label": "Brüt tamamlanmış satış",
+          "unit": "TRY",
+          "method": "Tamamlanan satırlarda adet × fiyat toplamı; indirim/iade düşülmeden önce.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 1,
+                "rowEnd": 1
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 2,
+                "rowEnd": 2
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 3,
+                "rowEnd": 3
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 4,
+                "rowEnd": 4
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 6,
+                "rowEnd": 6
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 7,
+                "rowEnd": 7
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 8,
+                "rowEnd": 8
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 9,
+                "rowEnd": 9
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 10,
+                "rowEnd": 10
+              }
+            }
+          ],
+          "status": "available",
+          "value": 2700
+        },
+        {
+          "id": "discounts",
+          "label": "İndirim",
+          "unit": "TRY",
+          "method": "Tamamlanan satışların satır indirimleri toplamı; adet başına uygulanmaz.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 10,
+                "rowEnd": 10
+              }
+            }
+          ],
+          "status": "available",
+          "value": 50
+        },
+        {
+          "id": "refunds",
+          "label": "İade",
+          "unit": "TRY",
+          "method": "İşlenen negatif iade olaylarının mutlak net toplamı.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 11,
+                "rowEnd": 11
+              }
+            }
+          ],
+          "status": "available",
+          "value": 100
+        },
+        {
+          "id": "cancelled",
+          "label": "İptal edilen olay",
+          "unit": "olay",
+          "method": "cancelled durumundaki olay sayısı; satış toplamına girmez.",
+          "evidence": [
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 5,
+                "rowEnd": 5
+              }
+            },
+            {
+              "sourceId": "reference-sales",
+              "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+              "chunkId": "reference-sales:table:0001",
+              "locator": {
+                "section": "tablo",
+                "rowStart": 12,
+                "rowEnd": 12
+              }
+            }
+          ],
+          "status": "available",
+          "value": 2
+        }
+      ],
+      "datasets": [
+        {
+          "id": "monthly",
+          "label": "Dönemlere göre net satış",
+          "unit": "TRY",
+          "points": [
+            {
+              "label": "Eylül 2026",
+              "metricId": "september",
+              "value": 1000
+            },
+            {
+              "label": "Ekim 2026",
+              "metricId": "october",
+              "value": 1550
+            }
+          ]
+        },
+        {
+          "id": "categories",
+          "label": "Kategorilere göre net satış",
+          "unit": "TRY",
+          "points": [
+            {
+              "label": "Teknoloji",
+              "metricId": "category-0",
+              "value": 1100
+            },
+            {
+              "label": "Kırtasiye",
+              "metricId": "category-1",
+              "value": 750
+            },
+            {
+              "label": "Aksesuar",
+              "metricId": "category-2",
+              "value": 700
+            }
+          ]
+        }
+      ]
+    },
+    "usage": {
+      "utf8Bytes": 22418,
+      "budgetBytes": 262144,
+      "documents": 1,
+      "chunks": 1
+    }
+  },
+  "result": {
+    "schemaVersion": 1,
+    "analysisId": "synthetic-sales-v1",
+    "objective": "İadeleri, iptalleri ve indirimleri dikkate alarak aylık net satış değişimini ve kategori dağılımını açıkla.",
+    "summary": [
+      {
+        "text": "İki örnek dönemde net satış 2.550 TL. Ekim, Eylül'e göre 550 TL ve %55 artıyor.",
+        "evidence": [
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 5,
+              "rowEnd": 5
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 6,
+              "rowEnd": 6
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 9,
+              "rowEnd": 9
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 11,
+              "rowEnd": 11
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 12,
+              "rowEnd": 12
+            }
+          }
+        ],
+        "metricIds": [
+          "net-sales",
+          "change",
+          "growth-percent"
+        ]
+      },
+      {
+        "text": "Teknoloji en yüksek net satışı üreten kategori. Bu tablo büyümenin nedenini açıklamak için yeterli değil.",
+        "evidence": [
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 6,
+              "rowEnd": 6
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 9,
+              "rowEnd": 9
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 11,
+              "rowEnd": 11
+            }
+          }
+        ],
+        "metricIds": [
+          "category-0",
+          "leading-share"
+        ]
+      }
+    ],
+    "findings": [
+      {
+        "id": "period-change",
+        "title": "İkinci dönemde daha yüksek net satış",
+        "kind": "observation",
+        "statements": [
+          {
+            "text": "Eylül 1.000 TL, Ekim 1.550 TL. 550 TL fark, Eylül net satışına göre %55 değişime karşılık geliyor.",
+            "evidence": [
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 1,
+                  "rowEnd": 1
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 2,
+                  "rowEnd": 2
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 3,
+                  "rowEnd": 3
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 4,
+                  "rowEnd": 4
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 6,
+                  "rowEnd": 6
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 7,
+                  "rowEnd": 7
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 8,
+                  "rowEnd": 8
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 9,
+                  "rowEnd": 9
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 10,
+                  "rowEnd": 10
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 11,
+                  "rowEnd": 11
+                }
+              }
+            ],
+            "metricIds": [
+              "september",
+              "october",
+              "change",
+              "growth-percent"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "category-leader",
+        "title": "Teknoloji toplamda öne çıkıyor",
+        "kind": "observation",
+        "statements": [
+          {
+            "text": "Teknoloji 1.100 TL, Kırtasiye 750 TL, Aksesuar 700 TL. Teknoloji, net toplamın %43,14'ünü oluşturuyor.",
+            "evidence": [
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 1,
+                  "rowEnd": 1
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 2,
+                  "rowEnd": 2
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 3,
+                  "rowEnd": 3
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 4,
+                  "rowEnd": 4
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 6,
+                  "rowEnd": 6
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 7,
+                  "rowEnd": 7
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 8,
+                  "rowEnd": 8
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 9,
+                  "rowEnd": 9
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 10,
+                  "rowEnd": 10
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 11,
+                  "rowEnd": 11
+                }
+              }
+            ],
+            "metricIds": [
+              "category-0",
+              "category-1",
+              "category-2",
+              "leading-share"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "adjustments",
+        "title": "Net tutarı indirim ve iade belirliyor",
+        "kind": "observation",
+        "statements": [
+          {
+            "text": "2.700 TL brüt satıştan 50 TL indirim ve 100 TL iade düşülüyor. 2 iptal satışa katılmıyor; net tutar 2.550 TL.",
+            "evidence": [
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 1,
+                  "rowEnd": 1
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 2,
+                  "rowEnd": 2
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 3,
+                  "rowEnd": 3
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 4,
+                  "rowEnd": 4
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 5,
+                  "rowEnd": 5
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 6,
+                  "rowEnd": 6
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 7,
+                  "rowEnd": 7
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 8,
+                  "rowEnd": 8
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 9,
+                  "rowEnd": 9
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 10,
+                  "rowEnd": 10
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 11,
+                  "rowEnd": 11
+                }
+              },
+              {
+                "sourceId": "reference-sales",
+                "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+                "chunkId": "reference-sales:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 12,
+                  "rowEnd": 12
+                }
+              }
+            ],
+            "metricIds": [
+              "gross-sales",
+              "discounts",
+              "refunds",
+              "cancelled",
+              "net-sales"
+            ]
+          }
+        ]
+      }
+    ],
+    "recommendations": [
+      {
+        "id": "investigate",
+        "action": "Değişimin nedenini değerlendirmek için kampanya, trafik ve maliyet kayıtlarını aynı dönemler üzerinden birlikte inceleyin.",
+        "basisFindingIds": [
+          "period-change",
+          "category-leader"
+        ]
+      }
+    ],
+    "metrics": [
+      {
+        "id": "net-sales",
+        "label": "Net satış",
+        "unit": "TRY",
+        "method": "İptaller hariç; satır indirimi ve işlendiği dönemdeki iade dahil net tutarların toplamı.",
+        "evidence": [
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 5,
+              "rowEnd": 5
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 6,
+              "rowEnd": 6
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 9,
+              "rowEnd": 9
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 11,
+              "rowEnd": 11
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 12,
+              "rowEnd": 12
+            }
+          }
+        ],
+        "status": "available",
+        "value": 2550
+      },
+      {
+        "id": "september",
+        "label": "Eylül 2026",
+        "unit": "TRY",
+        "method": "posted_date Eylül olan, iptal edilmemiş satırların net toplamı.",
+        "evidence": [
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          }
+        ],
+        "status": "available",
+        "value": 1000
+      },
+      {
+        "id": "october",
+        "label": "Ekim 2026",
+        "unit": "TRY",
+        "method": "posted_date Ekim olan, iptal edilmemiş satırların net toplamı; iade Ekim'de düşülür.",
+        "evidence": [
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 6,
+              "rowEnd": 6
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 9,
+              "rowEnd": 9
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 11,
+              "rowEnd": 11
+            }
+          }
+        ],
+        "status": "available",
+        "value": 1550
+      },
+      {
+        "id": "change",
+        "label": "Net satış farkı",
+        "unit": "TRY",
+        "method": "Ekim net toplamı eksi Eylül net toplamı.",
+        "evidence": [
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 6,
+              "rowEnd": 6
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 9,
+              "rowEnd": 9
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 11,
+              "rowEnd": 11
+            }
+          }
+        ],
+        "status": "available",
+        "value": 550
+      },
+      {
+        "id": "growth-percent",
+        "label": "Dönem değişimi",
+        "unit": "%",
+        "method": "(Ekim − Eylül) / Eylül × 100; payda Eylül net satışıdır.",
+        "evidence": [
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 6,
+              "rowEnd": 6
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 9,
+              "rowEnd": 9
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 11,
+              "rowEnd": 11
+            }
+          }
+        ],
+        "status": "available",
+        "value": 55
+      },
+      {
+        "id": "category-0",
+        "label": "Teknoloji",
+        "unit": "TRY",
+        "method": "İki dönemde aynı kategorideki iptal edilmemiş satırların net toplamı.",
+        "evidence": [
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          }
+        ],
+        "status": "available",
+        "value": 1100
+      },
+      {
+        "id": "category-1",
+        "label": "Kırtasiye",
+        "unit": "TRY",
+        "method": "İki dönemde aynı kategorideki iptal edilmemiş satırların net toplamı.",
+        "evidence": [
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 6,
+              "rowEnd": 6
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 11,
+              "rowEnd": 11
+            }
+          }
+        ],
+        "status": "available",
+        "value": 750
+      },
+      {
+        "id": "category-2",
+        "label": "Aksesuar",
+        "unit": "TRY",
+        "method": "İki dönemde aynı kategorideki iptal edilmemiş satırların net toplamı.",
+        "evidence": [
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 9,
+              "rowEnd": 9
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          }
+        ],
+        "status": "available",
+        "value": 700
+      },
+      {
+        "id": "leading-share",
+        "label": "Lider kategori payı",
+        "unit": "%",
+        "method": "Lider kategori net toplamı / iki dönemin tüm net satışı × 100.",
+        "evidence": [
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 6,
+              "rowEnd": 6
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 9,
+              "rowEnd": 9
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 11,
+              "rowEnd": 11
+            }
+          }
+        ],
+        "status": "available",
+        "value": 43.13725490196079
+      },
+      {
+        "id": "net-units",
+        "label": "Net ürün adedi",
+        "unit": "adet",
+        "method": "İptal hariç, negatif iade adedi dahil miktarların toplamı; müşteri sayısı değildir.",
+        "evidence": [
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 6,
+              "rowEnd": 6
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 9,
+              "rowEnd": 9
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 11,
+              "rowEnd": 11
+            }
+          }
+        ],
+        "status": "available",
+        "value": 17
+      },
+      {
+        "id": "gross-sales",
+        "label": "Brüt tamamlanmış satış",
+        "unit": "TRY",
+        "method": "Tamamlanan satırlarda adet × fiyat toplamı; indirim/iade düşülmeden önce.",
+        "evidence": [
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 6,
+              "rowEnd": 6
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 9,
+              "rowEnd": 9
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          }
+        ],
+        "status": "available",
+        "value": 2700
+      },
+      {
+        "id": "discounts",
+        "label": "İndirim",
+        "unit": "TRY",
+        "method": "Tamamlanan satışların satır indirimleri toplamı; adet başına uygulanmaz.",
+        "evidence": [
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          }
+        ],
+        "status": "available",
+        "value": 50
+      },
+      {
+        "id": "refunds",
+        "label": "İade",
+        "unit": "TRY",
+        "method": "İşlenen negatif iade olaylarının mutlak net toplamı.",
+        "evidence": [
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 11,
+              "rowEnd": 11
+            }
+          }
+        ],
+        "status": "available",
+        "value": 100
+      },
+      {
+        "id": "cancelled",
+        "label": "İptal edilen olay",
+        "unit": "olay",
+        "method": "cancelled durumundaki olay sayısı; satış toplamına girmez.",
+        "evidence": [
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 5,
+              "rowEnd": 5
+            }
+          },
+          {
+            "sourceId": "reference-sales",
+            "sha256": "8e2f42f1c1b5fea077eb14e35b6a78867894de42f81546a7ba42ef2af35baa4d",
+            "chunkId": "reference-sales:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 12,
+              "rowEnd": 12
+            }
+          }
+        ],
+        "status": "available",
+        "value": 2
+      }
+    ],
+    "datasets": [
+      {
+        "id": "monthly",
+        "label": "Dönemlere göre net satış",
+        "unit": "TRY",
+        "points": [
+          {
+            "label": "Eylül 2026",
+            "metricId": "september",
+            "value": 1000
+          },
+          {
+            "label": "Ekim 2026",
+            "metricId": "october",
+            "value": 1550
+          }
+        ]
+      },
+      {
+        "id": "categories",
+        "label": "Kategorilere göre net satış",
+        "unit": "TRY",
+        "points": [
+          {
+            "label": "Teknoloji",
+            "metricId": "category-0",
+            "value": 1100
+          },
+          {
+            "label": "Kırtasiye",
+            "metricId": "category-1",
+            "value": 750
+          },
+          {
+            "label": "Aksesuar",
+            "metricId": "category-2",
+            "value": 700
+          }
+        ]
+      }
+    ],
+    "charts": [
+      {
+        "id": "period-chart",
+        "title": "İki dönemi karşılaştırın",
+        "type": "bar",
+        "datasetId": "monthly"
+      },
+      {
+        "id": "category-chart",
+        "title": "Kategorilerin katkısını görün",
+        "type": "horizontal-bar",
+        "datasetId": "categories"
+      }
+    ],
+    "limitations": [
+      "12 sentetik olay ve iki yapay tam ay kullanılır; gerçek işletme performansı veya gelecek dönem tahmini değildir.",
+      "Maliyet ve vergi verisi yoktur; net satış kâr olarak yorumlanamaz.",
+      "Müşteri kimliği bulunmaz; ürün adedi ve olay sayısı müşteri sayısı değildir.",
+      "İade Ekim'de işlenmiştir; Eylül kaydı geriye dönük değiştirilmez.",
+      "Bu kaynak büyümenin nedenini veya bir kampanyanın etkisini kanıtlamaz."
+    ]
+  }
+}

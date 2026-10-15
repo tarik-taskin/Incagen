@@ -11,7 +11,7 @@ npm run build
 npm run build:functions
 ```
 
-`test:run`, uygulama ve Functions testlerini birlikte çalıştırır. `npm run test:references` yalnız referans bütünlüğünü; `npm run test:functions` ayrıştırıcı ve AI sonuç sözleşmesini de kontrol eder. Sonuç sözleşmesi testleri AI çağrısı yapmaz.
+`test:run`, uygulama ve Functions testlerini birlikte çalıştırır. `npm run test:references` yalnız referans bütünlüğünü; `npm run test:functions` ayrıştırıcı ve AI sonuç sözleşmesini de kontrol eder. Sonuç sözleşmesi ve analiz paketi testleri AI çağrısı yapmaz. Satış örneği ham CSV’den yeniden üretilip statik artefaktla ve bağımsız cevaplarla karşılaştırılır. Kaynaklar değişirse `npm run example:build` ile artefaktı yenileyin; sürüm değişimi kuralları referans rehberindedir. Örnek rapor tarayıcı kontrolleri grafik/tablo eşitliği, kaynak satırları, odak/Escape, iki tema, normal/azaltılmış hareket ve mobil taşmayı kapsar.
 
 ## Entegrasyon ve tarayıcı
 

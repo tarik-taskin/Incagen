@@ -43,7 +43,7 @@ Uygulamadaki Plan sekmesi aktif Free sınırlarını ve Premium için planlanan 
 
 ## Teknik sözleşme ve veri sahipliği
 
-TypeScript Cloud Functions kullanılır; bugünkü belge hazırlığında Cloud Tasks ve Python Cloud Run yoktur. Sonraki AI aşaması için aşağıda tanımlanan Python işçisi ve React/ECharts sunumu seçilmiştir; bunlar henüz uygulanmadı. Gelecekte bulut için ayrı dev/prod ve `europe-west1` varsayılır; tam analiz altyapısı henüz dağıtılmadı. Bölge veya saklama değişiklikleri gerçek veri kullanımı öncesinde yeniden değerlendirilir.
+TypeScript Cloud Functions kullanılır; bugünkü belge hazırlığında Cloud Tasks ve Python Cloud Run yoktur. Sonraki AI aşaması için aşağıda tanımlanan Python işçisi ve React/ECharts sunumu seçilmiştir; Python işçisi uygulanmadı, ECharts/Motion sunumu bağımsız sentetik örnekte doğrulanır. Gelecekte bulut için ayrı dev/prod ve `europe-west1` varsayılır; tam analiz altyapısı henüz dağıtılmadı. Bölge veya saklama değişiklikleri gerçek veri kullanımı öncesinde yeniden değerlendirilir.
 
 - `createAnalysis`: doğrulanmış başlık, işletme, zorunlu analiz hedefi ve dosya manifestiyle taslak oluşturur; istemcinin UUID istek kimliği ve içerik fingerprint'i tekrarları tekilleştirir. Hedef 1–500 karakterdir; kenar boşlukları temizlenir, boş hedef yeni hazırlıklarda reddedilir. Eski kayıtlarda hedef bulunmayabilir. Hedef değişirse aynı istek kimliği farklı içerikle tekrar kullanılamaz. Hedef sonuç ekranında görünür; mevcut hazırlama hattı bu metinden AI yorumu üretmez.
 - `prepareAnalysis`: kaynak boyutu, içerik türü, imza, arşiv ve parser sınırlarını backend'de doğrular; normalize artefaktı ve hazırlık özetini kaydeder.
@@ -66,7 +66,7 @@ TypeScript Cloud Functions kullanılır; bugünkü belge hazırlığında Cloud 
 
 Dosya türüne göre ayrıştırma ve gerektiğinde görsel okuma → kaynak konumlu ortak içerik → Python ile doğrulanabilir hesaplamalar → analiz hedefi ve kanıtlarla LLM yorumlama → sürümlü sonuç doğrulaması → React/ECharts ile etkileşimli sunum.
 
-Bu bölüm geliştirme hedefidir. Mevcut kod belge hazırlama hattını çalıştırır; AI sonuç v1 şeması ve güvenilir kaynak/metrik doğrulayıcısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içinde tanımlanan bağımsız modüldür. Bu kapı henüz model çağrısına veya Functions uçlarına bağlanmadı. Python işçisi, OCR, model çağrıları ve ECharts sonraki aşamadadır; bugünkü kurulum komutları değişmez.
+Bu bölüm geliştirme hedefidir. Mevcut kod belge hazırlama hattını çalıştırır; AI sonuç v1 şeması ve güvenilir kaynak/metrik doğrulayıcısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içinde tanımlanan bağımsız modüldür. Bu kapı henüz model çağrısına veya Functions uçlarına bağlanmadı. Python işçisi, OCR ve model çağrıları sonraki aşamadadır. Analiz veri paketi ile `/ornek-rapor` sentetik satış sunumu [AI sonuç rehberinde](docs/AI-RESULTS.md#analiz-veri-paketi--v1) tanımlıdır; mevcut hazırlık kayıtları veya bulut uçları bu rapora bağlanmaz.
 
 ```mermaid
 flowchart LR
