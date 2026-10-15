@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import sales from "../../../fixtures/analysis-reference/v1/sales.expected.json";
 import feedback from "../../../fixtures/analysis-reference/v1/customer-feedback.expected.json";
-import { aiResultJsonSchema, validateAiResult, type AiResult, type AiResultValidationContext } from "./result-contract";
+import { aiResultJsonSchema, aiResultSchema, validateAiResult, type AiResult, type AiResultValidationContext } from "./result-contract";
 
 // İki bağımsız doğrulanan cevap anahtarından yalnız test girdisi üretir; anahtarlar üretime/model bağlamına taşınmaz.
 function sample(kind: "sales" | "feedback") {
@@ -32,6 +32,15 @@ describe("AI sonuç v1: yapı, kaynak ve doğrulanmış hesap bağları", () => 
     const before = JSON.stringify({ result, context });
     expect(validateAiResult(result, context)).toEqual(result);
     expect(JSON.stringify({ result, context })).toBe(before);
+  });
+
+  it("ayrık kaynak aralıkları 256 ile sınırlı kalır", () => {
+    const { result } = sample("sales");
+    const expanded = structuredClone(result);
+    expanded.metrics[0].evidence = Array.from({ length: 256 }, () => result.metrics[0].evidence[0]);
+    expect(aiResultSchema.safeParse(expanded).success).toBe(true);
+    expanded.metrics[0].evidence.push(result.metrics[0].evidence[0]);
+    expect(aiResultSchema.safeParse(expanded).success).toBe(false);
   });
 
   it("yayımlanmış JSON Schema'yı kodun tek kaynağıyla eşit tutar", () => {

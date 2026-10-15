@@ -51,10 +51,21 @@ export function createCompanyReport(documents: ParsedDocument[], period: Company
   const salesSource = documents.find(item => item.sourceId === "atlas-sales");
   const budgetSource = documents.find(item => item.sourceId === "atlas-budget");
   const operationSource = documents.find(item => item.sourceId === "atlas-operations");
-  if (documents.length !== 3 || !salesSource || !budgetSource || !operationSource) throw new Error("Şirket örneğinin üç kaynağı bulunmalı.");
+  if (![3, 5].includes(documents.length) || !salesSource || !budgetSource || !operationSource) throw new Error("Şirket örneğinin üç kaynağı bulunmalı.");
   const allSales = sourceRows(salesSource), allBudget = sourceRows(budgetSource), allOperations = sourceRows(operationSource);
-  if (allSales.length !== 864 || allBudget.length !== 12 || allOperations.length !== 72) throw new Error("Şirket örneğinin kaynak satır sayısı değişti.");
-  if (new Set(allSales.map(row => row.values.record_id)).size !== 864) throw new Error("Şirket örneğinde yinelenen satış kaydı.");
+  const enterprise = documents.length === 5;
+  if (allSales.length !== (enterprise ? 3456 : 864) || allBudget.length !== 12 || allOperations.length !== (enterprise ? 144 : 72)) throw new Error("Şirket örneğinin kaynak satır sayısı değişti.");
+  if (new Set(allSales.map(row => row.values.record_id)).size !== allSales.length) throw new Error("Şirket örneğinde yinelenen satış kaydı.");
+  const narrativeSources = documents.filter(source => ["atlas-review", "atlas-commercial"].includes(source.sourceId));
+  if (enterprise && (narrativeSources.length !== 2 || !narrativeSources.some(source => source.extension === "pdf" && source.metadata.pages === 7) || !narrativeSources.some(source => source.extension === "docx") || narrativeSources.some(source => !source.chunks.every(chunk => chunk.text?.trim())))) throw new Error("Kurumsal örneğin PDF/Word kaynakları eksik.");
+  const briefings = narrativeSources.map(source => {
+    const chunk = source.extension === "pdf" ? source.chunks.find(item => item.locator.page === 7)! : source.chunks.find(item => item.text?.includes("Müşteri edinme maliyeti"))!;
+    if (!chunk) throw new Error("Yönetim değerlendirmesinin kaynak bölümü eksik.");
+    const text = source.extension === "pdf" ? "Kanal yatırımı kararı için brüt marj, sipariş başına katkı ve karşılanabilen talep birlikte incelenmelidir." : "Müşteri edinme maliyeti, tekrar satın alma, kanal komisyonu ve müşteri yaşam boyu değeri bu dosyada ayrı ölçülmemiştir.";
+    const excerptChunk = source.chunks.find(item => item.text?.replace(/\s+/g, " ").includes(text));
+    if (!excerptChunk) throw new Error("Belge alıntısı özgün kaynakta bulunamadı.");
+    return { sourceId: source.sourceId, title: source.extension === "pdf" ? "Kanal yatırımını katkıyla birlikte okuyun." : "Karardan önce eksik bağlamı tamamlayın.", text, evidence: [{ sourceId: source.sourceId, sha256: source.sha256, chunkId: excerptChunk.id, locator: excerptChunk.locator }] };
+  });
   const { months, label } = COMPANY_PERIODS[period];
   const contains = (row: Row) => Number(row.values.period.slice(-2)) >= months[0] && Number(row.values.period.slice(-2)) <= months[1];
   const sales = allSales.filter(contains), budgets = allBudget.filter(contains), operations = allOperations.filter(contains);
@@ -117,5 +128,5 @@ export function createCompanyReport(documents: ParsedDocument[], period: Company
     charts: [{ id: "trend", title: "Gelirin aylık ritmi", type: "line", datasetId: "monthly-net" }, { id: "category", title: "Kategori katkısı", type: "horizontal-bar", datasetId: "categories" }, { id: "channel", title: "Gelir nereden geliyor?", type: "donut", datasetId: "channels" }, { id: "region", title: "Bölgesel performans", type: "bar", datasetId: "regions" }, { id: "profit", title: "Brüt kârın seyri", type: "line", datasetId: "monthly-profit" }, { id: "service", title: "Teslimat performansı", type: "bar", datasetId: "monthly-service" }],
     limitations: ["Tüm tutarlar TRY ve KDV hariçtir; kaynak satırları aylık kırılım toplamlarıdır, tekil işlem değildir.", "Brüt kâr ve katkı, net kâr değildir. İşletme giderleri, vergi ve finansman maliyetleri bu pakette yoktur.", "Bütçe hedefleriyle gerçekleşenler aynı aylarda karşılaştırılır. Tam yıl seçimi 2025'in 12 ayını kapsar.", "Teslimat oranı toplamlar üzerinden ağırlıklı hesaplanır; müşteri sayısı veya memnuniyet puanı değildir.", "Kanal/kategori ilişkileri gözlemdir; kampanya etkisi veya nedensellik kanıtlanmaz."],
   }, context);
-  return { period, periodLabel: label, result, monthly, categories, channels, regions, sourceRows: sales.length + budgets.length + operations.length };
+  return { period, periodLabel: label, result, monthly, categories, channels, regions, briefings, sourceRows: sales.length + budgets.length + operations.length };
 }

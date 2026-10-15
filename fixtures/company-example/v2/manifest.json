@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "synthetic": true,
+  "company": "Atlas Perakende",
+  "year": 2025,
+  "files": [
+    {
+      "sourceId": "atlas-sales",
+      "file": "atlas-satis-2025.csv",
+      "rows": 3456,
+      "sha256": "5cdfcb93189c4f93ac738d8f9203407ee7287247c5e5a3c3374ddca55f538235"
+    },
+    {
+      "sourceId": "atlas-budget",
+      "file": "atlas-butce-2025.csv",
+      "rows": 12,
+      "sha256": "c9a5b85c3380152de1a4bd28286852e891920803a111604ec4b6590cc6e19a52"
+    },
+    {
+      "sourceId": "atlas-operations",
+      "file": "atlas-operasyon-2025.csv",
+      "rows": 144,
+      "sha256": "f2c56950e17b6258b879f89c971fb0a98e7f07767664c63de623b874bce87dfe"
+    },
+    {
+      "sourceId": "atlas-review",
+      "file": "atlas-performans-2025.pdf",
+      "pages": 7,
+      "sha256": "df82486674dfd83d631d16c930918e2843419a052af9de20dfadcf141e15fe78"
+    },
+    {
+      "sourceId": "atlas-commercial",
+      "file": "atlas-ticari-degerlendirme-2025.docx",
+      "pages": 5,
+      "sha256": "207187e66e6200c2d9dc97fb939d536174188f1b0539abb3258753285fe7c067"
+    }
+  ]
+}

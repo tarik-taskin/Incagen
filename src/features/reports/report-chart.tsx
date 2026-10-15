@@ -13,6 +13,7 @@ interface Props { dataset: Dataset; comparison?: Dataset; type: AiResult["charts
 
 // Büyük değerleri eksende okunabilir tutar; tooltip ve tabloda tam değer korunur.
 function axisNumber(value: number) {
+  if (Math.abs(value) >= 1_000_000_000) return new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 2 }).format(value / 1_000_000_000) + " mlr";
   if (Math.abs(value) >= 1_000_000) return new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 1 }).format(value / 1_000_000) + " mn";
   if (Math.abs(value) >= 10_000) return new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 0 }).format(value / 1000) + " bin";
   return new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 1 }).format(value);

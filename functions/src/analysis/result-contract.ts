@@ -12,7 +12,8 @@ export const sourceLocatorSchema = z.object({
   .refine(value => (value.rowStart === undefined) === (value.rowEnd === undefined), "Satır aralığının iki sınırı da belirtilmeli.")
   .refine(value => value.rowStart === undefined || value.rowEnd! >= value.rowStart, "Satır aralığı ters olamaz.");
 const evidenceSchema = z.object({ sourceId: id, sha256: hash, chunkId: id, locator: sourceLocatorSchema }).strict();
-const evidenceList = z.array(evidenceSchema).min(1).max(100);
+// Çok boyutlu kurumsal raporlarda ayrık satır aralıklarını korur; kanıt listesi yine sınırlıdır.
+const evidenceList = z.array(evidenceSchema).min(1).max(256);
 const metricBase = z.object({ id, label: z.string().trim().min(1).max(200), unit: z.string().trim().min(1).max(32), method: text, evidence: evidenceList }).strict();
 const metricSchema = z.discriminatedUnion("status", [
   metricBase.extend({ status: z.literal("available"), value: z.number().finite() }).strict(),

@@ -7,6 +7,15 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-15 — Furkan / Codex: çok formatlı kurumsal örnek dosyası
+
+- [~] Sahip: Furkan — Şirket örneğini sürümlü, daha geniş satış/operasyon verileri ve gerçek PDF/DOCX kaynaklarla büyüt; indirilen belgeleri parser, bağımsız hesap ve sayfa düzeni açısından doğrula.
+- [~] Sahip: Furkan — Kaynak kütüphanesini ve belge inceleme deneyimini format, sayfa/bölüm ve özgün indirme desteğiyle geliştir; raporun kurumsal sunumunu güçlendir.
+
+Kabul: Önceki v1 örneği korunmalı; PDF ve Word içerikleri raporla aynı hesaplardan üretilmeli, gerçek parser çıktısı ve hash/konumları kullanılmalı. Örnek kimliği korunmalı; gerçek müşteri veya AI üretimi iddiası yapılmamalı. Mobil, iki tema, klavye, azaltılmış hareket ve metin kaynaklarında arama doğrulanmalı. Belgeler render edilip tüm sayfalar incelenmeli. Zorunlu kalite kontrolleri geçmeli; local/remote main/furkan eşit, çalışma ağacı temiz ve Netlify son sürüm olmalı.
+
+- [~] Sahip: Furkan — Plan kartları ve karşılaştırmada Standard/High analiz derinliği ile Premium veri bağlantılarını göster; mevcut kapasite ve pasif üyelik davranışını koru, mobil ve iki temada doğrula.
+
 ### 2026-10-15 — Furkan / Codex: kapsamlı yönetim raporu deneyimi
 
 - [x] Sahip: Furkan — Örnek raporu 12 aylık çok boyutlu şirket veri seti, bütçe ve operasyon kaynaklarıyla genişlet; metrik/grafik/tablo hesaplarını ve kaynak kapsamlarını doğrula.

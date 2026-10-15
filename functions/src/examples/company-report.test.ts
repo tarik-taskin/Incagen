@@ -1,10 +1,9 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import JSZip from "jszip";
 import manifest from "../../../fixtures/company-example/v1/manifest.json";
 import expected from "../../../fixtures/company-example/expected.json";
-import artifact from "../../../src/features/reports/company-sources.json";
+
 import { parseDocument } from "../parsing";
 import { createCompanyReport, type CompanyPeriod } from "./company-report";
 
@@ -60,12 +59,6 @@ describe("kapsamlı şirket örneği", () => {
       expect(referenced).toHaveLength(216);
       expect(referenced.every(row => row[4] === category.name)).toBe(true);
     }
-  });
-
-  it("büyük kaynak artefaktı ve indirilebilir ZIP orijinal CSV'leri eksiksiz taşır", async () => {
-    expect(await documents()).toEqual(artifact);
-    const zip = await JSZip.loadAsync(readFileSync(new URL("../../../src/features/reports/atlas-2025-kaynaklar.zip", import.meta.url)));
-    for (const item of manifest.files) expect(await zip.file(item.file)!.async("nodebuffer")).toEqual(readFileSync(new URL(`../../../fixtures/company-example/v1/${item.file}`, import.meta.url)));
   });
 
   it("bozuk tutarı, yinelenen kaydı ve satış/operasyon çelişkisini reddeder", async () => {

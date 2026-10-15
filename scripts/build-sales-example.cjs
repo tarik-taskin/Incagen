@@ -18,10 +18,10 @@ async function main() {
   if (process.argv.includes("--check")) {
     if (fs.readFileSync(destination, "utf8") !== serialized) throw new Error("Statik örnek raporu yeniden üretin: npm run example:build");
   } else fs.writeFileSync(destination, serialized);
-  const folder = path.join(root, "fixtures/company-example/v1");
+  const folder = path.join(root, "fixtures/company-example/v2");
   const manifest = JSON.parse(fs.readFileSync(path.join(folder, "manifest.json"), "utf8"));
   const documents = await Promise.all(manifest.files.map(async item => {
-    const document = await parseDocument({ sourceId: item.sourceId, fileName: item.file, contentType: "text/csv", data: fs.readFileSync(path.join(folder, item.file)) });
+    const document = await parseDocument({ sourceId: item.sourceId, fileName: item.file, contentType: item.file.endsWith(".pdf") ? "application/pdf" : item.file.endsWith(".docx") ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document" : "text/csv", data: fs.readFileSync(path.join(folder, item.file)) });
     if (document.sha256 !== item.sha256) throw new Error("Şirket örneğinin kaynak hash'i değişmiş.");
     return document;
   }));
@@ -38,6 +38,15 @@ async function main() {
   } else {
     fs.writeFileSync(companyDestination, companySerialized);
     fs.writeFileSync(archiveDestination, archive);
+  }
+  const originalFolder = path.join(root, "src/features/reports/originals");
+  if (!process.argv.includes("--check")) fs.mkdirSync(originalFolder, { recursive: true });
+  for (const item of manifest.files) {
+    const data = fs.readFileSync(path.join(folder, item.file));
+    const target = path.join(originalFolder, item.file);
+    if (process.argv.includes("--check")) {
+      if (!fs.readFileSync(target).equals(data)) throw new Error("Özgün belge indirmesi kaynakla eşleşmiyor.");
+    } else fs.writeFileSync(target, data);
   }
   console.log("Sentetik örnek rapor: parser, metrikler ve kaynak bağları doğrulandı.");
 }

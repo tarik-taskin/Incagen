@@ -30,7 +30,7 @@
           },
           "evidence": {
             "minItems": 1,
-            "maxItems": 100,
+            "maxItems": 256,
             "type": "array",
             "items": {
               "type": "object",
@@ -151,7 +151,7 @@
                 },
                 "evidence": {
                   "minItems": 1,
-                  "maxItems": 100,
+                  "maxItems": 256,
                   "type": "array",
                   "items": {
                     "type": "object",
@@ -309,7 +309,7 @@
               },
               "evidence": {
                 "minItems": 1,
-                "maxItems": 100,
+                "maxItems": 256,
                 "type": "array",
                 "items": {
                   "type": "object",
@@ -418,7 +418,7 @@
               },
               "evidence": {
                 "minItems": 1,
-                "maxItems": 100,
+                "maxItems": 256,
                 "type": "array",
                 "items": {
                   "type": "object",

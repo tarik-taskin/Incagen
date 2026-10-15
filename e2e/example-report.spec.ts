@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import gold from "../fixtures/company-example/expected.json" with { type: "json" };
+import gold from "../fixtures/company-example/v2/expected.json" with { type: "json" };
 
 // Raporun tamamı ve açık dialog için kritik erişilebilirlik ihlallerini durdurur.
 async function accessibility(page: Page) {
@@ -21,14 +21,14 @@ test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı 
   let dialog = page.getByRole("dialog", { name: "Net satış", exact: true });
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole("row")).toHaveCount(26);
-  await expect(dialog.getByRole("status")).toHaveText("1–25 / 864 kayıt");
+  await expect(dialog.getByRole("status")).toHaveText("1–25 / 3456 kayıt");
   await dialog.getByRole("button", { name: "Sonraki kaynak sayfası" }).click();
-  await expect(dialog.getByRole("status")).toHaveText("26–50 / 864 kayıt");
+  await expect(dialog.getByRole("status")).toHaveText("26–50 / 3456 kayıt");
   await dialog.getByRole("textbox", { name: "Kaynak satırlarında ara" }).fill("ATL-00501");
   await expect(dialog.getByRole("status")).toHaveText("1–1 / 1 kayıt");
   await expect(dialog.getByRole("rowheader", { name: /501/ })).toBeVisible();
-  await dialog.getByRole("textbox", { name: "Kaynak satırlarında ara" }).fill("ATL-00864");
-  await expect(dialog.getByRole("rowheader", { name: /864/ })).toBeVisible();
+  await dialog.getByRole("textbox", { name: "Kaynak satırlarında ara" }).fill("ATL-03456");
+  await expect(dialog.getByRole("rowheader", { name: /3456/ })).toBeVisible();
   await dialog.getByRole("textbox", { name: "Kaynak satırlarında ara" }).fill("olmayan-kayit");
   await expect(dialog.getByText("Aramanızla eşleşen kaynak satırı yok.")).toBeVisible();
   await accessibility(page);
@@ -43,9 +43,9 @@ test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı 
   await page.getByRole("button", { name: "Aylık net satış veri tablosu" }).click();
   await expect(page.getByRole("table", { name: "Aylık net satış, TRY" }).locator("tbody tr")).toHaveCount(12);
   await page.getByRole("button", { name: "Aylık net satış Oca kaynağı" }).click();
-  await expect(page.getByRole("dialog", { name: "Oca", exact: true }).getByRole("status")).toHaveText("1–25 / 72 kayıt");
+  await expect(page.getByRole("dialog", { name: "Oca", exact: true }).getByRole("status")).toHaveText("1–25 / 288 kayıt");
   await page.getByLabel("Tüm kaynak satırları").check();
-  await expect(page.getByRole("dialog").getByRole("status")).toHaveText("1–25 / 864 kayıt");
+  await expect(page.getByRole("dialog").getByRole("status")).toHaveText("1–25 / 3456 kayıt");
   await page.keyboard.press("Escape");
 
   for (const id of ["category", "channel", "region", "profit", "service"]) {
@@ -53,7 +53,7 @@ test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı 
     await expect(page.getByTestId(`chart-${id}`).locator("path[fill='#7351b5'], path[stroke='#7351b5']").first()).toBeVisible();
   }
   await page.getByTestId("chart-category").locator("path[fill='#7351b5']").first().click();
-  await expect(page.getByRole("dialog", { name: "Elektronik", exact: true })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Bahçe", exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("table", { name: "Kanal performansı", exact: true }).locator("tbody tr")).toHaveCount(3);
   await expect(page.getByRole("table", { name: "Gelirden katkıya hesap mutabakatı" })).toContainText(exactMoney(gold.year.contribution));
@@ -62,7 +62,7 @@ test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı 
   await expect(page).toHaveURL(/period=q4/);
   await expect(page.getByRole("button", { name: `Net satış ${exactMoney(gold.q4.net)}`, exact: true })).toBeVisible();
   await expect(page.getByRole("table", { name: "Aylık performans, 2025 · Son çeyrek" }).locator("tbody tr")).toHaveCount(3);
-  await expect(page.getByText("237 kayıt inceleniyor")).toBeVisible();
+  await expect(page.getByText("903 kayıt inceleniyor")).toBeVisible();
   await page.reload();
   await expect(page.getByRole("button", { name: "Son çeyrek", exact: true })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Tam yıl", exact: true }).click();
@@ -73,10 +73,34 @@ test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı 
   await expect(page.getByRole("button", { name: "Tam yıl", exact: true })).toHaveAttribute("aria-pressed", "true");
 
   await page.getByRole("link", { name: "Kaynaklar", exact: true }).click();
-  await page.getByRole("button", { name: /Satış bütçesi atlas-butce/ }).click();
+  await page.getByRole("article").filter({ has: page.getByRole("heading", { name: "Satış bütçesi", exact: true }) }).getByRole("button", { name: "Belgeyi incele" }).click();
   dialog = page.getByRole("dialog", { name: "Satış bütçesi", exact: true });
   await expect(dialog.getByRole("row")).toHaveCount(13);
   await page.keyboard.press("Escape");
+  for (const [title, format, query] of [["Yıllık performans raporu", "PDF", "Kanal yatırımı"], ["Ticari değerlendirme", "DOCX", "Müşteri edinme maliyeti"]]) {
+    const card = page.getByRole("article").filter({ has: page.getByRole("heading", { name: title, exact: true }) });
+    await expect(card).toContainText(format);
+    await card.getByRole("button", { name: "Belgeyi incele", exact: true }).click();
+    const reader = page.getByRole("dialog", { name: title, exact: true });
+    await expect(reader.getByRole("article").first()).toBeVisible();
+    if (format === "PDF") await expect(reader.getByRole("article")).toHaveCount(7);
+    await reader.getByRole("textbox", { name: "Belge metninde ara" }).fill(query);
+    await expect(reader.locator("mark").first()).toBeVisible();
+    await reader.getByRole("textbox", { name: "Belge metninde ara" }).fill("olmayan-kayit");
+    await expect(reader.getByText("Belgede aramanızla eşleşen bölüm yok.")).toBeVisible();
+    await reader.getByRole("textbox", { name: "Belge metninde ara" }).fill("");
+    await accessibility(page);
+    const received = page.waitForEvent("download");
+    await reader.getByRole("link", { name: `${title} özgün dosyasını indir` }).click();
+    const file = await received;
+    expect(file.suggestedFilename()).toMatch(format === "PDF" ? /\.pdf$/ : /\.docx$/);
+    expect(await file.failure()).toBeNull();
+    await page.screenshot({ path: testInfo.outputPath(`document-reader-${format}.png`) });
+    await page.keyboard.press("Escape");
+    await expect(card.getByRole("button", { name: "Belgeyi incele", exact: true })).toBeFocused();
+  }
+  await page.getByRole("link", { name: "Kaynaklar", exact: true }).click();
+  await page.screenshot({ path: testInfo.outputPath("enterprise-library.png") });
   for (const id of ["trend", "category", "channel", "region", "profit", "service"]) {
     await page.getByTestId(`chart-${id}`).scrollIntoViewIfNeeded();
     await expect(page.getByTestId(`chart-${id}`).locator("path[fill='#7351b5'], path[stroke='#7351b5']").first()).toBeVisible();
@@ -91,6 +115,11 @@ test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı 
   await accessibility(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= (window.visualViewport?.width ?? innerWidth))).toBe(true);
   await page.screenshot({ path: testInfo.outputPath("company-full-dark.png"), fullPage: true });
+  await page.getByRole("article").filter({ has: page.getByRole("heading", { name: "Ticari değerlendirme", exact: true }) }).getByRole("button", { name: "Belgeyi incele" }).click();
+  await expect(page.getByRole("dialog", { name: "Ticari değerlendirme", exact: true })).toBeVisible();
+  await accessibility(page);
+  await page.screenshot({ path: testInfo.outputPath("document-reader-dark.png") });
+  await page.keyboard.press("Escape");
   await page.getByRole("link", { name: "Analize başla", exact: true }).click();
   await expect(page.getByRole("dialog", { name: "Giriş yap" })).toBeVisible();
 });
@@ -102,7 +131,7 @@ test("hareketli raporda filtre, kaynak sekmeleri ve indirme kullanılabilir kal�
   await expect(page.getByRole("button", { name: `Net satış ${exactMoney(gold.h1.net)}`, exact: true })).toBeVisible();
   await page.getByRole("button", { name: /Bütçe gerçekleşmesi/ }).click();
   const dialog = page.getByRole("dialog", { name: "Bütçe gerçekleşmesi", exact: true });
-  await dialog.getByRole("button", { name: /Satış bütçesi 12 kaynak satırı/ }).click();
+  await dialog.getByRole("button", { name: /Satış bütçesi 12 satır/ }).click();
   await expect(dialog.getByRole("status")).toHaveText("1–6 / 6 kayıt");
   await page.getByRole("button", { name: "Kaynak incelemesini kapat" }).click();
   await expect(dialog).toHaveCount(0);
