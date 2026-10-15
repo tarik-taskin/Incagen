@@ -9,12 +9,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ### 2026-10-15 — Furkan / Codex: çok formatlı kurumsal örnek dosyası
 
-- [~] Sahip: Furkan — Şirket örneğini sürümlü, daha geniş satış/operasyon verileri ve gerçek PDF/DOCX kaynaklarla büyüt; indirilen belgeleri parser, bağımsız hesap ve sayfa düzeni açısından doğrula.
-- [~] Sahip: Furkan — Kaynak kütüphanesini ve belge inceleme deneyimini format, sayfa/bölüm ve özgün indirme desteğiyle geliştir; raporun kurumsal sunumunu güçlendir.
+- [x] Sahip: Furkan — Şirket örneğini sürümlü, daha geniş satış/operasyon verileri ve gerçek PDF/DOCX kaynaklarla büyüt; indirilen belgeleri parser, bağımsız hesap ve sayfa düzeni açısından doğrula.
+- [x] Sahip: Furkan — Kaynak kütüphanesini ve belge inceleme deneyimini format, sayfa/bölüm ve özgün indirme desteğiyle geliştir; raporun kurumsal sunumunu güçlendir.
 
 Kabul: Önceki v1 örneği korunmalı; PDF ve Word içerikleri raporla aynı hesaplardan üretilmeli, gerçek parser çıktısı ve hash/konumları kullanılmalı. Örnek kimliği korunmalı; gerçek müşteri veya AI üretimi iddiası yapılmamalı. Mobil, iki tema, klavye, azaltılmış hareket ve metin kaynaklarında arama doğrulanmalı. Belgeler render edilip tüm sayfalar incelenmeli. Zorunlu kalite kontrolleri geçmeli; local/remote main/furkan eşit, çalışma ağacı temiz ve Netlify son sürüm olmalı.
 
-- [~] Sahip: Furkan — Plan kartları ve karşılaştırmada Standard/High analiz derinliği ile Premium veri bağlantılarını göster; mevcut kapasite ve pasif üyelik davranışını koru, mobil ve iki temada doğrula.
+- [x] Sahip: Furkan — Plan kartları ve karşılaştırmada Standard/High analiz derinliği ile Google Analytics/Microsoft Clarity Premium bağlantılarını göster; mevcut kapasite ve pasif üyelik davranışını koru, mobil ve iki temada doğrula.
+
+Doğrulama: 46 uygulama + 92 Functions testi, lint, frontend/Functions derlemeleri, 3 entegrasyon ve son Analytics/Clarity kapsamıyla 18/18 masaüstü/mobil senaryo geçti. PDF’nin 7 ve Word’ün 5 sayfası render edilip incelendi; başlık çizgisi, metin aralığı ve başlık birleşmesi düzeltildi. V2, 3.456 satış + 12 bütçe + 144 operasyon kaydı taşır; dört dönem toplamları bağımsız Decimal cevaplarıyla, belge alıntıları gerçek metin/hash/konumla eşleşti. ZIP ve tekli indirmeler özgün beş dosyanın baytlarını korur; UTC artefakt kontrolü, 38 yerel belge bağlantısı ve önceki v1 üretim eşitliği geçti. PDF/Word araması, sayfa/metin bölümü, normal/azaltılmış hareket, iki tema, klavye/odak ve taşma doğrulandı. Plan kartları, karşılaştırma ve bilgi kutusu Standard/High ile Google Analytics/Microsoft Clarity kapsamını paylaşır; Ads yoktur, ödeme/OAuth veya model çağrısı eklenmedi. Canlı yayındaki 14 dosya ve 7 rota yerel release ile eşleşti.
 
 ### 2026-10-15 — Furkan / Codex: kapsamlı yönetim raporu deneyimi
 
