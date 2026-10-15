@@ -55,10 +55,19 @@ test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru y
   await navigation.getByRole("link", { name: "Plan" }).click();
   await expect(page.getByRole("heading", { name: "Planınızı ve sınırlarınızı görün" })).toBeVisible();
   await expect(page.getByText("AI analiz katmanı")).toHaveCount(0);
-  await expect(page.getByText("Harici veri bağlantıları")).toHaveCount(0);
+  await expect(page.locator("dl").getByRole("definition").filter({ hasText: /High$/ })).toBeVisible();
+  await expect(page.locator("dl").getByRole("definition").filter({ hasText: /Standard$/ })).toBeVisible();
+  await expect(page.locator("dl").getByRole("definition").filter({ hasText: "Google Analytics ve Microsoft Clarity" })).toBeVisible();
+  const premiumCard = page.getByRole("article").filter({ has: page.getByRole("heading", { name: "Premium", exact: true }) });
+  await expect(premiumCard.getByRole("button", { name: "Premium'a geç" })).toBeDisabled();
   await expectNoAccessibilityViolations(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath("plan-dark.png"), fullPage: true });
+  await page.getByRole("button", { name: "Aydınlık moda geç" }).click();
+  await expectNoAccessibilityViolations(page);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath("plan-light.png"), fullPage: true });
+  await page.getByRole("button", { name: "Karanlık moda geç" }).click();
   await navigation.getByRole("link", { name: "Yeni analiz" }).click();
 
   await page.getByRole("button", { name: "Premium’a geç" }).click();

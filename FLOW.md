@@ -21,11 +21,11 @@ Oturumlu çalışma alanında Incagen logosu yeni analiz ekranına gider. Çalı
 | Analiz başına toplam boyut | 25 MB | 50 MB |
 | Belge formatları | Tablo, belge, sunum, veri ve görsel | Tablo, belge, sunum, veri ve görsel |
 | AI derinliği (henüz etkin değil) | Standard | High |
-| Harici kaynak | Yok | Önce Google Analytics, sonra Microsoft Clarity |
+| Harici kaynak | Yok | Google Analytics ve Microsoft Clarity |
 
 Premium ödeme ve yetkilendirmeleri henüz uygulanmadı. Mevcut oturumlar Free kabul edilir. Günlük kota sunucunun `Europe/Istanbul` takvim gününe göredir; işlem başında transaction ile rezerve edilir. Başarısız işlemde iade edilir; tamamlanmış analizi silmek kotayı geri getirmez. Aynı istek ve tekrarlanan çalıştırmalar çift kota tüketmez.
 
-Uygulamadaki Plan sekmesi aktif Free sınırlarını ve Premium için planlanan adet/boyut kapasitesini karşılaştırır; henüz sunulmayan AI derinliği ve harici veri bağlantılarını karşılaştırma satırlarında göstermez. Premium ödeme ve yetkilendirme etkin özellik gibi sunulmaz.
+Uygulamadaki Plan sekmesi aktif Free sınırlarını ve Premium için planlanan adet/boyut kapasitesini karşılaştırır; Standard/High analiz derinliğini ve Premium veri bağlantılarını ürün kapsamı olarak kartlarda ve karşılaştırmada gösterir. Bu sunum model veya OAuth bağlantılarını etkinleştirmez. Premium karşılaştırma kapsamı Ayarlar’daki Google Analytics ve Microsoft Clarity kaynaklarıyla aynıdır. Premium ödeme ve yetkilendirme etkin özellik gibi sunulmaz.
 
 ## Belge hazırlama davranışı
 
@@ -66,7 +66,7 @@ TypeScript Cloud Functions kullanılır; bugünkü belge hazırlığında Cloud 
 
 Dosya türüne göre ayrıştırma ve gerektiğinde görsel okuma → kaynak konumlu ortak içerik → Python ile doğrulanabilir hesaplamalar → analiz hedefi ve kanıtlarla LLM yorumlama → sürümlü sonuç doğrulaması → React/ECharts ile etkileşimli sunum.
 
-Bu bölüm geliştirme hedefidir. Mevcut kod belge hazırlama hattını çalıştırır; AI sonuç v1 şeması ve güvenilir kaynak/metrik doğrulayıcısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içinde tanımlanan bağımsız modüldür. Bu kapı henüz model çağrısına veya Functions uçlarına bağlanmadı. Python işçisi, OCR ve model çağrıları sonraki aşamadadır. Analiz veri paketi ile `/ornek-rapor` 12 aylık şirket sunumu [AI sonuç rehberinde](docs/AI-RESULTS.md#analiz-veri-paketi--v1) tanımlıdır; mevcut hazırlık kayıtları veya bulut uçları bu rapora bağlanmaz.
+Bu bölüm geliştirme hedefidir. Mevcut kod belge hazırlama hattını çalıştırır; AI sonuç v1 şeması ve güvenilir kaynak/metrik doğrulayıcısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içinde tanımlanan bağımsız modüldür. Bu kapı henüz model çağrısına veya Functions uçlarına bağlanmadı. Python işçisi, OCR ve model çağrıları sonraki aşamadadır. Analiz veri paketi ile `/ornek-rapor` 12 aylık CSV/PDF/Word şirket sunumu [AI sonuç rehberinde](docs/AI-RESULTS.md#analiz-veri-paketi--v1) tanımlıdır; mevcut hazırlık kayıtları veya bulut uçları bu rapora bağlanmaz.
 
 ```mermaid
 flowchart LR

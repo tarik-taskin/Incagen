@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Crown, FileStack, Gauge, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, Crown, FileStack, Gauge, Link2, ShieldCheck, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PLAN_RULES } from "../features/plans/plan-rules";
 
@@ -23,7 +23,7 @@ function PlanCard({ plan, premium }: { plan: Plan; premium: boolean }) {
     </div>
     <h2 className="mt-6 text-2xl font-semibold tracking-tight">{plan.label}</h2>
     <p className="mt-2 min-h-12 max-w-md text-sm leading-6 text-muted-foreground">
-      {premium ? "Daha kapsamlı çalışmalar için tasarlanan günlük analiz ve belge kapasitesi." : "Belgeleri güvenle hazırlamaya ve analiz geçmişinizi oluşturmaya başlamak için mevcut plan."}
+      {premium ? "High analiz derinliği, daha geniş belge kapasitesi ve ek veri bağlantılarıyla kapsamlı çalışmalar için tasarlandı." : "Belgeleri güvenle hazırlamaya ve analiz geçmişinizi oluşturmaya başlamak için mevcut plan."}
     </p>
     <div className="mt-7 flex items-end gap-2 border-b border-border pb-6">
       <span className="text-5xl font-semibold tracking-[-0.07em]">{plan.dailyAnalysisLimit}</span>
@@ -33,10 +33,12 @@ function PlanCard({ plan, premium }: { plan: Plan; premium: boolean }) {
       <div className="rounded-2xl bg-muted/55 p-4"><p className="text-xs text-muted-foreground">Analiz başına</p><p className="mt-1 text-lg font-semibold">{plan.filesPerAnalysis} dosya</p></div>
       <div className="rounded-2xl bg-muted/55 p-4"><p className="text-xs text-muted-foreground">Toplam boyut</p><p className="mt-1 text-lg font-semibold">{megabytes(plan.totalBytes)}</p></div>
     </div>
+    <div className="mt-5 flex items-center justify-between gap-3 rounded-2xl border border-primary/15 bg-primary/[0.04] px-4 py-3 dark:border-secondary/20 dark:bg-secondary/[0.04]"><span className="flex items-center gap-2 text-xs text-muted-foreground"><Sparkles className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" />Analiz derinliği</span><span className="rounded-full border border-primary/15 bg-card px-3 py-1 text-xs font-semibold text-primary dark:border-secondary/20 dark:text-secondary">{plan.analysisDepth}</span></div>
     <ul className="mt-6 space-y-3 text-sm">
       <li className="flex gap-3"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary dark:text-secondary" aria-hidden="true" /><span>İki planda da aynı belge formatları</span></li>
       <li className="flex gap-3"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary dark:text-secondary" aria-hidden="true" /><span>Dosyalar için ayrı boyut sınırı yok; analiz toplamı geçerli</span></li>
     </ul>
+    <div className="mt-5 rounded-2xl border border-border/70 p-4"><p className="flex items-center gap-2 text-xs font-semibold"><Link2 className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" />Veri bağlantıları</p><p className="mt-2 text-xs leading-6 text-muted-foreground">{premium ? plan.externalSources : "Çalışmalarınız için yüklediğiniz belgeler"}</p></div>
     <div className="mt-auto pt-8">
       {premium
         ? <button type="button" disabled className="min-h-11 w-full cursor-not-allowed rounded-xl border border-primary/20 bg-primary/10 px-5 text-sm font-semibold text-primary/60 dark:border-secondary/20 dark:bg-secondary/10 dark:text-secondary/60">Premium'a geç</button>
@@ -53,6 +55,8 @@ export function PlanPage() {
     { label: "Günlük analiz", icon: Gauge, free: free.dailyAnalysisLimit + " analiz", premium: premium.dailyAnalysisLimit + " analiz" },
     { label: "Analiz başına dosya", icon: FileStack, free: free.filesPerAnalysis + " dosya", premium: premium.filesPerAnalysis + " dosya" },
     { label: "Analiz başına toplam", icon: FileStack, free: megabytes(free.totalBytes), premium: megabytes(premium.totalBytes) },
+    { label: "Analiz derinliği", icon: Sparkles, free: free.analysisDepth, premium: premium.analysisDepth },
+    { label: "Veri bağlantıları", icon: Link2, free: free.externalSources, premium: premium.externalSources },
   ];
 
   return <section className="mx-auto w-full max-w-6xl" aria-labelledby="plan-title">
@@ -62,7 +66,7 @@ export function PlanPage() {
       <div className="relative z-10 max-w-2xl">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/75">Çalışma alanı / Plan</p>
         <h1 id="plan-title" className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Planınızı ve sınırlarınızı görün</h1>
-        <p className="mt-4 text-sm leading-7 text-white/80 sm:text-base">Bugün kullanabildiğiniz Free kapasitesini ve üyelik açıldığında sunulacak Premium sınırlarını tek yerde karşılaştırın.</p>
+        <p className="mt-4 text-sm leading-7 text-white/80 sm:text-base">Bugün kullanabildiğiniz Free kapasitesini ve üyelik açıldığında sunulacak Premium kapasitesini, analiz derinliğini ve veri bağlantılarını tek yerde karşılaştırın.</p>
         <span className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold"><Check className="h-4 w-4" aria-hidden="true" /> Şu anki planınız: Free</span>
       </div>
     </div>
