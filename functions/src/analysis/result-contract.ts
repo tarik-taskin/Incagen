@@ -4,14 +4,14 @@ const id = z.string().trim().min(1).max(200);
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const text = z.string().trim().min(1).max(4000);
 const ids = z.array(id).max(100);
-const locatorSchema = z.object({
+export const sourceLocatorSchema = z.object({
   page: z.number().int().positive().optional(), sheet: z.string().trim().min(1).max(200).optional(),
   slide: z.number().int().positive().optional(), section: z.string().trim().min(1).max(200).optional(),
   rowStart: z.number().int().positive().optional(), rowEnd: z.number().int().positive().optional(),
 }).strict().refine(value => Object.keys(value).length > 0, "Kaynak konumu boş olamaz.")
   .refine(value => (value.rowStart === undefined) === (value.rowEnd === undefined), "Satır aralığının iki sınırı da belirtilmeli.")
   .refine(value => value.rowStart === undefined || value.rowEnd! >= value.rowStart, "Satır aralığı ters olamaz.");
-const evidenceSchema = z.object({ sourceId: id, sha256: hash, chunkId: id, locator: locatorSchema }).strict();
+const evidenceSchema = z.object({ sourceId: id, sha256: hash, chunkId: id, locator: sourceLocatorSchema }).strict();
 const evidenceList = z.array(evidenceSchema).min(1).max(100);
 const metricBase = z.object({ id, label: z.string().trim().min(1).max(200), unit: z.string().trim().min(1).max(32), method: text, evidence: evidenceList }).strict();
 const metricSchema = z.discriminatedUnion("status", [
@@ -38,7 +38,7 @@ export const aiResultSchema = z.object({
 // Güvenilir bağlam backend/parser/hesaplayıcı tarafından sağlanır; model çıktısından oluşturulmaz.
 const validationContextSchema = z.object({
   analysisId: id, objective: z.string().trim().min(1).max(500),
-  sources: z.array(z.object({ id, sha256: hash, chunks: z.array(z.object({ id, locator: locatorSchema }).strict()).min(1).max(1000) }).strict()).min(1).max(20),
+  sources: z.array(z.object({ id, sha256: hash, chunks: z.array(z.object({ id, locator: sourceLocatorSchema }).strict()).min(1).max(1000) }).strict()).min(1).max(20),
   metrics: z.array(metricSchema).max(100), datasets: z.array(datasetSchema).max(20),
 }).strict();
 
@@ -99,18 +99,26 @@ function validateDataset(dataset: Dataset, metrics: Map<string, Metric>) {
   }
 }
 
-// Sonucu güvenilir girdiye bağlar; geçerli yapı, serbest metnin anlamsal doğruluğunun kanıtı değildir.
-export function validateAiResult(input: unknown, trustedInput: unknown): AiResult {
+// Parser ve hesaplayıcı bağlamını modelden bağımsız doğrular; paket üreticisi de aynı kapıyı kullanır.
+export function validateAiResultContext(trustedInput: unknown): AiResultValidationContext {
   const context = validationContextSchema.parse(trustedInput);
-  const result = aiResultSchema.parse(input);
-  if (result.analysisId !== context.analysisId || result.objective !== context.objective) throw new Error("Sonuç farklı çalışmaya/hedefe ait.");
   const sources = registry(context.sources, "Kaynak");
   for (const source of sources.values()) registry(source.chunks, "Kaynak parçası");
   const trustedMetrics = registry(context.metrics, "Güvenilir metrik");
   const trustedDatasets = registry(context.datasets, "Güvenilir veri kümesi");
   for (const metric of trustedMetrics.values()) validateEvidence(metric.evidence, sources);
   for (const dataset of trustedDatasets.values()) validateDataset(dataset, trustedMetrics);
+  return context;
+}
 
+// Sonucu güvenilir girdiye bağlar; geçerli yapı, serbest metnin anlamsal doğruluğunun kanıtı değildir.
+export function validateAiResult(input: unknown, trustedInput: unknown): AiResult {
+  const context = validateAiResultContext(trustedInput);
+  const result = aiResultSchema.parse(input);
+  if (result.analysisId !== context.analysisId || result.objective !== context.objective) throw new Error("Sonuç farklı çalışmaya/hedefe ait.");
+  const sources = registry(context.sources, "Kaynak");
+  const trustedMetrics = registry(context.metrics, "Güvenilir metrik");
+  const trustedDatasets = registry(context.datasets, "Güvenilir veri kümesi");
   const metrics = registry(result.metrics, "Sonuç metriği");
   const datasets = registry(result.datasets, "Sonuç veri kümesi");
   const findings = registry(result.findings, "Bulgu");
