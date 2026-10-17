@@ -9,7 +9,7 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ### 2026-10-17 — Furkan / Codex: mobil çeviri taşması ve CI kabulü
 
-- [~] Sahip: Furkan — Almanca/İspanyolca örnek raporda CI tarafından yakalanan mobil yatay taşmayı gider; uzun çeviri ve farklı fontlarla regresyon kontrolü ekle. Son GitHub Quality çalışması, dal eşitliği ve Netlify sürümünü doğrula.
+- [~] Sahip: Furkan — Kurumsal örneğin üst menüsünde ve müşteri deneyimi örneğinin sayım birimlerinde CI tarafından yakalanan mobil yatay taşmayı gider; iki raporda uzun çeviri ve farklı fontlarla regresyon kontrolü ekle. Son GitHub Quality çalışması, dal eşitliği ve Netlify sürümünü doğrula.
 
 Kabul: Taşma gizlenmeden metin ve kontroller dar ekrana sığmalı; testin genişlik sınırı gevşetilmemeli. Zorunlu yerel kontroller ve son commit’in GitHub Quality çalışması geçmeli; main/furkan local/remote eşit, çalışma ağacı temiz, canlı yayın son commit olmalı.
 

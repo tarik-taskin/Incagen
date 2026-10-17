@@ -1,3 +1,5 @@
+import { afterEach } from "vitest";
+import { setLocale, t } from "../../i18n/runtime";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { AiResult } from "../../../functions/src/analysis/result-contract";
@@ -9,6 +11,16 @@ vi.mock("./report-chart", () => ({ ReportChart: ({ dataset }: { dataset: { label
 vi.mock("./report-primitives", () => ({ ReportReveal: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 
 describe("uyarlanabilir sonuç sunumu", () => {
+  afterEach(() => setLocale("tr"));
+  it("Arapça ikil sayımın yerel ifadesine gereksiz sayı eklemez", () => {
+    setLocale("ar");
+    const result = structuredClone(example.result) as AiResult;
+    result.metrics.find(metric => metric.id === "comments")!.value = 2;
+    render(<AdaptiveReport result={result} sources={example.sources} featuredMetricIds={["comments"]} />);
+    const metric = screen.getByRole("button", { name: new RegExp(t("İncelenen yorum")) });
+    expect(metric).toHaveAccessibleName(new RegExp("تعليقان"));
+    expect(metric).not.toHaveTextContent("٢");
+  });
   it("finans kimlikleri gerektirmeden farklı metrik ve grafikler sunar; eksik değeri sıfır yapmaz", () => {
     render(<AdaptiveReport result={example.result as AiResult} sources={example.sources} featuredMetricIds={["comments", "csat"]} />);
     expect(screen.getByRole("button", { name: /Memnuniyet puanı/ })).toHaveTextContent("—");
