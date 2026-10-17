@@ -9,9 +9,11 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ### 2026-10-17 — Furkan / Codex: mobil çeviri taşması ve CI kabulü
 
-- [~] Sahip: Furkan — Kurumsal örneğin üst menüsünde ve müşteri deneyimi örneğinin sayım birimlerinde CI tarafından yakalanan mobil yatay taşmayı gider; iki raporda uzun çeviri ve farklı fontlarla regresyon kontrolü ekle. Son GitHub Quality çalışması, dal eşitliği ve Netlify sürümünü doğrula.
+- [x] Sahip: Furkan — Kurumsal örneğin üst menüsünde ve müşteri deneyimi örneğinin sayım birimlerinde CI tarafından yakalanan mobil yatay taşmayı gider; iki raporda uzun çeviri ve farklı fontlarla regresyon kontrolü ekle. Son GitHub Quality çalışması, dal eşitliği ve Netlify sürümünü doğrula.
 
 Kabul: Taşma gizlenmeden metin ve kontroller dar ekrana sığmalı; testin genişlik sınırı gevşetilmemeli. Zorunlu yerel kontroller ve son commit’in GitHub Quality çalışması geçmeli; main/furkan local/remote eşit, çalışma ağacı temiz, canlı yayın son commit olmalı.
+
+Doğrulama: Üst menüde uzun eylem metni ve metrik kartlarında uzun sayım birimi olmak üzere iki taşma nedeni düzeltildi; yatay taşma gizlenmedi ve test sınırı gevşetilmedi. İki raporda 6 dil × 2 genişlik × 2 font ile 48 düzen birleşimi geçti. Tam yerel sayı/birim ifadesi ekran okuyucuda, Arapça ikil biçim korunarak sunulur. Lint, 59 uygulama + 95 Functions testi, derlemeler, 34 tarayıcı senaryosu ve 3 Firebase entegrasyonu doğrulandı; [GitHub Quality kontrolü](https://github.com/tarik-taskin/Incagen/actions/runs/39039943603) Linux üzerinde tüm adımları geçti. Dört dal aynı düzeltme commit’ine eşitlendi; Netlify yayınının 16 dosyası SHA-256 ile, 8 rotası uygulama iskeletiyle yerel release’e eşleşti.
 
 ### 2026-10-17 — Furkan / Codex: uyarlanabilir raporlar ve çok dilli deneyim
 
