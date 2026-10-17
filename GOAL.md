@@ -9,13 +9,15 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ### 2026-10-17 — Furkan / Codex: uyarlanabilir raporlar ve çok dilli deneyim
 
-- [~] Sahip: Furkan — Doğrulanmış sonuç sözleşmesinden farklı analiz türlerini sunan ortak rapor bileşenleri oluştur; mevcut kurumsal raporda ayrıntıları erişilebilir açılır bölümlerde koru.
-- [~] Sahip: Furkan — İnsan etiketli müşteri geri bildirimleri referansından kaynaklı ikinci örnek rapor üret; tema/sorun/duygu ayrımını, paydaları ve eksik veriyi doğrula; olumlu ağırlıklı 32 yorumluk sunum setini özgün değerlendirme referansından ayrı tut.
-- [~] Sahip: Furkan — Türkçe, İngilizce, Almanca, İspanyolca, basitleştirilmiş Çince ve Arapça için merkezi metin kaynakları, kalıcı dil seçimi, yerelleştirilmiş biçimler ve RTL düzeni ekle.
+- [x] Sahip: Furkan — Doğrulanmış sonuç sözleşmesinden farklı analiz türlerini sunan ortak rapor bileşenleri oluştur; mevcut kurumsal raporda ayrıntıları erişilebilir açılır bölümlerde koru.
+- [x] Sahip: Furkan — İnsan etiketli müşteri geri bildirimleri referansından kaynaklı ikinci örnek rapor üret; tema/sorun/duygu ayrımını, paydaları ve eksik veriyi doğrula; olumlu ağırlıklı 32 yorumluk sunum setini özgün değerlendirme referansından ayrı tut.
+- [x] Sahip: Furkan — Türkçe, İngilizce, Almanca, İspanyolca, basitleştirilmiş Çince ve Arapça için merkezi metin kaynakları, kalıcı dil seçimi, yerelleştirilmiş biçimler ve RTL düzeni ekle.
 
-- [~] Sahip: Furkan — Tüm açılır pencereleri dış alana dokunarak kapat; içerideki etkileşimleri, sürüklemeyi, Escape/odak dönüşünü ve devam eden silme işlemlerini koru.
+- [x] Sahip: Furkan — Tüm açılır pencereleri dış alana dokunarak kapat; içerideki etkileşimleri, sürüklemeyi, Escape/odak dönüşünü ve devam eden silme işlemlerini koru.
 
 Kabul: Bilgi kaybolmadan ilk görünüm sadeleşmeli; kaynak belgeler ve kullanıcı girdileri otomatik çevrilmemeli. Yeni örnek AI üretimi gibi gösterilmemeli; mevcut kaynaklar ve hesaplar korunmalı. Dil değişimi taslağı/oturumu/rotayı korumalı; klavye, iki tema, mobil, azaltılmış hareket ve Arapça yönü doğrulanmalı. Lint, birim, frontend/Functions build, entegrasyon ve tarayıcı kontrolleri geçmeli. Local/remote main/furkan eşit, çalışma ağacı temiz ve Netlify son sürüm olmalı.
+
+Doğrulama: 58 uygulama + 95 Functions testi, lint, frontend/Functions ve cloud-preview derlemeleri, 3 entegrasyon ve 32/32 masaüstü/mobil senaryo geçti. Altı katalog 777 ortak anahtar ve eşleşen yer tutucular taşır; Çince dil adları, Arapça RTL, metin/sayı biçimleri, taslak korunumu ve kaynak metinlerinin değişmemesi doğrulandı. Kurumsal örneğin hesap ve özgün dosyaları korundu. Yazılım deneyimi örneğinin 32 yorumu, 26 olumlu/5 olumsuz/1 karma dağılımı, çoklu temaları, eksik CSAT değeri ve tam yorum dayanakları bağımsız cevaplarla eşleşti; önceki sekiz yorumluk değerlendirme seti değiştirilmedi. Kaynak, giriş ve silme pencerelerinde dış fare/dokunma, içeride tıklama, sürükleme/iptal, işlem kilidi ve odak dönüşü doğrulandı. Canlı yayındaki 16 dosya SHA-256 ile ve 8 rota uygulama iskeletiyle yerel release’e eşleşti; Netlify’ın eklediği HTML açıklama satırı karşılaştırma dışında tutuldu.
 
 ### 2026-10-15 — Furkan / Codex: çok formatlı kurumsal örnek dosyası
 
