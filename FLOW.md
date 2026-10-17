@@ -10,6 +10,14 @@ Canlı Netlify derlemesi ve `npm run dev` ile açılan yerel önizleme aynı uyg
 
 Oturumlu çalışma alanında Incagen logosu yeni analiz ekranına gider. Çalışma alanındaki “Nasıl çalışır?” yardım bağlantısı, anlatımın bulunduğu temiz `/` ana sayfa adresini açar; ana sayfa üstünde yinelenen yardım düğmesi yoktur. Eski `/#nasil-calisir` adresi `/` ile değiştirilir. İç sayfa gezinmesi tarayıcı geçmişine eklenir, böylece geri/ileri düğmeleri gerçek ekranlar arasında çalışır. Tanıtım bölümü mevcut belge hazırlama ve arşiv adımlarını açıklar; henüz etkin olmayan AI yorumlarını çalışan özellik gibi göstermez. Canlı Auth görünümünde geçmiş kayıtları okunmaz; boş durum kartı yeni analiz ekranına geçiş sağlar.
 
+## Dil ve rapor deneyimi
+
+Arayüz Türkçe, İngilizce, Almanca, İspanyolca, basitleştirilmiş Çince ve Arapça sunulur. Dil seçimi tarayıcıda korunur; rota, oturum ve taslak sıfırlanmaz. Dil adları seçili dilde gösterilir. Arapça RTL yerleşim, sayılar/tarihler seçili yerel biçimi kullanır. Kullanıcı girdileri ve özgün kaynak belgeler çevrilmez. Kaynaklar [dil rehberinde](docs/LOCALIZATION.md) tanımlıdır.
+
+Raporlarda özet ve bulgular öndedir; tablolar, yönetim notları, kaynak dosyaları ve yöntem ayrıntıları açılır bölümlerde korunur. Bölüm bağlantısı kapalı ayrıntıyı açar. Kurumsal performans ve insan etiketli müşteri deneyimi örnekleri aynı bulgu/kaynak bileşenlerini kullanır; genel `AdaptiveReport` sayısal veri olmadan metin raporu sunabilir ve eksik ölçümü sıfır yapmaz. Örnekler model/servis çağırmaz, kullanıcı hesabına yazılmaz. Yeni örnek `/ornek-rapor/musteri-deneyimi` yolundadır; kaynak yorumlar özgün dillerinde kalır.
+
+Açılır pencereler, içerik dışındaki fare tıklaması veya dokunmayla kapanır. İçerideki etkileşimler, dışarı taşan sürükleme ve devam eden silme işlemleri kapatılmaz; Escape ve odak dönüşü korunur. Ortak davranış [dil ve rapor rehberinde](docs/LOCALIZATION.md#pencere-kapatma) açıklanır.
+
 ## Free ve Premium
 
 Ürün limitlerinin belge kaynağı bu tablodur. Frontend plan bilgileri merkezi plan kurallarında, backend uygulanmış Free sınırları ortak analiz sözleşmesinde tutulur; değişiklikte üçü birlikte doğrulanır.

@@ -77,8 +77,11 @@ test("kayıt, belge hazırlığı, geçmiş, silme ve çıkış", async ({ page 
   await nav.getByRole("link", { name: "Geçmiş" }).click();
   await page.getByRole("link", { name: /Eylül faaliyet analizi/ }).click();
   await expect(page).toHaveURL(reportUrl);
-  page.once("dialog", dialog => dialog.accept());
   await page.getByRole("button", { name: "Analizi ve belgeleri sil" }).click();
+  await page.mouse.click(2, 2);
+  await expect(page.getByRole("alertdialog")).not.toBeVisible();
+  await page.getByRole("button", { name: "Analizi ve belgeleri sil" }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Analizi sil", exact: true }).click();
   await expect(page.getByText("Henüz analiziniz yok.")).toBeVisible();
   await nav.getByRole("link", { name: "Ayarlar" }).click();
   await page.getByRole("button", { name: "Çıkış yap" }).click();
@@ -157,7 +160,7 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
   await menu.getByRole("button", { name: "Analizi sil", exact: true }).click();
   const confirmation = page.getByRole("alertdialog");
   await expect(confirmation).toContainText("Bu işlem geri alınamaz");
-  await confirmation.getByRole("button", { name: "Vazgeç" }).click();
+  await page.mouse.click(2, 2);
   await expect(confirmation).not.toBeVisible();
   await expect(history.getByRole("listitem")).toHaveCount(2);
 

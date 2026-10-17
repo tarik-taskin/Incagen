@@ -41,3 +41,11 @@ npm run dev:emulator
 Terminaldeki adresi kullanın. Gerçek Auth hesabıyla test hesabı ayrı tutulur. Servis portları 9099, 8080, 9199 ve 5001; yardımcı portlar 4400, 4500 ve 9150'dir. Playwright sunucusu 4173 kullanır.
 
 Stil değişikliğinde iki tema, mobil taşma, klavye odağı ve `prefers-reduced-motion` davranışı incelenir. Testlerin geçmesi bulut IAM/App Check, gerçek saklama politikası veya LLM'nin anlamsal doğruluğunu kanıtlamaz. Ayrı kabul kriterleri [GOAL](../GOAL.md) ve [AI değerlendirme protokolünde](../fixtures/analysis-reference/evaluation.md) tutulur.
+
+## Dil ve farklı rapor türleri
+
+[Çok dilli arayüz ve rapor rehberi](LOCALIZATION.md), katalogları ve özgün içerik sınırını tanımlar. `src/i18n/runtime.test.ts` altı dilin anahtar/yer tutucularını ve statik kullanım kapsamını kontrol eder. `e2e/localization.spec.ts` dil menüsünü, form taslağını, örnekleri ve çalışma alanını masaüstü/mobilde doğrular. İnsan etiketli yorum hesapları `functions/src/examples/feedback-report.test.ts` içinde bağımsız cevaplarla karşılaştırılır.
+
+```bash
+node scripts/build-feedback-example.cjs --check
+```

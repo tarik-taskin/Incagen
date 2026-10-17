@@ -1,0 +1,3872 @@
+{
+  "result": {
+    "schemaVersion": 1,
+    "analysisId": "synthetic-feedback-v1",
+    "objective": "Yorumlardaki tekrar eden sorunları, olumlu deneyimleri ve iyileştirme önceliklerini kaynaklarıyla özetle.",
+    "summary": [
+      {
+        "text": "Olumlu deneyimler çoğunlukta: 32 yorumun 26’sı olumlu. Kullanım kolaylığı, rapor kalitesi ve destek öne çıkıyor; ilk kullanım akışındaki küçük pürüzler iyileştirme alanı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 5,
+              "rowEnd": 5
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 6,
+              "rowEnd": 6
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 9,
+              "rowEnd": 9
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 11,
+              "rowEnd": 11
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 12,
+              "rowEnd": 12
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 13,
+              "rowEnd": 13
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 14,
+              "rowEnd": 14
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 15,
+              "rowEnd": 15
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 16,
+              "rowEnd": 16
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 17,
+              "rowEnd": 17
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 18,
+              "rowEnd": 18
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 19,
+              "rowEnd": 19
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 20,
+              "rowEnd": 20
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 21,
+              "rowEnd": 21
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 22,
+              "rowEnd": 22
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 23,
+              "rowEnd": 23
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 24,
+              "rowEnd": 24
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 25,
+              "rowEnd": 25
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 26,
+              "rowEnd": 26
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 27,
+              "rowEnd": 27
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 28,
+              "rowEnd": 28
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 29,
+              "rowEnd": 29
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 30,
+              "rowEnd": 30
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 31,
+              "rowEnd": 31
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 32,
+              "rowEnd": 32
+            }
+          }
+        ],
+        "metricIds": [
+          "comments",
+          "negative-share",
+          "problem-comments",
+          "positive-comments",
+          "theme-usability",
+          "problem-usability",
+          "theme-support",
+          "problem-support",
+          "theme-reporting",
+          "problem-reporting",
+          "theme-performance",
+          "problem-performance",
+          "sentiment-positive",
+          "sentiment-negative",
+          "sentiment-mixed"
+        ]
+      }
+    ],
+    "findings": [
+      {
+        "id": "usability",
+        "title": "İlk kullanımı daha da kolaylaştırın",
+        "kind": "interpretation",
+        "statements": [
+          {
+            "text": "32 yorumun üçünde kaynaklara ulaşma, hedefi anlama veya mobil filtreleri bulma konusunda pürüzler var. Bu öncelik yalnız örnekteki tekrar sıklığına dayanıyor.",
+            "evidence": [
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 1,
+                  "rowEnd": 1
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 2,
+                  "rowEnd": 2
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 3,
+                  "rowEnd": 3
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 4,
+                  "rowEnd": 4
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 5,
+                  "rowEnd": 5
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 6,
+                  "rowEnd": 6
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 7,
+                  "rowEnd": 7
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 8,
+                  "rowEnd": 8
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 9,
+                  "rowEnd": 9
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 10,
+                  "rowEnd": 10
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 11,
+                  "rowEnd": 11
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 12,
+                  "rowEnd": 12
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 13,
+                  "rowEnd": 13
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 14,
+                  "rowEnd": 14
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 15,
+                  "rowEnd": 15
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 16,
+                  "rowEnd": 16
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 17,
+                  "rowEnd": 17
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 18,
+                  "rowEnd": 18
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 19,
+                  "rowEnd": 19
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 20,
+                  "rowEnd": 20
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 21,
+                  "rowEnd": 21
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 22,
+                  "rowEnd": 22
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 23,
+                  "rowEnd": 23
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 24,
+                  "rowEnd": 24
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 25,
+                  "rowEnd": 25
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 26,
+                  "rowEnd": 26
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 27,
+                  "rowEnd": 27
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 28,
+                  "rowEnd": 28
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 29,
+                  "rowEnd": 29
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 30,
+                  "rowEnd": 30
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 31,
+                  "rowEnd": 31
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 32,
+                  "rowEnd": 32
+                }
+              }
+            ],
+            "metricIds": [
+              "problem-usability",
+              "comments"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "positive",
+        "title": "İyi deneyimin de izini sürün",
+        "kind": "observation",
+        "statements": [
+          {
+            "text": "26 olumlu yorumda anlaşılır raporlar, kaynaklara erişim, akıcı kullanım ve destek öne çıkıyor. Olumlu yorumlar sorun sayımına eklenmiyor.",
+            "evidence": [
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 1,
+                  "rowEnd": 1
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 2,
+                  "rowEnd": 2
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 3,
+                  "rowEnd": 3
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 4,
+                  "rowEnd": 4
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 5,
+                  "rowEnd": 5
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 6,
+                  "rowEnd": 6
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 7,
+                  "rowEnd": 7
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 8,
+                  "rowEnd": 8
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 9,
+                  "rowEnd": 9
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 10,
+                  "rowEnd": 10
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 11,
+                  "rowEnd": 11
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 12,
+                  "rowEnd": 12
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 13,
+                  "rowEnd": 13
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 14,
+                  "rowEnd": 14
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 15,
+                  "rowEnd": 15
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 16,
+                  "rowEnd": 16
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 17,
+                  "rowEnd": 17
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 18,
+                  "rowEnd": 18
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 19,
+                  "rowEnd": 19
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 20,
+                  "rowEnd": 20
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 21,
+                  "rowEnd": 21
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 22,
+                  "rowEnd": 22
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 23,
+                  "rowEnd": 23
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 24,
+                  "rowEnd": 24
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 25,
+                  "rowEnd": 25
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 26,
+                  "rowEnd": 26
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 27,
+                  "rowEnd": 27
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 28,
+                  "rowEnd": 28
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 29,
+                  "rowEnd": 29
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 30,
+                  "rowEnd": 30
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 31,
+                  "rowEnd": 31
+                }
+              },
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 32,
+                  "rowEnd": 32
+                }
+              }
+            ],
+            "metricIds": [
+              "positive-comments"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "mixed",
+        "title": "Bir yorum, iki farklı deneyim",
+        "kind": "interpretation",
+        "statements": [
+          {
+            "text": "F007 grafikleri anlaşılır buluyor, mobil filtrelere ulaşmak için fazla kaydırdığını söylüyor. Rapor kalitesiyle kullanım pürüzü ayrı tutuluyor.",
+            "evidence": [
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 7,
+                  "rowEnd": 7
+                }
+              }
+            ],
+            "metricIds": []
+          }
+        ]
+      },
+      {
+        "id": "performance",
+        "title": "Büyük belge deneyimini ölçün",
+        "kind": "observation",
+        "statements": [
+          {
+            "text": "F008 büyük belgelerde kaynak listesinin bazen geç açıldığını belirtiyor. Kaynakta süre ölçümü yok; yorumdan kesin bir gecikme değeri çıkarılmıyor.",
+            "evidence": [
+              {
+                "sourceId": "reference-feedback",
+                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "chunkId": "reference-feedback:table:0001",
+                "locator": {
+                  "section": "tablo",
+                  "rowStart": 8,
+                  "rowEnd": 8
+                }
+              }
+            ],
+            "metricIds": []
+          }
+        ]
+      }
+    ],
+    "recommendations": [
+      {
+        "id": "usability-review",
+        "action": "Kaynak erişimini, analiz hedefi ipuçlarını ve mobil filtrelerin görünürlüğünü kullanım testleriyle değerlendirin.",
+        "basisFindingIds": [
+          "usability"
+        ]
+      },
+      {
+        "id": "performance-review",
+        "action": "Büyük belgelerde kaynak listesinin açılış süresini ölçün; F008’deki deneyimi ölçümle doğrulayın.",
+        "basisFindingIds": [
+          "performance"
+        ]
+      }
+    ],
+    "metrics": [
+      {
+        "id": "comments",
+        "label": "İncelenen yorum",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 5,
+              "rowEnd": 5
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 6,
+              "rowEnd": 6
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 9,
+              "rowEnd": 9
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 11,
+              "rowEnd": 11
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 12,
+              "rowEnd": 12
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 13,
+              "rowEnd": 13
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 14,
+              "rowEnd": 14
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 15,
+              "rowEnd": 15
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 16,
+              "rowEnd": 16
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 17,
+              "rowEnd": 17
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 18,
+              "rowEnd": 18
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 19,
+              "rowEnd": 19
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 20,
+              "rowEnd": 20
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 21,
+              "rowEnd": 21
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 22,
+              "rowEnd": 22
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 23,
+              "rowEnd": 23
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 24,
+              "rowEnd": 24
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 25,
+              "rowEnd": 25
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 26,
+              "rowEnd": 26
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 27,
+              "rowEnd": 27
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 28,
+              "rowEnd": 28
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 29,
+              "rowEnd": 29
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 30,
+              "rowEnd": 30
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 31,
+              "rowEnd": 31
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 32,
+              "rowEnd": 32
+            }
+          }
+        ],
+        "status": "available",
+        "value": 32
+      },
+      {
+        "id": "negative-share",
+        "label": "Olumsuz yorum payı",
+        "unit": "%",
+        "method": "İnsan etiketlerinde olumsuz yorum / 32 benzersiz yorum × 100; müşteri kitlesinin memnuniyet oranı değildir.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 5,
+              "rowEnd": 5
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 6,
+              "rowEnd": 6
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 9,
+              "rowEnd": 9
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 11,
+              "rowEnd": 11
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 12,
+              "rowEnd": 12
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 13,
+              "rowEnd": 13
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 14,
+              "rowEnd": 14
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 15,
+              "rowEnd": 15
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 16,
+              "rowEnd": 16
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 17,
+              "rowEnd": 17
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 18,
+              "rowEnd": 18
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 19,
+              "rowEnd": 19
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 20,
+              "rowEnd": 20
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 21,
+              "rowEnd": 21
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 22,
+              "rowEnd": 22
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 23,
+              "rowEnd": 23
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 24,
+              "rowEnd": 24
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 25,
+              "rowEnd": 25
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 26,
+              "rowEnd": 26
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 27,
+              "rowEnd": 27
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 28,
+              "rowEnd": 28
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 29,
+              "rowEnd": 29
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 30,
+              "rowEnd": 30
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 31,
+              "rowEnd": 31
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 32,
+              "rowEnd": 32
+            }
+          }
+        ],
+        "status": "available",
+        "value": 15.625
+      },
+      {
+        "id": "problem-comments",
+        "label": "Sorun bildirilen yorum",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          }
+        ],
+        "status": "available",
+        "value": 6
+      },
+      {
+        "id": "positive-comments",
+        "label": "Olumlu yorum",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 5,
+              "rowEnd": 5
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 6,
+              "rowEnd": 6
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 9,
+              "rowEnd": 9
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 11,
+              "rowEnd": 11
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 12,
+              "rowEnd": 12
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 13,
+              "rowEnd": 13
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 14,
+              "rowEnd": 14
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 15,
+              "rowEnd": 15
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 16,
+              "rowEnd": 16
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 17,
+              "rowEnd": 17
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 18,
+              "rowEnd": 18
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 19,
+              "rowEnd": 19
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 20,
+              "rowEnd": 20
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 21,
+              "rowEnd": 21
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 22,
+              "rowEnd": 22
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 23,
+              "rowEnd": 23
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 24,
+              "rowEnd": 24
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 25,
+              "rowEnd": 25
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 26,
+              "rowEnd": 26
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 27,
+              "rowEnd": 27
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 28,
+              "rowEnd": 28
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 29,
+              "rowEnd": 29
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 30,
+              "rowEnd": 30
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 31,
+              "rowEnd": 31
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 32,
+              "rowEnd": 32
+            }
+          }
+        ],
+        "status": "available",
+        "value": 26
+      },
+      {
+        "id": "theme-usability",
+        "label": "Kullanım kolaylığı",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 6,
+              "rowEnd": 6
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 9,
+              "rowEnd": 9
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 14,
+              "rowEnd": 14
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 17,
+              "rowEnd": 17
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 21,
+              "rowEnd": 21
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 24,
+              "rowEnd": 24
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 28,
+              "rowEnd": 28
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 32,
+              "rowEnd": 32
+            }
+          }
+        ],
+        "status": "available",
+        "value": 11
+      },
+      {
+        "id": "problem-usability",
+        "label": "Kullanım kolaylığı",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          }
+        ],
+        "status": "available",
+        "value": 3
+      },
+      {
+        "id": "theme-support",
+        "label": "Destek",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 5,
+              "rowEnd": 5
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 11,
+              "rowEnd": 11
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 15,
+              "rowEnd": 15
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 19,
+              "rowEnd": 19
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 23,
+              "rowEnd": 23
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 27,
+              "rowEnd": 27
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 30,
+              "rowEnd": 30
+            }
+          }
+        ],
+        "status": "available",
+        "value": 8
+      },
+      {
+        "id": "problem-support",
+        "label": "Destek",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          }
+        ],
+        "status": "available",
+        "value": 1
+      },
+      {
+        "id": "theme-reporting",
+        "label": "Rapor ve kaynaklar",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 13,
+              "rowEnd": 13
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 16,
+              "rowEnd": 16
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 20,
+              "rowEnd": 20
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 22,
+              "rowEnd": 22
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 26,
+              "rowEnd": 26
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 29,
+              "rowEnd": 29
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 31,
+              "rowEnd": 31
+            }
+          }
+        ],
+        "status": "available",
+        "value": 10
+      },
+      {
+        "id": "problem-reporting",
+        "label": "Rapor ve kaynaklar",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          }
+        ],
+        "status": "available",
+        "value": 1
+      },
+      {
+        "id": "theme-performance",
+        "label": "Performans",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 12,
+              "rowEnd": 12
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 18,
+              "rowEnd": 18
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 25,
+              "rowEnd": 25
+            }
+          }
+        ],
+        "status": "available",
+        "value": 4
+      },
+      {
+        "id": "problem-performance",
+        "label": "Performans",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          }
+        ],
+        "status": "available",
+        "value": 1
+      },
+      {
+        "id": "sentiment-positive",
+        "label": "Olumlu",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 5,
+              "rowEnd": 5
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 6,
+              "rowEnd": 6
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 9,
+              "rowEnd": 9
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 11,
+              "rowEnd": 11
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 12,
+              "rowEnd": 12
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 13,
+              "rowEnd": 13
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 14,
+              "rowEnd": 14
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 15,
+              "rowEnd": 15
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 16,
+              "rowEnd": 16
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 17,
+              "rowEnd": 17
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 18,
+              "rowEnd": 18
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 19,
+              "rowEnd": 19
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 20,
+              "rowEnd": 20
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 21,
+              "rowEnd": 21
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 22,
+              "rowEnd": 22
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 23,
+              "rowEnd": 23
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 24,
+              "rowEnd": 24
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 25,
+              "rowEnd": 25
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 26,
+              "rowEnd": 26
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 27,
+              "rowEnd": 27
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 28,
+              "rowEnd": 28
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 29,
+              "rowEnd": 29
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 30,
+              "rowEnd": 30
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 31,
+              "rowEnd": 31
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 32,
+              "rowEnd": 32
+            }
+          }
+        ],
+        "status": "available",
+        "value": 26
+      },
+      {
+        "id": "sentiment-negative",
+        "label": "Olumsuz",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          }
+        ],
+        "status": "available",
+        "value": 5
+      },
+      {
+        "id": "sentiment-mixed",
+        "label": "Karma",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          }
+        ],
+        "status": "available",
+        "value": 1
+      },
+      {
+        "id": "csat",
+        "label": "Memnuniyet puanı",
+        "unit": "%",
+        "method": "Ölçüm bulunmadığında yorum duygusundan puan türetilmez.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 5,
+              "rowEnd": 5
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 6,
+              "rowEnd": 6
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 9,
+              "rowEnd": 9
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 11,
+              "rowEnd": 11
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 12,
+              "rowEnd": 12
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 13,
+              "rowEnd": 13
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 14,
+              "rowEnd": 14
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 15,
+              "rowEnd": 15
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 16,
+              "rowEnd": 16
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 17,
+              "rowEnd": 17
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 18,
+              "rowEnd": 18
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 19,
+              "rowEnd": 19
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 20,
+              "rowEnd": 20
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 21,
+              "rowEnd": 21
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 22,
+              "rowEnd": 22
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 23,
+              "rowEnd": 23
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 24,
+              "rowEnd": 24
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 25,
+              "rowEnd": 25
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 26,
+              "rowEnd": 26
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 27,
+              "rowEnd": 27
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 28,
+              "rowEnd": 28
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 29,
+              "rowEnd": 29
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 30,
+              "rowEnd": 30
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 31,
+              "rowEnd": 31
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 32,
+              "rowEnd": 32
+            }
+          }
+        ],
+        "status": "unavailable",
+        "value": null,
+        "reason": "Kaynakta puanlama sorusu veya CSAT ölçümü yok."
+      }
+    ],
+    "datasets": [
+      {
+        "id": "problems",
+        "label": "Sorun temaları",
+        "unit": "yorum",
+        "points": [
+          {
+            "label": "Kullanım kolaylığı",
+            "metricId": "problem-usability",
+            "value": 3
+          },
+          {
+            "label": "Destek",
+            "metricId": "problem-support",
+            "value": 1
+          },
+          {
+            "label": "Rapor ve kaynaklar",
+            "metricId": "problem-reporting",
+            "value": 1
+          },
+          {
+            "label": "Performans",
+            "metricId": "problem-performance",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "id": "sentiments",
+        "label": "Yorumların duygusu",
+        "unit": "yorum",
+        "points": [
+          {
+            "label": "Olumlu",
+            "metricId": "sentiment-positive",
+            "value": 26
+          },
+          {
+            "label": "Olumsuz",
+            "metricId": "sentiment-negative",
+            "value": 5
+          },
+          {
+            "label": "Karma",
+            "metricId": "sentiment-mixed",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "id": "themes",
+        "label": "Konuşulan konular",
+        "unit": "yorum",
+        "points": [
+          {
+            "label": "Kullanım kolaylığı",
+            "metricId": "theme-usability",
+            "value": 11
+          },
+          {
+            "label": "Destek",
+            "metricId": "theme-support",
+            "value": 8
+          },
+          {
+            "label": "Rapor ve kaynaklar",
+            "metricId": "theme-reporting",
+            "value": 10
+          },
+          {
+            "label": "Performans",
+            "metricId": "theme-performance",
+            "value": 4
+          }
+        ]
+      }
+    ],
+    "charts": [
+      {
+        "id": "problems",
+        "title": "Hangi sorunlar tekrar ediyor?",
+        "type": "horizontal-bar",
+        "datasetId": "problems"
+      },
+      {
+        "id": "sentiments",
+        "title": "Deneyimin farklı tonları",
+        "type": "donut",
+        "datasetId": "sentiments"
+      },
+      {
+        "id": "themes",
+        "title": "Konuşulan konular",
+        "type": "horizontal-bar",
+        "datasetId": "themes"
+      }
+    ],
+    "limitations": [
+      "32 yorum müşteri kitlesini temsil etmez; duygu dağılımı NPS veya CSAT değildir.",
+      "Tema ve duygu etiketleri insan değerlendirme referansıdır. Otomatik sınıflandırma yapılmamıştır.",
+      "Bir yorum birden çok temaya atanabilir. Tema sayıları ve yüzdeleri tek bir bütünün parçaları değildir.",
+      "Maliyet, müşteri sayısı, finansal etki ve ortalama yanıt süresi için veri yoktur."
+    ]
+  },
+  "sources": [
+    {
+      "version": 1,
+      "sourceId": "reference-feedback",
+      "fileName": "customer-feedback.csv",
+      "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+      "extension": "csv",
+      "detectedMime": "text/csv",
+      "category": "Tablo",
+      "metadata": {},
+      "chunks": [
+        {
+          "id": "reference-feedback:table:0001",
+          "kind": "table",
+          "locator": {
+            "section": "tablo",
+            "rowStart": 1,
+            "rowEnd": 32
+          },
+          "table": {
+            "columns": [
+              "feedback_id",
+              "received_date",
+              "comment"
+            ],
+            "rows": [
+              [
+                "F001",
+                "2026-10-01",
+                "İlk kullanımda kaynaklara nereden ulaşacağımı bulmam biraz zaman aldı."
+              ],
+              [
+                "F002",
+                "2026-10-02",
+                "Teknik soruma ertesi gün dönüş yapıldı; daha hızlı yanıt beklerdim."
+              ],
+              [
+                "F003",
+                "2026-10-03",
+                "Rapor özetinde bazı ifadeler birbirini tekrar ediyor; daha kısa bir anlatım isterdim."
+              ],
+              [
+                "F004",
+                "2026-10-04",
+                "Yeni çalışma oluştururken hedef alanına ne yazmam gerektiğini ilk anda anlayamadım."
+              ],
+              [
+                "F005",
+                "2026-10-05",
+                "Destek ekibi veri hazırlığıyla ilgili sorumu aynı gün, anlaşılır bir örnekle çözdü."
+              ],
+              [
+                "F006",
+                "2026-10-06",
+                "İlk belgemi ekleyip çalışma oluşturmam kolay oldu. Adımların sırası anlaşılır."
+              ],
+              [
+                "F007",
+                "2026-10-07",
+                "Grafikler anlaşılır, ancak mobilde filtreleri bulmak için fazla kaydırmam gerekiyor."
+              ],
+              [
+                "F008",
+                "2026-10-08",
+                "Büyük belgelerde kaynak listesinin açılması bazen beklediğimden uzun sürüyor."
+              ],
+              [
+                "F009",
+                "2026-10-09",
+                "Başlangıç ekranı ne yapmam gerektiğini net gösteriyor. İlk kullanımda yardım almadan ilerledim."
+              ],
+              [
+                "F010",
+                "2026-10-10",
+                "Özetin yanında kaynak bağlantısını görmek çok işime yaradı. Sayıları belgeden kontrol edebildim."
+              ],
+              [
+                "F011",
+                "2026-10-11",
+                "Sorduğum soruya genel bir yanıt yerine kendi kullanım senaryoma uygun bir açıklama aldım."
+              ],
+              [
+                "F012",
+                "2026-10-12",
+                "Çalışmalar arasında geçişler akıcı. Günlük kullanımda belirgin bir bekleme yaşamadım."
+              ],
+              [
+                "F013",
+                "2026-10-13",
+                "Grafiklerin altındaki veri tabloları ayrıntıları kontrol etmeyi kolaylaştırıyor."
+              ],
+              [
+                "F014",
+                "2026-10-14",
+                "Dil değiştirdiğimde yazdığım başlık ve hedefin korunması iyi düşünülmüş."
+              ],
+              [
+                "F015",
+                "2026-10-15",
+                "Ekibimize uygun kullanım akışını destek ekibi kısa bir görüşmede netleştirdi."
+              ],
+              [
+                "F016",
+                "2026-10-16",
+                "Gözlemle önerinin ayrı gösterilmesi raporu daha rahat değerlendirmemi sağlıyor."
+              ],
+              [
+                "F017",
+                "2026-10-01",
+                "Geçmiş çalışmalarımı isimle arayıp bulabiliyorum. Aynı belgeleri tekrar eklemem gerekmiyor."
+              ],
+              [
+                "F018",
+                "2026-10-02",
+                "Grafikleri filtrelerken ekran tepkisi hızlı. Seçimlerimin sonucunu hemen görebiliyorum."
+              ],
+              [
+                "F019",
+                "2026-10-03",
+                "Belge formatıyla ilgili soruma verilen açıklama netti; dosyamı doğru biçimde hazırlayabildim."
+              ],
+              [
+                "F020",
+                "2026-10-04",
+                "Raporda bir tutarın hangi satırlardan oluştuğunu izlemek kontrol süremi azalttı."
+              ],
+              [
+                "F021",
+                "2026-10-05",
+                "Koyu tema uzun süre çalışırken rahat geliyor. Metinlerle grafikler yeterince okunaklı."
+              ],
+              [
+                "F022",
+                "2026-10-06",
+                "Ana bulgular başta, ayrıntılar açılır bölümlerde. Hem hızlı göz atabiliyorum hem derine inebiliyorum."
+              ],
+              [
+                "F023",
+                "2026-10-07",
+                "Geri bildirimime dönüş yapıldı ve neyin değerlendirileceği açıkça anlatıldı. Bu yaklaşımı beğendim."
+              ],
+              [
+                "F024",
+                "2026-10-08",
+                "Belge ekleme alanı ve kalan kapasite bilgisi anlaşılır. Sınırları önceden görebiliyorum."
+              ],
+              [
+                "F025",
+                "2026-10-09",
+                "Kaynaklarda arama yaparken sonuçların hızlı daralması büyük tablolarda işimi kolaylaştırdı."
+              ],
+              [
+                "F026",
+                "2026-10-10",
+                "Eksik bilgi olduğunda puan uydurulmaması ve nedeninin yazılması güven veriyor."
+              ],
+              [
+                "F027",
+                "2026-10-11",
+                "Hesap ayarlarıyla ilgili sorum tek yanıtta çözüldü. Açıklama kısa ve uygulanabilirdi."
+              ],
+              [
+                "F028",
+                "2026-10-12",
+                "Mobilde kısa bir kontrol yapmak rahat. Özete ve kaynaklara birkaç dokunuşla ulaşabiliyorum."
+              ],
+              [
+                "F029",
+                "2026-10-13",
+                "Farklı dönemleri aynı ölçekte karşılaştırabilmek değişimi anlamamı kolaylaştırdı."
+              ],
+              [
+                "F030",
+                "2026-10-14",
+                "İlk çalışmamı nasıl düzenleyeceğime dair öneriler somuttu. Sonraki kullanımda kendim ilerledim."
+              ],
+              [
+                "F031",
+                "2026-10-15",
+                "Yönetici özeti toplantı öncesi ana konuları yakalamama yardımcı oluyor; ayrıntılar da ulaşılabilir."
+              ],
+              [
+                "F032",
+                "2026-10-16",
+                "Sayfalar arasında geri döndüğümde çalışmamın korunması akışı bölmeden devam etmemi sağlıyor."
+              ]
+            ]
+          }
+        }
+      ],
+      "warnings": [],
+      "parserVersion": "1.0.0"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "F001",
+      "sourceRow": 1,
+      "quote": "İlk kullanımda kaynaklara nereden ulaşacağımı bulmam biraz zaman aldı.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [
+        "usability"
+      ],
+      "sentiment": "negative"
+    },
+    {
+      "id": "F002",
+      "sourceRow": 2,
+      "quote": "Teknik soruma ertesi gün dönüş yapıldı; daha hızlı yanıt beklerdim.",
+      "themes": [
+        "support"
+      ],
+      "problemThemes": [
+        "support"
+      ],
+      "sentiment": "negative"
+    },
+    {
+      "id": "F003",
+      "sourceRow": 3,
+      "quote": "Rapor özetinde bazı ifadeler birbirini tekrar ediyor; daha kısa bir anlatım isterdim.",
+      "themes": [
+        "reporting"
+      ],
+      "problemThemes": [
+        "reporting"
+      ],
+      "sentiment": "negative"
+    },
+    {
+      "id": "F004",
+      "sourceRow": 4,
+      "quote": "Yeni çalışma oluştururken hedef alanına ne yazmam gerektiğini ilk anda anlayamadım.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [
+        "usability"
+      ],
+      "sentiment": "negative"
+    },
+    {
+      "id": "F005",
+      "sourceRow": 5,
+      "quote": "Destek ekibi veri hazırlığıyla ilgili sorumu aynı gün, anlaşılır bir örnekle çözdü.",
+      "themes": [
+        "support"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F006",
+      "sourceRow": 6,
+      "quote": "İlk belgemi ekleyip çalışma oluşturmam kolay oldu. Adımların sırası anlaşılır.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F007",
+      "sourceRow": 7,
+      "quote": "Grafikler anlaşılır, ancak mobilde filtreleri bulmak için fazla kaydırmam gerekiyor.",
+      "themes": [
+        "reporting",
+        "usability"
+      ],
+      "problemThemes": [
+        "usability"
+      ],
+      "sentiment": "mixed"
+    },
+    {
+      "id": "F008",
+      "sourceRow": 8,
+      "quote": "Büyük belgelerde kaynak listesinin açılması bazen beklediğimden uzun sürüyor.",
+      "themes": [
+        "performance"
+      ],
+      "problemThemes": [
+        "performance"
+      ],
+      "sentiment": "negative"
+    },
+    {
+      "id": "F009",
+      "sourceRow": 9,
+      "quote": "Başlangıç ekranı ne yapmam gerektiğini net gösteriyor. İlk kullanımda yardım almadan ilerledim.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F010",
+      "sourceRow": 10,
+      "quote": "Özetin yanında kaynak bağlantısını görmek çok işime yaradı. Sayıları belgeden kontrol edebildim.",
+      "themes": [
+        "reporting"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F011",
+      "sourceRow": 11,
+      "quote": "Sorduğum soruya genel bir yanıt yerine kendi kullanım senaryoma uygun bir açıklama aldım.",
+      "themes": [
+        "support"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F012",
+      "sourceRow": 12,
+      "quote": "Çalışmalar arasında geçişler akıcı. Günlük kullanımda belirgin bir bekleme yaşamadım.",
+      "themes": [
+        "performance"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F013",
+      "sourceRow": 13,
+      "quote": "Grafiklerin altındaki veri tabloları ayrıntıları kontrol etmeyi kolaylaştırıyor.",
+      "themes": [
+        "reporting"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F014",
+      "sourceRow": 14,
+      "quote": "Dil değiştirdiğimde yazdığım başlık ve hedefin korunması iyi düşünülmüş.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F015",
+      "sourceRow": 15,
+      "quote": "Ekibimize uygun kullanım akışını destek ekibi kısa bir görüşmede netleştirdi.",
+      "themes": [
+        "support"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F016",
+      "sourceRow": 16,
+      "quote": "Gözlemle önerinin ayrı gösterilmesi raporu daha rahat değerlendirmemi sağlıyor.",
+      "themes": [
+        "reporting"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F017",
+      "sourceRow": 17,
+      "quote": "Geçmiş çalışmalarımı isimle arayıp bulabiliyorum. Aynı belgeleri tekrar eklemem gerekmiyor.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F018",
+      "sourceRow": 18,
+      "quote": "Grafikleri filtrelerken ekran tepkisi hızlı. Seçimlerimin sonucunu hemen görebiliyorum.",
+      "themes": [
+        "performance"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F019",
+      "sourceRow": 19,
+      "quote": "Belge formatıyla ilgili soruma verilen açıklama netti; dosyamı doğru biçimde hazırlayabildim.",
+      "themes": [
+        "support"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F020",
+      "sourceRow": 20,
+      "quote": "Raporda bir tutarın hangi satırlardan oluştuğunu izlemek kontrol süremi azalttı.",
+      "themes": [
+        "reporting"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F021",
+      "sourceRow": 21,
+      "quote": "Koyu tema uzun süre çalışırken rahat geliyor. Metinlerle grafikler yeterince okunaklı.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F022",
+      "sourceRow": 22,
+      "quote": "Ana bulgular başta, ayrıntılar açılır bölümlerde. Hem hızlı göz atabiliyorum hem derine inebiliyorum.",
+      "themes": [
+        "reporting"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F023",
+      "sourceRow": 23,
+      "quote": "Geri bildirimime dönüş yapıldı ve neyin değerlendirileceği açıkça anlatıldı. Bu yaklaşımı beğendim.",
+      "themes": [
+        "support"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F024",
+      "sourceRow": 24,
+      "quote": "Belge ekleme alanı ve kalan kapasite bilgisi anlaşılır. Sınırları önceden görebiliyorum.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F025",
+      "sourceRow": 25,
+      "quote": "Kaynaklarda arama yaparken sonuçların hızlı daralması büyük tablolarda işimi kolaylaştırdı.",
+      "themes": [
+        "performance"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F026",
+      "sourceRow": 26,
+      "quote": "Eksik bilgi olduğunda puan uydurulmaması ve nedeninin yazılması güven veriyor.",
+      "themes": [
+        "reporting"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F027",
+      "sourceRow": 27,
+      "quote": "Hesap ayarlarıyla ilgili sorum tek yanıtta çözüldü. Açıklama kısa ve uygulanabilirdi.",
+      "themes": [
+        "support"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F028",
+      "sourceRow": 28,
+      "quote": "Mobilde kısa bir kontrol yapmak rahat. Özete ve kaynaklara birkaç dokunuşla ulaşabiliyorum.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F029",
+      "sourceRow": 29,
+      "quote": "Farklı dönemleri aynı ölçekte karşılaştırabilmek değişimi anlamamı kolaylaştırdı.",
+      "themes": [
+        "reporting"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F030",
+      "sourceRow": 30,
+      "quote": "İlk çalışmamı nasıl düzenleyeceğime dair öneriler somuttu. Sonraki kullanımda kendim ilerledim.",
+      "themes": [
+        "support"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F031",
+      "sourceRow": 31,
+      "quote": "Yönetici özeti toplantı öncesi ana konuları yakalamama yardımcı oluyor; ayrıntılar da ulaşılabilir.",
+      "themes": [
+        "reporting"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F032",
+      "sourceRow": 32,
+      "quote": "Sayfalar arasında geri döndüğümde çalışmamın korunması akışı bölmeden devam etmemi sağlıyor.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    }
+  ]
+}

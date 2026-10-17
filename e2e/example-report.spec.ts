@@ -21,9 +21,9 @@ test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı 
   let dialog = page.getByRole("dialog", { name: "Net satış", exact: true });
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole("row")).toHaveCount(26);
-  await expect(dialog.getByRole("status")).toHaveText("1–25 / 3456 kayıt");
+  await expect(dialog.getByRole("status")).toHaveText("1–25 / 3.456 kayıt");
   await dialog.getByRole("button", { name: "Sonraki kaynak sayfası" }).click();
-  await expect(dialog.getByRole("status")).toHaveText("26–50 / 3456 kayıt");
+  await expect(dialog.getByRole("status")).toHaveText("26–50 / 3.456 kayıt");
   await dialog.getByRole("textbox", { name: "Kaynak satırlarında ara" }).fill("ATL-00501");
   await expect(dialog.getByRole("status")).toHaveText("1–1 / 1 kayıt");
   await expect(dialog.getByRole("rowheader", { name: /501/ })).toBeVisible();
@@ -37,6 +37,12 @@ test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı 
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
   await expect(net).toBeFocused();
+  await net.click();
+  await page.getByRole("dialog").getByRole("heading", { name: "Net satış", exact: true }).click();
+  await expect(dialog).toBeVisible();
+  if (testInfo.project.name === "mobile-chromium") await page.touchscreen.tap(2, 2); else await page.mouse.click(2, 2);
+  await expect(dialog).toHaveCount(0);
+  await expect(net).toBeFocused();
 
   await page.getByTestId("chart-trend").scrollIntoViewIfNeeded();
   await expect(page.getByTestId("chart-trend").locator("path[fill='#7351b5'], path[stroke='#7351b5']").first()).toBeVisible();
@@ -45,7 +51,7 @@ test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı 
   await page.getByRole("button", { name: "Aylık net satış Oca kaynağı" }).click();
   await expect(page.getByRole("dialog", { name: "Oca", exact: true }).getByRole("status")).toHaveText("1–25 / 288 kayıt");
   await page.getByLabel("Tüm kaynak satırları").check();
-  await expect(page.getByRole("dialog").getByRole("status")).toHaveText("1–25 / 3456 kayıt");
+  await expect(page.getByRole("dialog").getByRole("status")).toHaveText("1–25 / 3.456 kayıt");
   await page.keyboard.press("Escape");
 
   for (const id of ["category", "channel", "region", "profit", "service"]) {
@@ -55,12 +61,14 @@ test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı 
   await page.getByTestId("chart-category").locator("path[fill='#7351b5']").first().click();
   await expect(page.getByRole("dialog", { name: "Bahçe", exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
+  await page.getByRole("link", { name: "Finansal detay", exact: true }).click();
   await expect(page.getByRole("table", { name: "Kanal performansı", exact: true }).locator("tbody tr")).toHaveCount(3);
   await expect(page.getByRole("table", { name: "Gelirden katkıya hesap mutabakatı" })).toContainText(exactMoney(gold.year.contribution));
 
   await page.getByRole("button", { name: "Son çeyrek", exact: true }).click();
   await expect(page).toHaveURL(/period=q4/);
   await expect(page.getByRole("button", { name: `Net satış ${exactMoney(gold.q4.net)}`, exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "Finansal detay", exact: true }).click();
   await expect(page.getByRole("table", { name: "Aylık performans, 2025 · Son çeyrek" }).locator("tbody tr")).toHaveCount(3);
   await expect(page.getByText("903 kayıt inceleniyor")).toBeVisible();
   await page.reload();

@@ -1,0 +1,340 @@
+{
+  "version": 1,
+  "provenance": "human-reference",
+  "sourceSha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+  "annotations": [
+    {
+      "id": "F001",
+      "sourceRow": 1,
+      "quote": "İlk kullanımda kaynaklara nereden ulaşacağımı bulmam biraz zaman aldı.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [
+        "usability"
+      ],
+      "sentiment": "negative"
+    },
+    {
+      "id": "F002",
+      "sourceRow": 2,
+      "quote": "Teknik soruma ertesi gün dönüş yapıldı; daha hızlı yanıt beklerdim.",
+      "themes": [
+        "support"
+      ],
+      "problemThemes": [
+        "support"
+      ],
+      "sentiment": "negative"
+    },
+    {
+      "id": "F003",
+      "sourceRow": 3,
+      "quote": "Rapor özetinde bazı ifadeler birbirini tekrar ediyor; daha kısa bir anlatım isterdim.",
+      "themes": [
+        "reporting"
+      ],
+      "problemThemes": [
+        "reporting"
+      ],
+      "sentiment": "negative"
+    },
+    {
+      "id": "F004",
+      "sourceRow": 4,
+      "quote": "Yeni çalışma oluştururken hedef alanına ne yazmam gerektiğini ilk anda anlayamadım.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [
+        "usability"
+      ],
+      "sentiment": "negative"
+    },
+    {
+      "id": "F005",
+      "sourceRow": 5,
+      "quote": "Destek ekibi veri hazırlığıyla ilgili sorumu aynı gün, anlaşılır bir örnekle çözdü.",
+      "themes": [
+        "support"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F006",
+      "sourceRow": 6,
+      "quote": "İlk belgemi ekleyip çalışma oluşturmam kolay oldu. Adımların sırası anlaşılır.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F007",
+      "sourceRow": 7,
+      "quote": "Grafikler anlaşılır, ancak mobilde filtreleri bulmak için fazla kaydırmam gerekiyor.",
+      "themes": [
+        "reporting",
+        "usability"
+      ],
+      "problemThemes": [
+        "usability"
+      ],
+      "sentiment": "mixed"
+    },
+    {
+      "id": "F008",
+      "sourceRow": 8,
+      "quote": "Büyük belgelerde kaynak listesinin açılması bazen beklediğimden uzun sürüyor.",
+      "themes": [
+        "performance"
+      ],
+      "problemThemes": [
+        "performance"
+      ],
+      "sentiment": "negative"
+    },
+    {
+      "id": "F009",
+      "sourceRow": 9,
+      "quote": "Başlangıç ekranı ne yapmam gerektiğini net gösteriyor. İlk kullanımda yardım almadan ilerledim.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F010",
+      "sourceRow": 10,
+      "quote": "Özetin yanında kaynak bağlantısını görmek çok işime yaradı. Sayıları belgeden kontrol edebildim.",
+      "themes": [
+        "reporting"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F011",
+      "sourceRow": 11,
+      "quote": "Sorduğum soruya genel bir yanıt yerine kendi kullanım senaryoma uygun bir açıklama aldım.",
+      "themes": [
+        "support"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F012",
+      "sourceRow": 12,
+      "quote": "Çalışmalar arasında geçişler akıcı. Günlük kullanımda belirgin bir bekleme yaşamadım.",
+      "themes": [
+        "performance"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F013",
+      "sourceRow": 13,
+      "quote": "Grafiklerin altındaki veri tabloları ayrıntıları kontrol etmeyi kolaylaştırıyor.",
+      "themes": [
+        "reporting"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F014",
+      "sourceRow": 14,
+      "quote": "Dil değiştirdiğimde yazdığım başlık ve hedefin korunması iyi düşünülmüş.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F015",
+      "sourceRow": 15,
+      "quote": "Ekibimize uygun kullanım akışını destek ekibi kısa bir görüşmede netleştirdi.",
+      "themes": [
+        "support"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F016",
+      "sourceRow": 16,
+      "quote": "Gözlemle önerinin ayrı gösterilmesi raporu daha rahat değerlendirmemi sağlıyor.",
+      "themes": [
+        "reporting"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F017",
+      "sourceRow": 17,
+      "quote": "Geçmiş çalışmalarımı isimle arayıp bulabiliyorum. Aynı belgeleri tekrar eklemem gerekmiyor.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F018",
+      "sourceRow": 18,
+      "quote": "Grafikleri filtrelerken ekran tepkisi hızlı. Seçimlerimin sonucunu hemen görebiliyorum.",
+      "themes": [
+        "performance"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F019",
+      "sourceRow": 19,
+      "quote": "Belge formatıyla ilgili soruma verilen açıklama netti; dosyamı doğru biçimde hazırlayabildim.",
+      "themes": [
+        "support"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F020",
+      "sourceRow": 20,
+      "quote": "Raporda bir tutarın hangi satırlardan oluştuğunu izlemek kontrol süremi azalttı.",
+      "themes": [
+        "reporting"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F021",
+      "sourceRow": 21,
+      "quote": "Koyu tema uzun süre çalışırken rahat geliyor. Metinlerle grafikler yeterince okunaklı.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F022",
+      "sourceRow": 22,
+      "quote": "Ana bulgular başta, ayrıntılar açılır bölümlerde. Hem hızlı göz atabiliyorum hem derine inebiliyorum.",
+      "themes": [
+        "reporting"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F023",
+      "sourceRow": 23,
+      "quote": "Geri bildirimime dönüş yapıldı ve neyin değerlendirileceği açıkça anlatıldı. Bu yaklaşımı beğendim.",
+      "themes": [
+        "support"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F024",
+      "sourceRow": 24,
+      "quote": "Belge ekleme alanı ve kalan kapasite bilgisi anlaşılır. Sınırları önceden görebiliyorum.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F025",
+      "sourceRow": 25,
+      "quote": "Kaynaklarda arama yaparken sonuçların hızlı daralması büyük tablolarda işimi kolaylaştırdı.",
+      "themes": [
+        "performance"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F026",
+      "sourceRow": 26,
+      "quote": "Eksik bilgi olduğunda puan uydurulmaması ve nedeninin yazılması güven veriyor.",
+      "themes": [
+        "reporting"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F027",
+      "sourceRow": 27,
+      "quote": "Hesap ayarlarıyla ilgili sorum tek yanıtta çözüldü. Açıklama kısa ve uygulanabilirdi.",
+      "themes": [
+        "support"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F028",
+      "sourceRow": 28,
+      "quote": "Mobilde kısa bir kontrol yapmak rahat. Özete ve kaynaklara birkaç dokunuşla ulaşabiliyorum.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F029",
+      "sourceRow": 29,
+      "quote": "Farklı dönemleri aynı ölçekte karşılaştırabilmek değişimi anlamamı kolaylaştırdı.",
+      "themes": [
+        "reporting"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F030",
+      "sourceRow": 30,
+      "quote": "İlk çalışmamı nasıl düzenleyeceğime dair öneriler somuttu. Sonraki kullanımda kendim ilerledim.",
+      "themes": [
+        "support"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F031",
+      "sourceRow": 31,
+      "quote": "Yönetici özeti toplantı öncesi ana konuları yakalamama yardımcı oluyor; ayrıntılar da ulaşılabilir.",
+      "themes": [
+        "reporting"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F032",
+      "sourceRow": 32,
+      "quote": "Sayfalar arasında geri döndüğümde çalışmamın korunması akışı bölmeden devam etmemi sağlıyor.",
+      "themes": [
+        "usability"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    }
+  ]
+}

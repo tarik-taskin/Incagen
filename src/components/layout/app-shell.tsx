@@ -1,3 +1,5 @@
+import { LanguageSelector } from "../language-selector";
+import { t, useLocale } from "../../i18n/runtime";
 import { ArrowUpRight, CircleHelp, Crown, FileBarChart2, History, Settings } from "lucide-react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { AnimatedLogo } from "../animated-logo";
@@ -26,72 +28,72 @@ function getDesktopLinkClass(isActive: boolean) {
 
 // Uygulama sayfalarını ortak responsive navigasyon, başlık ve tema kontrolü içinde sunar.
 export function AppShell() {
+  useLocale();
   const workspace = useWorkspace();
   return (
     <div className="min-h-screen bg-background text-foreground">
       <a
         href="#main-content"
-        className="sr-only z-50 rounded-md bg-primary px-4 py-2 text-primary-foreground focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+        className="sr-only z-50 rounded-md bg-primary px-4 py-2 text-primary-foreground focus:not-sr-only focus:fixed focus:start-4 focus:top-4"
       >
-        İçeriğe geç
-      </a>
+         {t("İçeriğe geç")} </a>
 
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-border/70 bg-card/85 px-5 py-6 backdrop-blur-xl lg:flex lg:flex-col">
-        <Link to="/app/new-analysis" className="flex items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label="Yeni analize git">
+      <aside className="fixed inset-y-0 start-0 z-30 hidden w-72 border-e border-border/70 bg-card/85 px-5 py-6 backdrop-blur-xl lg:flex lg:flex-col">
+        <Link to="/app/new-analysis" className="flex items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label={t("Yeni analize git")}>
           <AnimatedLogo className="h-10 w-10" compact />
           <div>
-            <p className="text-lg font-semibold tracking-[-0.04em]">Incagen</p>
-            <p className="text-xs text-muted-foreground">Analiz çalışma alanı</p>
+            <p className="text-lg font-semibold tracking-[-0.04em]">{t("Incagen")}</p>
+            <p className="text-xs text-muted-foreground">{t("Analiz çalışma alanı")}</p>
           </div>
         </Link>
 
-        <nav className="mt-10 space-y-1.5" aria-label="Ana navigasyon">
+        <nav className="mt-10 space-y-1.5" aria-label={t("Ana navigasyon")}>
           {navigationItems.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} className={({ isActive }) => getDesktopLinkClass(isActive)}>
               <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
-              {label}
+              {t(label)}
             </NavLink>
           ))}
         </nav>
 
         <Link to="/" className="mt-auto mb-4 flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card px-3 text-sm font-medium text-muted-foreground transition-colors hover:border-primary/25 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:hover:text-secondary">
-          <CircleHelp className="h-4 w-4" aria-hidden="true" /> Nasıl çalışır? <ArrowUpRight className="ml-auto h-4 w-4" aria-hidden="true" />
+          <CircleHelp className="h-4 w-4" aria-hidden="true" />  {t("Nasıl çalışır?")} <ArrowUpRight className="ms-auto h-4 w-4" aria-hidden="true" />
         </Link>
         <div className="rounded-2xl border border-primary/10 bg-primary/[0.05] p-4 dark:border-secondary/10 dark:bg-secondary/[0.05]">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-semibold">{PLAN_RULES.free.label} plan</span>
-            <span className="rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold text-primary dark:bg-secondary/10 dark:text-secondary">{PLAN_RULES.free.dailyAnalysisLimit}/gün</span>
+            <span className="text-sm font-semibold">{t("{0} plan", PLAN_RULES.free.label)}</span>
+            <span className="rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold text-primary dark:bg-secondary/10 dark:text-secondary">{t("{0}/gün", PLAN_RULES.free.dailyAnalysisLimit)}</span>
           </div>
-          <p className="mt-2 text-xs leading-5 text-muted-foreground">Her analizde en fazla {PLAN_RULES.free.filesPerAnalysis} dosya ve toplam {PLAN_RULES.free.totalBytes / 1024 ** 2} MB kullanabilirsiniz.</p>
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">{t("Her analizde en fazla {0} dosya ve toplam", PLAN_RULES.free.filesPerAnalysis)} {PLAN_RULES.free.totalBytes / 1024 ** 2}  {t("MB kullanabilirsiniz.")}</p>
         </div>
       </aside>
 
-      <div className="lg:pl-72">
+      <div className="lg:ps-72">
         <header className="sticky top-0 z-20 border-b border-border/70 bg-background/80 backdrop-blur-xl">
           <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
-            <Link to="/app/new-analysis" className="flex items-center gap-2.5 lg:hidden" aria-label="Yeni analize git">
+            <Link to="/app/new-analysis" className="flex items-center gap-2.5 lg:hidden" aria-label={t("Yeni analize git")}>
               <AnimatedLogo className="h-8 w-8" compact />
-              <span className="font-semibold tracking-[-0.03em]">Incagen</span>
+              <span className="font-semibold tracking-[-0.03em]">{t("Incagen")}</span>
             </Link>
             <div className="hidden lg:block">
-              <p className="text-sm font-medium">İşletme çalışma alanı</p>
-              <p className="text-xs text-muted-foreground">Verilerinizi güvenle hazırlayın ve analiz edin.</p>
+              <p className="text-sm font-medium">{t("İşletme çalışma alanı")}</p>
+              <p className="text-xs text-muted-foreground">{t("Verilerinizi güvenle hazırlayın ve analiz edin.")}</p>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
-              <Link to="/" aria-label="Nasıl çalışır?" className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:hidden"><CircleHelp className="h-4 w-4" aria-hidden="true" /></Link>
+              <Link to="/" aria-label={t("Nasıl çalışır?")} className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:hidden"><CircleHelp className="h-4 w-4" aria-hidden="true" /></Link>
               <PremiumUpgrade />
-              <ThemeToggle />
+              <LanguageSelector /><ThemeToggle />
             </div>
           </div>
         </header>
 
         <main id="main-content" className="mx-auto min-h-[calc(100vh-4rem)] max-w-7xl px-5 py-8 pb-28 sm:px-8 lg:pb-10">
-          {workspace.busy && <p role="status" className="mb-4 rounded-xl border border-border bg-card p-3 text-sm">İşleminiz devam ediyor. {workspace.activeId && <Link className="underline" to={"/app/analyses/" + workspace.activeId}>İşlemi izle</Link>}</p>}
+          {workspace.busy && <p role="status" className="mb-4 rounded-xl border border-border bg-card p-3 text-sm">{t("İşleminiz devam ediyor.")} {workspace.activeId && <Link className="underline" to={"/app/analyses/" + workspace.activeId}>{t("İşlemi izle")}</Link>}</p>}
           <Outlet />
         </main>
       </div>
 
-      <nav className="fixed inset-x-4 bottom-4 z-30 grid grid-cols-4 rounded-2xl border border-border/70 bg-card/95 p-1.5 shadow-xl backdrop-blur-xl lg:hidden" aria-label="Mobil navigasyon">
+      <nav className="fixed inset-x-4 bottom-4 z-30 grid grid-cols-4 rounded-2xl border border-border/70 bg-card/95 p-1.5 shadow-xl backdrop-blur-xl lg:hidden" aria-label={t("Mobil navigasyon")}>
         {navigationItems.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
@@ -102,7 +104,7 @@ export function AppShell() {
             )}
           >
             <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
-            {label}
+            {t(label)}
           </NavLink>
         ))}
       </nav>

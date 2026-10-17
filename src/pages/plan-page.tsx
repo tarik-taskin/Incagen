@@ -1,3 +1,4 @@
+import { t, useLocale, localeTag } from "../i18n/runtime";
 import { ArrowRight, Check, Crown, FileStack, Gauge, Link2, ShieldCheck, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PLAN_RULES } from "../features/plans/plan-rules";
@@ -6,11 +7,12 @@ type Plan = typeof PLAN_RULES.free | typeof PLAN_RULES.premium;
 
 // Ortak plan sözleşmesindeki bayt değerini kullanıcıya anlaşılır MB olarak sunar.
 function megabytes(bytes: number) {
-  return (bytes / 1024 ** 2).toLocaleString("tr-TR") + " MB";
+  return (bytes / 1024 ** 2).toLocaleString(localeTag()) + " MB";
 }
 
 // Aynı plan verisini kartlarda kullanır; Premium kapasitesini aktif üyelik gibi sunmaz.
 function PlanCard({ plan, premium }: { plan: Plan; premium: boolean }) {
+  useLocale();
   return <article className={"relative flex h-full flex-col overflow-hidden rounded-[2rem] border bg-card p-6 shadow-sm sm:p-8 " + (premium ? "border-primary/35 shadow-primary/10 dark:border-secondary/35" : "border-border")}>
     {premium && <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-fuchsia-500 to-rose-400" aria-hidden="true" />}
     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -18,37 +20,36 @@ function PlanCard({ plan, premium }: { plan: Plan; premium: boolean }) {
         {premium ? <Crown className="h-6 w-6" aria-hidden="true" /> : <ShieldCheck className="h-6 w-6" aria-hidden="true" />}
       </span>
       <span className={"rounded-full border px-3 py-1.5 text-xs font-semibold " + (premium ? "border-primary/20 bg-primary/5 text-primary dark:border-secondary/25 dark:bg-secondary/10 dark:text-secondary" : "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300")}>
-        {premium ? "Genişletilmiş kapasite" : "Aktif planınız"}
+        {premium ? t("Genişletilmiş kapasite") : t("Aktif planınız")}
       </span>
     </div>
-    <h2 className="mt-6 text-2xl font-semibold tracking-tight">{plan.label}</h2>
+    <h2 className="mt-6 text-2xl font-semibold tracking-tight">{t(plan.label)}</h2>
     <p className="mt-2 min-h-12 max-w-md text-sm leading-6 text-muted-foreground">
-      {premium ? "High analiz derinliği, daha geniş belge kapasitesi ve ek veri bağlantılarıyla kapsamlı çalışmalar için tasarlandı." : "Belgeleri güvenle hazırlamaya ve analiz geçmişinizi oluşturmaya başlamak için mevcut plan."}
+      {premium ? t("High analiz derinliği, daha geniş belge kapasitesi ve ek veri bağlantılarıyla kapsamlı çalışmalar için tasarlandı.") : t("Belgeleri güvenle hazırlamaya ve analiz geçmişinizi oluşturmaya başlamak için mevcut plan.")}
     </p>
     <div className="mt-7 flex items-end gap-2 border-b border-border pb-6">
       <span className="text-5xl font-semibold tracking-[-0.07em]">{plan.dailyAnalysisLimit}</span>
-      <span className="pb-1.5 text-sm text-muted-foreground">analiz / gün</span>
+      <span className="pb-1.5 text-sm text-muted-foreground">{t("analiz / gün")}</span>
     </div>
     <div className="mt-6 grid grid-cols-2 gap-3">
-      <div className="rounded-2xl bg-muted/55 p-4"><p className="text-xs text-muted-foreground">Analiz başına</p><p className="mt-1 text-lg font-semibold">{plan.filesPerAnalysis} dosya</p></div>
-      <div className="rounded-2xl bg-muted/55 p-4"><p className="text-xs text-muted-foreground">Toplam boyut</p><p className="mt-1 text-lg font-semibold">{megabytes(plan.totalBytes)}</p></div>
+      <div className="rounded-2xl bg-muted/55 p-4"><p className="text-xs text-muted-foreground">{t("Analiz başına")}</p><p className="mt-1 text-lg font-semibold">{t("{0} dosya", plan.filesPerAnalysis)}</p></div>
+      <div className="rounded-2xl bg-muted/55 p-4"><p className="text-xs text-muted-foreground">{t("Toplam boyut")}</p><p className="mt-1 text-lg font-semibold">{megabytes(plan.totalBytes)}</p></div>
     </div>
-    <div className="mt-5 flex items-center justify-between gap-3 rounded-2xl border border-primary/15 bg-primary/[0.04] px-4 py-3 dark:border-secondary/20 dark:bg-secondary/[0.04]"><span className="flex items-center gap-2 text-xs text-muted-foreground"><Sparkles className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" />Analiz derinliği</span><span className="rounded-full border border-primary/15 bg-card px-3 py-1 text-xs font-semibold text-primary dark:border-secondary/20 dark:text-secondary">{plan.analysisDepth}</span></div>
+    <div className="mt-5 flex items-center justify-between gap-3 rounded-2xl border border-primary/15 bg-primary/[0.04] px-4 py-3 dark:border-secondary/20 dark:bg-secondary/[0.04]"><span className="flex items-center gap-2 text-xs text-muted-foreground"><Sparkles className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" />{t("Analiz derinliği")}</span><span className="rounded-full border border-primary/15 bg-card px-3 py-1 text-xs font-semibold text-primary dark:border-secondary/20 dark:text-secondary">{plan.analysisDepth}</span></div>
     <ul className="mt-6 space-y-3 text-sm">
-      <li className="flex gap-3"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary dark:text-secondary" aria-hidden="true" /><span>İki planda da aynı belge formatları</span></li>
-      <li className="flex gap-3"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary dark:text-secondary" aria-hidden="true" /><span>Dosyalar için ayrı boyut sınırı yok; analiz toplamı geçerli</span></li>
+      <li className="flex gap-3"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary dark:text-secondary" aria-hidden="true" /><span>{t("İki planda da aynı belge formatları")}</span></li>
+      <li className="flex gap-3"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary dark:text-secondary" aria-hidden="true" /><span>{t("Dosyalar için ayrı boyut sınırı yok; analiz toplamı geçerli")}</span></li>
     </ul>
-    <div className="mt-5 rounded-2xl border border-border/70 p-4"><p className="flex items-center gap-2 text-xs font-semibold"><Link2 className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" />Veri bağlantıları</p><p className="mt-2 text-xs leading-6 text-muted-foreground">{premium ? plan.externalSources : "Çalışmalarınız için yüklediğiniz belgeler"}</p></div>
+    <div className="mt-5 rounded-2xl border border-border/70 p-4"><p className="flex items-center gap-2 text-xs font-semibold"><Link2 className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" />{t("Veri bağlantıları")}</p><p className="mt-2 text-xs leading-6 text-muted-foreground">{premium ? t(plan.externalSources) : t("Çalışmalarınız için yüklediğiniz belgeler")}</p></div>
     <div className="mt-auto pt-8">
-      {premium
-        ? <button type="button" disabled className="min-h-11 w-full cursor-not-allowed rounded-xl border border-primary/20 bg-primary/10 px-5 text-sm font-semibold text-primary/60 dark:border-secondary/20 dark:bg-secondary/10 dark:text-secondary/60">Premium'a geç</button>
-        : <Link to="/app/new-analysis" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">Yeni analiz aç <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>}
+      {premium ? <button type="button" disabled className="min-h-11 w-full cursor-not-allowed rounded-xl border border-primary/20 bg-primary/10 px-5 text-sm font-semibold text-primary/60 dark:border-secondary/20 dark:bg-secondary/10 dark:text-secondary/60">{t("Premium'a geç")}</button> : <Link to="/app/new-analysis" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">{t("Yeni analiz aç")} <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" /></Link>}
     </div>
   </article>;
 }
 
 // Aktif Free sınırları ile planlanan Premium kapasitesini tek kaynaktan karşılaştırır.
 export function PlanPage() {
+  useLocale();
   const free = PLAN_RULES.free;
   const premium = PLAN_RULES.premium;
   const rows = [
@@ -61,13 +62,13 @@ export function PlanPage() {
 
   return <section className="mx-auto w-full max-w-6xl" aria-labelledby="plan-title">
     <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-violet-800 to-slate-950 px-6 py-8 text-white shadow-xl sm:px-10 sm:py-10">
-      <span className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" aria-hidden="true" />
-      <span className="pointer-events-none absolute bottom-0 right-1/3 h-36 w-36 rounded-full bg-fuchsia-400/15 blur-3xl" aria-hidden="true" />
+      <span className="pointer-events-none absolute -end-16 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" aria-hidden="true" />
+      <span className="pointer-events-none absolute bottom-0 end-1/3 h-36 w-36 rounded-full bg-fuchsia-400/15 blur-3xl" aria-hidden="true" />
       <div className="relative z-10 max-w-2xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/75">Çalışma alanı / Plan</p>
-        <h1 id="plan-title" className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Planınızı ve sınırlarınızı görün</h1>
-        <p className="mt-4 text-sm leading-7 text-white/80 sm:text-base">Bugün kullanabildiğiniz Free kapasitesini ve üyelik açıldığında sunulacak Premium kapasitesini, analiz derinliğini ve veri bağlantılarını tek yerde karşılaştırın.</p>
-        <span className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold"><Check className="h-4 w-4" aria-hidden="true" /> Şu anki planınız: Free</span>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/75">{t("Çalışma alanı / Plan")}</p>
+        <h1 id="plan-title" className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{t("Planınızı ve sınırlarınızı görün")}</h1>
+        <p className="mt-4 text-sm leading-7 text-white/80 sm:text-base">{t("Bugün kullanabildiğiniz Free kapasitesini ve üyelik açıldığında sunulacak Premium kapasitesini, analiz derinliğini ve veri bağlantılarını tek yerde karşılaştırın.")}</p>
+        <span className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold"><Check className="h-4 w-4" aria-hidden="true" />  {t("Şu anki planınız: Free")}</span>
       </div>
     </div>
 
@@ -78,16 +79,16 @@ export function PlanPage() {
 
     <section className="mt-8 rounded-[2rem] border border-border bg-card p-5 shadow-sm sm:p-8" aria-labelledby="plan-compare-title">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border pb-5">
-        <div><p className="text-xs font-semibold uppercase tracking-[0.15em] text-primary dark:text-secondary">Yan yana karşılaştırma</p><h2 id="plan-compare-title" className="mt-1 text-xl font-semibold">Plan farkları</h2></div>
+        <div><p className="text-xs font-semibold uppercase tracking-[0.15em] text-primary dark:text-secondary">{t("Yan yana karşılaştırma")}</p><h2 id="plan-compare-title" className="mt-1 text-xl font-semibold">{t("Plan farkları")}</h2></div>
       </div>
       <div className="hidden grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)] gap-3 border-b border-border py-4 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:grid">
-        <span>Özellik</span><span>Free</span><span>Premium</span>
+        <span>{t("Özellik")}</span><span>{t("Free")}</span><span>{t("Premium")}</span>
       </div>
       <dl>
         {rows.map(({ label, icon: Icon, free: freeValue, premium: premiumValue }) => <div key={label} className="grid grid-cols-2 gap-3 border-b border-border/70 py-4 last:border-0 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)]">
-          <dt className="col-span-2 flex items-center gap-2 text-sm font-medium sm:col-span-1"><Icon className="h-4 w-4 shrink-0 text-primary dark:text-secondary" aria-hidden="true" />{label}</dt>
-          <dd className="text-sm"><span className="mb-1 block text-xs text-muted-foreground sm:hidden">Free</span>{freeValue}</dd>
-          <dd className="text-sm font-medium"><span className="mb-1 block text-xs text-muted-foreground sm:hidden">Premium</span>{premiumValue}</dd>
+          <dt className="col-span-2 flex items-center gap-2 text-sm font-medium sm:col-span-1"><Icon className="h-4 w-4 shrink-0 text-primary dark:text-secondary" aria-hidden="true" />{t(label)}</dt>
+          <dd className="text-sm"><span className="mb-1 block text-xs text-muted-foreground sm:hidden">{t("Free")}</span>{t(freeValue)}</dd>
+          <dd className="text-sm font-medium"><span className="mb-1 block text-xs text-muted-foreground sm:hidden">{t("Premium")}</span>{t(premiumValue)}</dd>
         </div>)}
       </dl>
     </section>

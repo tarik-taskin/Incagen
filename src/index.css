@@ -22,7 +22,8 @@
     --muted: 282 30% 15%; --muted-foreground: 196 20% 69%; --border: 275 28% 21%; --ring: 190 76% 85%;
   }
   * { @apply border-border; }
-  html { scroll-behavior: smooth; }
+  /* Sabit mobil navigasyon, odaklanan ve otomatik kaydırılan kontrolleri örtmemeli. */
+  html { scroll-behavior: smooth; scroll-padding-bottom: 7rem; }
   body { @apply m-0 min-w-80 min-h-screen bg-background text-foreground; }
 }
 

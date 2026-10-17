@@ -1,3 +1,4 @@
+import { t, useLocale } from "../i18n/runtime";
 import { useEffect, useRef, useState } from "react";
 import { ShieldCheck, Sparkles } from "lucide-react";
 import { AUTH_TRANSITION_DURATION_MS, selectAuthTransitionMessages } from "../features/auth/auth-transition-content";
@@ -5,6 +6,7 @@ import { AnimatedLogo } from "./animated-logo";
 
 // Başarılı Firebase yanıtından sonra mesajları ve üç saniyelik ilerlemeyi gösterip hedef rotaya geçirir.
 export function AuthSuccessTransition({ onComplete }: { onComplete: () => void }) {
+  useLocale();
   const [messages] = useState(selectAuthTransitionMessages);
   const [messageIndex, setMessageIndex] = useState(0);
   const [progressing, setProgressing] = useState(false);
@@ -47,19 +49,17 @@ export function AuthSuccessTransition({ onComplete }: { onComplete: () => void }
       <div className="relative w-full max-w-2xl text-center">
         <AnimatedLogo className="mx-auto h-20 w-20 sm:h-24 sm:w-24" />
         <p className="mt-7 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-card/75 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-primary shadow-sm dark:border-secondary/20 dark:text-secondary">
-          <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" /> Güvenli Incagen oturumu
-        </p>
+          <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />  {t("Güvenli Incagen oturumu")} </p>
         <div className="mt-6 flex min-h-24 items-center justify-center">
           <h2 className="text-balance text-3xl font-semibold tracking-[-0.045em] text-primary dark:text-secondary sm:text-5xl">
-            {messages[messageIndex]}
+            {t(messages[messageIndex])}
           </h2>
         </div>
         <div className="mx-auto mt-5 h-2 w-full max-w-xl overflow-hidden rounded-full bg-primary/10 shadow-inner dark:bg-secondary/10" aria-hidden="true">
           <div className={`h-full origin-left rounded-full bg-gradient-to-r from-secondary via-primary to-[#ff5978] transition-transform duration-[3000ms] ease-linear ${progressing ? "scale-x-100" : "scale-x-0"}`} />
         </div>
         <p className="mt-4 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
-          <Sparkles className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" /> Çalışma alanınıza geçiş yapılıyor
-        </p>
+          <Sparkles className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" />  {t("Çalışma alanınıza geçiş yapılıyor")} </p>
       </div>
     </div>
   );

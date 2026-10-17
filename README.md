@@ -12,7 +12,7 @@ Incagen, işletme belgelerini, tablolarını ve müşteri geri bildirimlerini or
 - **Görünür hazırlık.** Belge adedi, toplam boyut ve kalan kapasite seçiminizle güncellenir; eksik çalışma ayrıntılarına doğrudan ulaşabilirsiniz.
 - **Kaynağı izlenebilir içerik.** Ayrıştırılan içerik belge kimliği, dosya hash'i ve satır, sayfa veya slayt konumuyla ilişkilendirilir.
 - **Düzenli arşiv.** Çalışmalar başlık, kaynak, durum ve dönem üzerinden bulunabilir; seçimle veya tek tek yönetilebilir.
-- **Tutarlı deneyim.** Açık/koyu tema, mobil yerleşim, klavye erişimi ve azaltılmış hareket tercihi ortak arayüzün parçasıdır.
+- **Tutarlı deneyim.** Türkçe, İngilizce, Almanca, İspanyolca, Çince ve Arapça; açık/koyu tema, mobil yerleşim, klavye erişimi ve azaltılmış hareket tercihi. Ayrıntılar, bilgi kaybolmadan açılır bölümlerde sunulur.
 
 ## Çalışma akışı
 
@@ -61,6 +61,7 @@ Kalite kontrolleri bileşen davranışını, dosya ayrıştırmayı, kullanıcı
 | --- | --- |
 | [Geliştirici rehberi](docs/DEVELOPMENT.md) | Kurulum, komutlar ve teknik kaynak haritası |
 | [Test rehberi](docs/TESTING.md) / [AI sonuç sözleşmesi](docs/AI-RESULTS.md) | Kalite kapıları ve kaynak/metrik doğrulaması |
+| [Dil ve rapor sunumu](docs/LOCALIZATION.md) | Dil kaynakları, RTL ve farklı analiz türleri |
 | [FLOW](FLOW.md) | Ürün davranışı ve sistem mimarisi |
 | [GOAL](GOAL.md) | Görev sahipliği, kabul kriterleri ve açık kararlar |
 | [RULES](RULES.md) / [AGENTS](AGENTS.md) | Kod, stil ve ekip çalışma kuralları |

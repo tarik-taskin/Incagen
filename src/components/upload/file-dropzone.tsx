@@ -1,3 +1,4 @@
+import { t, useLocale } from "../../i18n/runtime";
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { FilePlus2, UploadCloud } from "lucide-react";
 import { Button } from "../ui/button";
@@ -11,6 +12,7 @@ interface FileDropzoneProps {
 
 // Sürükle-bırak ve sistem dosya seçicisini aynı erişilebilir seçim davranışında birleştirir.
 export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzoneProps) {
+  useLocale();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragDepth = useRef(0);
@@ -63,7 +65,7 @@ export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzone
         disabled && "cursor-not-allowed opacity-60",
       )}
       role="group"
-      aria-label="Dosya seçim alanı"
+      aria-label={t("Dosya seçim alanı")}
       onDragEnter={handleDragEnter}
       onDragOver={(event) => event.preventDefault()}
       onDragLeave={handleDragLeave}
@@ -77,11 +79,10 @@ export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzone
         {isDragging ? <FilePlus2 className="h-7 w-7" aria-hidden="true" /> : <UploadCloud className="h-7 w-7" aria-hidden="true" />}
       </div>
       <h2 className="relative mt-5 text-xl font-semibold tracking-[-0.03em]">
-        {isDragging ? "Belgelerinizi buraya bırakın" : "Belgelerinizi ekleyin"}
+        {isDragging ? t("Belgelerinizi buraya bırakın") : t("Belgelerinizi ekleyin")}
       </h2>
       <p className="relative mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-        İşletme verilerinizi içeren modern tabloları, belgeleri, sunumları, yapılandırılmış verileri veya görselleri birlikte ekleyebilirsiniz.
-      </p>
+         {t("İşletme verilerinizi içeren modern tabloları, belgeleri, sunumları, yapılandırılmış verileri veya görselleri birlikte ekleyebilirsiniz.")} </p>
       <Button
         type="button"
         className="relative mt-6 gap-2 rounded-xl"
@@ -92,16 +93,15 @@ export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzone
         }}
       >
         <FilePlus2 className="h-4 w-4" aria-hidden="true" />
-        Belgeleri seç
-      </Button>
-      <p className="relative mt-4 text-xs text-muted-foreground">PDF · DOCX · PPTX · XLSX/CSV · TXT/MD/JSON · PNG/JPEG/WebP</p>
+         {t("Belgeleri seç")} </Button>
+      <p className="relative mt-4 text-xs text-muted-foreground">{t("PDF · DOCX · PPTX · XLSX/CSV · TXT/MD/JSON · PNG/JPEG/WebP")}</p>
       <input
         ref={inputRef}
         className="sr-only"
         type="file"
         multiple
         accept={SUPPORTED_FILE_ACCEPT}
-        aria-label="Analiz edilecek dosyaları seç"
+        aria-label={t("Analiz edilecek dosyaları seç")}
         onChange={handleInputChange}
         disabled={disabled}
       />

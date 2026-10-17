@@ -1,3 +1,4 @@
+import { t, useLocale } from "../../i18n/runtime";
 import { File, FileSpreadsheet, FileText, Image, Presentation, Trash2, X } from "lucide-react";
 import { Button } from "../ui/button";
 import { formatFileSize, type FileCategory, type PreparedFile } from "../../features/files/file-rules";
@@ -19,22 +20,22 @@ const categoryIconMap = {
 
 // Seçilen dosyaları kategori, boyut ve kaldırma kontrolleriyle kullanıcıya özetler.
 export function SelectedFileList({ files, limit, onClear, onRemove }: SelectedFileListProps) {
+  useLocale();
   if (files.length === 0) return null;
 
   return (
     <section className="rounded-3xl border border-border/70 bg-card/75 shadow-sm" aria-labelledby="selected-files-title">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 px-5 py-4 sm:px-6">
         <div>
-          <h2 id="selected-files-title" className="font-semibold">Seçilen dosyalar</h2>
-          <p className="mt-1 text-xs text-muted-foreground" aria-live="polite">{files.length}/{limit} dosya analize hazırlanıyor</p>
+          <h2 id="selected-files-title" className="font-semibold">{t("Seçilen dosyalar")}</h2>
+          <p className="mt-1 text-xs text-muted-foreground" aria-live="polite">{t("{0}/{1} dosya analize hazırlanıyor", files.length, limit)}</p>
         </div>
         <Button type="button" variant="ghost" className="h-9 gap-2 px-3 text-muted-foreground hover:text-foreground" onClick={onClear}>
           <Trash2 className="h-4 w-4" aria-hidden="true" />
-          Tümünü temizle
-        </Button>
+           {t("Tümünü temizle")} </Button>
       </div>
 
-      <ul className="divide-y divide-border/70" aria-label="Seçilen dosyalar">
+      <ul className="divide-y divide-border/70" aria-label={t("Seçilen dosyalar")}>
         {files.map(({ id, file, category }) => {
           const CategoryIcon = categoryIconMap[category];
           return (
@@ -44,14 +45,14 @@ export function SelectedFileList({ files, limit, onClear, onRemove }: SelectedFi
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium" title={file.name}>{file.name}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{category} · {formatFileSize(file.size)}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{t(category)} · {formatFileSize(file.size)}</p>
               </div>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 className="shrink-0 rounded-xl text-muted-foreground hover:text-foreground"
-                aria-label={`${file.name} dosyasını kaldır`}
+                aria-label={t("{0} dosyasını kaldır", file.name)}
                 onClick={() => onRemove(id)}
               >
                 <X className="h-4 w-4" aria-hidden="true" />

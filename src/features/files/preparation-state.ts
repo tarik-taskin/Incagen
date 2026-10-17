@@ -1,3 +1,4 @@
+import { localeTag } from "../../i18n/runtime";
 import { ANALYSIS_OBJECTIVE_MAX_LENGTH, createSchema, LIMITS } from "../../../functions/src/contracts";
 import type { Draft } from "../../lib/workspace-context";
 import type { PreparedFile } from "./file-rules";
@@ -26,5 +27,5 @@ export function getPreparationState(files: PreparedFile[], draft: Draft) {
 export function formatCapacity(bytes: number) {
   const unit = bytes >= 1024 ** 2 ? "MB" : bytes >= 1024 ? "KB" : "B";
   const divisor = unit === "MB" ? 1024 ** 2 : unit === "KB" ? 1024 : 1;
-  return `${new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 1 }).format(bytes / divisor)} ${unit}`;
+  return `${new Intl.NumberFormat(localeTag(), { maximumFractionDigits: 1 }).format(bytes / divisor)} ${unit}`;
 }

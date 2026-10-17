@@ -1,0 +1,23 @@
+{
+  "comments": 32,
+  "positiveComments": 26,
+  "problemComments": 6,
+  "negativeCommentPercent": 15.625,
+  "themeMentions": {
+    "usability": 11,
+    "support": 8,
+    "reporting": 10,
+    "performance": 4
+  },
+  "problemMentions": {
+    "usability": 3,
+    "support": 1,
+    "reporting": 1,
+    "performance": 1
+  },
+  "sentimentCounts": {
+    "negative": 5,
+    "positive": 26,
+    "mixed": 1
+  }
+}

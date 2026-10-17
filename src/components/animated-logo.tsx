@@ -1,3 +1,4 @@
+import { t, useLocale } from "../i18n/runtime";
 import { useEffect, useId, useRef } from "react";
 import { animate, stagger, svg } from "animejs";
 import { cn } from "../lib/utils";
@@ -6,6 +7,7 @@ type AnimatedLogoProps = { className?: string; compact?: boolean };
 
 // Incagen marka işaretini erişilebilir SVG ve hareket tercihlerine duyarlı animasyonlarla çizer.
 export function AnimatedLogo({ className, compact = false }: AnimatedLogoProps) {
+  useLocale();
   const logoRef = useRef<SVGSVGElement>(null);
   const gradientId = useId().replace(/:/g, "");
 
@@ -53,7 +55,7 @@ export function AnimatedLogo({ className, compact = false }: AnimatedLogoProps) 
   }, []);
 
   return (
-    <svg ref={logoRef} viewBox="42 387 238 250" role="img" aria-label="Incagen logosu" className={cn("overflow-visible drop-shadow-[0_12px_28px_rgba(76,42,133,0.18)]", className)}>
+    <svg ref={logoRef} viewBox="42 387 238 250" role="img" aria-label={t("Incagen logosu")} className={cn("overflow-visible drop-shadow-[0_12px_28px_rgba(76,42,133,0.18)]", className)}>
       <defs>
         <linearGradient id={gradientId} x1="75" y1="594" x2="245" y2="418" gradientUnits="userSpaceOnUse">
           <stop stopColor="#BCEDF6" />

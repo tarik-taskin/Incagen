@@ -47,6 +47,9 @@ test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru y
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole("dialog", { name: "Giriş yap" })).toBeVisible();
   await expectNoAccessibilityViolations(page);
+  await page.mouse.click(2, 2);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.getByRole("button", { name: /Analize başla/ }).click();
   await register(page);
   await expect(page).toHaveURL(/\/app\/new-analysis$/);
   await expect(page.getByRole("heading", { name: "Belgelerinizi analize hazırlayın" })).toBeVisible();

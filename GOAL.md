@@ -7,6 +7,16 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-17 — Furkan / Codex: uyarlanabilir raporlar ve çok dilli deneyim
+
+- [~] Sahip: Furkan — Doğrulanmış sonuç sözleşmesinden farklı analiz türlerini sunan ortak rapor bileşenleri oluştur; mevcut kurumsal raporda ayrıntıları erişilebilir açılır bölümlerde koru.
+- [~] Sahip: Furkan — İnsan etiketli müşteri geri bildirimleri referansından kaynaklı ikinci örnek rapor üret; tema/sorun/duygu ayrımını, paydaları ve eksik veriyi doğrula; olumlu ağırlıklı 32 yorumluk sunum setini özgün değerlendirme referansından ayrı tut.
+- [~] Sahip: Furkan — Türkçe, İngilizce, Almanca, İspanyolca, basitleştirilmiş Çince ve Arapça için merkezi metin kaynakları, kalıcı dil seçimi, yerelleştirilmiş biçimler ve RTL düzeni ekle.
+
+- [~] Sahip: Furkan — Tüm açılır pencereleri dış alana dokunarak kapat; içerideki etkileşimleri, sürüklemeyi, Escape/odak dönüşünü ve devam eden silme işlemlerini koru.
+
+Kabul: Bilgi kaybolmadan ilk görünüm sadeleşmeli; kaynak belgeler ve kullanıcı girdileri otomatik çevrilmemeli. Yeni örnek AI üretimi gibi gösterilmemeli; mevcut kaynaklar ve hesaplar korunmalı. Dil değişimi taslağı/oturumu/rotayı korumalı; klavye, iki tema, mobil, azaltılmış hareket ve Arapça yönü doğrulanmalı. Lint, birim, frontend/Functions build, entegrasyon ve tarayıcı kontrolleri geçmeli. Local/remote main/furkan eşit, çalışma ağacı temiz ve Netlify son sürüm olmalı.
+
 ### 2026-10-15 — Furkan / Codex: çok formatlı kurumsal örnek dosyası
 
 - [x] Sahip: Furkan — Şirket örneğini sürümlü, daha geniş satış/operasyon verileri ve gerçek PDF/DOCX kaynaklarla büyüt; indirilen belgeleri parser, bağımsız hesap ve sayfa düzeni açısından doğrula.

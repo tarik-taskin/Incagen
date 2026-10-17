@@ -16,6 +16,9 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 
 - `/ornek-rapor`: 12 aylık 3.612 tablo kaydı, PDF ve Word belgelerinden oluşan beş kaynaklı şirket dosyası; altı grafik/üç finansal tablo ve aramalı/sayfalı kaynak paneli içeren örnek rapor; AI üretimi değildir ve hesaba yazılmaz. Üretim/doğrulama ayrıntıları [AI sonuç rehberindedir](docs/AI-RESULTS.md).
 
+- Altı dil için merkezi JSON katalogları, kalıcı seçim ve Arapça RTL: [dil ve rapor rehberi](docs/LOCALIZATION.md). Kimlik/taslak ve özgün kaynak metinleri dil değişiminden etkilenmez.
+- Ortak sonuç bölümleri finansal olmayan ve metin ağırlıklı raporları da sunar; finansal ve kaynak ayrıntıları erişilebilir açılır bölümlerde korunur. Müşteri deneyimi örneği 26 olumlu, 5 olumsuz ve 1 karma olmak üzere 32 kurgusal yazılım deneyimi yorumunu insan etiketleri ve kaynaklı sayımlarla gösterir; sekiz yorumluk değerlendirme referansı korunur.
+
 ## Tamamlanan özellikler
 
 - Responsive giriş/çalışma alanı, tema, animasyonlu logo, Premium bilgilendirmesi.

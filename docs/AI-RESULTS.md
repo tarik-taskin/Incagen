@@ -88,3 +88,7 @@ node scripts/build-sales-example.cjs --check
 Kaynak paneli belge seçimi, Türkçe arama, 25 satırlık sayfalama ve dayanak filtresi sunar. Kaynak/parça sınırları korunur; yalnız bitişik gerçek satırlar kanıt aralığında birleştirilir. Native dialog odak kilidi, Escape ve tetikleyiciye odak dönüşü sağlar; geniş tablolar sayfayı büyütmez. Gerçek rapor kaydı, farklı belge türlerinin renderer kabulü ve LLM kalitesi ayrı işlerdir.
 
 Çok formatlı şirket örneğinin belge kütüphanesi her özgün dosyayı ayrı indirme bağlantısıyla sunar. PDF sayfa ve Word metin bölümleri kaynak panelinde aranabilir; yönetim notları normalize metinde birebir bulunan alıntılardır. Tablo metrikleri yalnız üç sayısal CSV üzerinden hesaplanır; PDF/Word tekrarları çift sayılmaz. Yıllık metin notları dönem filtresinden bağımsız ve yıllık olarak etiketlidir. Ayrık satır kanıtları için liste başına sınır 100’den 256’ya çıkarılmıştır; kaynak/hash/konum denetimleri değişmez, aşım reddedilir.
+
+## Farklı analiz türleri ve dil
+
+Ortak `AdaptiveReport` ve müşteri deneyimi örneği [dil ve rapor sunumu rehberinde](LOCALIZATION.md) açıklanır. İnsan etiketleri, kaynak yorumlar ve hesaplanan sayımlar ayrı tutulur; gerçek model çağrısı veya AI sınıflandırması eklenmez. Kurumsal örneğin finans tabloları ve kaynakları açılır bölümlerde korunur. Yeni hesaplayıcı ve artefakt `npm run example:build` ile yeniden üretilebilir.

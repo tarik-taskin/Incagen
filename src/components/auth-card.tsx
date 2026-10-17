@@ -1,3 +1,5 @@
+import { LanguageSelector } from "./language-selector";
+import { t, useLocale } from "../i18n/runtime";
 import { useState, type FormEvent, type ReactNode } from "react";
 import { createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
 import { Apple, BadgeCheck, Check, Circle, Eye, EyeOff, KeyRound, Mail, ShieldCheck, Ticket, X } from "lucide-react";
@@ -30,11 +32,12 @@ const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Parola alanına klavyeyle erişilebilir gösterme ve gizleme kontrolü ekler.
 function PasswordField({ autoComplete, id, label, onChange, onToggle, show, toggleLabel, value }: PasswordFieldProps) {
+  useLocale();
   return (
     <div>
-      <label htmlFor={id} className="text-[13.5px] font-medium text-foreground sm:text-sm">{label}</label>
+      <label htmlFor={id} className="text-[13.5px] font-medium text-foreground sm:text-sm">{t(label)}</label>
       <div className="relative mt-2">
-        <KeyRound className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+        <KeyRound className="pointer-events-none absolute start-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <input
           id={id}
           name={id}
@@ -44,12 +47,12 @@ function PasswordField({ autoComplete, id, label, onChange, onToggle, show, togg
           autoComplete={autoComplete}
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="form-control h-12 pl-10 pr-12"
+          className="form-control h-12 ps-10 pe-12"
         />
         <button
           type="button"
-          className="absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-secondary"
-          aria-label={toggleLabel}
+          className="absolute end-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-secondary"
+          aria-label={t(toggleLabel)}
           aria-pressed={show}
           onClick={onToggle}
         >
@@ -72,22 +75,24 @@ function MicrosoftMark() {
 
 // Henüz bağlı olmayan sosyal sağlayıcıyı arayüz yerini koruyarak pasif sunar.
 function SocialOption({ action, icon, name }: { action: string; icon: ReactNode; name: string }) {
+  useLocale();
   return (
     <button
       type="button"
       disabled
-      title={`${name} ile ${action}`}
+      title={t("{0} ile {1}", name, t(action))}
       className="flex h-12 items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-1 text-[11px] font-semibold text-foreground shadow-sm disabled:cursor-not-allowed disabled:opacity-100 sm:gap-2 sm:px-3 sm:text-sm"
-      aria-label={`${name} ile ${action}`}
+      aria-label={t("{0} ile {1}", name, t(action))}
     >
       {icon}
-      <span>{name}</span>
+      <span>{t(name)}</span>
     </button>
   );
 }
 
 // Firebase kimlik işlemlerini doğrulamalı ve iki modlu modal formunda yürütür.
 export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
+  useLocale();
   const { error: configError } = useAuth();
   const [register, setRegister] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -175,35 +180,35 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
               <AnimatedLogo compact className="h-8 w-8" />
             </span>
             <div>
-              <p className="text-[15.5px] font-semibold tracking-[-0.02em] sm:text-base">Incagen</p>
-              <p className="flex items-center gap-1 text-xs text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" /> {usesFirebaseEmulator ? "Yerel analiz alanı" : "Güvenli analiz alanı"}</p>
+              <p className="text-[15.5px] font-semibold tracking-[-0.02em] sm:text-base">{t("Incagen")}</p>
+              <p className="flex items-center gap-1 text-xs text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" /> {usesFirebaseEmulator ? t("Yerel analiz alanı") : t("Güvenli analiz alanı")}</p>
             </div>
           </div>
-          <Button type="button" variant="ghost" size="icon" className="shrink-0 rounded-xl" aria-label="Giriş penceresini kapat" onClick={onClose}>
+          <div className="flex shrink-0 items-center gap-1"><LanguageSelector /><Button type="button" variant="ghost" size="icon" className="shrink-0 rounded-xl" aria-label={t("Giriş penceresini kapat")} onClick={onClose}>
             <X className="h-4 w-4" aria-hidden="true" />
-          </Button>
+          </Button></div>
         </header>
 
         <div className="mt-5">
-          <p className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-primary dark:text-secondary sm:text-xs">Veriden karara, tek çalışma alanı</p>
-          <h1 id={titleId} className="mt-1.5 text-[29px] font-semibold tracking-[-0.04em] sm:text-4xl">{register ? tr.auth.register : tr.auth.login}</h1>
+          <p className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-primary dark:text-secondary sm:text-xs">{t("Veriden karara, tek çalışma alanı")}</p>
+          <h1 id={titleId} className="mt-1.5 text-[29px] font-semibold tracking-[-0.04em] sm:text-4xl">{register ? t(tr.auth.register) : t(tr.auth.login)}</h1>
           <p className="mt-2 text-[13.5px] leading-6 text-muted-foreground sm:text-sm">
-            {register ? "Kişisel analiz alanınızı oluşturun ve raporlarınızı bir arada yönetin." : "Analizlerinize ve kayıtlı raporlarınıza kaldığınız yerden devam edin."}
+            {register ? t("Kişisel analiz alanınızı oluşturun ve raporlarınızı bir arada yönetin.") : t("Analizlerinize ve kayıtlı raporlarınıza kaldığınız yerden devam edin.")}
           </p>
           {usesFirebaseEmulator && (
             <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-primary/10 bg-primary/[0.05] px-2.5 py-1 text-xs font-medium text-primary dark:border-secondary/15 dark:bg-secondary/[0.07] dark:text-secondary">
-              <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" /> Yerel demo · Yalnız sentetik veri
-            </span>
+              <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />  {t("Yerel demo · Yalnız sentetik veri")} </span>
           )}
         </div>
 
         <form onSubmit={submit} className="mt-6 space-y-5" noValidate>
           <div>
-            <label htmlFor="email" className="text-[13.5px] font-medium text-foreground sm:text-sm">{tr.auth.email}</label>
+            <label htmlFor="email" className="text-[13.5px] font-medium text-foreground sm:text-sm">{t(tr.auth.email)}</label>
             <div className="relative mt-2">
-              <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+              <Mail className="pointer-events-none absolute start-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <input
                 id="email"
+                dir="ltr"
                 name="email"
                 type="email"
                 required
@@ -214,19 +219,19 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
                 onChange={(event) => { setEmail(event.target.value); setResetSent(false); }}
                 aria-invalid={emailTouched && !emailValid}
                 aria-describedby="email-feedback"
-                className="form-control h-12 pl-10 pr-11"
+                className="form-control h-12 ps-10 pe-11"
                 placeholder="ornek@isletmeniz.com"
               />
-              {emailValid && <BadgeCheck className="pointer-events-none absolute right-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />}
+              {emailValid && <BadgeCheck className="pointer-events-none absolute end-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />}
             </div>
             <p id="email-feedback" className={`mt-1.5 min-h-4 text-xs ${emailValid ? "text-emerald-700 dark:text-emerald-300" : emailTouched && email ? "text-red-700 dark:text-red-300" : "text-muted-foreground"}`} aria-live="polite">
-              {emailValid ? "E-posta formatı uygun" : emailTouched && email ? "Geçerli bir e-posta adresi girin" : "Hesabınız ve raporlarınız bu adresle eşleşir"}
+              {emailValid ? t("E-posta formatı uygun") : emailTouched && email ? t("Geçerli bir e-posta adresi girin") : t("Hesabınız ve raporlarınız bu adresle eşleşir")}
             </p>
           </div>
 
           <PasswordField
             id="password"
-            label={tr.auth.password}
+            label={t(tr.auth.password)}
             autoComplete={register ? "new-password" : "current-password"}
             value={password}
             onChange={setPassword}
@@ -235,21 +240,21 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
             toggleLabel={showPassword ? "Parolayı gizle" : "Parolayı göster"}
           />
 
-          {!register && <div className="-mt-2 text-right"><button type="button" disabled={resetSending} className="rounded-md text-[13.5px] font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary sm:text-sm" onClick={requestPasswordReset}>{resetSending ? "Bağlantı gönderiliyor…" : "Şifremi unuttum"}</button></div>}
+          {!register && <div className="-mt-2 text-end"><button type="button" disabled={resetSending} className="rounded-md text-[13.5px] font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary sm:text-sm" onClick={requestPasswordReset}>{resetSending ? t("Bağlantı gönderiliyor…") : t("Şifremi unuttum")}</button></div>}
 
-          {resetSent && <p role="status" className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-3 text-sm text-emerald-800 dark:text-emerald-200">Şifre yenileme bağlantısı e-posta adresinize gönderildi.</p>}
+          {resetSent && <p role="status" className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-3 text-sm text-emerald-800 dark:text-emerald-200">{t("Şifre yenileme bağlantısı e-posta adresinize gönderildi.")}</p>}
 
           {register && (
             <div className="rounded-2xl border border-border/80 bg-muted/55 p-3.5" aria-live="polite">
               <div className="mb-2.5 flex items-center justify-between gap-3">
-                <p className="text-xs font-semibold">Güçlü parola oluşturun</p>
-                <span className="text-xs font-medium text-muted-foreground">{metCriteriaCount}/4 kriter</span>
+                <p className="text-xs font-semibold">{t("Güçlü parola oluşturun")}</p>
+                <span className="text-xs font-medium text-muted-foreground">{t("{0}/4 kriter", metCriteriaCount)}</span>
               </div>
               <div className="grid grid-cols-2 gap-x-3 gap-y-2">
                 {passwordCriteria.map(({ label, met }) => (
                   <span key={label} className={`flex items-center gap-1.5 text-xs ${met ? "text-emerald-700 dark:text-emerald-300" : "text-muted-foreground"}`}>
                     {met ? <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> : <Circle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
-                    {label}
+                    {t(label)}
                   </span>
                 ))}
               </div>
@@ -270,7 +275,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
               />
               {passwordConfirmation && (
                 <p className={`mt-1.5 text-xs ${passwordsMatch ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`} aria-live="polite">
-                  {passwordsMatch ? "Parolalar eşleşiyor" : "Parolalar eşleşmiyor"}
+                  {passwordsMatch ? t("Parolalar eşleşiyor") : t("Parolalar eşleşmiyor")}
                 </p>
               )}
             </div>
@@ -279,39 +284,39 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
           {register && (
             <div>
               <div className="flex items-center justify-between gap-3">
-                <label htmlFor="invite-code" className="text-[13.5px] font-medium text-foreground sm:text-sm">Davet kodu</label>
-                <span className="text-xs text-muted-foreground">İsteğe bağlı</span>
+                <label htmlFor="invite-code" className="text-[13.5px] font-medium text-foreground sm:text-sm">{t("Davet kodu")}</label>
+                <span className="text-xs text-muted-foreground">{t("İsteğe bağlı")}</span>
               </div>
               <div className="relative mt-2">
-                <Ticket className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-                <input id="invite-code" name="invite-code" type="text" autoComplete="off" className="form-control h-12 pl-10 uppercase tracking-[0.12em]" placeholder="INCAGEN-XXXX" />
+                <Ticket className="pointer-events-none absolute start-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                <input id="invite-code" name="invite-code" type="text" autoComplete="off" className="form-control h-12 ps-10 uppercase tracking-[0.12em]" placeholder={t("INCAGEN-XXXX")} />
               </div>
             </div>
           )}
 
-          {(error || configError) && <p role="alert" className="rounded-xl border border-red-500/20 bg-red-500/10 px-3.5 py-3 text-sm text-red-700 dark:text-red-300">{error || configError}</p>}
+          {(error || configError) && <p role="alert" className="rounded-xl border border-red-500/20 bg-red-500/10 px-3.5 py-3 text-sm text-red-700 dark:text-red-300">{t(error || configError)}</p>}
 
           <Button disabled={busy || !!configError || !formValid} className="h-12 w-full rounded-xl text-sm font-semibold shadow-lg shadow-primary/20">
-            {busy ? "Bekleyin…" : register ? tr.auth.register : tr.auth.login}
+            {busy ? t("Bekleyin…") : register ? t(tr.auth.register) : t(tr.auth.login)}
           </Button>
         </form>
 
         <div className="my-5 flex items-center gap-3" aria-hidden="true">
           <span className="h-px flex-1 bg-border" />
-          <span className="text-xs font-medium text-muted-foreground">veya</span>
+          <span className="text-xs font-medium text-muted-foreground">{t("veya")}</span>
           <span className="h-px flex-1 bg-border" />
         </div>
 
         <div className="grid grid-cols-3 gap-2">
-          <SocialOption action={action} name="Google" icon={<span className="bg-[conic-gradient(from_-45deg,#4285f4_0_25%,#34a853_0_50%,#fbbc05_0_75%,#ea4335_0)] bg-clip-text text-base font-bold text-transparent" aria-hidden="true">G</span>} />
+          <SocialOption action={action} name="Google" icon={<span className="bg-[conic-gradient(from_-45deg,#4285f4_0_25%,#34a853_0_50%,#fbbc05_0_75%,#ea4335_0)] bg-clip-text text-base font-bold text-transparent" aria-hidden="true">{"G"}</span>} />
           <SocialOption action={action} name="Apple" icon={<Apple className="h-4 w-4" aria-hidden="true" />} />
           <SocialOption action={action} name="Microsoft" icon={<MicrosoftMark />} />
         </div>
 
         <p className="mt-6 text-center text-[13.5px] text-muted-foreground sm:text-sm">
-          {register ? "Zaten hesabınız var mı?" : "Henüz hesabınız yok mu?"}{" "}
+          {register ? t("Zaten hesabınız var mı?") : t("Henüz hesabınız yok mu?")}{" "}
           <button type="button" className="rounded-md font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary" onClick={() => changeMode(!register)}>
-            {register ? tr.auth.login : tr.auth.register}
+            {register ? t(tr.auth.login) : t(tr.auth.register)}
           </button>
         </p>
       </div>
