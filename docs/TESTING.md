@@ -13,6 +13,24 @@ npm run build:functions
 
 `test:run`, uygulama ve Functions testlerini birlikte çalıştırır. `npm run test:references` yalnız referans bütünlüğünü; `npm run test:functions` ayrıştırıcı ve AI sonuç sözleşmesini de kontrol eder. Sonuç sözleşmesi ve analiz paketi testleri AI çağrısı yapmaz. Küçük satış ve kapsamlı şirket örneği özgün CSV/PDF/DOCX belgelerinden yeniden üretilip statik artefaktla ve bağımsız cevaplarla karşılaştırılır. Şirket örneğinde dört dönem kapsamı, farklı parser parçalarındaki kanıt aralıkları, ağırlıklı oranlar ve ZIP/tekli indirme bütünlüğü, PDF sayfaları ve Word metnindeki alıntılar doğrulanır. PDF/DOCX tasarım üretimi için belge aracı kullanılır; uygulama testleri kaydedilmiş dosyaları ayrıştırır ve Python gerektirmez. Kaynaklar değişirse `npm run example:build` ile artefaktı yenileyin; sürüm değişimi kuralları referans rehberindedir. Örnek rapor tarayıcı kontrolleri grafik/tablo eşitliği, dönem ve URL geçmişi, büyük kaynaklarda arama/sayfalama, indirme, odak/Escape, iki tema, normal/azaltılmış hareket ve mobil taşmayı kapsar.
 
+## Bağımlılık denetimi
+
+CI, iki paket ağacında üretim bağımlılıkları için yüksek/kritik uyarıları engeller:
+
+```bash
+npm audit --omit=dev --audit-level=high
+npm --prefix functions audit --omit=dev --audit-level=high
+```
+
+Bu eşik orta önem uyarılarını gizlemez; denetim bunları çıktı olarak verir. 2026-10-18 bakımında `@grpc/grpc-js` 1.14.6, `proxy-addr` 2.0.8 ve `brace-expansion` düzeltilmiş dallara taşındı. gRPC override'ı, Firebase istemcisinin eski Node alt bağımlılığını yeniden çözmesini önler. Sürüm gerekçeleri [gRPC](https://github.com/advisories/GHSA-m9gg-hp2v-232j), [proxy-addr](https://github.com/advisories/GHSA-jqcg-44mw-7w3h) ve [brace-expansion](https://github.com/advisories/GHSA-6j4f-fj2g-mc7p) duyurularındadır. Ana Firebase/Office API sürümleri korundu; Firebase CLI ve uyumlu alt bağımlılıklar güncellendi.
+
+Kalan uyarılar ve erişim sınırları:
+
+- Functions: `mammoth → argparse → sprintf-js` zincirinde aynı kök uyarıdan türeyen üç orta önem kaydı vardır. `sprintf-js` için düzeltilmiş npm sürümü henüz yoktur. Uygulama yalnız Mammoth'un `extractRawText({ buffer })` kütüphane API'sini çağırır; `argparse`, Mammoth'un `bin/mammoth` komut satırı girişinde kullanılır ve bu giriş çalıştırılmaz. [Duyuru](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) kapanana veya uyumlu üst paket düzeltmesi gelene kadar izlenir; bu, denetimin tamamen temiz olduğu anlamına gelmez.
+- Kök paketin geliştirme ağacında Tailwind'in dosya/desen ve CSS ayrıştırma araçları ile Firebase CLI telemetri bağımlılığından gelen 10 kayıt (6 yüksek, 4 orta) kalır. Bunlar yayınlanan tarayıcı paketinin üretim bağımlılıkları değildir. Kalan öneriler Tailwind 4 geçişi veya Firebase CLI ana sürüm düşürmesi istediğinden `audit fix --force` uygulanmaz; ayrı uyumluluk çalışmasıyla ele alınır.
+
+Denetim zamanla değişir. Yeni uyarıda yalnız sayıya bakılmaz; etkilenen sürüm, gerçek çağrı yolu ve düzeltmenin uyumu yeniden kontrol edilir. Kontroller kapatılmaz veya uyarılar bastırılmaz.
+
 ## Entegrasyon ve tarayıcı
 
 Node gereksinimine ek olarak Java 21+ ve Chromium gerekir. İlk kurulumda:

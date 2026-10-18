@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-18 — Furkan / Codex: bağımlılık kapanış bakımı
+
+- [x] Sahip: Furkan — Denetimde bulunan gRPC, proxy-addr ve brace-expansion uyarılarını uyumlu sürümlerle gider; Functions DOCX kütüphanesinin komut satırı alt bağımlılığında kalan uyarının uygulama erişimini ve takip kapsamını belgele.
+
+Kabul: Firebase/Mammoth ana sürümleri düşürülmemeli, güvenlik denetimi susturulmamalı. Üretim bağımlılıklarında yüksek/kritik uyarı kalmamalı; kalan uyarılar çağrı yolu ve düzeltme durumu ile açık kaydedilmeli. Lint, birim, derleme, entegrasyon ve tarayıcı kontrolleri geçmeli; örnek kaynaklar değişmemeli.
+
+Doğrulama: Uygulamanın üretim ağacında 0 uyarı, Functions üretim ağacında yalnız belgelenmiş 3 orta önem kaydı kaldı; yüksek/kritik üretim denetimleri CI'a da eklendi. Gerçek örnek DOCX metni ayrıştırılırken argparse/sprintf-js yüklenmediği doğrulandı. Lint, 63 uygulama + 104 Functions testi, frontend/Functions ve canlı önizleme derlemeleri, 4 entegrasyon ve 42 tarayıcı senaryosu geçti; yalnız masaüstüne uygulanmayan 2 dar ekran senaryosu atlandı. Kaynak dosyaları, dört dönem hesapları, ZIP ve özgün indirmeler yeniden üretim kontrolünde değişmedi.
+
 ### 2026-10-18 — Furkan / Codex: kapanış tutarlılık kontrolü
 
 - [x] Sahip: Furkan — Tamamlanan kısmi hazırlık ve geçmiş araması işlerini milestone listesindeki durumlarıyla eşleştir; doğrulama kaydını tek kaynağa bağla.
@@ -484,7 +492,7 @@ Aşağıdakiler sonraki aşamanın açık kararlarıdır. Bugünkü yerel akış
 - Saklama/bölge seçimleri gizlilik, maliyet ve operasyonu etkiler; uygulanmadan kararlaştırılmalıdır.
 - AI maliyeti, model erişimi ve şema güvenilirliği gerçek testlerle ölçülmelidir.
 - Kota/webhook tekrarları çift ücret veya tüketim doğurmamalıdır.
-- Firebase CLI geliştirme bağımlılıklarında 7 orta önem uyarısı kaldı; üretim bağımlılık denetimleri temiz. Uyumsuz ana sürümler zorlanmadı.
+- 2026-10-18 bağımlılık bakımında üretimdeki yüksek/kritik uyarılar giderildi. Functions'ın kullanılmayan Mammoth CLI zincirinde 3 orta önem; geliştirme araçlarında 6 yüksek/4 orta kayıt kalıyor. Erişim değerlendirmesi, düzeltme sınırı ve CI eşiği [test rehberindedir](docs/TESTING.md#bağımlılık-denetimi); denetim tamamen temiz sayılmaz, uyumsuz ana sürümler zorlanmaz.
 - Yerel testler bulut IAM/App Check, kalıcı kuyruk ve gerçek veri operasyonunun hazır olduğunu göstermez.
 - Firestore istemci paketi 500 kB build uyarısı veriyor; sonraki performans bütçesi çalışmasında küçültülmeli.
 
