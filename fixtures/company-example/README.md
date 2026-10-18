@@ -1,36 +1,42 @@
-# Atlas Perakende kaynak dosyası
+# Atlas Teknoloji kaynak dosyası
 
-Atlas Perakende bu gösterim için kurgulanan bir işletmedir. Örnek rapor 2025'in 12 ayını kapsar; gerçek müşteri veya şirket verisi içermez. Kaynaklar ve hesaplar sürümlüdür.
+2025 teknoloji ve profesyonel hizmetler örneği. Dokuz belge, sekiz format ve 3.612 tablo kaydı aynı dönem/kapsama aittir. Şirket ve veriler bu örnek için hazırlanmıştır; gerçek müşteri kaydı içermez.
 
-## Güncel paket v2
+## Güncel paket v3
 
 | Belge | İçerik | Kapsam |
 | --- | --- | --- |
-| `atlas-performans-2025.pdf` | Yıllık yönetim raporu | 7 sayfa; aylık hedefler, kategori, kanal, bölge, hizmet ve mali mutabakat |
-| `atlas-ticari-degerlendirme-2025.docx` | Ticari değerlendirme | 5 sayfa; kanal ekonomisi, portföy, risk ve kontrol noktaları, karar planı |
-| `atlas-satis-2025.csv` | Ayrıntılı mali kırılımlar | 3.456 satır; 12 ay × 4 bölge × 3 kanal × 8 kategori × 3 segment |
-| `atlas-butce-2025.csv` | Net satış bütçesi | 12 aylık hedef |
-| `atlas-operasyon-2025.csv` | Sevkiyat ve teslimat | 144 ay × bölge × kanal kaydı |
+| `atlas-performans-2025.pdf` | Yıllık performans raporu | 7 sayfa: gelir, bütçe, hizmet alanı, kanal, bölge, mali mutabakat |
+| `atlas-ticari-degerlendirme-2025.docx` | Ticari değerlendirme | 5 sayfa: kanal ekonomisi, hizmet portföyü, kontrol ve karar planı |
+| `atlas-satis-2025.csv` | Ayrıntılı mali kayıtlar | 3.456 satır: 12 ay × 4 bölge × 3 kanal × 8 hizmet alanı × 3 segment |
+| `atlas-butce-2025.xlsx` | Yıllık bütçe girdileri | Bir sayfa, 12 aylık hedef; düzenlenebilir sayısal hücreler |
+| `atlas-operasyon-2025.csv` | Hizmet operasyonu | 144 ay/bölge/kanal kaydı: tamamlanan, zamanında ve geciken işler |
+| `atlas-yonetim-2025.pptx` | Yönetim sunumu | 3 slayt; düzenlenebilir metinler ve hizmet portföyü tablosu |
+| `atlas-rapor-baglami-2025.json` | Veri sözlüğü | Şirket modeli, alan tanımları, dönem ve kapsam sınırları |
+| `atlas-hesap-yontemi-2025.md` | Hesap yöntemleri | Mali formüller, paydalar ve çift sayımı önleyen kurallar |
+| `atlas-yonetim-devir-notu-2025.txt` | Ekip devir notu | Finans, satış ve hizmet operasyonu için takip başlıkları |
 
-Toplam 3.612 tablo kaydı vardır. PDF ve Word içindeki tekrar eden toplamlar bu sayıya eklenmez ve mali hesaplarda tekrar sayılmaz. Satış satırları tekil sipariş değil, aylık kırılım toplamıdır. Siparişler bu kırılımlarda ayrık tanımlanır. Sipariş, ürün adedi ve müşteri sayısı birbirinin yerine kullanılmaz.
+PDF/Word/sunum aynı kayıtların yönetim görünümüdür; tekrar edilen toplamlar hesaplara yeniden eklenmez. JSON, Markdown ve metin belge bağlamı sağlar. Görsel kaynak yoktur. Kaynak CSV bütçesi yalnız üretim ara girdisidir; yayımlanan pakette bütçenin özgün kaynağı XLSX'tir.
 
-## Hesap tanımları
+## Hesaplar ve yorum sınırı
 
-Tutarlar TRY ve KDV hariçtir. Net satış = brüt satış − satır indirimi − iade. İndirim ve iadeler satır toplamıdır; adet ile yeniden çarpılmaz. Satılan mal maliyeti iade sonrası net maliyettir. Brüt kâr = net satış − mal maliyeti. Katkı = brüt kâr − pazarlama − sipariş karşılama; genel gider/vergi/finansman olmadığı için net kâr değildir. Bütçe hedefi gelecek tahmini değildir. Teslimat oranı toplam zamanında teslim edilen / toplam sevk edilen sipariş üzerinden ağırlıklı hesaplanır.
+Tutarlar TRY, KDV hariçtir. Net satış = brüt gelir − satır indirimi − hizmet kredisi. Bu alanlar satır toplamıdır; faturalanabilir birimle yeniden çarpılmaz. Brüt kâr = net satış − doğrudan hizmet maliyeti. Katkı = brüt kâr − satış/pazarlama − hizmet operasyonu. Doğrudan maliyet ve operasyon ayrı gider sınıflarıdır. Genel gider/vergi/finansman olmadığı için katkı net kâr değildir.
 
-Tablolar seçilen döneme filtrelenir. PDF ve Word yıllık belgeler olarak kalır; rapordaki yönetim notlarında yıllık kapsam açıkça gösterilir. PDF sayfa konumu gerçek parser çıktısından gelir. Word parser'ı metin bölümlerini korur; fiziksel sayfa konumu iddia edilmez. Tam belge özgün dosya olarak indirilebilir.
+Hizmet işleri ayrık aylık kırılımlarda tanımlıdır; tekil müşteri veya sözleşme sayısı değildir. Faturalanabilir birim alanı hizmet türüne göre farklı anlamlar taşır ve fiziksel ürün toplamı olarak sunulmaz. Zamanında tamamlanma = toplam zamanında tamamlanan / toplam tamamlanan hizmet işi × 100; aylık oranların ortalaması alınmaz. Bütçe ve gerçekler aynı aylar için karşılaştırılır. Abonelik/ARR, müşteri kaybı, sözleşme yenileme veya kampanya nedenselliği bu paketten hesaplanmaz.
 
-## Üretim ve doğrulama
+Dönem filtresi yalnız üç sayısal kaynağa birlikte uygulanır. PDF, Word ve sunum yıllık belgeler olarak kalır. PDF sayfası, Excel sayfası/satırı, PowerPoint slaytı ve metin bölümü gerçek parser konumudur. Word için fiziksel sayfa konumu iddia edilmez.
 
-- `node scripts/create-company-fixtures.cjs --enterprise`: v2 CSV'leri kararlı formüllerle üretir.
-- `scripts/create-company-documents.py --font-dir <DejaVu-font-klasörü>`: belge üretim ortamında PDF/DOCX'i oluşturur. `python-docx` ve ReportLab yalnız bu yazar aracının bağımlılıklarıdır; uygulamaya Python servisi veya model çağrısı eklemez.
-- `npm run example:build`: **kaydedilmiş beş özgün dosyayı gerçek parser'lardan** geçirir, hash'leri doğrular ve normalize kaynak, tekli indirme ve ZIP artefaktlarını üretir. Normal uygulama/CI derlemesi Python veya LibreOffice gerektirmez.
-- `node scripts/build-sales-example.cjs --check`: kaydedilmiş dosyalarla artefaktların eşitliğini denetler.
+## Yeniden üretim ve doğrulama
 
-[v2 beklenen toplamları](v2/expected.json) Python Decimal ile TypeScript hesaplayıcısından bağımsız hesaplanmıştır; istemci ve rapor üreticisi cevap anahtarını okumaz. PDF/Word içindeki sayılar aynı CSV'lerden bağımsız hesaplanır; birim testleri sayı ve alıntıların normalize içerikte bulunduğunu kontrol eder. Manifest dosyaların SHA-256 değerlerini taşır; ZIP ve tekli indirmeler özgün baytlarla karşılaştırılır.
+1. `node scripts/create-company-fixtures.cjs --technology`: v3 CSV girdileri.
+2. `scripts/create-technology-documents.py --font-dir <DejaVu-font-klasörü>`: bağımsız Decimal toplamları, PDF ve Word. Yalnız belge yazarlığında ReportLab/python-docx gerekir.
+3. `scripts/create-technology-office.mjs`: Codex'in bundled artifact runtime'ıyla Excel ve sunum. `INCAGEN_ARTIFACT_MODULES`, `INCAGEN_ARTIFACT_PYTHON`, `INCAGEN_PRESENTATION_SKILL` yolları yazar ortamından verilir. Önizlemeler ve doğrulama raporu geçici klasörde tutulur.
+4. `node scripts/complete-technology-sources.cjs`: doğrulanmış Office çıktılarını, bağlam ve metin kaynaklarını manifestte birleştirir; ZIP zamanlarını ve eşdeğer SpreadsheetML ad alanını normalize eder. Gömülü nesne veya makro gerektirmez.
+5. `npm run example:build`: dokuz özgün dosyayı gerçek ayrıştırıcılardan geçirir; hash/konumlar, tekli indirme ve ZIP artefaktlarını üretir.
+6. `node scripts/build-sales-example.cjs --check`: kaydedilmiş kaynaklarla dağıtılan artefaktların bayt eşitliği.
 
-Kaynak kanıtları yalnız bitişik satırları aynı parser parçasında birleştirir. Ayrık kayıtları kapsayan sahte aralık oluşturulmaz. Çok boyutlu örneğin kanıt listesi başına 256 aralık üst sınırı vardır; fazlası sessiz kesilmez. Bu bağımsız örnek gerçek AI çıktısı veya kullanıcı hesabı analizi değildir.
+Normal uygulama/CI derlemesi Python, LibreOffice veya artifact runtime gerektirmez. [V3 bağımsız cevapları](v3/expected.json) istemci tarafından okunmaz; dört dönemin metrik/grafik/tablo toplamları bu cevaplarla test edilir. Doküman sayıları, alıntılar, gerçek hash ve konumlar kontrol edilir. Ayrık kanıt satırları aradaki ilgisiz kayıtları kapsayan sahte aralığa dönüştürülmez.
 
-## Korunan önceki sürüm
+## Korunan sürümler
 
-[v1 kaynakları](v1/manifest.json) ve [bağımsız v1 toplamları](expected.json) korunur: 864 satış, 12 bütçe, 72 operasyon kaydı. `node scripts/create-company-fixtures.cjs` varsayılan olarak bu sürümü üretir. Daha küçük [satış ve müşteri yorumları referansları](../analysis-reference/README.md) da değişmez.
+[V2 perakende kaynakları](v2/manifest.json) ve [cevapları](v2/expected.json), [v1 kaynakları](v1/manifest.json) ve [v1 cevapları](expected.json) değişmez. `--enterprise` v2'yi, varsayılan komut v1'i üretir. Daha küçük [satış ve yorum referansları](../analysis-reference/README.md) da kendi sürümleriyle korunur.

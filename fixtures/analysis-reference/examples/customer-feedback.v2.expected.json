@@ -1,0 +1,23 @@
+{
+  "comments": 32,
+  "positiveComments": 26,
+  "problemComments": 6,
+  "negativeCommentPercent": 15.625,
+  "themeMentions": {
+    "clarity": 9,
+    "evidence": 9,
+    "decisions": 12,
+    "depth": 7
+  },
+  "problemMentions": {
+    "clarity": 2,
+    "evidence": 1,
+    "decisions": 2,
+    "depth": 1
+  },
+  "sentimentCounts": {
+    "negative": 5,
+    "positive": 26,
+    "mixed": 1
+  }
+}

@@ -2,6 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { parseDocument } = require("../functions/lib/parsing/index.js");
 const { createCompanyReport } = require("../functions/lib/examples/company-report.js");
+const { SUPPORTED_FILE_FORMATS } = require("../functions/lib/contracts.js");
 const JSZip = require("../functions/node_modules/jszip");
 const { createSalesExample } = require("../functions/lib/examples/sales-report.js");
 
@@ -18,10 +19,10 @@ async function main() {
   if (process.argv.includes("--check")) {
     if (fs.readFileSync(destination, "utf8") !== serialized) throw new Error("Statik örnek raporu yeniden üretin: npm run example:build");
   } else fs.writeFileSync(destination, serialized);
-  const folder = path.join(root, "fixtures/company-example/v2");
+  const folder = path.join(root, "fixtures/company-example/v3");
   const manifest = JSON.parse(fs.readFileSync(path.join(folder, "manifest.json"), "utf8"));
   const documents = await Promise.all(manifest.files.map(async item => {
-    const document = await parseDocument({ sourceId: item.sourceId, fileName: item.file, contentType: item.file.endsWith(".pdf") ? "application/pdf" : item.file.endsWith(".docx") ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document" : "text/csv", data: fs.readFileSync(path.join(folder, item.file)) });
+    const document = await parseDocument({ sourceId: item.sourceId, fileName: item.file, contentType: SUPPORTED_FILE_FORMATS[item.file.split(".").pop()].mimeTypes[0], data: fs.readFileSync(path.join(folder, item.file)) });
     if (document.sha256 !== item.sha256) throw new Error("Şirket örneğinin kaynak hash'i değişmiş.");
     return document;
   }));

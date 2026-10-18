@@ -1,0 +1,44 @@
+{
+  "company": "Atlas Teknoloji",
+  "reporting_year": 2025,
+  "currency": "TRY",
+  "vat": "excluded",
+  "business_model": "Teknoloji ve profesyonel hizmetler",
+  "period": {
+    "start": "2025-01-01",
+    "end": "2025-12-31"
+  },
+  "dimensions": {
+    "regions": [
+      "Marmara",
+      "Ege",
+      "İç Anadolu",
+      "Akdeniz"
+    ],
+    "channels": [
+      "Doğrudan satış",
+      "İş ortakları",
+      "Dijital kanal"
+    ],
+    "customer_segments": [
+      "Girişim",
+      "KOBİ",
+      "Kurumsal"
+    ]
+  },
+  "definitions": {
+    "service_orders": "Tamamlanan ayrık hizmet işleri; tekil müşteri veya sözleşme sayısı değildir.",
+    "billable_units": "Hizmet alanına göre farklı faturalama birimleri. Alanlar arasında fiziksel ürün adedi gibi toplanmaz.",
+    "service_credit_try": "Hizmet düzeyi veya ticari düzeltme kapsamında gelirden düşülen kredi tutarı.",
+    "direct_cost_try": "Hizmet sunumuna doğrudan yüklenen uzmanlık ve altyapı maliyetleri.",
+    "service_delivery_try": "Doğrudan maliyete dahil olmayan hizmet koordinasyonu ve operasyon gideri."
+  },
+  "exclusions": [
+    "ARR/MRR",
+    "Müşteri kaybı",
+    "Sözleşme yenileme",
+    "Tekil müşteri sayısı",
+    "Net kâr"
+  ],
+  "table_records": 3612
+}

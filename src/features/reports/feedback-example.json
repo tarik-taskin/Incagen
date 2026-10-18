@@ -1,15 +1,15 @@
 {
   "result": {
     "schemaVersion": 1,
-    "analysisId": "synthetic-feedback-v1",
-    "objective": "Yorumlardaki tekrar eden sorunları, olumlu deneyimleri ve iyileştirme önceliklerini kaynaklarıyla özetle.",
+    "analysisId": "synthetic-post-analysis-feedback-v2",
+    "objective": "Tamamlanan analizlerden sonra paylaşılan geri bildirimleri incele; sonuç kalitesini, karar desteğini ve iyileştirme önceliklerini kaynaklarıyla özetle.",
     "summary": [
       {
-        "text": "Olumlu deneyimler çoğunlukta: 32 yorumun 26’sı olumlu. Kullanım kolaylığı, rapor kalitesi ve destek öne çıkıyor; ilk kullanım akışındaki küçük pürüzler iyileştirme alanı.",
+        "text": "32 analiz sonrası geri bildirimin 26’sı olumlu. Anlaşılır özetler, kaynakları kontrol edebilme ve karar hazırlığına katkı öne çıkıyor. İyileştirme talepleri daha çok özetin dili ve önerilerin somutluğu üzerinde toplanıyor.",
         "evidence": [
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -19,7 +19,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -29,7 +29,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -39,7 +39,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -49,7 +49,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -59,7 +59,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -69,7 +69,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -79,7 +79,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -89,7 +89,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -99,7 +99,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -109,7 +109,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -119,7 +119,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -129,7 +129,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -139,7 +139,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -149,7 +149,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -159,7 +159,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -169,7 +169,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -179,7 +179,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -189,7 +189,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -199,7 +199,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -209,7 +209,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -219,7 +219,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -229,7 +229,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -239,7 +239,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -249,7 +249,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -259,7 +259,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -269,7 +269,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -279,7 +279,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -289,7 +289,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -299,7 +299,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -309,7 +309,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -319,7 +319,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -333,14 +333,14 @@
           "negative-share",
           "problem-comments",
           "positive-comments",
-          "theme-usability",
-          "problem-usability",
-          "theme-support",
-          "problem-support",
-          "theme-reporting",
-          "problem-reporting",
-          "theme-performance",
-          "problem-performance",
+          "theme-clarity",
+          "problem-clarity",
+          "theme-evidence",
+          "problem-evidence",
+          "theme-decisions",
+          "problem-decisions",
+          "theme-depth",
+          "problem-depth",
           "sentiment-positive",
           "sentiment-negative",
           "sentiment-mixed"
@@ -349,16 +349,16 @@
     ],
     "findings": [
       {
-        "id": "usability",
-        "title": "İlk kullanımı daha da kolaylaştırın",
+        "id": "clarity",
+        "title": "Özetleri ve önerileri netleştirin",
         "kind": "interpretation",
         "statements": [
           {
-            "text": "32 yorumun üçünde kaynaklara ulaşma, hedefi anlama veya mobil filtreleri bulma konusunda pürüzler var. Bu öncelik yalnız örnekteki tekrar sıklığına dayanıyor.",
+            "text": "Özetin dili ve önerilerin somutluğu için ikişer iyileştirme talebi var. Analiz derinliği ve kaynak açıklığı için birer yorum bulunuyor. Bu sayımlar geri bildirim sıklığını gösterir; ticari etkiyi ölçmez.",
             "evidence": [
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -368,7 +368,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -378,7 +378,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -388,7 +388,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -398,7 +398,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -408,7 +408,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -418,7 +418,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -428,7 +428,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -438,7 +438,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -448,7 +448,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -458,7 +458,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -468,7 +468,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -478,7 +478,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -488,7 +488,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -498,7 +498,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -508,7 +508,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -518,7 +518,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -528,7 +528,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -538,7 +538,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -548,7 +548,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -558,7 +558,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -568,7 +568,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -578,7 +578,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -588,7 +588,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -598,7 +598,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -608,7 +608,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -618,7 +618,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -628,7 +628,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -638,7 +638,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -648,7 +648,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -658,7 +658,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -668,7 +668,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -678,63 +678,25 @@
               }
             ],
             "metricIds": [
-              "problem-usability",
-              "comments"
+              "problem-clarity",
+              "problem-decisions",
+              "problem-depth",
+              "problem-evidence"
             ]
           }
         ]
       },
       {
         "id": "positive",
-        "title": "İyi deneyimin de izini sürün",
+        "title": "Sonucun işe yaradığı noktaları koruyun",
         "kind": "observation",
         "statements": [
           {
-            "text": "26 olumlu yorumda anlaşılır raporlar, kaynaklara erişim, akıcı kullanım ve destek öne çıkıyor. Olumlu yorumlar sorun sayımına eklenmiyor.",
+            "text": "26 olumlu yorum; anlaşılır özetleri, kontrol edilebilir kaynakları ve toplantı ya da karar hazırlığına katkıyı anlatıyor. Bunlar doğrulanmış iş sonuçları veya ölçülmüş yatırım getirisi değildir.",
             "evidence": [
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-                "chunkId": "reference-feedback:table:0001",
-                "locator": {
-                  "section": "tablo",
-                  "rowStart": 1,
-                  "rowEnd": 1
-                }
-              },
-              {
-                "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-                "chunkId": "reference-feedback:table:0001",
-                "locator": {
-                  "section": "tablo",
-                  "rowStart": 2,
-                  "rowEnd": 2
-                }
-              },
-              {
-                "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-                "chunkId": "reference-feedback:table:0001",
-                "locator": {
-                  "section": "tablo",
-                  "rowStart": 3,
-                  "rowEnd": 3
-                }
-              },
-              {
-                "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-                "chunkId": "reference-feedback:table:0001",
-                "locator": {
-                  "section": "tablo",
-                  "rowStart": 4,
-                  "rowEnd": 4
-                }
-              },
-              {
-                "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -744,7 +706,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -754,27 +716,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-                "chunkId": "reference-feedback:table:0001",
-                "locator": {
-                  "section": "tablo",
-                  "rowStart": 7,
-                  "rowEnd": 7
-                }
-              },
-              {
-                "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-                "chunkId": "reference-feedback:table:0001",
-                "locator": {
-                  "section": "tablo",
-                  "rowStart": 8,
-                  "rowEnd": 8
-                }
-              },
-              {
-                "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -784,7 +726,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -794,7 +736,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -804,7 +746,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -814,7 +756,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -824,7 +766,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -834,7 +776,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -844,7 +786,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -854,7 +796,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -864,7 +806,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -874,7 +816,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -884,7 +826,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -894,7 +836,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -904,7 +846,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -914,7 +856,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -924,7 +866,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -934,7 +876,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -944,7 +886,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -954,7 +896,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -964,7 +906,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -974,7 +916,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -984,7 +926,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -994,7 +936,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -1004,7 +946,7 @@
               },
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -1021,15 +963,15 @@
       },
       {
         "id": "mixed",
-        "title": "Bir yorum, iki farklı deneyim",
+        "title": "İyi bir özet, daha derin bir ihtiyaç",
         "kind": "interpretation",
         "statements": [
           {
-            "text": "F007 grafikleri anlaşılır buluyor, mobil filtrelere ulaşmak için fazla kaydırdığını söylüyor. Rapor kalitesiyle kullanım pürüzü ayrı tutuluyor.",
+            "text": "F007 yönetici özetini yararlı buluyor, segment karşılaştırmasını ise yetersiz görüyor. Aynı yorumdaki olumlu deneyim ve iyileştirme talebi ayrı korunuyor.",
             "evidence": [
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -1043,16 +985,16 @@
         ]
       },
       {
-        "id": "performance",
-        "title": "Büyük belge deneyimini ölçün",
+        "id": "evidence",
+        "title": "Önerinin dayanağını görünür tutun",
         "kind": "observation",
         "statements": [
           {
-            "text": "F008 büyük belgelerde kaynak listesinin bazen geç açıldığını belirtiyor. Kaynakta süre ölçümü yok; yorumdan kesin bir gecikme değeri çıkarılmıyor.",
+            "text": "F008 bir önerinin hangi veri grubuna dayandığını yeniden kontrol etmek zorunda kaldığını belirtiyor. Bu geri bildirim bir doğruluk denetimi değil; kaynak bağının açıklığına ilişkin bir kullanıcı deneyimi.",
             "evidence": [
               {
                 "sourceId": "reference-feedback",
-                "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+                "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
                 "chunkId": "reference-feedback:table:0001",
                 "locator": {
                   "section": "tablo",
@@ -1068,17 +1010,17 @@
     ],
     "recommendations": [
       {
-        "id": "usability-review",
-        "action": "Kaynak erişimini, analiz hedefi ipuçlarını ve mobil filtrelerin görünürlüğünü kullanım testleriyle değerlendirin.",
+        "id": "clarity-review",
+        "action": "Yönetici özetindeki teknik ifadeleri ve tekrarları sadeleştirin; önerilerdeki ilk adımı kısa bir uygulama örneğiyle somutlaştırın.",
         "basisFindingIds": [
-          "usability"
+          "clarity"
         ]
       },
       {
-        "id": "performance-review",
-        "action": "Büyük belgelerde kaynak listesinin açılış süresini ölçün; F008’deki deneyimi ölçümle doğrulayın.",
+        "id": "evidence-review",
+        "action": "Önerilerin dayandığı veri gruplarını ve kaynak bağlantılarını gözden geçirin; F008’deki deneyimin nerede oluştuğunu doğrulayın.",
         "basisFindingIds": [
-          "performance"
+          "evidence"
         ]
       }
     ],
@@ -1091,7 +1033,7 @@
         "evidence": [
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1101,7 +1043,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1111,7 +1053,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1121,7 +1063,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1131,7 +1073,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1141,7 +1083,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1151,7 +1093,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1161,7 +1103,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1171,7 +1113,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1181,7 +1123,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1191,7 +1133,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1201,7 +1143,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1211,7 +1153,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1221,7 +1163,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1231,7 +1173,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1241,7 +1183,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1251,7 +1193,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1261,7 +1203,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1271,7 +1213,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1281,7 +1223,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1291,7 +1233,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1301,7 +1243,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1311,7 +1253,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1321,7 +1263,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1331,7 +1273,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1341,7 +1283,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1351,7 +1293,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1361,7 +1303,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1371,7 +1313,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1381,7 +1323,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1391,7 +1333,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1401,7 +1343,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1421,7 +1363,7 @@
         "evidence": [
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1431,7 +1373,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1441,7 +1383,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1451,7 +1393,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1461,7 +1403,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1471,7 +1413,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1481,7 +1423,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1491,7 +1433,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1501,7 +1443,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1511,7 +1453,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1521,7 +1463,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1531,7 +1473,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1541,7 +1483,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1551,7 +1493,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1561,7 +1503,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1571,7 +1513,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1581,7 +1523,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1591,7 +1533,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1601,7 +1543,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1611,7 +1553,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1621,7 +1563,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1631,7 +1573,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1641,7 +1583,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1651,7 +1593,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1661,7 +1603,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1671,7 +1613,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1681,7 +1623,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1691,7 +1633,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1701,7 +1643,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1711,7 +1653,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1721,7 +1663,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1731,7 +1673,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1751,7 +1693,7 @@
         "evidence": [
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1761,7 +1703,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1771,7 +1713,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1781,7 +1723,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1791,7 +1733,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1801,7 +1743,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1821,7 +1763,7 @@
         "evidence": [
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1831,7 +1773,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1841,7 +1783,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1851,7 +1793,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1861,7 +1803,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1871,7 +1813,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1881,7 +1823,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1891,7 +1833,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1901,7 +1843,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1911,7 +1853,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1921,7 +1863,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1931,7 +1873,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1941,7 +1883,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1951,7 +1893,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1961,7 +1903,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1971,7 +1913,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1981,7 +1923,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -1991,7 +1933,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2001,7 +1943,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2011,7 +1953,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2021,7 +1963,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2031,7 +1973,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2041,7 +1983,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2051,7 +1993,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2061,7 +2003,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2071,7 +2013,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2084,14 +2026,14 @@
         "value": 26
       },
       {
-        "id": "theme-usability",
-        "label": "Kullanım kolaylığı",
+        "id": "theme-clarity",
+        "label": "Özet ve anlatım",
         "unit": "yorum",
         "method": "İnsan referansındaki benzersiz yorumların sayımı.",
         "evidence": [
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2101,17 +2043,17 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
-              "rowStart": 4,
-              "rowEnd": 4
+              "rowStart": 3,
+              "rowEnd": 3
             }
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2121,7 +2063,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2131,17 +2073,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 9,
-              "rowEnd": 9
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2151,367 +2083,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 17,
-              "rowEnd": 17
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 21,
-              "rowEnd": 21
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 24,
-              "rowEnd": 24
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 28,
-              "rowEnd": 28
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 32,
-              "rowEnd": 32
-            }
-          }
-        ],
-        "status": "available",
-        "value": 11
-      },
-      {
-        "id": "problem-usability",
-        "label": "Kullanım kolaylığı",
-        "unit": "yorum",
-        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
-        "evidence": [
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 1,
-              "rowEnd": 1
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 4,
-              "rowEnd": 4
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 7,
-              "rowEnd": 7
-            }
-          }
-        ],
-        "status": "available",
-        "value": 3
-      },
-      {
-        "id": "theme-support",
-        "label": "Destek",
-        "unit": "yorum",
-        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
-        "evidence": [
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 2,
-              "rowEnd": 2
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 5,
-              "rowEnd": 5
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 11,
-              "rowEnd": 11
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 15,
-              "rowEnd": 15
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 19,
-              "rowEnd": 19
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 23,
-              "rowEnd": 23
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 27,
-              "rowEnd": 27
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 30,
-              "rowEnd": 30
-            }
-          }
-        ],
-        "status": "available",
-        "value": 8
-      },
-      {
-        "id": "problem-support",
-        "label": "Destek",
-        "unit": "yorum",
-        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
-        "evidence": [
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 2,
-              "rowEnd": 2
-            }
-          }
-        ],
-        "status": "available",
-        "value": 1
-      },
-      {
-        "id": "theme-reporting",
-        "label": "Rapor ve kaynaklar",
-        "unit": "yorum",
-        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
-        "evidence": [
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 3,
-              "rowEnd": 3
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 7,
-              "rowEnd": 7
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 10,
-              "rowEnd": 10
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 13,
-              "rowEnd": 13
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 16,
-              "rowEnd": 16
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 20,
-              "rowEnd": 20
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 22,
-              "rowEnd": 22
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 26,
-              "rowEnd": 26
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 29,
-              "rowEnd": 29
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 31,
-              "rowEnd": 31
-            }
-          }
-        ],
-        "status": "available",
-        "value": 10
-      },
-      {
-        "id": "problem-reporting",
-        "label": "Rapor ve kaynaklar",
-        "unit": "yorum",
-        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
-        "evidence": [
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 3,
-              "rowEnd": 3
-            }
-          }
-        ],
-        "status": "available",
-        "value": 1
-      },
-      {
-        "id": "theme-performance",
-        "label": "Performans",
-        "unit": "yorum",
-        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
-        "evidence": [
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 8,
-              "rowEnd": 8
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
-            "chunkId": "reference-feedback:table:0001",
-            "locator": {
-              "section": "tablo",
-              "rowStart": 12,
-              "rowEnd": 12
-            }
-          },
-          {
-            "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2521,32 +2093,442 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 22,
+              "rowEnd": 22
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 28,
+              "rowEnd": 28
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 31,
+              "rowEnd": 31
+            }
+          }
+        ],
+        "status": "available",
+        "value": 9
+      },
+      {
+        "id": "problem-clarity",
+        "label": "Özet ve anlatım",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 1,
+              "rowEnd": 1
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 3,
+              "rowEnd": 3
+            }
+          }
+        ],
+        "status": "available",
+        "value": 2
+      },
+      {
+        "id": "theme-evidence",
+        "label": "Doğruluk ve kaynaklar",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 5,
+              "rowEnd": 5
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 8,
+              "rowEnd": 8
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 10,
+              "rowEnd": 10
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 13,
+              "rowEnd": 13
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 16,
+              "rowEnd": 16
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 19,
+              "rowEnd": 19
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 20,
+              "rowEnd": 20
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
               "rowStart": 25,
               "rowEnd": 25
             }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 26,
+              "rowEnd": 26
+            }
           }
         ],
         "status": "available",
-        "value": 4
+        "value": 9
       },
       {
-        "id": "problem-performance",
-        "label": "Performans",
+        "id": "problem-evidence",
+        "label": "Doğruluk ve kaynaklar",
         "unit": "yorum",
         "method": "İnsan referansındaki benzersiz yorumların sayımı.",
         "evidence": [
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
               "rowStart": 8,
               "rowEnd": 8
+            }
+          }
+        ],
+        "status": "available",
+        "value": 1
+      },
+      {
+        "id": "theme-decisions",
+        "label": "Karar desteği",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 5,
+              "rowEnd": 5
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 9,
+              "rowEnd": 9
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 11,
+              "rowEnd": 11
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 15,
+              "rowEnd": 15
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 16,
+              "rowEnd": 16
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 22,
+              "rowEnd": 22
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 23,
+              "rowEnd": 23
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 27,
+              "rowEnd": 27
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 30,
+              "rowEnd": 30
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 31,
+              "rowEnd": 31
+            }
+          }
+        ],
+        "status": "available",
+        "value": 12
+      },
+      {
+        "id": "problem-decisions",
+        "label": "Karar desteği",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 2,
+              "rowEnd": 2
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 4,
+              "rowEnd": 4
+            }
+          }
+        ],
+        "status": "available",
+        "value": 2
+      },
+      {
+        "id": "theme-depth",
+        "label": "Analiz derinliği",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 12,
+              "rowEnd": 12
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 17,
+              "rowEnd": 17
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 21,
+              "rowEnd": 21
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 24,
+              "rowEnd": 24
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 29,
+              "rowEnd": 29
+            }
+          },
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 32,
+              "rowEnd": 32
+            }
+          }
+        ],
+        "status": "available",
+        "value": 7
+      },
+      {
+        "id": "problem-depth",
+        "label": "Analiz derinliği",
+        "unit": "yorum",
+        "method": "İnsan referansındaki benzersiz yorumların sayımı.",
+        "evidence": [
+          {
+            "sourceId": "reference-feedback",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+            "chunkId": "reference-feedback:table:0001",
+            "locator": {
+              "section": "tablo",
+              "rowStart": 7,
+              "rowEnd": 7
             }
           }
         ],
@@ -2561,7 +2543,7 @@
         "evidence": [
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2571,7 +2553,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2581,7 +2563,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2591,7 +2573,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2601,7 +2583,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2611,7 +2593,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2621,7 +2603,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2631,7 +2613,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2641,7 +2623,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2651,7 +2633,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2661,7 +2643,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2671,7 +2653,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2681,7 +2663,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2691,7 +2673,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2701,7 +2683,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2711,7 +2693,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2721,7 +2703,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2731,7 +2713,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2741,7 +2723,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2751,7 +2733,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2761,7 +2743,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2771,7 +2753,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2781,7 +2763,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2791,7 +2773,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2801,7 +2783,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2811,7 +2793,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2831,7 +2813,7 @@
         "evidence": [
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2841,7 +2823,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2851,7 +2833,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2861,7 +2843,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2871,7 +2853,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2891,7 +2873,7 @@
         "evidence": [
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2911,7 +2893,7 @@
         "evidence": [
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2921,7 +2903,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2931,7 +2913,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2941,7 +2923,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2951,7 +2933,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2961,7 +2943,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2971,7 +2953,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2981,7 +2963,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -2991,7 +2973,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3001,7 +2983,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3011,7 +2993,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3021,7 +3003,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3031,7 +3013,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3041,7 +3023,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3051,7 +3033,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3061,7 +3043,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3071,7 +3053,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3081,7 +3063,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3091,7 +3073,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3101,7 +3083,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3111,7 +3093,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3121,7 +3103,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3131,7 +3113,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3141,7 +3123,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3151,7 +3133,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3161,7 +3143,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3171,7 +3153,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3181,7 +3163,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3191,7 +3173,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3201,7 +3183,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3211,7 +3193,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3221,7 +3203,7 @@
           },
           {
             "sourceId": "reference-feedback",
-            "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+            "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
             "chunkId": "reference-feedback:table:0001",
             "locator": {
               "section": "tablo",
@@ -3242,23 +3224,23 @@
         "unit": "yorum",
         "points": [
           {
-            "label": "Kullanım kolaylığı",
-            "metricId": "problem-usability",
-            "value": 3
+            "label": "Özet ve anlatım",
+            "metricId": "problem-clarity",
+            "value": 2
           },
           {
-            "label": "Destek",
-            "metricId": "problem-support",
+            "label": "Doğruluk ve kaynaklar",
+            "metricId": "problem-evidence",
             "value": 1
           },
           {
-            "label": "Rapor ve kaynaklar",
-            "metricId": "problem-reporting",
-            "value": 1
+            "label": "Karar desteği",
+            "metricId": "problem-decisions",
+            "value": 2
           },
           {
-            "label": "Performans",
-            "metricId": "problem-performance",
+            "label": "Analiz derinliği",
+            "metricId": "problem-depth",
             "value": 1
           }
         ]
@@ -3291,24 +3273,24 @@
         "unit": "yorum",
         "points": [
           {
-            "label": "Kullanım kolaylığı",
-            "metricId": "theme-usability",
-            "value": 11
+            "label": "Özet ve anlatım",
+            "metricId": "theme-clarity",
+            "value": 9
           },
           {
-            "label": "Destek",
-            "metricId": "theme-support",
-            "value": 8
+            "label": "Doğruluk ve kaynaklar",
+            "metricId": "theme-evidence",
+            "value": 9
           },
           {
-            "label": "Rapor ve kaynaklar",
-            "metricId": "theme-reporting",
-            "value": 10
+            "label": "Karar desteği",
+            "metricId": "theme-decisions",
+            "value": 12
           },
           {
-            "label": "Performans",
-            "metricId": "theme-performance",
-            "value": 4
+            "label": "Analiz derinliği",
+            "metricId": "theme-depth",
+            "value": 7
           }
         ]
       }
@@ -3345,7 +3327,7 @@
       "version": 1,
       "sourceId": "reference-feedback",
       "fileName": "customer-feedback.csv",
-      "sha256": "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6",
+      "sha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
       "extension": "csv",
       "detectedMime": "text/csv",
       "category": "Tablo",
@@ -3363,168 +3345,234 @@
             "columns": [
               "feedback_id",
               "received_date",
+              "reviewer_name",
+              "analysis_type",
               "comment"
             ],
             "rows": [
               [
                 "F001",
                 "2026-10-01",
-                "İlk kullanımda kaynaklara nereden ulaşacağımı bulmam biraz zaman aldı."
+                "Derya Aksoy",
+                "Satış performansı",
+                "Rapordaki ana sonuçlar işime yaradı, fakat bazı açıklamalar fazla teknikti. Özeti farklı ekiplerle paylaşırken daha sade bir anlatıma ihtiyaç duydum."
               ],
               [
                 "F002",
-                "2026-10-02",
-                "Teknik soruma ertesi gün dönüş yapıldı; daha hızlı yanıt beklerdim."
+                "2026-10-01",
+                "Mert Yalçın",
+                "Operasyon değerlendirmesi",
+                "Analiz üç risk sıraladı, fakat hangisine önce müdahale etmemiz gerektiği netleşmedi. Önerilerin öncelik sırası ve gerekçesi daha somut olmalıydı."
               ],
               [
                 "F003",
-                "2026-10-03",
-                "Rapor özetinde bazı ifadeler birbirini tekrar ediyor; daha kısa bir anlatım isterdim."
+                "2026-10-02",
+                "Selin Erdem",
+                "Yönetim raporu",
+                "Yönetici özetinde aynı bulgu birkaç kez yinelenmişti. Sonuç yararlıydı ama toplantıda kullanmadan önce metni kısaltmam gerekti."
               ],
               [
                 "F004",
-                "2026-10-04",
-                "Yeni çalışma oluştururken hedef alanına ne yazmam gerektiğini ilk anda anlayamadım."
+                "2026-10-02",
+                "Bora Demir",
+                "Çeyrek karşılaştırması",
+                "Raporun önerileri ilgiliydi, ancak uygulamada ilk adımın nasıl atılacağına dair kısa bir örnek bekledim. Sonucu ekip planına uyarlamak için birkaç not ekledim."
               ],
               [
                 "F005",
-                "2026-10-05",
-                "Destek ekibi veri hazırlığıyla ilgili sorumu aynı gün, anlaşılır bir örnekle çözdü."
+                "2026-10-03",
+                "Ece Arslan",
+                "Satış performansı",
+                "Satış toplamlarını kendi çalışma tablomla karşılaştırdım, aynı sonuca ulaştım. Kaynaklı özet toplantıda kararlarımızı gerekçelendirmemizi kolaylaştırdı."
               ],
               [
                 "F006",
-                "2026-10-06",
-                "İlk belgemi ekleyip çalışma oluşturmam kolay oldu. Adımların sırası anlaşılır."
+                "2026-10-03",
+                "Kerem Aydın",
+                "Faaliyet değerlendirmesi",
+                "Üç ayrı faaliyet belgesinin ana noktaları tek özette bir araya gelmişti. Ekibim raporu okuduğunda aynı genel resmi anlayabildi."
               ],
               [
                 "F007",
-                "2026-10-07",
-                "Grafikler anlaşılır, ancak mobilde filtreleri bulmak için fazla kaydırmam gerekiyor."
+                "2026-10-04",
+                "İrem Kaya",
+                "Müşteri segmentleri",
+                "Yönetici özeti ana resmi net verdi; ancak müşteri segmentleri için daha ayrıntılı bir karşılaştırmaya ihtiyaç duydum. Sonuç iyi bir başlangıç oldu, karar için ek kırılımlar gerekliydi."
               ],
               [
                 "F008",
-                "2026-10-08",
-                "Büyük belgelerde kaynak listesinin açılması bazen beklediğimden uzun sürüyor."
+                "2026-10-04",
+                "Arda Sezer",
+                "Bütçe değerlendirmesi",
+                "Önerilerden birinin hangi veri grubuna dayandığı yeterince açık değildi. Karar öncesinde dayanağını kendim yeniden kontrol etmem gerekti."
               ],
               [
                 "F009",
-                "2026-10-09",
-                "Başlangıç ekranı ne yapmam gerektiğini net gösteriyor. İlk kullanımda yardım almadan ilerledim."
+                "2026-10-05",
+                "Deniz Uslu",
+                "Müşteri geri bildirimleri",
+                "Dağınık yorumların içinden tekrar eden iki konuyu ayırabildik. Sonuç sayesinde ürün toplantısına genel izlenimlerle değil, net sorularla gittik."
               ],
               [
                 "F010",
-                "2026-10-10",
-                "Özetin yanında kaynak bağlantısını görmek çok işime yaradı. Sayıları belgeden kontrol edebildim."
+                "2026-10-05",
+                "Aslı Eren",
+                "Finansal performans",
+                "Rapordaki tutarları kendi kontrol listemle uzlaştırabildim. Farklı dosyalardan gelen verilerin hangi kapsamda toplandığının belirtilmesi içimi rahatlattı."
               ],
               [
                 "F011",
-                "2026-10-11",
-                "Sorduğum soruya genel bir yanıt yerine kendi kullanım senaryoma uygun bir açıklama aldım."
+                "2026-10-06",
+                "Onur Tekin",
+                "İyileştirme planı",
+                "Analiz, yapılacaklar listemizi büyütmek yerine hangi konuları önce araştırmamız gerektiğini gösterdi. Önerileri haftalık planımıza uyarlayabildik."
               ],
               [
                 "F012",
-                "2026-10-12",
-                "Çalışmalar arasında geçişler akıcı. Günlük kullanımda belirgin bir bekleme yaşamadım."
+                "2026-10-06",
+                "Elif Karaca",
+                "Bölgesel performans",
+                "Toplamdaki artışın her bölgede aynı olmadığını raporla daha iyi gördük. Bölge kırılımları genel sonucun arkasındaki farkları açıklamak için yararlıydı."
               ],
               [
                 "F013",
-                "2026-10-13",
-                "Grafiklerin altındaki veri tabloları ayrıntıları kontrol etmeyi kolaylaştırıyor."
+                "2026-10-07",
+                "Emre Sönmez",
+                "Gelir ve iade analizi",
+                "İadelerin net satışa etkisini ayrı görmek faydalıydı. Rapordaki toplamı kaynak dosyayla kontrol ettiğimde indirim ve iade kapsamı birbiriyle tutuyordu."
               ],
               [
                 "F014",
-                "2026-10-14",
-                "Dil değiştirdiğimde yazdığım başlık ve hedefin korunması iyi düşünülmüş."
+                "2026-10-07",
+                "Zeynep Acar",
+                "Aylık faaliyet özeti",
+                "Uzun faaliyet raporundaki ana mesajlar, ayrıntıyı kaybetmeden anlaşılır bir dille özetlenmişti. Sonucu yöneticime çok az düzenlemeyle aktarabildim."
               ],
               [
                 "F015",
-                "2026-10-15",
-                "Ekibimize uygun kullanım akışını destek ekibi kısa bir görüşmede netleştirdi."
+                "2026-10-08",
+                "Can Ekinci",
+                "Müşteri deneyimi",
+                "Olumlu yorumlarla sorun bildiren yorumların ayrı değerlendirilmesi planımızı etkiledi. İyi çalışan tarafları koruyup iki iyileştirme alanına odaklanabildik."
               ],
               [
                 "F016",
-                "2026-10-16",
-                "Gözlemle önerinin ayrı gösterilmesi raporu daha rahat değerlendirmemi sağlıyor."
+                "2026-10-08",
+                "Melis Durmaz",
+                "Kanal performansı",
+                "Bir kanalın daha fazla ciro üretmesinin tek başına daha kârlı olduğu anlamına gelmediği açıkça belirtilmişti. Bu ayrım ve kaynaklar bütçe kararını daha dikkatli vermemizi sağladı."
               ],
               [
                 "F017",
-                "2026-10-01",
-                "Geçmiş çalışmalarımı isimle arayıp bulabiliyorum. Aynı belgeleri tekrar eklemem gerekmiyor."
+                "2026-10-09",
+                "Ozan Güneş",
+                "Dönem karşılaştırması",
+                "Aylık toplamlar yerine dönemleri aynı kapsamda karşılaştırabilmek işimize yaradı. Tek seferlik değişimle genel eğilimi birbirinden ayırabildik."
               ],
               [
                 "F018",
-                "2026-10-02",
-                "Grafikleri filtrelerken ekran tepkisi hızlı. Seçimlerimin sonucunu hemen görebiliyorum."
+                "2026-10-09",
+                "Sude Çelik",
+                "Araştırma özeti",
+                "Araştırma notlarının özeti kısa ama yeterince açıklayıcıydı. Farklı görüşlerin tek bir kesin sonuç gibi birleştirilmemesini özellikle beğendim."
               ],
               [
                 "F019",
-                "2026-10-03",
-                "Belge formatıyla ilgili soruma verilen açıklama netti; dosyamı doğru biçimde hazırlayabildim."
+                "2026-10-10",
+                "Barış Özkan",
+                "Bütçe gerçekleşmesi",
+                "Yüzdelerin hangi tutara göre hesaplandığı belirtilmişti. Kendi bütçe tablomla karşılaştırınca aynı gerçekleşme oranlarını buldum."
               ],
               [
                 "F020",
-                "2026-10-04",
-                "Raporda bir tutarın hangi satırlardan oluştuğunu izlemek kontrol süremi azalttı."
+                "2026-10-10",
+                "Nazlı Koç",
+                "Operasyon raporu",
+                "Rapor, kayıtların desteklemediği bir neden ileri sürmek yerine eksik bilgiyi açıkça ayırmıştı. Bulguları değerlendirirken neyi bildiğimizi daha net gördük."
               ],
               [
                 "F021",
-                "2026-10-05",
-                "Koyu tema uzun süre çalışırken rahat geliyor. Metinlerle grafikler yeterince okunaklı."
+                "2026-10-11",
+                "Tolga Şahin",
+                "Kategori performansı",
+                "En yüksek satışın yanında kategori paylarını da görmek değerlendirmeyi zenginleştirdi. Küçük ama değişen alanları toplam rakamın içinde kaybetmedik."
               ],
               [
                 "F022",
-                "2026-10-06",
-                "Ana bulgular başta, ayrıntılar açılır bölümlerde. Hem hızlı göz atabiliyorum hem derine inebiliyorum."
+                "2026-10-11",
+                "Buse Polat",
+                "Yönetim değerlendirmesi",
+                "Özet, bulgu ve önerinin birbirinden ayrılması toplantı hazırlığımızı kolaylaştırdı. Hangi sonucun veri, hangisinin değerlendirme olduğunu rahatça anlatabildik."
               ],
               [
                 "F023",
-                "2026-10-07",
-                "Geri bildirimime dönüş yapıldı ve neyin değerlendirileceği açıkça anlatıldı. Bu yaklaşımı beğendim."
+                "2026-10-12",
+                "Alp Yılmaz",
+                "Müşteri geri bildirimleri",
+                "Yorumlardaki tekrarları inceleyince ekibin farklı adlarla konuştuğu konuların aslında aynı soruna çıktığını gördük. Sonucu aksiyon planımız için kullandık."
               ],
               [
                 "F024",
-                "2026-10-08",
-                "Belge ekleme alanı ve kalan kapasite bilgisi anlaşılır. Sınırları önceden görebiliyorum."
+                "2026-10-12",
+                "Ceren Toprak",
+                "Ürün grupları",
+                "Ürün gruplarını dönem ve pay bilgisiyle birlikte incelemek faydalıydı. Hacmi yüksek gruplarla daha hızlı değişen grupları ayırabildik."
               ],
               [
                 "F025",
-                "2026-10-09",
-                "Kaynaklarda arama yaparken sonuçların hızlı daralması büyük tablolarda işimi kolaylaştırdı."
+                "2026-10-13",
+                "Kaan Bulut",
+                "Finansal kontrol",
+                "Önemli bulguların dayandığı satırları kontrol ettim. Özetteki rakamların kaynak belgelerle tutarlı olması raporu ekip içinde paylaşmamı kolaylaştırdı."
               ],
               [
                 "F026",
-                "2026-10-10",
-                "Eksik bilgi olduğunda puan uydurulmaması ve nedeninin yazılması güven veriyor."
+                "2026-10-13",
+                "Gizem Kurt",
+                "Memnuniyet değerlendirmesi",
+                "Yorumlardan bir memnuniyet puanı uydurulmamıştı; bunun için ölçüm bulunmadığı belirtiliyordu. Eksik verinin açık tutulması sonucu daha güvenilir bulmamı sağladı."
               ],
               [
                 "F027",
-                "2026-10-11",
-                "Hesap ayarlarıyla ilgili sorum tek yanıtta çözüldü. Açıklama kısa ve uygulanabilirdi."
+                "2026-10-14",
+                "Umut Taş",
+                "Risk değerlendirmesi",
+                "Rapor riskleri kesinleşmiş olaylar gibi sunmadı. Hangi ek kayıtları incelememiz gerektiğini belirtmesi sonraki çalışmayı planlamamıza yardımcı oldu."
               ],
               [
                 "F028",
-                "2026-10-12",
-                "Mobilde kısa bir kontrol yapmak rahat. Özete ve kaynaklara birkaç dokunuşla ulaşabiliyorum."
+                "2026-10-14",
+                "Dila Özdemir",
+                "Satış özeti",
+                "Analiz sonucunu okuduğumda dönem içindeki değişimi birkaç ana cümlede anlayabildim. Ayrıntılı tabloya dönmeden önce neye odaklanacağım netleşti."
               ],
               [
                 "F029",
-                "2026-10-13",
-                "Farklı dönemleri aynı ölçekte karşılaştırabilmek değişimi anlamamı kolaylaştırdı."
+                "2026-10-15",
+                "Eren Kılıç",
+                "Kanal karşılaştırması",
+                "Kanalları aynı döneme ve aynı ölçülere göre karşılaştırması önemliydi. Farklı büyüklükteki kanalları yalnız toplam satışla değerlendirme alışkanlığımızı sorguladık."
               ],
               [
                 "F030",
-                "2026-10-14",
-                "İlk çalışmamı nasıl düzenleyeceğime dair öneriler somuttu. Sonraki kullanımda kendim ilerledim."
+                "2026-10-15",
+                "Yağmur Deniz",
+                "İyileştirme öncelikleri",
+                "Öneriler bulgulara bağlıydı ve ek veri gerektiren adımlar da belirtilmişti. Sonucu doğrudan karar yerine iyi hazırlanmış bir çalışma gündemi olarak kullanabildik."
               ],
               [
                 "F031",
-                "2026-10-15",
-                "Yönetici özeti toplantı öncesi ana konuları yakalamama yardımcı oluyor; ayrıntılar da ulaşılabilir."
+                "2026-10-16",
+                "Tuna Yıldız",
+                "Yönetici özeti",
+                "Sonuç raporu, uzun belgelerin ortak mesajını açık bir dille anlattı. Yönetim toplantısında tartışmayı sayılar üzerinde başlatmamıza yardımcı oldu."
               ],
               [
                 "F032",
                 "2026-10-16",
-                "Sayfalar arasında geri döndüğümde çalışmamın korunması akışı bölmeden devam etmemi sağlıyor."
+                "Pelin Ateş",
+                "Müşteri segmentleri",
+                "Segmentleri yalnız toplam değerlerle değil, dönem içindeki farklılaşmalarıyla görmek işimize yaradı. Daha ayrıntılı inceleyeceğimiz iki alanı belirleyebildik."
               ]
             ]
           }
@@ -3538,57 +3586,58 @@
     {
       "id": "F001",
       "sourceRow": 1,
-      "quote": "İlk kullanımda kaynaklara nereden ulaşacağımı bulmam biraz zaman aldı.",
+      "quote": "Rapordaki ana sonuçlar işime yaradı, fakat bazı açıklamalar fazla teknikti. Özeti farklı ekiplerle paylaşırken daha sade bir anlatıma ihtiyaç duydum.",
       "themes": [
-        "usability"
+        "clarity"
       ],
       "problemThemes": [
-        "usability"
+        "clarity"
       ],
       "sentiment": "negative"
     },
     {
       "id": "F002",
       "sourceRow": 2,
-      "quote": "Teknik soruma ertesi gün dönüş yapıldı; daha hızlı yanıt beklerdim.",
+      "quote": "Analiz üç risk sıraladı, fakat hangisine önce müdahale etmemiz gerektiği netleşmedi. Önerilerin öncelik sırası ve gerekçesi daha somut olmalıydı.",
       "themes": [
-        "support"
+        "decisions"
       ],
       "problemThemes": [
-        "support"
+        "decisions"
       ],
       "sentiment": "negative"
     },
     {
       "id": "F003",
       "sourceRow": 3,
-      "quote": "Rapor özetinde bazı ifadeler birbirini tekrar ediyor; daha kısa bir anlatım isterdim.",
+      "quote": "Yönetici özetinde aynı bulgu birkaç kez yinelenmişti. Sonuç yararlıydı ama toplantıda kullanmadan önce metni kısaltmam gerekti.",
       "themes": [
-        "reporting"
+        "clarity"
       ],
       "problemThemes": [
-        "reporting"
+        "clarity"
       ],
       "sentiment": "negative"
     },
     {
       "id": "F004",
       "sourceRow": 4,
-      "quote": "Yeni çalışma oluştururken hedef alanına ne yazmam gerektiğini ilk anda anlayamadım.",
+      "quote": "Raporun önerileri ilgiliydi, ancak uygulamada ilk adımın nasıl atılacağına dair kısa bir örnek bekledim. Sonucu ekip planına uyarlamak için birkaç not ekledim.",
       "themes": [
-        "usability"
+        "decisions"
       ],
       "problemThemes": [
-        "usability"
+        "decisions"
       ],
       "sentiment": "negative"
     },
     {
       "id": "F005",
       "sourceRow": 5,
-      "quote": "Destek ekibi veri hazırlığıyla ilgili sorumu aynı gün, anlaşılır bir örnekle çözdü.",
+      "quote": "Satış toplamlarını kendi çalışma tablomla karşılaştırdım, aynı sonuca ulaştım. Kaynaklı özet toplantıda kararlarımızı gerekçelendirmemizi kolaylaştırdı.",
       "themes": [
-        "support"
+        "evidence",
+        "decisions"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3596,9 +3645,9 @@
     {
       "id": "F006",
       "sourceRow": 6,
-      "quote": "İlk belgemi ekleyip çalışma oluşturmam kolay oldu. Adımların sırası anlaşılır.",
+      "quote": "Üç ayrı faaliyet belgesinin ana noktaları tek özette bir araya gelmişti. Ekibim raporu okuduğunda aynı genel resmi anlayabildi.",
       "themes": [
-        "usability"
+        "clarity"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3606,34 +3655,34 @@
     {
       "id": "F007",
       "sourceRow": 7,
-      "quote": "Grafikler anlaşılır, ancak mobilde filtreleri bulmak için fazla kaydırmam gerekiyor.",
+      "quote": "Yönetici özeti ana resmi net verdi; ancak müşteri segmentleri için daha ayrıntılı bir karşılaştırmaya ihtiyaç duydum. Sonuç iyi bir başlangıç oldu, karar için ek kırılımlar gerekliydi.",
       "themes": [
-        "reporting",
-        "usability"
+        "clarity",
+        "depth"
       ],
       "problemThemes": [
-        "usability"
+        "depth"
       ],
       "sentiment": "mixed"
     },
     {
       "id": "F008",
       "sourceRow": 8,
-      "quote": "Büyük belgelerde kaynak listesinin açılması bazen beklediğimden uzun sürüyor.",
+      "quote": "Önerilerden birinin hangi veri grubuna dayandığı yeterince açık değildi. Karar öncesinde dayanağını kendim yeniden kontrol etmem gerekti.",
       "themes": [
-        "performance"
+        "evidence"
       ],
       "problemThemes": [
-        "performance"
+        "evidence"
       ],
       "sentiment": "negative"
     },
     {
       "id": "F009",
       "sourceRow": 9,
-      "quote": "Başlangıç ekranı ne yapmam gerektiğini net gösteriyor. İlk kullanımda yardım almadan ilerledim.",
+      "quote": "Dağınık yorumların içinden tekrar eden iki konuyu ayırabildik. Sonuç sayesinde ürün toplantısına genel izlenimlerle değil, net sorularla gittik.",
       "themes": [
-        "usability"
+        "decisions"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3641,9 +3690,9 @@
     {
       "id": "F010",
       "sourceRow": 10,
-      "quote": "Özetin yanında kaynak bağlantısını görmek çok işime yaradı. Sayıları belgeden kontrol edebildim.",
+      "quote": "Rapordaki tutarları kendi kontrol listemle uzlaştırabildim. Farklı dosyalardan gelen verilerin hangi kapsamda toplandığının belirtilmesi içimi rahatlattı.",
       "themes": [
-        "reporting"
+        "evidence"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3651,9 +3700,9 @@
     {
       "id": "F011",
       "sourceRow": 11,
-      "quote": "Sorduğum soruya genel bir yanıt yerine kendi kullanım senaryoma uygun bir açıklama aldım.",
+      "quote": "Analiz, yapılacaklar listemizi büyütmek yerine hangi konuları önce araştırmamız gerektiğini gösterdi. Önerileri haftalık planımıza uyarlayabildik.",
       "themes": [
-        "support"
+        "decisions"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3661,9 +3710,9 @@
     {
       "id": "F012",
       "sourceRow": 12,
-      "quote": "Çalışmalar arasında geçişler akıcı. Günlük kullanımda belirgin bir bekleme yaşamadım.",
+      "quote": "Toplamdaki artışın her bölgede aynı olmadığını raporla daha iyi gördük. Bölge kırılımları genel sonucun arkasındaki farkları açıklamak için yararlıydı.",
       "themes": [
-        "performance"
+        "depth"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3671,9 +3720,9 @@
     {
       "id": "F013",
       "sourceRow": 13,
-      "quote": "Grafiklerin altındaki veri tabloları ayrıntıları kontrol etmeyi kolaylaştırıyor.",
+      "quote": "İadelerin net satışa etkisini ayrı görmek faydalıydı. Rapordaki toplamı kaynak dosyayla kontrol ettiğimde indirim ve iade kapsamı birbiriyle tutuyordu.",
       "themes": [
-        "reporting"
+        "evidence"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3681,9 +3730,9 @@
     {
       "id": "F014",
       "sourceRow": 14,
-      "quote": "Dil değiştirdiğimde yazdığım başlık ve hedefin korunması iyi düşünülmüş.",
+      "quote": "Uzun faaliyet raporundaki ana mesajlar, ayrıntıyı kaybetmeden anlaşılır bir dille özetlenmişti. Sonucu yöneticime çok az düzenlemeyle aktarabildim.",
       "themes": [
-        "usability"
+        "clarity"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3691,9 +3740,9 @@
     {
       "id": "F015",
       "sourceRow": 15,
-      "quote": "Ekibimize uygun kullanım akışını destek ekibi kısa bir görüşmede netleştirdi.",
+      "quote": "Olumlu yorumlarla sorun bildiren yorumların ayrı değerlendirilmesi planımızı etkiledi. İyi çalışan tarafları koruyup iki iyileştirme alanına odaklanabildik.",
       "themes": [
-        "support"
+        "decisions"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3701,9 +3750,10 @@
     {
       "id": "F016",
       "sourceRow": 16,
-      "quote": "Gözlemle önerinin ayrı gösterilmesi raporu daha rahat değerlendirmemi sağlıyor.",
+      "quote": "Bir kanalın daha fazla ciro üretmesinin tek başına daha kârlı olduğu anlamına gelmediği açıkça belirtilmişti. Bu ayrım ve kaynaklar bütçe kararını daha dikkatli vermemizi sağladı.",
       "themes": [
-        "reporting"
+        "evidence",
+        "decisions"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3711,9 +3761,9 @@
     {
       "id": "F017",
       "sourceRow": 17,
-      "quote": "Geçmiş çalışmalarımı isimle arayıp bulabiliyorum. Aynı belgeleri tekrar eklemem gerekmiyor.",
+      "quote": "Aylık toplamlar yerine dönemleri aynı kapsamda karşılaştırabilmek işimize yaradı. Tek seferlik değişimle genel eğilimi birbirinden ayırabildik.",
       "themes": [
-        "usability"
+        "depth"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3721,9 +3771,9 @@
     {
       "id": "F018",
       "sourceRow": 18,
-      "quote": "Grafikleri filtrelerken ekran tepkisi hızlı. Seçimlerimin sonucunu hemen görebiliyorum.",
+      "quote": "Araştırma notlarının özeti kısa ama yeterince açıklayıcıydı. Farklı görüşlerin tek bir kesin sonuç gibi birleştirilmemesini özellikle beğendim.",
       "themes": [
-        "performance"
+        "clarity"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3731,9 +3781,9 @@
     {
       "id": "F019",
       "sourceRow": 19,
-      "quote": "Belge formatıyla ilgili soruma verilen açıklama netti; dosyamı doğru biçimde hazırlayabildim.",
+      "quote": "Yüzdelerin hangi tutara göre hesaplandığı belirtilmişti. Kendi bütçe tablomla karşılaştırınca aynı gerçekleşme oranlarını buldum.",
       "themes": [
-        "support"
+        "evidence"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3741,9 +3791,9 @@
     {
       "id": "F020",
       "sourceRow": 20,
-      "quote": "Raporda bir tutarın hangi satırlardan oluştuğunu izlemek kontrol süremi azalttı.",
+      "quote": "Rapor, kayıtların desteklemediği bir neden ileri sürmek yerine eksik bilgiyi açıkça ayırmıştı. Bulguları değerlendirirken neyi bildiğimizi daha net gördük.",
       "themes": [
-        "reporting"
+        "evidence"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3751,9 +3801,9 @@
     {
       "id": "F021",
       "sourceRow": 21,
-      "quote": "Koyu tema uzun süre çalışırken rahat geliyor. Metinlerle grafikler yeterince okunaklı.",
+      "quote": "En yüksek satışın yanında kategori paylarını da görmek değerlendirmeyi zenginleştirdi. Küçük ama değişen alanları toplam rakamın içinde kaybetmedik.",
       "themes": [
-        "usability"
+        "depth"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3761,9 +3811,10 @@
     {
       "id": "F022",
       "sourceRow": 22,
-      "quote": "Ana bulgular başta, ayrıntılar açılır bölümlerde. Hem hızlı göz atabiliyorum hem derine inebiliyorum.",
+      "quote": "Özet, bulgu ve önerinin birbirinden ayrılması toplantı hazırlığımızı kolaylaştırdı. Hangi sonucun veri, hangisinin değerlendirme olduğunu rahatça anlatabildik.",
       "themes": [
-        "reporting"
+        "clarity",
+        "decisions"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3771,9 +3822,9 @@
     {
       "id": "F023",
       "sourceRow": 23,
-      "quote": "Geri bildirimime dönüş yapıldı ve neyin değerlendirileceği açıkça anlatıldı. Bu yaklaşımı beğendim.",
+      "quote": "Yorumlardaki tekrarları inceleyince ekibin farklı adlarla konuştuğu konuların aslında aynı soruna çıktığını gördük. Sonucu aksiyon planımız için kullandık.",
       "themes": [
-        "support"
+        "decisions"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3781,9 +3832,9 @@
     {
       "id": "F024",
       "sourceRow": 24,
-      "quote": "Belge ekleme alanı ve kalan kapasite bilgisi anlaşılır. Sınırları önceden görebiliyorum.",
+      "quote": "Ürün gruplarını dönem ve pay bilgisiyle birlikte incelemek faydalıydı. Hacmi yüksek gruplarla daha hızlı değişen grupları ayırabildik.",
       "themes": [
-        "usability"
+        "depth"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3791,9 +3842,9 @@
     {
       "id": "F025",
       "sourceRow": 25,
-      "quote": "Kaynaklarda arama yaparken sonuçların hızlı daralması büyük tablolarda işimi kolaylaştırdı.",
+      "quote": "Önemli bulguların dayandığı satırları kontrol ettim. Özetteki rakamların kaynak belgelerle tutarlı olması raporu ekip içinde paylaşmamı kolaylaştırdı.",
       "themes": [
-        "performance"
+        "evidence"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3801,9 +3852,9 @@
     {
       "id": "F026",
       "sourceRow": 26,
-      "quote": "Eksik bilgi olduğunda puan uydurulmaması ve nedeninin yazılması güven veriyor.",
+      "quote": "Yorumlardan bir memnuniyet puanı uydurulmamıştı; bunun için ölçüm bulunmadığı belirtiliyordu. Eksik verinin açık tutulması sonucu daha güvenilir bulmamı sağladı.",
       "themes": [
-        "reporting"
+        "evidence"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3811,9 +3862,9 @@
     {
       "id": "F027",
       "sourceRow": 27,
-      "quote": "Hesap ayarlarıyla ilgili sorum tek yanıtta çözüldü. Açıklama kısa ve uygulanabilirdi.",
+      "quote": "Rapor riskleri kesinleşmiş olaylar gibi sunmadı. Hangi ek kayıtları incelememiz gerektiğini belirtmesi sonraki çalışmayı planlamamıza yardımcı oldu.",
       "themes": [
-        "support"
+        "decisions"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3821,9 +3872,9 @@
     {
       "id": "F028",
       "sourceRow": 28,
-      "quote": "Mobilde kısa bir kontrol yapmak rahat. Özete ve kaynaklara birkaç dokunuşla ulaşabiliyorum.",
+      "quote": "Analiz sonucunu okuduğumda dönem içindeki değişimi birkaç ana cümlede anlayabildim. Ayrıntılı tabloya dönmeden önce neye odaklanacağım netleşti.",
       "themes": [
-        "usability"
+        "clarity"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3831,9 +3882,9 @@
     {
       "id": "F029",
       "sourceRow": 29,
-      "quote": "Farklı dönemleri aynı ölçekte karşılaştırabilmek değişimi anlamamı kolaylaştırdı.",
+      "quote": "Kanalları aynı döneme ve aynı ölçülere göre karşılaştırması önemliydi. Farklı büyüklükteki kanalları yalnız toplam satışla değerlendirme alışkanlığımızı sorguladık.",
       "themes": [
-        "reporting"
+        "depth"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3841,9 +3892,9 @@
     {
       "id": "F030",
       "sourceRow": 30,
-      "quote": "İlk çalışmamı nasıl düzenleyeceğime dair öneriler somuttu. Sonraki kullanımda kendim ilerledim.",
+      "quote": "Öneriler bulgulara bağlıydı ve ek veri gerektiren adımlar da belirtilmişti. Sonucu doğrudan karar yerine iyi hazırlanmış bir çalışma gündemi olarak kullanabildik.",
       "themes": [
-        "support"
+        "decisions"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3851,9 +3902,10 @@
     {
       "id": "F031",
       "sourceRow": 31,
-      "quote": "Yönetici özeti toplantı öncesi ana konuları yakalamama yardımcı oluyor; ayrıntılar da ulaşılabilir.",
+      "quote": "Sonuç raporu, uzun belgelerin ortak mesajını açık bir dille anlattı. Yönetim toplantısında tartışmayı sayılar üzerinde başlatmamıza yardımcı oldu.",
       "themes": [
-        "reporting"
+        "clarity",
+        "decisions"
       ],
       "problemThemes": [],
       "sentiment": "positive"
@@ -3861,9 +3913,9 @@
     {
       "id": "F032",
       "sourceRow": 32,
-      "quote": "Sayfalar arasında geri döndüğümde çalışmamın korunması akışı bölmeden devam etmemi sağlıyor.",
+      "quote": "Segmentleri yalnız toplam değerlerle değil, dönem içindeki farklılaşmalarıyla görmek işimize yaradı. Daha ayrıntılı inceleyeceğimiz iki alanı belirleyebildik.",
       "themes": [
-        "usability"
+        "depth"
       ],
       "problemThemes": [],
       "sentiment": "positive"

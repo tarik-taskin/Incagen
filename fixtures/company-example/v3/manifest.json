@@ -1,0 +1,59 @@
+{
+  "version": 3,
+  "synthetic": true,
+  "company": "Atlas Teknoloji",
+  "year": 2025,
+  "files": [
+    {
+      "sourceId": "atlas-sales",
+      "file": "atlas-satis-2025.csv",
+      "rows": 3456,
+      "sha256": "a3e1b9e1623c7796b12648728cf98a8896a5943352532d359b284b89cd6882d4"
+    },
+    {
+      "sourceId": "atlas-budget",
+      "file": "atlas-butce-2025.xlsx",
+      "rows": 12,
+      "sha256": "75eaaaada6cd2d788a47c1b28623b9380e1cfe96cd94a55b7e532c39ac6cf030"
+    },
+    {
+      "sourceId": "atlas-operations",
+      "file": "atlas-operasyon-2025.csv",
+      "rows": 144,
+      "sha256": "e8846ec22b4321780b7a88b0a95277167b3af8ce533e669def5eebf464988fef"
+    },
+    {
+      "sourceId": "atlas-review",
+      "file": "atlas-performans-2025.pdf",
+      "pages": 7,
+      "sha256": "0cfd501e3133c5250520cc09a6662d8ac603fd3b4aa475d352df4272d5e99ebe"
+    },
+    {
+      "sourceId": "atlas-commercial",
+      "file": "atlas-ticari-degerlendirme-2025.docx",
+      "pages": 5,
+      "sha256": "e554f6b1b3d2d6421cefec8fafdb036ff1ba5452a0ab7dd81bf705fc15296157"
+    },
+    {
+      "sourceId": "atlas-executive",
+      "file": "atlas-yonetim-2025.pptx",
+      "slides": 3,
+      "sha256": "4e2027647099b7b0f93747544125e2a13cef5a12a088c04d1e24ac80c1a65b92"
+    },
+    {
+      "sourceId": "atlas-context",
+      "file": "atlas-rapor-baglami-2025.json",
+      "sha256": "1f5e6eae76a62859777213b6188055ffb0805d7f995b7f0e756924ff0b9c36b7"
+    },
+    {
+      "sourceId": "atlas-methodology",
+      "file": "atlas-hesap-yontemi-2025.md",
+      "sha256": "6086d2c71467aaf4289fe1adb8faa6f1d78c7ba838bf5d40d26691f9718b410c"
+    },
+    {
+      "sourceId": "atlas-handoff",
+      "file": "atlas-yonetim-devir-notu-2025.txt",
+      "sha256": "d0913392481621a19b5696d28bb3dca2ca12e5ebd7480b7278d34e3323dbf4ba"
+    }
+  ]
+}

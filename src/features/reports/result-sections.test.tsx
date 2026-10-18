@@ -36,7 +36,7 @@ describe("uyarlanabilir sonuç sunumu", () => {
     render(<AdaptiveReport result={result} sources={example.sources} />);
     expect(screen.queryByLabelText("Öne çıkan metrikler")).not.toBeInTheDocument();
     expect(screen.queryByTestId("adaptive-chart")).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "İlk kullanımı daha da kolaylaştırın" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Özetleri ve önerileri netleştirin" })).toBeVisible();
   });
   it("öneriyi onu destekleyen bulguyla birleştirir ve ayrıntıları kapalı başlatır", () => {
     const { container } = render(<AdaptiveReport result={example.result as AiResult} sources={example.sources} />);
@@ -44,7 +44,7 @@ describe("uyarlanabilir sonuç sunumu", () => {
     expect(detail.open).toBe(false);
     fireEvent.click(detail.querySelector("summary")!);
     expect(detail.open).toBe(true);
-    expect(screen.getByRole("button", { name: "İlk kullanımı daha da kolaylaştırın" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Özetleri ve önerileri netleştirin" })).toBeVisible();
   });
   it("ayrıntı içeriğini DOM'da koruyan yerel disclosure kullanır", () => {
     const { container } = render(<ReportDetails title="Ayrıntılar" description="Hesap ve kanıt"><p>Korunmuş bilgi</p></ReportDetails>);

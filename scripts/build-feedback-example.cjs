@@ -3,8 +3,8 @@ const { parseDocument } = require("../functions/lib/parsing/index.js");
 const { createFeedbackExample } = require("../functions/lib/examples/feedback-report.js");
 // İnsan etiketli referansı gerçek parser'dan geçirir; beklenen hesap dosyasını üretime dahil etmez.
 async function main() {
-  const labels = JSON.parse(fs.readFileSync("fixtures/analysis-reference/annotations/customer-feedback.v1.json", "utf8"));
-  const data = fs.readFileSync("fixtures/analysis-reference/examples/customer-feedback.csv");
+  const labels = JSON.parse(fs.readFileSync("fixtures/analysis-reference/annotations/customer-feedback.v2.json", "utf8"));
+  const data = fs.readFileSync("fixtures/analysis-reference/examples/customer-feedback.v2.csv");
   const document = await parseDocument({ sourceId: "reference-feedback", fileName: "customer-feedback.csv", contentType: "text/csv", data });
   const { result, sources, annotations } = createFeedbackExample(document, labels.annotations, labels.sourceSha256);
   const output = JSON.stringify({ result, sources, annotations }, null, 2) + "\n";

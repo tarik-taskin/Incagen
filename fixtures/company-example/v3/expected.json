@@ -1,0 +1,138 @@
+{
+  "year": {
+    "net": 3434937368.1,
+    "gross": 3634647600.0,
+    "discounts": 141133462.8,
+    "refunds": 58576769.1,
+    "profit": 1436373303.27,
+    "budget": 3340279626.06,
+    "orders": 279257,
+    "contribution": 1191927461.84,
+    "margin": 41.816579149578935,
+    "onTime": 94.10829451007496,
+    "rows": 3612,
+    "category": {
+      "Kurumsal yazılım": 538798395.0,
+      "Veri analitiği": 280390960.2,
+      "Teknik danışmanlık": 213069549.6,
+      "Eğitim hizmetleri": 133120165.5,
+      "Sistem entegrasyonu": 372374301.0,
+      "Yönetilen hizmetler": 651651177.6,
+      "Siber güvenlik": 246362040.0,
+      "Bulut hizmetleri": 999170779.2
+    },
+    "channel": {
+      "Doğrudan satış": 1335291026.4,
+      "İş ortakları": 1129634962.2,
+      "Dijital kanal": 970011379.5
+    },
+    "region": {
+      "Marmara": 1138751264.1,
+      "Ege": 870922363.8,
+      "İç Anadolu": 749853123.3,
+      "Akdeniz": 675410616.9
+    }
+  },
+  "h1": {
+    "net": 1442701169.7,
+    "gross": 1521812100.0,
+    "discounts": 54545254.5,
+    "refunds": 24565675.8,
+    "profit": 603036497.5,
+    "budget": 1447609590.97,
+    "orders": 116954,
+    "contribution": 500422150.37,
+    "margin": 41.79912723196845,
+    "onTime": 94.08998409631137,
+    "rows": 1806,
+    "category": {
+      "Kurumsal yazılım": 229225294.5,
+      "Veri analitiği": 118539118.2,
+      "Teknik danışmanlık": 89808004.8,
+      "Eğitim hizmetleri": 55933512.9,
+      "Sistem entegrasyonu": 156106110.6,
+      "Yönetilen hizmetler": 272756787.9,
+      "Siber güvenlik": 103007793.6,
+      "Bulut hizmetleri": 417324547.2
+    },
+    "channel": {
+      "Doğrudan satış": 559699503.0,
+      "İş ortakları": 474585477.6,
+      "Dijital kanal": 408416189.1
+    },
+    "region": {
+      "Marmara": 476508981.6,
+      "Ege": 365772157.8,
+      "İç Anadolu": 315598538.4,
+      "Akdeniz": 284821491.9
+    }
+  },
+  "h2": {
+    "net": 1992236198.4,
+    "gross": 2112835500.0,
+    "discounts": 86588208.3,
+    "refunds": 34011093.3,
+    "profit": 833336805.77,
+    "budget": 1892670035.09,
+    "orders": 162303,
+    "contribution": 691505311.47,
+    "margin": 41.829217160057,
+    "onTime": 94.12148882029291,
+    "rows": 1806,
+    "category": {
+      "Kurumsal yazılım": 309573100.5,
+      "Veri analitiği": 161851842.0,
+      "Teknik danışmanlık": 123261544.8,
+      "Eğitim hizmetleri": 77186652.6,
+      "Sistem entegrasyonu": 216268190.4,
+      "Yönetilen hizmetler": 378894389.7,
+      "Siber güvenlik": 143354246.4,
+      "Bulut hizmetleri": 581846232.0
+    },
+    "channel": {
+      "Doğrudan satış": 775591523.4,
+      "İş ortakları": 655049484.6,
+      "Dijital kanal": 561595190.4
+    },
+    "region": {
+      "Marmara": 662242282.5,
+      "Ege": 505150206.0,
+      "İç Anadolu": 434254584.9,
+      "Akdeniz": 390589125.0
+    }
+  },
+  "q4": {
+    "net": 1123362367.2,
+    "gross": 1196360700.0,
+    "discounts": 53756804.7,
+    "refunds": 19241528.1,
+    "profit": 470017907.45,
+    "budget": 1044988248.55,
+    "orders": 91874,
+    "contribution": 390009066.36,
+    "margin": 41.84027533533349,
+    "onTime": 94.22796438600692,
+    "rows": 903,
+    "category": {
+      "Kurumsal yazılım": 173276508.0,
+      "Veri analitiği": 90910180.2,
+      "Teknik danışmanlık": 69446192.4,
+      "Eğitim hizmetleri": 43518684.9,
+      "Sistem entegrasyonu": 122085536.4,
+      "Yönetilen hizmetler": 214071496.5,
+      "Siber güvenlik": 81048996.0,
+      "Bulut hizmetleri": 329004772.8
+    },
+    "channel": {
+      "Doğrudan satış": 437756018.7,
+      "İş ortakları": 369382335.9,
+      "Dijital kanal": 316224012.6
+    },
+    "region": {
+      "Marmara": 374100230.1,
+      "Ege": 284917508.1,
+      "İç Anadolu": 244535150.1,
+      "Akdeniz": 219809478.9
+    }
+  }
+}

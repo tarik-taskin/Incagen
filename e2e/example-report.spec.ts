@@ -1,13 +1,13 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import gold from "../fixtures/company-example/v2/expected.json" with { type: "json" };
+import gold from "../fixtures/company-example/v3/expected.json" with { type: "json" };
 
 // Raporun tamamı ve açık dialog için kritik erişilebilirlik ihlallerini durdurur.
 async function accessibility(page: Page) {
   const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   expect(result.violations).toEqual([]);
 }
-const exactMoney = (n: number) => new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 2 }).format(n) + " TL";
+const exactMoney = (n: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n) + " TL";
 
 test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı kapsamda tutar", async ({ page }, testInfo) => {
   await page.goto("/");
@@ -59,7 +59,7 @@ test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı 
     await expect(page.getByTestId(`chart-${id}`).locator("path[fill='#7351b5'], path[stroke='#7351b5']").first()).toBeVisible();
   }
   await page.getByTestId("chart-category").locator("path[fill='#7351b5']").first().click();
-  await expect(page.getByRole("dialog", { name: "Bahçe", exact: true })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Bulut hizmetleri", exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
   await page.getByRole("link", { name: "Finansal detay", exact: true }).click();
   await expect(page.getByRole("table", { name: "Kanal performansı", exact: true }).locator("tbody tr")).toHaveCount(3);
@@ -146,7 +146,38 @@ test("hareketli raporda filtre, kaynak sekmeleri ve indirme kullanılabilir kal�
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("link", { name: /Örnek belgeleri indir/ }).click();
   const download = await downloadPromise;
-  expect(download.suggestedFilename()).toBe("atlas-perakende-2025.zip");
+  expect(download.suggestedFilename()).toBe("atlas-teknoloji-2025.zip");
   expect(await download.failure()).toBeNull();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= (window.visualViewport?.width ?? innerWidth))).toBe(true);
+});
+
+// Her formatın özgün dosyası, kaynak konumu ve araması gerçek örnek paketinden açılır.
+test("Excel, sunum ve yapılandırılmış metin kaynakları özgün formatlarında açılır", async ({ page }, testInfo) => {
+  await page.goto("/ornek-rapor");
+  await page.getByRole("link", { name: "Kaynaklar", exact: true }).click();
+  const library = page.locator("#kaynaklar");
+  await expect(library.getByRole("article")).toHaveCount(9);
+  for (const [title, format, query] of [["Satış bütçesi", "xlsx", "2025-01"], ["Yönetim sunumu", "pptx", "hizmet"], ["Rapor bağlamı", "json", "service_orders"], ["Hesap yöntemleri", "md", "Brüt kâr"], ["Yönetim devir notu", "txt", "Finans"]]) {
+    const card = library.getByRole("article").filter({ has: page.getByRole("heading", { name: title, exact: true }) });
+    await card.getByRole("button", { name: "Belgeyi incele", exact: true }).click();
+    const reader = page.getByRole("dialog", { name: title, exact: true });
+    if (format === "xlsx") {
+      await expect(reader.getByRole("table").getByRole("row")).toHaveCount(13);
+      await reader.getByRole("textbox", { name: "Kaynak satırlarında ara" }).fill(query);
+      await expect(reader.getByRole("status")).toHaveText("1–1 / 1 kayıt");
+    } else {
+      if (format === "pptx") { await expect(reader.getByRole("article")).toHaveCount(3); await expect(reader.getByText("Slayt 1", { exact: true })).toBeVisible(); }
+      await reader.getByRole("textbox", { name: "Belge metninde ara" }).fill(query);
+      await expect(reader.locator("mark").first()).toBeVisible();
+    }
+    const pending = page.waitForEvent("download");
+    await reader.getByRole("link", { name: `${title} özgün dosyasını indir`, exact: true }).click();
+    const download = await pending;
+    expect(download.suggestedFilename()).toMatch(new RegExp(`\\.${format}$`));
+    expect(await download.failure()).toBeNull();
+    if (format === "pptx") await page.screenshot({ path: testInfo.outputPath("presentation-source.png") });
+    await page.keyboard.press("Escape");
+    await expect(card.getByRole("button", { name: "Belgeyi incele", exact: true })).toBeFocused();
+  }
+  await accessibility(page);
 });

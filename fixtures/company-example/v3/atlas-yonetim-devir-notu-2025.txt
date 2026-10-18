@@ -1,0 +1,12 @@
+ATLAS TEKNOLOJİ / YÖNETİM DEVİR NOTU
+2025 kapanışı
+
+Finans: Brüt gelir, indirim ve hizmet kredisi aynı ay ve kırılımda uzlaştırılır. Doğrudan maliyet ile hizmet operasyonu farklı gider sınıflarıdır; aynı gider iki alana yazılmaz.
+
+Ticari ekip: Kanal bütçelerini yalnız ciroya göre dağıtmayın. Doğrudan satış, iş ortakları ve dijital kanal için brüt marj ve hizmet işi başına katkıyı birlikte inceleyin.
+
+Hizmet operasyonu: Zamanında ve geciken işlerin toplamını tamamlanan hizmet işiyle karşılaştırın. Gecikme nedenleri ekip ve teknik olay bazında ayrıca toplanmalıdır.
+
+Sonraki değerlendirme: Sözleşme yenileme, müşteri kaybı ve hizmet kullanımını değerlendirmek için müşteri/sözleşme kimliği, başlangıç-bitiş tarihi ve ekip kapasitesi eklenmelidir. Mevcut dosyalardan ARR, müşteri yaşam boyu değeri veya nedensel kampanya etkisi çıkarılmaz.
+
+Kaynak sırası: Yıllık PDF görünümü, Word değerlendirmesi, PowerPoint yönetim özeti; ardından CSV/XLSX sayısal kayıtları ve JSON/Markdown tanımlar. Yıllık belgeler alt dönem filtresiyle yeniden yazılmış gibi yorumlanmaz.

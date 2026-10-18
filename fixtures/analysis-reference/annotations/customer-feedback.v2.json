@@ -1,0 +1,345 @@
+{
+  "version": 2,
+  "provenance": "human-reference",
+  "scope": "fictional-post-analysis-feedback",
+  "sourceSha256": "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1",
+  "annotations": [
+    {
+      "id": "F001",
+      "sourceRow": 1,
+      "quote": "Rapordaki ana sonuçlar işime yaradı, fakat bazı açıklamalar fazla teknikti. Özeti farklı ekiplerle paylaşırken daha sade bir anlatıma ihtiyaç duydum.",
+      "themes": [
+        "clarity"
+      ],
+      "problemThemes": [
+        "clarity"
+      ],
+      "sentiment": "negative"
+    },
+    {
+      "id": "F002",
+      "sourceRow": 2,
+      "quote": "Analiz üç risk sıraladı, fakat hangisine önce müdahale etmemiz gerektiği netleşmedi. Önerilerin öncelik sırası ve gerekçesi daha somut olmalıydı.",
+      "themes": [
+        "decisions"
+      ],
+      "problemThemes": [
+        "decisions"
+      ],
+      "sentiment": "negative"
+    },
+    {
+      "id": "F003",
+      "sourceRow": 3,
+      "quote": "Yönetici özetinde aynı bulgu birkaç kez yinelenmişti. Sonuç yararlıydı ama toplantıda kullanmadan önce metni kısaltmam gerekti.",
+      "themes": [
+        "clarity"
+      ],
+      "problemThemes": [
+        "clarity"
+      ],
+      "sentiment": "negative"
+    },
+    {
+      "id": "F004",
+      "sourceRow": 4,
+      "quote": "Raporun önerileri ilgiliydi, ancak uygulamada ilk adımın nasıl atılacağına dair kısa bir örnek bekledim. Sonucu ekip planına uyarlamak için birkaç not ekledim.",
+      "themes": [
+        "decisions"
+      ],
+      "problemThemes": [
+        "decisions"
+      ],
+      "sentiment": "negative"
+    },
+    {
+      "id": "F005",
+      "sourceRow": 5,
+      "quote": "Satış toplamlarını kendi çalışma tablomla karşılaştırdım, aynı sonuca ulaştım. Kaynaklı özet toplantıda kararlarımızı gerekçelendirmemizi kolaylaştırdı.",
+      "themes": [
+        "evidence",
+        "decisions"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F006",
+      "sourceRow": 6,
+      "quote": "Üç ayrı faaliyet belgesinin ana noktaları tek özette bir araya gelmişti. Ekibim raporu okuduğunda aynı genel resmi anlayabildi.",
+      "themes": [
+        "clarity"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F007",
+      "sourceRow": 7,
+      "quote": "Yönetici özeti ana resmi net verdi; ancak müşteri segmentleri için daha ayrıntılı bir karşılaştırmaya ihtiyaç duydum. Sonuç iyi bir başlangıç oldu, karar için ek kırılımlar gerekliydi.",
+      "themes": [
+        "clarity",
+        "depth"
+      ],
+      "problemThemes": [
+        "depth"
+      ],
+      "sentiment": "mixed"
+    },
+    {
+      "id": "F008",
+      "sourceRow": 8,
+      "quote": "Önerilerden birinin hangi veri grubuna dayandığı yeterince açık değildi. Karar öncesinde dayanağını kendim yeniden kontrol etmem gerekti.",
+      "themes": [
+        "evidence"
+      ],
+      "problemThemes": [
+        "evidence"
+      ],
+      "sentiment": "negative"
+    },
+    {
+      "id": "F009",
+      "sourceRow": 9,
+      "quote": "Dağınık yorumların içinden tekrar eden iki konuyu ayırabildik. Sonuç sayesinde ürün toplantısına genel izlenimlerle değil, net sorularla gittik.",
+      "themes": [
+        "decisions"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F010",
+      "sourceRow": 10,
+      "quote": "Rapordaki tutarları kendi kontrol listemle uzlaştırabildim. Farklı dosyalardan gelen verilerin hangi kapsamda toplandığının belirtilmesi içimi rahatlattı.",
+      "themes": [
+        "evidence"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F011",
+      "sourceRow": 11,
+      "quote": "Analiz, yapılacaklar listemizi büyütmek yerine hangi konuları önce araştırmamız gerektiğini gösterdi. Önerileri haftalık planımıza uyarlayabildik.",
+      "themes": [
+        "decisions"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F012",
+      "sourceRow": 12,
+      "quote": "Toplamdaki artışın her bölgede aynı olmadığını raporla daha iyi gördük. Bölge kırılımları genel sonucun arkasındaki farkları açıklamak için yararlıydı.",
+      "themes": [
+        "depth"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F013",
+      "sourceRow": 13,
+      "quote": "İadelerin net satışa etkisini ayrı görmek faydalıydı. Rapordaki toplamı kaynak dosyayla kontrol ettiğimde indirim ve iade kapsamı birbiriyle tutuyordu.",
+      "themes": [
+        "evidence"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F014",
+      "sourceRow": 14,
+      "quote": "Uzun faaliyet raporundaki ana mesajlar, ayrıntıyı kaybetmeden anlaşılır bir dille özetlenmişti. Sonucu yöneticime çok az düzenlemeyle aktarabildim.",
+      "themes": [
+        "clarity"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F015",
+      "sourceRow": 15,
+      "quote": "Olumlu yorumlarla sorun bildiren yorumların ayrı değerlendirilmesi planımızı etkiledi. İyi çalışan tarafları koruyup iki iyileştirme alanına odaklanabildik.",
+      "themes": [
+        "decisions"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F016",
+      "sourceRow": 16,
+      "quote": "Bir kanalın daha fazla ciro üretmesinin tek başına daha kârlı olduğu anlamına gelmediği açıkça belirtilmişti. Bu ayrım ve kaynaklar bütçe kararını daha dikkatli vermemizi sağladı.",
+      "themes": [
+        "evidence",
+        "decisions"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F017",
+      "sourceRow": 17,
+      "quote": "Aylık toplamlar yerine dönemleri aynı kapsamda karşılaştırabilmek işimize yaradı. Tek seferlik değişimle genel eğilimi birbirinden ayırabildik.",
+      "themes": [
+        "depth"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F018",
+      "sourceRow": 18,
+      "quote": "Araştırma notlarının özeti kısa ama yeterince açıklayıcıydı. Farklı görüşlerin tek bir kesin sonuç gibi birleştirilmemesini özellikle beğendim.",
+      "themes": [
+        "clarity"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F019",
+      "sourceRow": 19,
+      "quote": "Yüzdelerin hangi tutara göre hesaplandığı belirtilmişti. Kendi bütçe tablomla karşılaştırınca aynı gerçekleşme oranlarını buldum.",
+      "themes": [
+        "evidence"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F020",
+      "sourceRow": 20,
+      "quote": "Rapor, kayıtların desteklemediği bir neden ileri sürmek yerine eksik bilgiyi açıkça ayırmıştı. Bulguları değerlendirirken neyi bildiğimizi daha net gördük.",
+      "themes": [
+        "evidence"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F021",
+      "sourceRow": 21,
+      "quote": "En yüksek satışın yanında kategori paylarını da görmek değerlendirmeyi zenginleştirdi. Küçük ama değişen alanları toplam rakamın içinde kaybetmedik.",
+      "themes": [
+        "depth"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F022",
+      "sourceRow": 22,
+      "quote": "Özet, bulgu ve önerinin birbirinden ayrılması toplantı hazırlığımızı kolaylaştırdı. Hangi sonucun veri, hangisinin değerlendirme olduğunu rahatça anlatabildik.",
+      "themes": [
+        "clarity",
+        "decisions"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F023",
+      "sourceRow": 23,
+      "quote": "Yorumlardaki tekrarları inceleyince ekibin farklı adlarla konuştuğu konuların aslında aynı soruna çıktığını gördük. Sonucu aksiyon planımız için kullandık.",
+      "themes": [
+        "decisions"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F024",
+      "sourceRow": 24,
+      "quote": "Ürün gruplarını dönem ve pay bilgisiyle birlikte incelemek faydalıydı. Hacmi yüksek gruplarla daha hızlı değişen grupları ayırabildik.",
+      "themes": [
+        "depth"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F025",
+      "sourceRow": 25,
+      "quote": "Önemli bulguların dayandığı satırları kontrol ettim. Özetteki rakamların kaynak belgelerle tutarlı olması raporu ekip içinde paylaşmamı kolaylaştırdı.",
+      "themes": [
+        "evidence"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F026",
+      "sourceRow": 26,
+      "quote": "Yorumlardan bir memnuniyet puanı uydurulmamıştı; bunun için ölçüm bulunmadığı belirtiliyordu. Eksik verinin açık tutulması sonucu daha güvenilir bulmamı sağladı.",
+      "themes": [
+        "evidence"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F027",
+      "sourceRow": 27,
+      "quote": "Rapor riskleri kesinleşmiş olaylar gibi sunmadı. Hangi ek kayıtları incelememiz gerektiğini belirtmesi sonraki çalışmayı planlamamıza yardımcı oldu.",
+      "themes": [
+        "decisions"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F028",
+      "sourceRow": 28,
+      "quote": "Analiz sonucunu okuduğumda dönem içindeki değişimi birkaç ana cümlede anlayabildim. Ayrıntılı tabloya dönmeden önce neye odaklanacağım netleşti.",
+      "themes": [
+        "clarity"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F029",
+      "sourceRow": 29,
+      "quote": "Kanalları aynı döneme ve aynı ölçülere göre karşılaştırması önemliydi. Farklı büyüklükteki kanalları yalnız toplam satışla değerlendirme alışkanlığımızı sorguladık.",
+      "themes": [
+        "depth"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F030",
+      "sourceRow": 30,
+      "quote": "Öneriler bulgulara bağlıydı ve ek veri gerektiren adımlar da belirtilmişti. Sonucu doğrudan karar yerine iyi hazırlanmış bir çalışma gündemi olarak kullanabildik.",
+      "themes": [
+        "decisions"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F031",
+      "sourceRow": 31,
+      "quote": "Sonuç raporu, uzun belgelerin ortak mesajını açık bir dille anlattı. Yönetim toplantısında tartışmayı sayılar üzerinde başlatmamıza yardımcı oldu.",
+      "themes": [
+        "clarity",
+        "decisions"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    },
+    {
+      "id": "F032",
+      "sourceRow": 32,
+      "quote": "Segmentleri yalnız toplam değerlerle değil, dönem içindeki farklılaşmalarıyla görmek işimize yaradı. Daha ayrıntılı inceleyeceğimiz iki alanı belirleyebildik.",
+      "themes": [
+        "depth"
+      ],
+      "problemThemes": [],
+      "sentiment": "positive"
+    }
+  ]
+}

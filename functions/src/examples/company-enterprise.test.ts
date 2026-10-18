@@ -1,7 +1,5 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import JSZip from "jszip";
-import artifact from "../../../src/features/reports/company-sources.json";
 import { describe, expect, it } from "vitest";
 import manifest from "../../../fixtures/company-example/v2/manifest.json";
 import expected from "../../../fixtures/company-example/v2/expected.json";
@@ -73,15 +71,8 @@ describe("çok formatlı kurumsal şirket örneği", () => {
     const mismatch = structuredClone(sources); mismatch[2].chunks[0].table!.rows[0][4] = 1;
     expect(() => createCompanyReport(mismatch)).toThrow(/tutarsız/);
   });
-  it("PDF, Word ve indirilen özgün dosyalar parser artefaktı ve hash ile birebir eşleşir", async () => {
+  it("v2 PDF ve Word kaynakları kendi sayıları, hash ve alıntı konumlarıyla korunur", async () => {
     const sources = await documents();
-    expect(sources).toEqual(artifact);
-    const zip = await JSZip.loadAsync(readFileSync(new URL("../../../src/features/reports/atlas-2025-kaynaklar.zip", import.meta.url)));
-    for (const item of manifest.files) {
-      const bytes = readFileSync(new URL(`../../../fixtures/company-example/v2/${item.file}`, import.meta.url));
-      expect(await zip.file(item.file)!.async("nodebuffer")).toEqual(bytes);
-      expect(readFileSync(new URL(`../../../src/features/reports/originals/${item.file}`, import.meta.url))).toEqual(bytes);
-    }
     const report = createCompanyReport(sources);
     const money = (n: number) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
     for (const source of sources.filter(item => item.extension !== "csv")) {

@@ -39,7 +39,7 @@ for (const [code, catalog] of Object.entries({ en, de, es, zh, ar })) {
     await expect(page.getByRole("combobox")).toHaveValue(code);
     await page.getByRole("link", { name: text("Müşteri deneyimi"), exact: true }).click();
     await expect(page.getByRole("heading", { level: 1 })).toContainText(text("net önceliklere."));
-    await expect(page.getByRole("heading", { name: text("İlk kullanımı daha da kolaylaştırın"), exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: text("Özetleri ve önerileri netleştirin"), exact: true })).toBeVisible();
     const legend = page.getByRole("list", { name: text("Yorumların duygusu"), exact: true });
     await expect(legend.getByRole("button")).toHaveCount(3);
     await expect(legend).toContainText(text("Olumsuz"));
@@ -65,11 +65,11 @@ test("geri bildirim örneği, kaynaklı yorumlar ve eksik ölçüm", async ({ pa
   await expect(page.getByRole("button", { name: /Memnuniyet puanı/ })).toContainText("—");
   await expect(page.getByRole("button", { name: /Memnuniyet puanı/ })).not.toContainText("0%");
   await expect(page.getByRole("button", { name: /İncelenen yorum/ })).toContainText("32 yorum");
-  const finding = page.getByRole("article").filter({ has: page.getByRole("heading", { name: "Bir yorum, iki farklı deneyim" }) });
+  const finding = page.getByRole("article").filter({ has: page.getByRole("heading", { name: "İyi bir özet, daha derin bir ihtiyaç" }) });
   await finding.getByRole("button", { name: "Kaynakları incele" }).click();
   const reader = page.getByRole("dialog");
   await expect(reader.getByRole("rowheader", { name: /7/ })).toBeVisible();
-  await expect(reader.getByText("Grafikler anlaşılır, ancak mobilde filtreleri bulmak için fazla kaydırmam gerekiyor.", { exact: true })).toBeVisible();
+  await expect(reader.getByText("Yönetici özeti ana resmi net verdi; ancak müşteri segmentleri için daha ayrıntılı bir karşılaştırmaya ihtiyaç duydum. Sonuç iyi bir başlangıç oldu, karar için ek kırılımlar gerekliydi.", { exact: true })).toBeVisible();
   await expect(reader.getByRole("status")).toHaveText("1–1 / 1 kayıt");
   await page.keyboard.press("Escape");
   await expect(finding.getByRole("button", { name: "Kaynakları incele" })).toBeFocused();

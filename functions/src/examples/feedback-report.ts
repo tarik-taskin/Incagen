@@ -3,18 +3,18 @@ import { buildAnalysisPacket } from "../analysis/input-packet";
 import { validateAiResult, type AiResult } from "../analysis/result-contract";
 
 export interface FeedbackAnnotation { id: string; sourceRow: number; quote: string; themes: string[]; problemThemes: string[]; sentiment: string }
-const themes = { usability: "Kullanım kolaylığı", support: "Destek", reporting: "Rapor ve kaynaklar", performance: "Performans" };
+const themes = { clarity: "Özet ve anlatım", evidence: "Doğruluk ve kaynaklar", decisions: "Karar desteği", depth: "Analiz derinliği" };
 const sentiments = { positive: "Olumlu", negative: "Olumsuz", mixed: "Karma" };
 
 // İnsan etiketlerini özgün yorumlarla eşler; model çalıştırmadan sayımları ve kaynaklı örnek sonucu üretir.
 export function createFeedbackExample(document: ParsedDocument, annotations: FeedbackAnnotation[], sourceSha256: string) {
-  if (sourceSha256 !== "2753a33117cf0ec965c962473da64efb8aa9a99ab4619412bd7c1f122ecddae6" || document.sha256 !== sourceSha256 || document.sourceId !== "reference-feedback" || document.chunks.length !== 1) throw new Error("Geri bildirim örneğinin kaynağı değişmiş.");
+  if (sourceSha256 !== "2037d5496b1e6e9c5bf5d2fcff61375505c0cbba60b1654e4f8701e661f0c4b1" || document.sha256 !== sourceSha256 || document.sourceId !== "reference-feedback" || document.chunks.length !== 1) throw new Error("Geri bildirim örneğinin kaynağı değişmiş.");
   const chunk = document.chunks[0];
-  if (!chunk.table || chunk.table.columns.join() !== "feedback_id,received_date,comment" || chunk.table.rows.length !== 32 || annotations.length !== 32) throw new Error("Geri bildirim referans kapsamı geçersiz.");
+  if (!chunk.table || chunk.table.columns.join() !== "feedback_id,received_date,reviewer_name,analysis_type,comment" || chunk.table.rows.length !== 32 || annotations.length !== 32) throw new Error("Geri bildirim referans kapsamı geçersiz.");
   const seen = new Set<number>();
   for (const item of annotations) {
     const row = chunk.table.rows[item.sourceRow - 1];
-    if (!row || seen.has(item.sourceRow) || row[0] !== item.id || !String(row[2]).includes(item.quote) || !item.quote.trim() || !Object.hasOwn(sentiments, item.sentiment) || !item.themes.length || new Set(item.themes).size !== item.themes.length || new Set(item.problemThemes).size !== item.problemThemes.length || item.themes.some(theme => !Object.hasOwn(themes, theme)) || item.problemThemes.some(theme => !item.themes.includes(theme))) throw new Error("İnsan etiketi yorumla eşleşmiyor.");
+    if (!row || seen.has(item.sourceRow) || row[0] !== item.id || row[4] !== item.quote || typeof row[2] !== "string" || !row[2].trim() || typeof row[3] !== "string" || !row[3].trim() || !item.quote.trim() || !Object.hasOwn(sentiments, item.sentiment) || !item.themes.length || new Set(item.themes).size !== item.themes.length || new Set(item.problemThemes).size !== item.problemThemes.length || item.themes.some(theme => !Object.hasOwn(themes, theme)) || item.problemThemes.some(theme => !item.themes.includes(theme))) throw new Error("İnsan etiketi yorumla eşleşmiyor.");
     seen.add(item.sourceRow);
   }
   const ordered = [...annotations].sort((a, b) => a.sourceRow - b.sourceRow);
@@ -34,20 +34,20 @@ export function createFeedbackExample(document: ParsedDocument, annotations: Fee
   metrics.push({ id: "csat", label: "Memnuniyet puanı", value: null, unit: "%", status: "unavailable", reason: "Kaynakta puanlama sorusu veya CSAT ölçümü yok.", method: "Ölçüm bulunmadığında yorum duygusundan puan türetilmez.", evidence: all });
   const dataset = (id: string, label: string, prefix: string, labels: Record<string, string>): AiResult["datasets"][number] => ({ id, label, unit: "yorum", points: Object.entries(labels).map(([key, name]) => ({ label: name, metricId: `${prefix}-${key}`, value: metrics.find(item => item.id === `${prefix}-${key}`)!.value })) });
   const datasets = [dataset("problems", "Sorun temaları", "problem", themes), dataset("sentiments", "Yorumların duygusu", "sentiment", sentiments), dataset("themes", "Konuşulan konular", "theme", themes)];
-  const objective = "Yorumlardaki tekrar eden sorunları, olumlu deneyimleri ve iyileştirme önceliklerini kaynaklarıyla özetle.";
-  const packet = buildAnalysisPacket({ analysisId: "synthetic-feedback-v1", objective, documents: [document], businessRules: ["Etiketler insan referansıdır; model çıktısı değildir.", "Tema sözleri ile sorunları ayrı say; payda 32 benzersiz yorumdur.", "Çoklu temalar aynı bütünü paylaşmaz; tema grafiğinde pasta kullanma."], metrics, datasets });
+  const objective = "Tamamlanan analizlerden sonra paylaşılan geri bildirimleri incele; sonuç kalitesini, karar desteğini ve iyileştirme önceliklerini kaynaklarıyla özetle.";
+  const packet = buildAnalysisPacket({ analysisId: "synthetic-post-analysis-feedback-v2", objective, documents: [document], businessRules: ["Etiketler insan referansıdır; model çıktısı değildir.", "Tema sözleri ile sorunları ayrı say; payda 32 benzersiz yorumdur.", "Çoklu temalar aynı bütünü paylaşmaz; tema grafiğinde pasta kullanma."], metrics, datasets });
   const statement = (text: string, metricIds: string[] = [], items = ordered) => ({ text, metricIds, evidence: evidence(items) });
   const result = validateAiResult({ schemaVersion: 1, analysisId: packet.validationContext.analysisId, objective,
-    summary: [statement("Olumlu deneyimler çoğunlukta: 32 yorumun 26’sı olumlu. Kullanım kolaylığı, rapor kalitesi ve destek öne çıkıyor; ilk kullanım akışındaki küçük pürüzler iyileştirme alanı.", metrics.filter(item => item.status === "available").map(item => item.id))],
+    summary: [statement("32 analiz sonrası geri bildirimin 26’sı olumlu. Anlaşılır özetler, kaynakları kontrol edebilme ve karar hazırlığına katkı öne çıkıyor. İyileştirme talepleri daha çok özetin dili ve önerilerin somutluğu üzerinde toplanıyor.", metrics.filter(item => item.status === "available").map(item => item.id))],
     findings: [
-      { id: "usability", title: "İlk kullanımı daha da kolaylaştırın", kind: "interpretation", statements: [statement("32 yorumun üçünde kaynaklara ulaşma, hedefi anlama veya mobil filtreleri bulma konusunda pürüzler var. Bu öncelik yalnız örnekteki tekrar sıklığına dayanıyor.", ["problem-usability", "comments"])] },
-      { id: "positive", title: "İyi deneyimin de izini sürün", kind: "observation", statements: [statement("26 olumlu yorumda anlaşılır raporlar, kaynaklara erişim, akıcı kullanım ve destek öne çıkıyor. Olumlu yorumlar sorun sayımına eklenmiyor.", ["positive-comments"])] },
-      { id: "mixed", title: "Bir yorum, iki farklı deneyim", kind: "interpretation", statements: [statement("F007 grafikleri anlaşılır buluyor, mobil filtrelere ulaşmak için fazla kaydırdığını söylüyor. Rapor kalitesiyle kullanım pürüzü ayrı tutuluyor.", [], ordered.filter(item => item.id === "F007"))] },
-      { id: "performance", title: "Büyük belge deneyimini ölçün", kind: "observation", statements: [statement("F008 büyük belgelerde kaynak listesinin bazen geç açıldığını belirtiyor. Kaynakta süre ölçümü yok; yorumdan kesin bir gecikme değeri çıkarılmıyor.", [], ordered.filter(item => item.id === "F008"))] },
+      { id: "clarity", title: "Özetleri ve önerileri netleştirin", kind: "interpretation", statements: [statement("Özetin dili ve önerilerin somutluğu için ikişer iyileştirme talebi var. Analiz derinliği ve kaynak açıklığı için birer yorum bulunuyor. Bu sayımlar geri bildirim sıklığını gösterir; ticari etkiyi ölçmez.", ["problem-clarity", "problem-decisions", "problem-depth", "problem-evidence"])] },
+      { id: "positive", title: "Sonucun işe yaradığı noktaları koruyun", kind: "observation", statements: [statement("26 olumlu yorum; anlaşılır özetleri, kontrol edilebilir kaynakları ve toplantı ya da karar hazırlığına katkıyı anlatıyor. Bunlar doğrulanmış iş sonuçları veya ölçülmüş yatırım getirisi değildir.", ["positive-comments"], ordered.filter(item => item.sentiment === "positive"))] },
+      { id: "mixed", title: "İyi bir özet, daha derin bir ihtiyaç", kind: "interpretation", statements: [statement("F007 yönetici özetini yararlı buluyor, segment karşılaştırmasını ise yetersiz görüyor. Aynı yorumdaki olumlu deneyim ve iyileştirme talebi ayrı korunuyor.", [], ordered.filter(item => item.id === "F007"))] },
+      { id: "evidence", title: "Önerinin dayanağını görünür tutun", kind: "observation", statements: [statement("F008 bir önerinin hangi veri grubuna dayandığını yeniden kontrol etmek zorunda kaldığını belirtiyor. Bu geri bildirim bir doğruluk denetimi değil; kaynak bağının açıklığına ilişkin bir kullanıcı deneyimi.", [], ordered.filter(item => item.id === "F008"))] },
     ],
     recommendations: [
-      { id: "usability-review", action: "Kaynak erişimini, analiz hedefi ipuçlarını ve mobil filtrelerin görünürlüğünü kullanım testleriyle değerlendirin.", basisFindingIds: ["usability"] },
-      { id: "performance-review", action: "Büyük belgelerde kaynak listesinin açılış süresini ölçün; F008’deki deneyimi ölçümle doğrulayın.", basisFindingIds: ["performance"] },
+      { id: "clarity-review", action: "Yönetici özetindeki teknik ifadeleri ve tekrarları sadeleştirin; önerilerdeki ilk adımı kısa bir uygulama örneğiyle somutlaştırın.", basisFindingIds: ["clarity"] },
+      { id: "evidence-review", action: "Önerilerin dayandığı veri gruplarını ve kaynak bağlantılarını gözden geçirin; F008’deki deneyimin nerede oluştuğunu doğrulayın.", basisFindingIds: ["evidence"] },
     ], metrics, datasets,
     charts: [{ id: "problems", title: "Hangi sorunlar tekrar ediyor?", type: "horizontal-bar", datasetId: "problems" }, { id: "sentiments", title: "Deneyimin farklı tonları", type: "donut", datasetId: "sentiments" }, { id: "themes", title: "Konuşulan konular", type: "horizontal-bar", datasetId: "themes" }],
     limitations: ["32 yorum müşteri kitlesini temsil etmez; duygu dağılımı NPS veya CSAT değildir.", "Tema ve duygu etiketleri insan değerlendirme referansıdır. Otomatik sınıflandırma yapılmamıştır.", "Bir yorum birden çok temaya atanabilir. Tema sayıları ve yüzdeleri tek bir bütünün parçaları değildir.", "Maliyet, müşteri sayısı, finansal etki ve ortalama yanıt süresi için veri yoktur."],

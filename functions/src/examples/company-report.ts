@@ -15,6 +15,9 @@ function sourceRows(source: ParsedDocument): Row[] {
     return chunk.table.rows.map((cells, index) => {
       if (cells.length !== chunk.table!.columns.length) throw new Error("Şirket örneğinde sütun uyuşmazlığı.");
       const values = Object.fromEntries(chunk.table!.columns.map((key, column) => [key, String(cells[column])]));
+      // Hizmet şemasını hesap alanlarına eşler; özgün parça, satır ve dosya alanlarına dokunmaz.
+      const aliases: Record<string, string> = { orders: "service_orders", units: "billable_units", gross_sales_try: "gross_revenue_try", refund_try: "service_credit_try", cost_of_goods_try: "direct_cost_try", marketing_try: "sales_marketing_try", fulfillment_try: "service_delivery_try", shipped_orders: "completed_services", on_time_orders: "on_time_services", late_orders: "late_services" };
+      for (const [key, original] of Object.entries(aliases)) if (values[original] !== undefined) values[key] = values[original];
       if (!/^2025-(0[1-9]|1[0-2])$/.test(values.period)) throw new Error("Şirket örneğinde geçersiz dönem.");
       return { values, source, chunk, number: (chunk.locator.rowStart ?? 1) + index };
     });
@@ -46,14 +49,72 @@ const net = (rows: Row[]) => sum(rows, "gross_sales_try") - sum(rows, "discount_
 const profit = (rows: Row[]) => net(rows) - sum(rows, "cost_of_goods_try");
 const integer = (rows: Row[], key: string) => sum(rows, key) / 100;
 
+const serviceTerms: [string, string][] = [
+  ["Kanal yatırımı kararı için brüt marj, sipariş başına katkı ve karşılanabilen talep birlikte incelenmelidir.", "Kanal yatırımı kararı için brüt marj, hizmet işi başına katkı ve karşılanabilen talep birlikte incelenmelidir."],
+  ["Müşteri edinme maliyeti, tekrar satın alma, kanal komisyonu ve müşteri yaşam boyu değeri bu dosyada ayrı ölçülmemiştir.", "Müşteri edinme maliyeti, sözleşme yenileme, iş ortağı payı ve müşteri yaşam boyu değeri bu dosyada ayrı ölçülmemiştir."],
+  ["İade sonrası net mal maliyetinin toplamı.", "Doğrudan hizmet maliyetlerinin toplamı."],
+  ["Sipariş karşılama giderlerinin toplamı.", "Hizmet operasyonu giderlerinin toplamı."],
+  ["Toplam zamanında teslim edilen / toplam sevk edilen sipariş × 100; aylık yüzdelerin ortalaması değildir.", "Toplam zamanında tamamlanan hizmet işi / tamamlanan hizmet işi × 100; aylık yüzdelerin ortalaması değildir."],
+  ["Ayın toplam zamanında teslimatı / toplam sevk edilen sipariş × 100.", "Ayın zamanında tamamlanan hizmet işi / tamamlanan hizmet işi × 100."],
+  ["Ayrık ay/bölge/kanal/kategori/segment kırılımlarındaki sipariş toplamı.", "Ayrık ay/bölge/kanal/hizmet/segment kırılımlarındaki hizmet işi toplamı; tekil müşteri veya sözleşme sayısı değildir."],
+  ["Teslimat oranı toplamlar üzerinden ağırlıklı hesaplanır; müşteri sayısı veya memnuniyet puanı değildir.", "Hizmet düzeyi toplam tamamlanan işler üzerinden ağırlıklı hesaplanır; müşteri sayısı veya memnuniyet puanı değildir."],
+  ["Sipariş başına katkı", "Hizmet işi başına katkı"],
+  ["sipariş başına katkı", "hizmet işi başına katkı"],
+  ["Sipariş karşılama", "Hizmet operasyonu"],
+  ["sipariş karşılama", "hizmet operasyonu"],
+  ["Satılan mal maliyeti", "Doğrudan hizmet maliyeti"],
+  ["satılan mal maliyeti", "doğrudan hizmet maliyeti"],
+  ["net mal maliyeti", "doğrudan hizmet maliyeti"],
+  ["Toplam net satış / toplam sipariş", "Toplam net satış / toplam hizmet işi"],
+  ["sipariş hacimleri", "hizmet işi hacimleri"],
+  ["Ortalama sipariş", "Ortalama hizmet geliri"],
+  ["Brüt satış", "Brüt gelir"],
+  ["Brüt satış −", "Brüt gelir −"],
+  ["brüt satış", "brüt gelir"],
+  ["gross_sales_try toplamı", "gross_revenue_try toplamı"],
+  ["İadeler", "Hizmet kredileri"],
+  ["iade tutarlarının", "hizmet kredilerinin"],
+  ["iade tutarı", "hizmet kredisi"],
+  ["indirim ve iade öncesi", "indirim ve hizmet kredisi öncesi"],
+  ["indirim − iade", "indirim − hizmet kredisi"],
+  ["indirim − iade tutarı", "indirim − hizmet kredisi"],
+  ["Kategori katkısı", "Hizmet alanı katkısı"],
+  ["kategori satışını", "hizmet alanı gelirini"],
+  ["gelirli kategori", "gelirli hizmet alanı"],
+  ["kanal/kategori", "kanal/hizmet alanı"],
+  ["Kanal/kategori", "Kanal/hizmet alanı"],
+  ["Teslimat performansı", "Hizmet düzeyi"],
+  ["Zamanında teslimat", "Zamanında tamamlanma"],
+  ["zamanında teslimatla", "hizmet düzeyiyle"],
+  ["zamanında teslimat", "zamanında tamamlanma"],
+  ["teslimat performansını", "hizmet düzeyini"],
+  ["Sipariş", "Hizmet işi"],
+  ["pazarlama −", "satış/pazarlama −"],
+  ["Pazarlama ve", "Satış/pazarlama ve"],
+  ["Pazarlama giderlerinin", "Satış ve pazarlama giderlerinin"],
+  ["Pazarlama", "Satış ve pazarlama"],
+  ["net kâr değildir.", "net kâr değildir."],
+];
+const serviceKeys = serviceTerms.map(([key]) => key).sort((a, b) => b.length - a.length);
+const serviceExpression = new RegExp(serviceKeys.map(key => key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"), "g");
+const serviceReplacements = new Map(serviceTerms);
+// Tek geçişte en uzun terimi seçer; yeni metni ikinci kez dönüştürmez.
+function serviceDescription(text: string): string {
+  return text.replace(serviceExpression, key => serviceReplacements.get(key)!);
+}
+
 // Yalnız kurgusal şirket örneğini hesaplar; bütün dönem görünümleri aynı kaynaklardan yeniden türetilir ve doğrulanır.
 export function createCompanyReport(documents: ParsedDocument[], period: CompanyPeriod = "year") {
   const salesSource = documents.find(item => item.sourceId === "atlas-sales");
   const budgetSource = documents.find(item => item.sourceId === "atlas-budget");
   const operationSource = documents.find(item => item.sourceId === "atlas-operations");
-  if (![3, 5].includes(documents.length) || !salesSource || !budgetSource || !operationSource) throw new Error("Şirket örneğinin üç kaynağı bulunmalı.");
+  if (![3, 5, 9].includes(documents.length) || !salesSource || !budgetSource || !operationSource) throw new Error("Şirket örneğinin üç kaynağı bulunmalı.");
   const allSales = sourceRows(salesSource), allBudget = sourceRows(budgetSource), allOperations = sourceRows(operationSource);
-  const enterprise = documents.length === 5;
+  const enterprise = documents.length >= 5;
+  const technology = salesSource.chunks[0]?.table?.columns.includes("service_orders") ?? false;
+  if (technology && (documents.length !== 9 || budgetSource.extension !== "xlsx" || !["atlas-executive", "atlas-context", "atlas-methodology", "atlas-handoff"].every(id => documents.some(source => source.sourceId === id && source.chunks.every(chunk => chunk.text?.trim()))))) throw new Error("Teknoloji örneğinin çok formatlı kaynak paketi eksik.");
+  // Aynı hesap ve kanıt yapısını koruyarak sürüme ait mali/hizmet terimlerini seçer.
+  const describe = (text: string) => technology ? serviceDescription(text) : text;
   if (allSales.length !== (enterprise ? 3456 : 864) || allBudget.length !== 12 || allOperations.length !== (enterprise ? 144 : 72)) throw new Error("Şirket örneğinin kaynak satır sayısı değişti.");
   if (new Set(allSales.map(row => row.values.record_id)).size !== allSales.length) throw new Error("Şirket örneğinde yinelenen satış kaydı.");
   const narrativeSources = documents.filter(source => ["atlas-review", "atlas-commercial"].includes(source.sourceId));
@@ -61,7 +122,7 @@ export function createCompanyReport(documents: ParsedDocument[], period: Company
   const briefings = narrativeSources.map(source => {
     const chunk = source.extension === "pdf" ? source.chunks.find(item => item.locator.page === 7)! : source.chunks.find(item => item.text?.includes("Müşteri edinme maliyeti"))!;
     if (!chunk) throw new Error("Yönetim değerlendirmesinin kaynak bölümü eksik.");
-    const text = source.extension === "pdf" ? "Kanal yatırımı kararı için brüt marj, sipariş başına katkı ve karşılanabilen talep birlikte incelenmelidir." : "Müşteri edinme maliyeti, tekrar satın alma, kanal komisyonu ve müşteri yaşam boyu değeri bu dosyada ayrı ölçülmemiştir.";
+    const text = describe(source.extension === "pdf" ? "Kanal yatırımı kararı için brüt marj, sipariş başına katkı ve karşılanabilen talep birlikte incelenmelidir." : "Müşteri edinme maliyeti, tekrar satın alma, kanal komisyonu ve müşteri yaşam boyu değeri bu dosyada ayrı ölçülmemiştir.");
     const excerptChunk = source.chunks.find(item => item.text?.replace(/\s+/g, " ").includes(text));
     if (!excerptChunk) throw new Error("Belge alıntısı özgün kaynakta bulunamadı.");
     return { sourceId: source.sourceId, title: source.extension === "pdf" ? "Kanal yatırımını katkıyla birlikte okuyun." : "Karardan önce eksik bağlamı tamamlayın.", text, evidence: [{ sourceId: source.sourceId, sha256: source.sha256, chunkId: excerptChunk.id, locator: excerptChunk.locator }] };
@@ -73,7 +134,7 @@ export function createCompanyReport(documents: ParsedDocument[], period: Company
   if (integer(sales, "orders") !== integer(operations, "shipped_orders")) throw new Error("Satış/operasyon sipariş toplamı uyuşmuyor.");
   const metrics: Metric[] = [];
   const add = (id: string, name: string, value: number, unit: string, method: string, rows: Row[]) => {
-    metrics.push({ id, label: name, status: "available", value, unit, method, evidence: anchors(rows) });
+    metrics.push({ id, label: describe(name), status: "available", value, unit: technology && unit === "sipariş" ? "hizmet işi" : unit, method: describe(method), evidence: anchors(rows) });
     return id;
   };
   const currency = (id: string, name: string, cents: number, rows: Row[], method: string) => add(id, name, cents / 100, "TRY", method, rows);
@@ -110,13 +171,13 @@ export function createCompanyReport(documents: ParsedDocument[], period: Company
   }).sort((a, b) => b.net - a.net);
   const categories = groups("category"), channels = groups("channel"), regions = groups("region");
   const lookup = (id: string) => metrics.find(item => item.id === id)!;
-  const dataset = (id: string, name: string, unit: string, ids: string[]): AiResult["datasets"][number] => ({ id, label: name, unit, points: ids.map(metricId => ({ label: lookup(metricId).label, metricId, value: lookup(metricId).value })) });
+  const dataset = (id: string, name: string, unit: string, ids: string[]): AiResult["datasets"][number] => ({ id, label: describe(name), unit, points: ids.map(metricId => ({ label: lookup(metricId).label, metricId, value: lookup(metricId).value })) });
   const datasets = [dataset("monthly-net", "Aylık net satış", "TRY", monthly.map(row => `net-${row.month}`)), dataset("monthly-target", "Aylık satış bütçesi", "TRY", monthly.map(row => `target-${row.month}`)), dataset("monthly-profit", "Aylık brüt kâr", "TRY", monthly.map(row => `profit-${row.month}`)), dataset("monthly-service", "Zamanında teslimat", "%", monthly.map(row => `ontime-${row.month}`)), dataset("categories", "Kategori katkısı", "TRY", categories.map(row => row.metricId)), dataset("channels", "Kanal dağılımı", "TRY", channels.map(row => row.metricId)), dataset("regions", "Bölgesel net satış", "TRY", regions.map(row => row.metricId))];
   const money = (n: number) => new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 2 }).format(n) + " TL";
   const pct = (n: number) => new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 1 }).format(n);
   const allRows = [...sales, ...budgets, ...operations];
-  const statement = (text: string, metricIds: string[]) => ({ text, metricIds, evidence: anchors(allRows) });
-  const context: AiResultValidationContext = { analysisId: `atlas-2025-${period}`, objective: "Net satış, bütçe gerçekleşmesi, kanal/kategori katkısı, brüt kârlılık ve teslimat performansını aynı dönem ve kaynak kapsamıyla değerlendir.", sources: documents.map(source => ({ id: source.sourceId, sha256: source.sha256, chunks: source.chunks.map(chunk => ({ id: chunk.id, locator: chunk.locator })) })), metrics, datasets };
+  const statement = (text: string, metricIds: string[]) => ({ text: describe(text), metricIds, evidence: anchors(allRows) });
+  const context: AiResultValidationContext = { analysisId: `atlas-2025-${period}`, objective: describe("Net satış, bütçe gerçekleşmesi, kanal/kategori katkısı, brüt kârlılık ve teslimat performansını aynı dönem ve kaynak kapsamıyla değerlendir."), sources: documents.map(source => ({ id: source.sourceId, sha256: source.sha256, chunks: source.chunks.map(chunk => ({ id: chunk.id, locator: chunk.locator })) })), metrics, datasets };
   const findings: AiResult["findings"] = [
     { id: "growth", title: "Geliri bütçeyle birlikte değerlendirin", kind: "observation", statements: [statement(`${label} net satışı ${money(net(sales) / 100)}; bütçe gerçekleşmesi %${pct(lookup("target-rate").value!)}. İlk ay ${money(monthly[0].net)}, son ay ${money(monthly[monthly.length - 1].net)} net satış üretiyor.`, ["net-sales", "target-rate", "variance", ...monthly.flatMap(row => [`net-${row.month}`, `target-${row.month}`])])] },
     { id: "mix", title: "Büyümeyi taşıyan kırılımları ayırın", kind: "observation", statements: [statement(`${categories[0].name} ${money(categories[0].net)} ile en yüksek kategori satışını oluşturuyor. ${channels[0].name}, kanal satışlarında %${pct(channels[0].share)} paya sahip. Kanal marjları ve sipariş hacimleri birlikte okunmalı.`, [...categories, ...channels, ...regions].map(row => row.metricId))] },
@@ -124,9 +185,9 @@ export function createCompanyReport(documents: ParsedDocument[], period: Company
   ];
   const result = validateAiResult({ schemaVersion: 1, analysisId: context.analysisId, objective: context.objective, metrics, datasets,
     summary: [statement(`${money(net(sales) / 100)} net satış ve %${pct(lookup("target-rate").value!)} bütçe gerçekleşmesi. ${channels[0].name} en yüksek gelirli kanal; ${categories[0].name} en yüksek gelirli kategori.`, ["net-sales", "target-rate", channels[0].metricId, categories[0].metricId]), statement(`%${pct(lookup("margin").value!)} brüt marjı, %${pct(lookup("on-time").value!)} zamanında teslimatla birlikte izleyin.`, ["margin", "on-time"])], findings,
-    recommendations: [{ id: "mix-review", action: "Kanal bütçelerini yalnız gelir büyüklüğüne göre dağıtmayın. Kanal tablosundaki brüt marjı ve sipariş başına katkıyı birlikte değerlendirin; genel giderleri ekleyerek karar modelini tamamlayın.", basisFindingIds: ["mix", "quality"] }],
-    charts: [{ id: "trend", title: "Gelirin aylık ritmi", type: "line", datasetId: "monthly-net" }, { id: "category", title: "Kategori katkısı", type: "horizontal-bar", datasetId: "categories" }, { id: "channel", title: "Gelir nereden geliyor?", type: "donut", datasetId: "channels" }, { id: "region", title: "Bölgesel performans", type: "bar", datasetId: "regions" }, { id: "profit", title: "Brüt kârın seyri", type: "line", datasetId: "monthly-profit" }, { id: "service", title: "Teslimat performansı", type: "bar", datasetId: "monthly-service" }],
-    limitations: ["Tüm tutarlar TRY ve KDV hariçtir; kaynak satırları aylık kırılım toplamlarıdır, tekil işlem değildir.", "Brüt kâr ve katkı, net kâr değildir. İşletme giderleri, vergi ve finansman maliyetleri bu pakette yoktur.", "Bütçe hedefleriyle gerçekleşenler aynı aylarda karşılaştırılır. Tam yıl seçimi 2025'in 12 ayını kapsar.", "Teslimat oranı toplamlar üzerinden ağırlıklı hesaplanır; müşteri sayısı veya memnuniyet puanı değildir.", "Kanal/kategori ilişkileri gözlemdir; kampanya etkisi veya nedensellik kanıtlanmaz."],
+    recommendations: [{ id: "mix-review", action: describe("Kanal bütçelerini yalnız gelir büyüklüğüne göre dağıtmayın. Kanal tablosundaki brüt marjı ve sipariş başına katkıyı birlikte değerlendirin; genel giderleri ekleyerek karar modelini tamamlayın."), basisFindingIds: ["mix", "quality"] }],
+    charts: [{ id: "trend", title: "Gelirin aylık ritmi", type: "line", datasetId: "monthly-net" }, { id: "category", title: describe("Kategori katkısı"), type: "horizontal-bar", datasetId: "categories" }, { id: "channel", title: "Gelir nereden geliyor?", type: "donut", datasetId: "channels" }, { id: "region", title: "Bölgesel performans", type: "bar", datasetId: "regions" }, { id: "profit", title: "Brüt kârın seyri", type: "line", datasetId: "monthly-profit" }, { id: "service", title: describe("Teslimat performansı"), type: "bar", datasetId: "monthly-service" }],
+    limitations: ["Tüm tutarlar TRY ve KDV hariçtir; kaynak satırları aylık kırılım toplamlarıdır, tekil işlem değildir.", "Brüt kâr ve katkı, net kâr değildir. İşletme giderleri, vergi ve finansman maliyetleri bu pakette yoktur.", "Bütçe hedefleriyle gerçekleşenler aynı aylarda karşılaştırılır. Tam yıl seçimi 2025'in 12 ayını kapsar.", "Teslimat oranı toplamlar üzerinden ağırlıklı hesaplanır; müşteri sayısı veya memnuniyet puanı değildir.", "Kanal/kategori ilişkileri gözlemdir; kampanya etkisi veya nedensellik kanıtlanmaz."].map(describe),
   }, context);
-  return { period, periodLabel: label, result, monthly, categories, channels, regions, briefings, sourceRows: sales.length + budgets.length + operations.length };
+  return { technology, period, periodLabel: label, result, monthly, categories, channels, regions, briefings, sourceRows: sales.length + budgets.length + operations.length };
 }

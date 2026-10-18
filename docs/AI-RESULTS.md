@@ -70,16 +70,16 @@ Bu yardımcı fonksiyon bir güvenilir hesaplayıcı veya dosya doğrulama endpo
 
 ## Örnek rapor ve sunum
 
-Herkese açık `/ornek-rapor`, [Atlas Perakende şirket örneğini](../fixtures/company-example/README.md) kullanır: 12 ay, 3.456 satış kırılımı, 12 bütçe ve 144 operasyon kaydı; 7 sayfalık PDF performans raporu ve 5 sayfalık Word ticari değerlendirme belgesi. Kaynaklar kurgusaldır; sayfa “Örnek rapor” etiketi taşır. Tekrarlayan kayıt/gizlilik uyarıları yerine dönem, belge kapsamı ve iş tanımları gösterilir.
+Herkese açık `/ornek-rapor`, [Atlas Teknoloji şirket örneğini](../fixtures/company-example/README.md) kullanır: 12 ay, 3.456 satış kırılımı, 12 bütçe ve 144 operasyon kaydı; 7 sayfalık PDF performans raporu ve 5 sayfalık Word ticari değerlendirme belgesi. Kaynaklar kurgusaldır; sayfa “Örnek rapor” etiketi taşır. Tekrarlayan kayıt/gizlilik uyarıları yerine dönem, belge kapsamı ve iş tanımları gösterilir.
 
-[`createCompanyReport`](../functions/src/examples/company-report.ts) bütün metrikleri gerçek parser çıktısından hesaplar. TRY işlemleri kuruşla yapılır. Brüt kâr, katkı, sipariş başına katkı, bütçe farkı ve ağırlıklı teslimat oranları ayrı tanımlanır. Dönem seçimi kartları, altı grafiği, üç finansal tabloyu ve üç bulguyu birlikte yeniden üretir; URL'de korunur. Bu saf hesaplayıcı yalnız örnektir; gerçek kullanıcı hesabı veya model/backend yetki sınırı değildir. Sayfa AI çağırmaz ve hesap kaydı yazmaz.
+[`createCompanyReport`](../functions/src/examples/company-report.ts) bütün metrikleri gerçek parser çıktısından hesaplar. TRY işlemleri kuruşla yapılır. Brüt kâr, katkı, hizmet işi başına katkı, bütçe farkı ve ağırlıklı tamamlanma oranları ayrı tanımlanır. Dönem seçimi kartları, altı grafiği, üç finansal tabloyu ve üç bulguyu birlikte yeniden üretir; URL'de korunur. Bu saf hesaplayıcı yalnız örnektir; gerçek kullanıcı hesabı veya model/backend yetki sınırı değildir. Sayfa AI çağırmaz ve hesap kaydı yazmaz.
 
 ```bash
 npm run example:build
 node scripts/build-sales-example.cjs --check
 ```
 
-Üretici CSV/PDF/DOCX dosyalarını mevcut parser'lardan geçirip [normalize kaynakları](../src/features/reports/company-sources.json) ve beş özgün dosya ve açıklama belgesini taşıyan ZIP'i üretir. [Dondurulmuş bağımsız beklentiler](../fixtures/company-example/v2/expected.json) yalnız testte kullanılır; üretici/istemci bunları okumaz. Aynı dönemin metrik/kaynak bağlamı sonuç doğrulayıcısından geçer. Örneğin doğrulama bağlamı da kurgusaldır; gerçek analizde güvenilir defter backend'de kalmalıdır. Büyük belge görünümü 256 KiB model paketine zorla sığdırılmaz; herhangi bir model isteği hazırlanmaz.
+Üretici CSV/XLSX/PDF/DOCX/PPTX/JSON/MD/TXT dosyalarını mevcut parser'lardan geçirip [normalize kaynakları](../src/features/reports/company-sources.json) ile dokuz özgün dosyayı ve açıklama belgesini taşıyan ZIP'i üretir. [Dondurulmuş bağımsız beklentiler](../fixtures/company-example/v3/expected.json) yalnız testte kullanılır; üretici/istemci bunları okumaz. Aynı dönemin metrik/kaynak bağlamı sonuç doğrulayıcısından geçer. Örneğin doğrulama bağlamı da kurgusaldır; gerçek analizde güvenilir defter backend'de kalmalıdır. Büyük belge görünümü 256 KiB model paketine zorla sığdırılmaz; herhangi bir model isteği hazırlanmaz.
 
 Önceki [küçük satış/yorum referansları](../fixtures/analysis-reference/README.md), cevap anahtarları ve [satış artefaktı](../src/features/reports/sales-example.json) korunur. [`createSalesExample`](../functions/src/examples/sales-report.ts) bu ayrı küçük fixture için hesap ve paket sınırlarını test etmeye devam eder.
 
@@ -87,7 +87,7 @@ node scripts/build-sales-example.cjs --check
 
 Kaynak paneli belge seçimi, Türkçe arama, 25 satırlık sayfalama ve dayanak filtresi sunar. Kaynak/parça sınırları korunur; yalnız bitişik gerçek satırlar kanıt aralığında birleştirilir. Native dialog odak kilidi, Escape ve tetikleyiciye odak dönüşü sağlar; geniş tablolar sayfayı büyütmez. Gerçek rapor kaydı, farklı belge türlerinin renderer kabulü ve LLM kalitesi ayrı işlerdir.
 
-Çok formatlı şirket örneğinin belge kütüphanesi her özgün dosyayı ayrı indirme bağlantısıyla sunar. PDF sayfa ve Word metin bölümleri kaynak panelinde aranabilir; yönetim notları normalize metinde birebir bulunan alıntılardır. Tablo metrikleri yalnız üç sayısal CSV üzerinden hesaplanır; PDF/Word tekrarları çift sayılmaz. Yıllık metin notları dönem filtresinden bağımsız ve yıllık olarak etiketlidir. Ayrık satır kanıtları için liste başına sınır 100’den 256’ya çıkarılmıştır; kaynak/hash/konum denetimleri değişmez, aşım reddedilir.
+Çok formatlı şirket örneğinin belge kütüphanesi her özgün dosyayı ayrı indirme bağlantısıyla sunar. PDF sayfa ve Word metin bölümleri kaynak panelinde aranabilir; yönetim notları normalize metinde birebir bulunan alıntılardır. Tablo metrikleri iki CSV ve bir XLSX kaynağından hesaplanır; PDF/Word/sunum tekrarları çift sayılmaz. JSON, Markdown ve metin belgeleri tanım ve iş bağlamı sağlar; görsel kaynak eklenmez. Yıllık metin notları dönem filtresinden bağımsız ve yıllık olarak etiketlidir. Ayrık satır kanıtları için liste başına sınır 100’den 256’ya çıkarılmıştır; kaynak/hash/konum denetimleri değişmez, aşım reddedilir.
 
 ## Farklı analiz türleri ve dil
 
