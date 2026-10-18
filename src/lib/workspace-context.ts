@@ -10,7 +10,7 @@ export interface WorkspaceState {
   draft: Draft;
   setDraft: (update: (draft: Draft) => Draft) => void;
   busy: boolean; progress: number; error: string; activeId: string;
-  start: () => Promise<string | undefined>;
+  start: () => Promise<{ id: string; ready: boolean } | undefined>;
   completeDraft: () => void;
   cancel: () => void;
 }

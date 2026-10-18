@@ -6,7 +6,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { z } from "zod";
-import { createSchema, getQuotaDay, LIMITS, type CreateAnalysis, type ReportSource } from "./contracts";
+import { createSchema, getQuotaDay, LIMITS, type CreateAnalysis, type ReportSource, type PreparationFailure, type PreparationReview } from "./contracts";
 import { countDocumentCharacters, DocumentParseError, parseDocument } from "./parsing";
 
 initializeApp();
@@ -15,6 +15,7 @@ const bucket = getStorage().bucket();
 const options = { region: "europe-west1", timeoutSeconds: 300, memory: "1GiB" as const };
 const processingLeaseMs = 330_000;
 const idSchema = z.object({ id: z.string().uuid() }).strict();
+const prepareSchema = z.object({ id: z.string().uuid(), reviewToken: z.string().uuid().optional() }).strict();
 const deleteAccountSchema = z.object({ confirmation: z.literal("HESABIMI SİL") }).strict();
 
 class FileValidationError extends Error {}
@@ -51,7 +52,7 @@ export const createAnalysis = onCall(options, async request => {
 // Yüklenmiş belgeleri kilitleyip doğrular; aynı hazırlığın eşzamanlı çağrıları tek kota ve tek sonuç kullanır.
 export const prepareAnalysis = onCall(options, async request => {
   const uid = requireUser(request.auth?.uid);
-  const parsed = idSchema.safeParse(request.data);
+  const parsed = prepareSchema.safeParse(request.data);
   if (!parsed.success) throw new HttpsError("invalid-argument", "Geçersiz analiz kimliği.");
   const ref = db.doc(`users/${uid}/analyses/${parsed.data.id}`);
   const day = getQuotaDay();
@@ -65,6 +66,10 @@ export const prepareAnalysis = onCall(options, async request => {
     const data = snap.data()!;
     if (data.status === "completed" || (data.status === "processing" && Date.now() - data.updatedAt < processingLeaseMs)) return null;
     if (data.status === "deleting") throw new HttpsError("failed-precondition", "Analiz siliniyor.");
+    const review = data.preparationReview as PreparationReview | undefined;
+    if (parsed.data.reviewToken && (data.status !== "review" || review?.token !== parsed.data.reviewToken)) {
+      throw new HttpsError("failed-precondition", "Belge kapsamı değişti. Listeyi yenileyip yeniden onaylayın.");
+    }
     const quota = await tx.get(quotaRef);
     // Yarım kalmış çalışmanın rezervasyonunu geri al; yeniden denemede yeni günün kotasını kullan.
     const oldRef = data.status === "processing" && data.quotaDay ? db.doc(`users/${uid}/quotas/${data.quotaDay}`) : null;
@@ -73,67 +78,93 @@ export const prepareAnalysis = onCall(options, async request => {
     if (used >= LIMITS.daily) throw new HttpsError("resource-exhausted", `Günlük ${LIMITS.daily} analiz hakkınız doldu.`);
     if (oldRef && oldQuota) tx.set(oldRef, { used: Math.max(0, (oldQuota.data()?.used ?? 0) - 1) });
     tx.set(quotaRef, { used: used + 1 });
-    tx.update(ref, { status: "processing", attempt, quotaDay: day, error: null, updatedAt: Date.now(), attempts: (data.attempts ?? 0) + 1 });
-    return data;
+    tx.update(ref, { status: "processing", attempt, quotaDay: day, error: null, preparationReview: null, preparationFailures: [], updatedAt: Date.now(), attempts: (data.attempts ?? 0) + 1 });
+    return { manifest: data.manifest as Record<string, CreateAnalysis["files"][number]>, excludedSources: parsed.data.reviewToken ? review!.rejected : [] };
   });
-  if (!work) return { id: ref.id };
+  if (!work) return { id: ref.id, ready: (await ref.get()).data()?.status === "completed" };
+  const failures: PreparationFailure[] = [];
+  const artifactPrefix = `derived/${uid}/analyses/${ref.id}/${attempt}/`;
   try {
     const sources: ReportSource[] = [];
     let totalBytes = 0;
     let totalChunks = 0;
     let totalCharacters = 0;
     for (const [key, entry] of Object.entries(work.manifest as Record<string, CreateAnalysis["files"][number]>)) {
-      const file = bucket.file(`users/${uid}/analyses/${ref.id}/${key}`);
-      const [metadata] = await file.getMetadata();
-      const size = Number(metadata.size);
-      totalBytes += size;
-      if (size !== entry.size || totalBytes > LIMITS.totalBytes || metadata.contentType !== entry.contentType) {
-        throw new FileValidationError(`${entry.name}: Dosya boyutu veya içerik türü manifest ile eşleşmiyor.`);
-      }
-      const [data] = await file.download();
-      let parsed;
+      if (work.excludedSources.some((source: PreparationFailure) => source.id === key)) continue;
       try {
-        parsed = await parseDocument({ sourceId: key, fileName: entry.name, contentType: entry.contentType, data });
+        const file = bucket.file(`users/${uid}/analyses/${ref.id}/${key}`);
+        const [metadata] = await file.getMetadata();
+        const size = Number(metadata.size);
+        if (size !== entry.size || totalBytes + size > LIMITS.totalBytes || metadata.contentType !== entry.contentType) {
+          throw new FileValidationError(`${entry.name}: Dosya boyutu veya içerik türü manifest ile eşleşmiyor.`);
+        }
+        const [data] = await file.download();
+        let parsed;
+        try {
+          parsed = await parseDocument({ sourceId: key, fileName: entry.name, contentType: entry.contentType, data });
+        } catch (error) {
+          if (error instanceof DocumentParseError) throw new FileValidationError(`${entry.name}: ${error.message}`);
+          throw error;
+        }
+        const characterCount = countDocumentCharacters(parsed);
+        totalChunks += parsed.chunks.length;
+        totalCharacters += characterCount;
+        const artifactPath = `${artifactPrefix}${key}.json.gz`;
+        await bucket.file(artifactPath).save(gzipSync(Buffer.from(JSON.stringify(parsed))), {
+          resumable: false,
+          metadata: { contentType: "application/gzip", cacheControl: "private, no-store", metadata: { sha256: parsed.sha256, parserVersion: parsed.parserVersion } },
+        });
+        sources.push({
+          id: key,
+          name: entry.name,
+          size,
+          declaredContentType: entry.contentType,
+          detectedMime: parsed.detectedMime,
+          sha256: parsed.sha256,
+          category: parsed.category,
+          chunkCount: parsed.chunks.length,
+          characterCount,
+          warnings: parsed.warnings,
+          metadata: parsed.metadata,
+        });
+        totalBytes += size;
       } catch (error) {
-        if (error instanceof DocumentParseError) throw new FileValidationError(`${entry.name}: ${error.message}`);
-        throw error;
+        if (!(error instanceof FileValidationError)) throw error;
+        const prefix = `${entry.name}: `;
+        failures.push({ id: key, name: entry.name, reason: error.message.startsWith(prefix) ? error.message.slice(prefix.length) : error.message });
       }
-      const characterCount = countDocumentCharacters(parsed);
-      totalChunks += parsed.chunks.length;
-      totalCharacters += characterCount;
-      const artifactPath = `derived/${uid}/analyses/${ref.id}/${key}.json.gz`;
-      await bucket.file(artifactPath).save(gzipSync(Buffer.from(JSON.stringify(parsed))), {
-        resumable: false,
-        metadata: { contentType: "application/gzip", cacheControl: "private, no-store", metadata: { sha256: parsed.sha256, parserVersion: parsed.parserVersion } },
-      });
-      sources.push({
-        id: key,
-        name: entry.name,
-        size,
-        declaredContentType: entry.contentType,
-        detectedMime: parsed.detectedMime,
-        sha256: parsed.sha256,
-        category: parsed.category,
-        chunkCount: parsed.chunks.length,
-        characterCount,
-        warnings: parsed.warnings,
-        metadata: parsed.metadata,
-      });
     }
-    const report = { version: 3 as const, fileCount: sources.length, totalBytes, totalChunks, totalCharacters, sources };
-    await db.runTransaction(async tx => {
+    if (!sources.length) throw new FileValidationError("Hiçbir belge hazırlanamadı. Dosyaları düzeltip yeniden deneyin.");
+    if (failures.length) {
+      // Kısmi sonucu yayınlamaz; onay beklerken kotayı iade eder, yalnız sunucunun reddettiği kapsamı onaylanabilir yapar.
+      await db.runTransaction(async tx => {
+        const current = await tx.get(ref);
+        const quota = await tx.get(quotaRef);
+        if (current.data()?.attempt !== attempt || current.data()?.status !== "processing") return;
+        const rejected = [...work.excludedSources, ...failures];
+        tx.update(ref, { status: "review", preparationReview: { token: attempt, ready: sources.map(({ id, name }) => ({ id, name })), rejected }, preparationFailures: rejected, updatedAt: Date.now() });
+        tx.set(quotaRef, { used: Math.max(0, (quota.data()?.used ?? 0) - 1) });
+      });
+      await bucket.deleteFiles({ prefix: artifactPrefix }).catch(() => undefined);
+      return { id: ref.id, needsReview: true, ready: false };
+    }
+    const report = { version: 3 as const, fileCount: sources.length, totalBytes, totalChunks, totalCharacters, sources, ...(work.excludedSources.length ? { excludedSources: work.excludedSources } : {}) };
+    const committed = await db.runTransaction(async tx => {
       const current = await tx.get(ref);
-      if (current.data()?.attempt === attempt && current.data()?.status === "processing") tx.update(ref, { status: "completed", report, updatedAt: Date.now() });
+      if (current.data()?.attempt !== attempt || current.data()?.status !== "processing") return false;
+      tx.update(ref, { status: "completed", report, artifactAttempt: attempt, preparationReview: null, preparationFailures: [], updatedAt: Date.now() });
+      return true;
     });
-    return { id: ref.id };
+    if (!committed) await bucket.deleteFiles({ prefix: artifactPrefix });
+    return { id: ref.id, ready: committed };
   } catch (error) {
     const message = error instanceof FileValidationError ? error.message : "Belgeler hazırlanamadı. Dosyaları kontrol edip yeniden deneyin.";
-    await bucket.deleteFiles({ prefix: `derived/${uid}/analyses/${ref.id}/` }).catch(() => undefined);
+    await bucket.deleteFiles({ prefix: artifactPrefix }).catch(() => undefined);
     await db.runTransaction(async tx => {
       const current = await tx.get(ref);
       const quota = await tx.get(quotaRef);
       if (current.data()?.attempt !== attempt || current.data()?.status !== "processing") return;
-      tx.update(ref, { status: "failed", error: message, updatedAt: Date.now() });
+      tx.update(ref, { status: "failed", error: message, preparationFailures: failures, updatedAt: Date.now() });
       tx.set(quotaRef, { used: Math.max(0, (quota.data()?.used ?? 0) - 1) });
     });
     throw new HttpsError(error instanceof FileValidationError ? "invalid-argument" : "internal", message);

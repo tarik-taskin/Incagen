@@ -81,7 +81,7 @@ export const createSchema = z.object({
 }).strict().refine(v => v.files.reduce((n, f) => n + f.size, 0) <= LIMITS.totalBytes, "Free planda bir analizin toplam boyutu 25 MB'ı aşamaz.");
 
 export type CreateAnalysis = z.infer<typeof createSchema>;
-export type AnalysisStatus = "draft" | "uploading" | "processing" | "completed" | "failed" | "deleting";
+export type AnalysisStatus = "draft" | "uploading" | "processing" | "review" | "completed" | "failed" | "deleting";
 export type ParsedCell = string | number | boolean | null;
 
 export interface SourceLocator {
@@ -149,6 +149,14 @@ export interface Report {
   totalChunks: number;
   totalCharacters: number;
   sources: ReportSource[];
+  excludedSources?: PreparationFailure[];
+}
+
+export interface PreparationFailure { id: string; name: string; reason: string }
+export interface PreparationReview {
+  token: string;
+  ready: { id: string; name: string }[];
+  rejected: PreparationFailure[];
 }
 
 export interface Analysis {
@@ -160,5 +168,7 @@ export interface Analysis {
   createdAt: number;
   updatedAt: number;
   error?: string | null;
+  preparationReview?: PreparationReview | null;
+  preparationFailures?: PreparationFailure[];
   report?: Report;
 }

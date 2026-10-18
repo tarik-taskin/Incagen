@@ -54,7 +54,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       setActiveId(data.id);
       const uid = services.auth.currentUser!.uid;
       const existing = await getDoc(doc(services.db, "users", uid, "analyses", data.id));
-      if (["processing", "completed"].includes(existing.data()?.status)) return data.id;
+      if (["processing", "review", "completed"].includes(existing.data()?.status)) return { id: data.id, ready: existing.data()?.status === "completed" };
       const total = selection.files.reduce((n, f) => n + f.file.size, 0);
       let completed = 0;
       for (const [i, item] of selection.files.entries()) {
@@ -68,13 +68,16 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       }
       task.current = null;
       if (cancelled.current) throw new Error("Yükleme iptal edildi.");
-      await httpsCallable(services.functions, "prepareAnalysis", { timeout: 310_000 })({ id: data.id });
-      return data.id;
+      const result = await httpsCallable<{ id: string }, { needsReview?: boolean; ready: boolean }>(services.functions, "prepareAnalysis", { timeout: 310_000 })({ id: data.id });
+      return { id: data.id, ready: result.data.ready === true };
     } catch (e) { if (!cancelled.current) setError(userError(e)); else setError("Yükleme iptal edildi; dosyalarınız korundu."); }
     finally { task.current = null; lock.current = false; setBusy(false); }
   }
   // Başarılı hazırlıktan sonra dosya, başlık ve hedefi temizler; işletme ve son iş bağlantısını korur.
   function completeDraft() {
+    // Başka bir çalışmaya geçildiyse önceki kaydın tamamlanması yeni taslağı temizlemez.
+    const body = { title: draft.title, business: draft.business, objective: draft.objective, files: selection.files.map(({ file }) => ({ name: file.name, size: file.size, contentType: file.type || "application/octet-stream" })) };
+    if (request.current?.signature !== JSON.stringify({ body, ids: selection.files.map(f => f.id) })) return;
     selection.clearFiles();
     setDraft(current => ({ ...current, title: "", objective: "" }));
     setProgress(0);

@@ -31,11 +31,11 @@ export function NewAnalysisPage() {
   async function submit() {
     setAttempted(true);
     if (preparation.firstInvalidField) { focusField(preparation.firstInvalidField.field); return; }
-    const id = await start();
-    if (id) {
-      completeDraft();
+    const result = await start();
+    if (result) {
+      if (result.ready) completeDraft();
       setAttempted(false);
-      navigate("/app/analyses/" + id);
+      navigate("/app/analyses/" + result.id);
     }
   }
   return <section aria-labelledby="new-analysis-title">
