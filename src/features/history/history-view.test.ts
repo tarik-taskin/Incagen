@@ -24,6 +24,13 @@ describe("history view", () => {
     expect(summarizeHistory([])).toEqual({ total: 0, completed: 0, active: 0, failed: 0 });
   });
 
+  it("analiz hedefini arar; eski hedefsiz kaydı ve onay bekleyenlerin dikkat filtresini korur", () => {
+    const rows = [{ ...analysis("review", "review"), objective: "Müşteri deneyimindeki değişimi incele" }, analysis("legacy", "completed")];
+    expect(buildHistoryView(rows, { query: "musteri deneyimi", status: "all", period: "all", sort: "newest" }).map(row => row.id)).toEqual(["review"]);
+    expect(buildHistoryView(rows, { query: "", status: "failed", period: "all", sort: "newest" }).map(row => row.id)).toEqual(["review"]);
+    expect(summarizeHistory(rows)).toEqual({ total: 2, completed: 1, active: 0, failed: 1 });
+  });
+
   it("başlık, işletme ve kaynak adını Türkçe karakter farklarından bağımsız arar", () => {
     const rows = [
       { ...analysis("one", "completed"), title: "Eylül Özeti", business: "İşletme A" },

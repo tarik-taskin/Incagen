@@ -55,11 +55,12 @@ function normalizeSearch(value: string) {
 
 function matchesStatus(analysis: Analysis, status: HistoryStatusFilter) {
   if (status === "all") return true;
-  if (status === "active") return !["completed", "failed"].includes(analysis.status);
+  if (status === "active") return !["completed", "failed", "review"].includes(analysis.status);
+  if (status === "failed") return ["failed", "review"].includes(analysis.status);
   return analysis.status === status;
 }
 
-// Arşivi istemcide başlık, işletme ve kaynak adına göre süzer; durum, dönem ve sıralamayı birlikte uygular.
+// Başlık, hedef, işletme ve kaynak adını birlikte arar; boş hedefli eski kayıtları ve özgün metinleri korur.
 export function buildHistoryView(rows: Analysis[], options: HistoryViewOptions, now = Date.now()): Analysis[] {
   const query = normalizeSearch(options.query);
   const periodDays = options.period === "all" ? null : Number.parseInt(options.period, 10);
@@ -68,7 +69,7 @@ export function buildHistoryView(rows: Analysis[], options: HistoryViewOptions, 
     if (!matchesStatus(analysis, options.status) || (cutoff !== null && analysis.createdAt < cutoff)) return false;
     if (!query) return true;
     const sourceNames = analysis.report?.sources.map(source => source.name) ?? [];
-    return normalizeSearch([analysis.title, analysis.business, ...sourceNames].join(" ")).includes(query);
+    return normalizeSearch([analysis.title, analysis.objective ?? "", analysis.business, ...sourceNames].join(" ")).includes(query);
   });
 
   return [...filtered].sort((left, right) => {
@@ -83,7 +84,7 @@ export function summarizeHistory(rows: Analysis[]): HistorySummary {
   return rows.reduce<HistorySummary>((summary, analysis) => {
     summary.total++;
     if (analysis.status === "completed") summary.completed++;
-    else if (analysis.status === "failed") summary.failed++;
+    else if (["failed", "review"].includes(analysis.status)) summary.failed++;
     else summary.active++;
     return summary;
   }, { total: 0, completed: 0, active: 0, failed: 0 });

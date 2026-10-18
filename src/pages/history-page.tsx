@@ -1,4 +1,5 @@
 import { useOutsideDismiss } from "../hooks/use-outside-dismiss";
+import { PageLoading } from "../components/page-loading";
 import { t, useLocale, localeTag } from "../i18n/runtime";
 import { useEffect, useRef, useState } from "react";
 import { httpsCallable } from "firebase/functions";
@@ -26,7 +27,7 @@ interface Notice {
 function statusTone(status: Analysis["status"]) {
   if (status === "completed") return "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
   if (status === "failed") return "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-300";
-  if (status === "processing" || status === "deleting") return "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300";
+  if (["processing", "deleting", "review"].includes(status)) return "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300";
   return "border-border bg-muted text-muted-foreground";
 }
 
@@ -97,6 +98,8 @@ export function HistoryPage() {
   const allSelected = visibleRows.length > 0 && selectedRows.length === visibleRows.length;
   const summary = summarizeHistory(rows);
   const hasFilters = query.trim() !== "" || statusFilter !== "all" || periodFilter !== "all" || sort !== "newest";
+  const advancedCount = Number(statusFilter !== "all") + Number(periodFilter !== "all") + Number(sort !== "newest");
+  const [filtersOpen, setFiltersOpen] = useState(advancedCount > 0);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -209,13 +212,16 @@ export function HistoryPage() {
         <div className="flex items-center gap-2"><SlidersHorizontal className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" /><h2 id="history-filter-title" className="text-sm font-semibold">{t("Arşivde bul")}</h2></div>
         <p className="text-xs text-muted-foreground" aria-live="polite">{visibleRows.length.toLocaleString(localeTag())} / {rows.length.toLocaleString(localeTag())}  {t("analiz gösteriliyor")}</p>
       </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(15rem,1fr)_repeat(3,minmax(9rem,auto))]">
+      <div className="mt-4">
         <label className="relative block">
           <span className="sr-only">{t("Arşivde ara")}</span>
           <Search className="pointer-events-none absolute start-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-          <input type="search" value={query} onChange={event => updateView({ query: event.target.value })} placeholder={t("Başlık, işletme veya belge ara")}
+          <input type="search" value={query} onChange={event => updateView({ query: event.target.value })} placeholder={t("Başlık, hedef veya belge ara")}
             className="min-h-11 w-full rounded-xl border border-border bg-background py-2 ps-10 pe-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:border-secondary dark:focus:ring-secondary/20" />
         </label>
+        <details open={filtersOpen} onToggle={event => setFiltersOpen(event.currentTarget.open)} className="mt-3">
+          <summary className="flex min-h-10 w-fit cursor-pointer list-none items-center gap-2 rounded-lg px-2 text-xs font-semibold text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary [&::-webkit-details-marker]:hidden"><SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />{t("Filtreler")}{advancedCount > 0 && <span className="rounded-full bg-primary/10 px-2 py-0.5 tabular-nums dark:bg-secondary/10">{advancedCount.toLocaleString(localeTag())}</span>}</summary>
+          <div className="mt-3 grid min-w-0 gap-3 border-t border-border/60 pt-4 sm:grid-cols-3">
         <label>
           <span className="sr-only">{t("Duruma göre filtrele")}</span>
           <select value={statusFilter} onChange={event => updateView({ status: event.target.value as HistoryStatusFilter })} className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:border-secondary dark:focus:ring-secondary/20">
@@ -234,6 +240,8 @@ export function HistoryPage() {
             <option value="newest">{t("En yeni")}</option><option value="oldest">{t("En eski")}</option><option value="title">{t("Başlığa göre")}</option>
           </select>
         </label>
+          </div>
+        </details>
       </div>
       {hasFilters && <button type="button" className="mt-3 inline-flex min-h-9 items-center gap-2 rounded-lg px-2 text-xs font-semibold text-primary hover:bg-primary/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary dark:hover:bg-secondary/[0.08]" onClick={clearFilters}><RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />  {t("Filtreleri temizle")}</button>}
     </section>}
@@ -250,7 +258,7 @@ export function HistoryPage() {
       </div>
     </div>}
 
-    {loading ? <p role="status" className="mt-8 rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">{t("Geçmiş yükleniyor…")}</p> : error ? authOnlyPreview ? <div className="mt-6 grid overflow-hidden rounded-[1.75rem] border border-border/80 bg-card shadow-sm lg:grid-cols-[minmax(0,1fr)_minmax(15rem,0.75fr)]" role="status">
+    {loading ? <div className="mt-8"><PageLoading kind="history" label="Geçmiş yükleniyor…" /></div> : error ? authOnlyPreview ? <div className="mt-6 grid overflow-hidden rounded-[1.75rem] border border-border/80 bg-card shadow-sm lg:grid-cols-[minmax(0,1fr)_minmax(15rem,0.75fr)]" role="status">
       <div className="p-7 sm:p-9"><span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-primary dark:border-secondary/20 dark:bg-secondary/[0.08] dark:text-secondary"><FilePlus2 className="h-3.5 w-3.5" aria-hidden="true" />  {t("İlk çalışmanız")}</span><h2 className="mt-5 max-w-lg text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">{t("Henüz analiz yok.")}</h2><p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">{t("İlk adımı bir konu seçerek atın. İlgili belgeleri aynı çalışma alanında bir araya getirin; hazırladığınız analizleri ve kaynaklarını bu arşivden takip edin.")}</p><Link to="/app/new-analysis" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/15 transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/90">{t("Analize başla")} <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" /></Link></div>
       <div className="relative flex min-h-56 items-center justify-center overflow-hidden border-t border-border/70 bg-gradient-to-br from-primary/[0.06] via-background to-primary/[0.12] p-8 dark:from-secondary/[0.06] dark:to-secondary/[0.12] lg:border-s lg:border-t-0" aria-hidden="true"><div className="absolute h-52 w-52 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="absolute h-36 w-36 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="relative flex h-24 w-24 items-center justify-center rounded-[1.75rem] border border-primary/15 bg-card shadow-xl shadow-primary/10 dark:border-secondary/20"><FolderOpen className="h-11 w-11 text-primary dark:text-secondary" /></div><span className="absolute bottom-5 end-5 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-muted-foreground shadow-sm">{t("İlk çalışmanız burada")}</span></div>
     </div> : <div role="alert" className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/[0.05] p-6 text-sm text-red-700 dark:text-red-300"><TriangleAlert className="mb-3 h-5 w-5" aria-hidden="true" />{t(error)}</div> : rows.length && visibleRows.length ? <ul className="mt-6 space-y-3" aria-label={t("Analiz geçmişi")}>{visibleRows.map(analysis => <li key={analysis.id} className="relative overflow-visible rounded-[1.35rem] border border-border/80 bg-card shadow-[0_12px_35px_-32px_rgba(55,20,95,0.7)] transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_40px_-27px_rgba(55,20,95,0.35)] dark:hover:border-secondary/30">
