@@ -7,6 +7,20 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-18 — Furkan / Codex: sade yardım, yükleme ve hazırlık deneyimi
+
+- [x] Sahip: Furkan — Çalışma alanının alt bölümüne sade destek/yardım girişi ve gerçek iletişim kanalını ekle; destek ile örnek yorum verilerini ayır; başarı onayını sade hareket ve modern yerleşimle sun.
+- [x] Sahip: Furkan — Rota, oturum ve veri yüklemelerinde ortak, markaya uygun iskelet görünümü sun; kısa yüklemede yapay bekleme, sahte ilerleme veya hareket zorunluluğu ekleme.
+- [x] Sahip: Furkan — Belge bazında hazırlık hatalarını göster; geçerli belgelerle devamı açık onaya bağla, kota/idempotency ve kaynak kapsamını koru.
+- [x] Sahip: Furkan — Mevcut geçmiş aramasını analiz hedefiyle genişlet; durum/tarih/sıralama ayrıntılarını sade, erişilebilir filtre alanına taşı.
+- [x] Sahip: Furkan — Müşteri deneyimi örneğini ad-soyad ve analiz türü taşıyan 32 kurgusal analiz sonrası geri bildirimiyle sürümle; eski referansları koru, kaynak/etiket/hesap ve altı dil metinlerini birlikte doğrula. Gerçek destek ile izinli yayınlanabilecek gelecek geri bildirim akışını belgelerde ayır.
+
+- [x] Sahip: Furkan — Ticari örneği Atlas Teknoloji hizmet şirketine dönüştür; önceki v1/v2 kaynaklarını koruyarak CSV/XLSX tabloları, PDF/Word/PowerPoint, JSON/Markdown/metin kaynakları, bağımsız hesaplar, kaynak dayanakları ve altı dilde rapor sunumunu v3 olarak birlikte yenile.
+
+Kabul: Destek mesajı yalnız gerçek servis yanıtıyla başarılı sayılmalı; yapılandırma yoksa çalışır e-posta alternatifi gösterilmeli. Şifre ve kimlik bilgileri repoya eklenmemeli. Kısmi hazırlık sessiz tamamlanmamalı; tamamı bozuk dosyalarda devam yapılamamalı, kullanıcı onayı sunucuda doğrulanmalı ve geçerli alt küme tek kota tüketmeli. Eski kayıtlar açılmalı; arama/filtre URL ve kullanıcı izolasyonunu korumalı. Altı dil, RTL, mobil/masaüstü, iki tema, klavye/dışarı dokunma ve azaltılmış hareket doğrulanmalı; ilgili birim, entegrasyon ve tarayıcı kontrolleri geçmeli.
+
+Doğrulama: Lint, 63 uygulama + 104 Functions birim testi, frontend/Functions derlemeleri, 4 entegrasyon ve 42 masaüstü/mobil tarayıcı senaryosu geçti; masaüstüne uygulanmayan 2 dar ekran senaryosu atlandı. Son başarı görünümü ayrıca iki tema ve iki genişlikte kontrol edildi. Web3Forms gerçek Chrome gönderimini kabul etti; otomatik testler gerçek e-posta göndermeden hata/başarı, alan korunumu ve altı dil davranışını doğrular. Onay token’ı, yinelenen çağrı/tek kota, tümü bozuk belgeler, kapsam dışı kaynaklar ve eski raporlar kontrol edildi. V3 teknoloji dosyasının 9 kaynağı/8 formatı, dört dönemin bağımsız Decimal toplamları, özgün indirme/ZIP hashleri ve gerçek sayfa/sayfa-satır/slayt/metin konumları eşleşti. PDF’nin 7, Word’ün 5 sayfası, sunumun 3 slaytı ve Excel girdileri görsel olarak incelendi; görsel kaynak eklenmedi. Önceki şirket ve yorum sürümleri korundu.
+
 ### 2026-10-17 — Furkan / Codex: mobil çeviri taşması ve CI kabulü
 
 - [x] Sahip: Furkan — Kurumsal örneğin üst menüsünde ve müşteri deneyimi örneğinin sayım birimlerinde CI tarafından yakalanan mobil yatay taşmayı gider; iki raporda uzun çeviri ve farklı fontlarla regresyon kontrolü ekle. Son GitHub Quality çalışması, dal eşitliği ve Netlify sürümünü doğrula.

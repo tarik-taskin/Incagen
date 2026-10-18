@@ -14,10 +14,14 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 - Belge seçimi gerçek bayt toplamını ve kalan kapasiteyi gösterir; hazırlık kontrolü ortak alan kurallarıyla çalışır ve eksik alana odak verir.
 - Bağımsız AI sonuç v1 şeması ve güvenilir kaynak/metrik kapısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içindedir; model çağrısı veya gerçek kayıt bağlantısı yapılmadı. Analiz veri paketi içerik/konum/uyarıları ve güvenilir hesap bağlamını ayrı tutar; 256 KiB aşımında sessiz kesmez.
 
-- `/ornek-rapor`: 12 aylık 3.612 tablo kaydı, PDF ve Word belgelerinden oluşan beş kaynaklı şirket dosyası; altı grafik/üç finansal tablo ve aramalı/sayfalı kaynak paneli içeren örnek rapor; AI üretimi değildir ve hesaba yazılmaz. Üretim/doğrulama ayrıntıları [AI sonuç rehberindedir](docs/AI-RESULTS.md).
+- `/ornek-rapor`: 12 aylık 3.612 tablo kaydı, Atlas Teknoloji için CSV/XLSX, PDF/Word/PowerPoint, JSON/Markdown/metin kaynaklarından oluşan dokuz belgeli şirket dosyası; altı grafik/üç finansal tablo ve aramalı/sayfalı kaynak paneli içeren örnek rapor; AI üretimi değildir ve hesaba yazılmaz. Üretim/doğrulama ve korunan sürümler [kaynak rehberindedir](fixtures/company-example/README.md).
 
 - Altı dil için merkezi JSON katalogları, kalıcı seçim ve Arapça RTL: [dil ve rapor rehberi](docs/LOCALIZATION.md). Kimlik/taslak ve özgün kaynak metinleri dil değişiminden etkilenmez.
-- Ortak sonuç bölümleri finansal olmayan ve metin ağırlıklı raporları da sunar; finansal ve kaynak ayrıntıları erişilebilir açılır bölümlerde korunur. Müşteri deneyimi örneği 26 olumlu, 5 olumsuz ve 1 karma olmak üzere 32 kurgusal yazılım deneyimi yorumunu insan etiketleri ve kaynaklı sayımlarla gösterir; sekiz yorumluk değerlendirme referansı korunur.
+- Ortak sonuç bölümleri finansal olmayan ve metin ağırlıklı raporları da sunar; finansal ve kaynak ayrıntıları erişilebilir açılır bölümlerde korunur. Müşteri deneyimi v2 örneği 26 olumlu, 5 olumsuz ve 1 karma olmak üzere 32 analiz sonrası geri bildirimini ad/analiz türü, insan etiketleri ve kaynaklı sayımlarla gösterir. Eski sekiz yorumluk değerlendirme ve 32 yorumluk v1 sunumu korunur; ayrıntılar [dil rehberindedir](docs/LOCALIZATION.md#müşteri-deneyimi-örneği).
+- Destek, altı dilde kısa yanıtlar ve Web3Forms üzerinden kişisel iletişim sunar; analiz sonrası izinli yayınlanacak geri bildirimlerden ayrıdır. Kurulum ve gelecek veri akışı [destek rehberindedir](docs/SUPPORT.md). Gerçek form ayarları git dışındadır; Gmail parolası kullanılmaz.
+
+- Rota/oturum/veri yüklemeleri ortak, erişilebilir iskeletle sunulur; ileri tarih/durum/sıralama filtreleri açılır alanda, hedef araması görünür aramada kalır.
+- Kısmi hazırlıkta belge hataları açık kapsam onayı ister; onay token’ı sunucuda doğrulanır, beklerken kota iade edilir ve geçerli alt küme tek hak tüketir. Türetilmiş dosyalar deneme bazında ayrılır.
 
 ## Tamamlanan özellikler
 
