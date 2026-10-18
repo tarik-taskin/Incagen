@@ -1,4 +1,5 @@
-import { t, useLocale } from "./i18n/runtime";
+import { useLocale } from "./i18n/runtime";
+import { PageLoading } from "./components/page-loading";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/layout/app-shell";
 import { HistoryPage } from "./pages/history-page";
@@ -20,14 +21,14 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/ornek-rapor" element={<Suspense fallback={<p role="status" className="p-8">{t("Örnek rapor yükleniyor…")}</p>}><ExampleReportPage /></Suspense>} />
-      <Route path="/ornek-rapor/musteri-deneyimi" element={<Suspense fallback={<p role="status" className="p-8">{t("Örnek rapor yükleniyor…")}</p>}><FeedbackReportPage /></Suspense>} />
+      <Route path="/ornek-rapor" element={<Suspense fallback={<PageLoading fullPage label="Örnek rapor yükleniyor…" />}><ExampleReportPage /></Suspense>} />
+      <Route path="/ornek-rapor/musteri-deneyimi" element={<Suspense fallback={<PageLoading fullPage label="Örnek rapor yükleniyor…" />}><FeedbackReportPage /></Suspense>} />
       <Route element={<RequireAuth />}>
       <Route path="/app" element={<AppShell />}>
         <Route index element={<Navigate to="new-analysis" replace />} />
         <Route path="new-analysis" element={<NewAnalysisPage />} />
         <Route path="history" element={<HistoryPage />} />
-        <Route path="analyses/:id" element={<Suspense fallback={<p role="status">{t("Rapor yükleniyor…")}</p>}><AnalysisPage /></Suspense>} />
+        <Route path="analyses/:id" element={<Suspense fallback={<PageLoading label="Rapor yükleniyor…" />}><AnalysisPage /></Suspense>} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="plan" element={<PlanPage />} />
       </Route>
