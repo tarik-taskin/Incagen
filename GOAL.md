@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-18 — Furkan / Codex: kapanış tutarlılık kontrolü
+
+- [x] Sahip: Furkan — Tamamlanan kısmi hazırlık ve geçmiş araması işlerini milestone listesindeki durumlarıyla eşleştir; doğrulama kaydını tek kaynağa bağla.
+
+Kabul: M2/M4 görevleri aşağıdaki doğrulanmış teslimata bağlanmalı; açık AI ve bulut işleri tamamlanmış sayılmamalı.
+
+Doğrulama: İki eski açık görev satırı uygulama, ilgili testler ve 2026-10-18 kabul kaydıyla eşleştirildi. Lint, 63 uygulama + 104 Functions testi, frontend/Functions ve canlı önizleme derlemeleri ile örnek rapor/özgün indirme bütünlüğü yeniden geçti; ürün kodu ve sonraki aşama kapsamı değiştirilmedi.
+
 ### 2026-10-18 — Furkan / Codex: sade yardım, yükleme ve hazırlık deneyimi
 
 - [x] Sahip: Furkan — Çalışma alanının alt bölümüne sade destek/yardım girişi ve gerçek iletişim kanalını ekle; destek ile örnek yorum verilerini ayır; başarı onayını sade hareket ve modern yerleşimle sun.
@@ -406,7 +414,7 @@ Kalite kapısı: oturum yenileme, çıkış, korumalı rotalar ve yetkisiz eriş
 - [x] Sahip: Tarık — İlk tablo prototipinde açık kolon eşleştirmesi ve kaynak özeti; bu akış genel belge hazırlama deneyimiyle değiştirildi.
 - [x] Sahip: Tarık — Bozuk, parolalı, türü uyuşmayan ve aktif içerik taşıyan dosyaları reddet; konumlu kaynak referansları üret.
 - [ ] Sahip: Atanmadı — Canlı ortam için zararlı yazılım taraması ve karantina politikası.
-- [ ] Sahip: Atanmadı — Kısmi hata görünümü ve geçerli dosyalarla devam onayı.
+- [x] Sahip: Furkan — Kısmi hata görünümü ve geçerli dosyalarla devam onayı; [2026-10-18 teslimatının](#2026-10-18--furkan--codex-sade-yardım-yükleme-ve-hazırlık-deneyimi) token, kota, eski kayıt ve kullanıcı izolasyonu kontrolleriyle doğrulandı.
 
 Kalite kapısı: format fixture'ları, kota sınırları, yetkilendirme ve kısmi hata testleri başarılı.
 
@@ -428,7 +436,7 @@ Kalite kapısı: [FLOW.md uygulama sırası ve kalite kapısı](FLOW.md#uygulama
 - [~] Sahip: Furkan — [FLOW.md grafik ve hareket davranışı](FLOW.md#grafik-ve-hareket-davranışı) için React/ECharts sunumu, kaynak erişimi ve erişilebilir veri tablosu. Sentetik `/ornek-rapor` kesiti doğrulandı; gerçek doğrulanmış analiz kayıtlarına bağlama ve farklı belge/çıktı türlerinin kabulü kaldı.
 - [ ] Sahip: Atanmadı — Kaynak referansı, güven düzeyi ve çıkarım etiketleri.
 - [x] Sahip: Tarık — Kullanıcıya özel Firestore geçmişini listeleme ve kayıtlı raporu açma.
-- [ ] Sahip: Atanmadı — Geçmiş arama ve filtreleme.
+- [x] Sahip: Furkan — Geçmiş arama ve filtreleme; [2026-10-18 teslimatında](#2026-10-18--furkan--codex-sade-yardım-yükleme-ve-hazırlık-deneyimi) hedef araması, açılır filtreler, URL korunumu ve görünür kayıt seçimiyle doğrulandı.
 - [x] Sahip: Tarık — Yerel analiz ile kaynak dosyalarının birlikte ve tekrar denenebilir silinmesi.
 - [ ] Sahip: Atanmadı — Canlı saklama, yedek ve silme politikaları.
 - [ ] Sahip: Atanmadı — PDF kapsam kararı sonrası gerekirse aynı doğrulanmış sonuçtan dışa aktarım.
