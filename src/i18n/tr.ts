@@ -17,6 +17,6 @@ export const tr = {
   },
   status: {
     draft: "Taslak", uploading: "Dosyalar yükleniyor", processing: "Veriler hesaplanıyor",
-    completed: "Analize hazır", failed: "İşlem başarısız", deleting: "Siliniyor",
+    review: "Onay bekliyor", completed: "Analize hazır", failed: "İşlem başarısız", deleting: "Siliniyor",
   },
 } as const;
