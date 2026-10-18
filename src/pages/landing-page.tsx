@@ -1,4 +1,5 @@
 import { LanguageSelector } from "../components/language-selector";
+import { SupportLauncher } from "../components/support-dialog";
 import { t, useLocale } from "../i18n/runtime";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { animate, stagger } from "animejs";
@@ -120,6 +121,7 @@ export function LandingPage() {
         </section>
         <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-border/70 pt-7"><p className="text-sm text-muted-foreground">{t("Hazır olduğunuzda ilk çalışma alanınızı açın.")}</p><Button onClick={startAnalysis} className="h-11 gap-2 rounded-xl px-5">{t("Çalışma alanına geç")} <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" /></Button></div>
       </main>
+      <footer className="mx-auto flex max-w-6xl justify-center px-5 pb-8"><SupportLauncher /></footer>
       <AuthModal open={authOpen} onClose={closeAuth} onAuthenticated={() => navigate(authDestination)} />
     </div>
   );

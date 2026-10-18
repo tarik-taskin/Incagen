@@ -1,6 +1,8 @@
 import { LanguageSelector } from "../language-selector";
 import { t, useLocale } from "../../i18n/runtime";
-import { ArrowUpRight, CircleHelp, Crown, FileBarChart2, History, Settings } from "lucide-react";
+import { ArrowUpRight, CircleHelp, Crown, FileBarChart2, Headphones, History, Settings } from "lucide-react";
+import { useState } from "react";
+import { SupportDialog } from "../support-dialog";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { AnimatedLogo } from "../animated-logo";
 import { PremiumUpgrade } from "../premium-upgrade";
@@ -30,6 +32,7 @@ function getDesktopLinkClass(isActive: boolean) {
 export function AppShell() {
   useLocale();
   const workspace = useWorkspace();
+  const [helpOpen, setHelpOpen] = useState(false);
   return (
     <div className="min-h-screen bg-background text-foreground">
       <a
@@ -56,9 +59,12 @@ export function AppShell() {
           ))}
         </nav>
 
-        <Link to="/" className="mt-auto mb-4 flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card px-3 text-sm font-medium text-muted-foreground transition-colors hover:border-primary/25 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:hover:text-secondary">
+        <div className="mt-auto mb-4 space-y-1">
+        <Link to="/" className="flex min-h-10 items-center gap-2 rounded-xl px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:hover:text-secondary">
           <CircleHelp className="h-4 w-4" aria-hidden="true" />  {t("Nasıl çalışır?")} <ArrowUpRight className="ms-auto h-4 w-4" aria-hidden="true" />
         </Link>
+        <button type="button" onClick={() => setHelpOpen(true)} className="flex min-h-11 w-full items-center gap-2 rounded-xl border border-border bg-card px-3 text-sm font-medium text-muted-foreground transition-colors hover:border-primary/25 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:hover:text-secondary"><Headphones className="h-4 w-4 shrink-0" aria-hidden="true" />{t("Destek ve yardım")}</button>
+        </div>
         <div className="rounded-2xl border border-primary/10 bg-primary/[0.05] p-4 dark:border-secondary/10 dark:bg-secondary/[0.05]">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm font-semibold">{t("{0} plan", PLAN_RULES.free.label)}</span>
@@ -80,7 +86,7 @@ export function AppShell() {
               <p className="text-xs text-muted-foreground">{t("Verilerinizi güvenle hazırlayın ve analiz edin.")}</p>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
-              <Link to="/" aria-label={t("Nasıl çalışır?")} className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:hidden"><CircleHelp className="h-4 w-4" aria-hidden="true" /></Link>
+              <Link to="/" aria-label={t("Nasıl çalışır?")} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:hidden"><CircleHelp className="h-4 w-4" aria-hidden="true" /></Link>
               <PremiumUpgrade />
               <LanguageSelector /><ThemeToggle />
             </div>
@@ -90,6 +96,7 @@ export function AppShell() {
         <main id="main-content" className="mx-auto min-h-[calc(100vh-4rem)] max-w-7xl px-5 py-8 pb-28 sm:px-8 lg:pb-10">
           {workspace.busy && <p role="status" className="mb-4 rounded-xl border border-border bg-card p-3 text-sm">{t("İşleminiz devam ediyor.")} {workspace.activeId && <Link className="underline" to={"/app/analyses/" + workspace.activeId}>{t("İşlemi izle")}</Link>}</p>}
           <Outlet />
+          <div className="mt-8 flex justify-center border-t border-border/60 pt-5 lg:hidden"><button type="button" onClick={() => setHelpOpen(true)} className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Headphones className="h-4 w-4" aria-hidden="true" />{t("Destek ve yardım")}</button></div>
         </main>
       </div>
 
@@ -108,6 +115,7 @@ export function AppShell() {
           </NavLink>
         ))}
       </nav>
+      <SupportDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
     </div>
   );
 }

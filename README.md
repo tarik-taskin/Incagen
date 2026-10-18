@@ -62,6 +62,7 @@ Kalite kontrolleri bileşen davranışını, dosya ayrıştırmayı, kullanıcı
 | [Geliştirici rehberi](docs/DEVELOPMENT.md) | Kurulum, komutlar ve teknik kaynak haritası |
 | [Test rehberi](docs/TESTING.md) / [AI sonuç sözleşmesi](docs/AI-RESULTS.md) | Kalite kapıları ve kaynak/metrik doğrulaması |
 | [Dil ve rapor sunumu](docs/LOCALIZATION.md) | Dil kaynakları, RTL ve farklı analiz türleri |
+| [Yardım ve geri bildirim](docs/SUPPORT.md) | Destek kanalı ve analiz sonrası geri bildirim akışı |
 | [FLOW](FLOW.md) | Ürün davranışı ve sistem mimarisi |
 | [GOAL](GOAL.md) | Görev sahipliği, kabul kriterleri ve açık kararlar |
 | [RULES](RULES.md) / [AGENTS](AGENTS.md) | Kod, stil ve ekip çalışma kuralları |
