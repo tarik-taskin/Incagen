@@ -928,5 +928,11 @@
   "9 belge · 8 format": "9 份文档 · 8 种格式",
   "3.612 kayıt · 12 ay · 9 belge": "3,612 条记录 · 12 个月 · 9 份文档",
   "ZIP · 8 format": "ZIP · 8 种格式",
-  "Slayt {0}": "幻灯片 {0}"
+  "Slayt {0}": "幻灯片 {0}",
+  "Geri al": "撤销",
+  "Örnek hedef eklendi.": "已填入示例目标。",
+  "Gelir, kârlılık ve hizmet düzeyini birlikte inceleyin. Her bulguyu özgün belgesine kadar izleyin.": "结合收入、盈利能力与服务水平，查看整体表现。每项发现都可追溯至原始文档。",
+  "Grafik veya tablodan bir değer seçerek kaynağı açın.": "选择图表或表格中的数值，即可查看来源。",
+  "Yönetim notları": "管理层说明",
+  "Yardım yükleniyor…": "正在加载帮助…"
 }

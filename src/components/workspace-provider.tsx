@@ -13,7 +13,8 @@ import { tr } from "../i18n/tr";
 // Oturum boyunca dosya taslağını ve yüklemeyi yaşatır; sayfa değişimi işi kesmez.
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const selection = useFileSelectionState();
-  const [draft, setDraft] = useState<Draft>({ title: "", business: "", objective: "" });
+  const [draftState, setDraftState] = useState<{ draft: Draft; originalObjective: string | null }>({ draft: { title: "", business: "", objective: "" }, originalObjective: null });
+  const { draft, originalObjective } = draftState;
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
@@ -23,6 +24,26 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const cancelled = useRef(false);
   const request = useRef<{ signature: string; id: string } | null>(null);
   useEffect(() => () => { cancelled.current = true; task.current?.cancel(); }, []);
+
+  // Kullanıcının hedefi değişince eski geri alma kaydını bırakır; başlık/işletme düzenlemek bu kaydı bozmaz.
+  function setDraft(update: (draft: Draft) => Draft) {
+    setDraftState(current => {
+      const next = update(current.draft);
+      return { draft: next, originalObjective: next.objective === current.draft.objective ? current.originalObjective : null };
+    });
+  }
+
+  // Birden fazla örnek denense de ilk kullanıcı metnini oturum içindeki taslakla birlikte korur.
+  function applyObjectiveExample(objective: string) {
+    if (lock.current) return;
+    setDraftState(current => current.draft.objective === objective ? current : { draft: { ...current.draft, objective }, originalObjective: current.originalObjective ?? current.draft.objective });
+  }
+
+  // Yalnız örnek seçimiyle değişen hedefi geri alır; sonradan yazılmış kullanıcı metnine dokunmaz.
+  function undoObjectiveExample() {
+    if (lock.current) return;
+    setDraftState(current => current.originalObjective === null ? current : { draft: { ...current.draft, objective: current.originalObjective }, originalObjective: null });
+  }
 
   // Aynı taslağı tekrar gönderirken aynı istek kimliğini kullanarak ağ belirsizliğinde çift iş açmaz.
   async function start() {
@@ -79,11 +100,11 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     const body = { title: draft.title, business: draft.business, objective: draft.objective, files: selection.files.map(({ file }) => ({ name: file.name, size: file.size, contentType: file.type || "application/octet-stream" })) };
     if (request.current?.signature !== JSON.stringify({ body, ids: selection.files.map(f => f.id) })) return;
     selection.clearFiles();
-    setDraft(current => ({ ...current, title: "", objective: "" }));
+    setDraftState(current => ({ draft: { ...current.draft, title: "", objective: "" }, originalObjective: null }));
     setProgress(0);
     setError("");
     request.current = null;
   }
   function cancel() { cancelled.current = true; task.current?.cancel(); }
-  return <WorkspaceContext.Provider value={{ selection, draft, setDraft, busy, progress, error, activeId, start, completeDraft, cancel }}>{children}</WorkspaceContext.Provider>;
+  return <WorkspaceContext.Provider value={{ selection, draft, setDraft, canUndoObjectiveExample: originalObjective !== null, applyObjectiveExample, undoObjectiveExample, busy, progress, error, activeId, start, completeDraft, cancel }}>{children}</WorkspaceContext.Provider>;
 }

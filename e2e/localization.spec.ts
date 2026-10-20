@@ -95,6 +95,16 @@ test("çalışma alanında altı dil, taslak korunumu ve yerelleştirilmiş silm
     await page.getByRole("combobox").first().selectOption(code);
     await expect(page.getByLabel(catalog["Analiz başlığı"], { exact: true })).toHaveValue("Yeni analiz");
     await expect(page.getByLabel(catalog["Analiz hedefi"], { exact: true })).toHaveValue("Özgün hedef metnim");
+    await page.getByRole("button", { name: catalog["Satış değişimi"], exact: true }).click();
+    const exampleGoal = catalog["Satışların dönemler arasında nasıl değiştiğini ve hangi kategorilerin öne çıktığını görmek istiyorum."];
+    await expect(page.getByLabel(catalog["Analiz hedefi"], { exact: true })).toHaveValue(exampleGoal);
+    if (code === "en") {
+      await page.screenshot({ path: testInfo.outputPath("objective-undo-light.png"), fullPage: true });
+      await page.getByRole("button", { name: catalog["Karanlık moda geç"], exact: true }).click();
+      expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze()).violations).toEqual([]);
+      await page.screenshot({ path: testInfo.outputPath("objective-undo-dark.png"), fullPage: true });
+      await page.getByRole("button", { name: catalog["Aydınlık moda geç"], exact: true }).click();
+    }
     await page.getByRole("link", { name: catalog["Ayarlar"], exact: true }).click();
     await expect(page.getByRole("heading", { name: catalog["Çalışma alanı ayarları"], exact: true })).toBeVisible();
     await page.getByRole("button", { name: catalog["Hesabı sil"], exact: true }).click();
@@ -116,6 +126,9 @@ test("çalışma alanında altı dil, taslak korunumu ve yerelleştirilmiş silm
     if (code === "ar") await page.screenshot({ path: testInfo.outputPath("arabic-workspace.png"), fullPage: true });
     await page.getByRole("link", { name: catalog["Yeni analiz"], exact: true }).click();
     await expect(page.getByLabel(catalog["Analiz başlığı"], { exact: true })).toHaveValue("Yeni analiz");
+    await expect(page.getByLabel(catalog["Analiz hedefi"], { exact: true })).toHaveValue(exampleGoal);
+    await page.getByRole("button", { name: catalog["Geri al"], exact: true }).click();
+    await expect(page.getByLabel(catalog["Analiz hedefi"], { exact: true })).toHaveValue("Özgün hedef metnim");
   }
   await page.getByRole("combobox").first().selectOption("tr");
   await expect(page.getByLabel("Analiz başlığı", { exact: true })).toHaveValue("Yeni analiz");

@@ -15,7 +15,7 @@ import { tr } from "../i18n/tr";
 // Farklı iş belgesi türlerini analiz hazırlığı ve güvenli yerel yükleme akışında birleştirir.
 export function NewAnalysisPage() {
   useLocale();
-  const { selection, draft, setDraft, busy, progress, error, activeId, start, completeDraft, cancel } = useWorkspace();
+  const { selection, draft, setDraft, canUndoObjectiveExample, applyObjectiveExample, undoObjectiveExample, busy, progress, error, activeId, start, completeDraft, cancel } = useWorkspace();
   const { files, rejections, addFiles, removeFile, clearFiles, dismissRejections } = selection;
   const navigate = useNavigate();
   const [editingBusiness, setEditingBusiness] = useState(() => !draft.business);
@@ -91,8 +91,9 @@ export function NewAnalysisPage() {
               {[
                 { label: "Satış değişimi", value: "Satışların dönemler arasında nasıl değiştiğini ve hangi kategorilerin öne çıktığını görmek istiyorum." },
                 { label: "Müşteri geri bildirimleri", value: "Müşteri yorumlarındaki tekrar eden sorunları ve iyileştirme önceliklerini anlamak istiyorum." },
-              ].map(example => <button key={example.label} type="button" className="min-h-9 rounded-full border border-border bg-muted/40 px-3 py-1.5 text-xs font-medium transition-colors hover:border-primary/30 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50 dark:focus-visible:ring-secondary" onClick={() => setDraft(d => ({ ...d, objective: example.value }))}>{t(example.label)}</button>)}
+              ].map(example => <button key={example.label} type="button" className="min-h-9 rounded-full border border-border bg-muted/40 px-3 py-1.5 text-xs font-medium transition-colors hover:border-primary/30 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50 dark:focus-visible:ring-secondary" onClick={() => applyObjectiveExample(t(example.value))}>{t(example.label)}</button>)}
             </div>
+            {canUndoObjectiveExample && <div role="status" className="mt-3 flex flex-wrap items-center justify-between gap-x-3 rounded-xl bg-primary/[0.04] ps-3 pe-1 text-xs dark:bg-secondary/[0.05]"><span className="py-2 leading-5 text-muted-foreground">{t("Örnek hedef eklendi.")}</span><button type="button" onClick={() => { undoObjectiveExample(); focusField("objective"); }} className="min-h-10 rounded-lg px-2 font-semibold text-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary">{t("Geri al")}</button></div>}
           </div>
         </fieldset>
         <p className="mt-5 rounded-xl border border-primary/10 bg-primary/[0.04] px-3.5 py-3 text-xs leading-5 text-muted-foreground dark:border-secondary/15 dark:bg-secondary/[0.05]"><span className="font-semibold text-foreground">{t("Bir konuya odaklanın.")}</span>  {t("Müşteri geri bildirimleri ya da finans verileri gibi birbiriyle ilişkili belgeleri aynı analizde toplayın.")}</p>

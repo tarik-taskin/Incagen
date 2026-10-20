@@ -1,6 +1,7 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import { setLocale, t, type Locale } from "../i18n/runtime";
 import { NewAnalysisPage } from "./new-analysis-page";
 import { MemoryRouter } from "react-router-dom";
 import { WorkspaceProvider } from "../components/workspace-provider";
@@ -15,7 +16,42 @@ function setupUser() {
   return userEvent.setup({ applyAccept: false });
 }
 
+afterEach(() => act(() => setLocale("tr")));
+
 describe("NewAnalysisPage", () => {
+  it.each<Locale>(["tr", "en", "de", "es", "zh", "ar"])("%s: örnek hedefi seçili dilde ekler; tekrar seçim ve dil değişiminden sonra özgün metni geri alır", async locale => {
+    setLocale(locale);
+    const user = setupUser();
+    renderPage();
+    const field = screen.getByLabelText(t("Analiz hedefi"));
+    await user.type(field, "Özgün müşteri sorum");
+    await user.click(screen.getByRole("button", { name: t("Satış değişimi") }));
+    const example = t("Satışların dönemler arasında nasıl değiştiğini ve hangi kategorilerin öne çıktığını görmek istiyorum.");
+    expect(field).toHaveValue(example);
+    expect(example.length).toBeLessThanOrEqual(500);
+    if (locale !== "tr") expect(example).not.toBe("Satışların dönemler arasında nasıl değiştiğini ve hangi kategorilerin öne çıktığını görmek istiyorum.");
+    await user.click(screen.getByRole("button", { name: t("Müşteri geri bildirimleri") }));
+    expect(field).toHaveValue(t("Müşteri yorumlarındaki tekrar eden sorunları ve iyileştirme önceliklerini anlamak istiyorum."));
+    act(() => setLocale(locale === "tr" ? "en" : "tr"));
+    await user.click(screen.getByRole("button", { name: t("Geri al") }));
+    expect(field).toHaveValue("Özgün müşteri sorum");
+    expect(screen.queryByRole("button", { name: t("Geri al") })).not.toBeInTheDocument();
+  });
+
+  it("boş hedefe eklenen örneği temizleyebilir; örnekten sonra yazılan metin için eski geri almayı göstermez", async () => {
+    const user = setupUser();
+    renderPage();
+    const field = screen.getByLabelText("Analiz hedefi");
+    await user.click(screen.getByRole("button", { name: "Satış değişimi" }));
+    await user.click(screen.getByRole("button", { name: "Geri al" }));
+    expect(field).toHaveValue("");
+    await user.type(field, "Özgün hedef");
+    await user.click(screen.getByRole("button", { name: "Satış değişimi" }));
+    await user.type(field, " Özellikle son çeyreği incele.");
+    expect(screen.queryByRole("button", { name: "Geri al" })).not.toBeInTheDocument();
+    expect(field).toHaveValue(t("Satışların dönemler arasında nasıl değiştiğini ve hangi kategorilerin öne çıktığını görmek istiyorum.") + " Özellikle son çeyreği incele.");
+  });
+
   it("hedef boşsa hazırlığı başlatmaz; kullanıcı girdilerini koruyarak soruyu belirtmesini ister", async () => {
     const user = setupUser();
     renderPage();

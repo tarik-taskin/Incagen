@@ -5,7 +5,7 @@ import { AuthCard } from "./auth-card";
 
 const sendPasswordResetEmailMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 vi.mock("firebase/auth", () => ({ sendPasswordResetEmail: sendPasswordResetEmailMock }));
-vi.mock("../lib/firebase", () => ({ getServices: () => ({ auth: { name: "test-auth" } }), usesFirebaseEmulator: true }));
+vi.mock("../lib/firebase-auth", () => ({ getAuthServices: () => ({ auth: { name: "test-auth" } }), usesFirebaseEmulator: true }));
 vi.mock("../lib/auth-context", () => ({ useAuth: () => ({ user: null, loading: false, error: "" }) }));
 
 // Kimlik kartını servis çağrısı gerektirmeyen test özellikleriyle oluşturur.

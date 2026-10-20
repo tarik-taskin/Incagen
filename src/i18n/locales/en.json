@@ -928,5 +928,11 @@
   "9 belge · 8 format": "9 documents · 8 formats",
   "3.612 kayıt · 12 ay · 9 belge": "3,612 records · 12 months · 9 documents",
   "ZIP · 8 format": "ZIP · 8 formats",
-  "Slayt {0}": "Slide {0}"
+  "Slayt {0}": "Slide {0}",
+  "Geri al": "Undo",
+  "Örnek hedef eklendi.": "Example goal added.",
+  "Gelir, kârlılık ve hizmet düzeyini birlikte inceleyin. Her bulguyu özgün belgesine kadar izleyin.": "Review revenue, profitability and service performance together. Trace each finding to its original document.",
+  "Grafik veya tablodan bir değer seçerek kaynağı açın.": "Select a chart or table value to view its source.",
+  "Yönetim notları": "Management notes",
+  "Yardım yükleniyor…": "Loading help…"
 }

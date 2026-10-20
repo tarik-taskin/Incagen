@@ -57,11 +57,16 @@ describe("App routes", () => {
   it("iç sayfalar arasında dosya seçimini korur", async () => {
     const user = userEvent.setup();
     renderApp("/app/new-analysis");
-    await user.upload(screen.getByLabelText("Analiz edilecek dosyaları seç"), new File(["test"], "rapor.pdf", { type: "application/pdf" }));
+    await user.upload(await screen.findByLabelText("Analiz edilecek dosyaları seç"), new File(["test"], "rapor.pdf", { type: "application/pdf" }));
+    await user.type(screen.getByLabelText("Analiz hedefi"), "Korunacak özgün hedef");
+    await user.click(screen.getByRole("button", { name: "Satış değişimi" }));
     const nav = within(screen.getByRole("navigation", { name: "Ana navigasyon" }));
     await user.click(nav.getByRole("link", { name: "Geçmiş" }));
+    expect(await screen.findByRole("heading", { name: "Geçmiş analizleriniz" })).toBeInTheDocument();
     await user.click(nav.getByRole("link", { name: "Yeni analiz" }));
-    expect(screen.getByText("rapor.pdf")).toBeInTheDocument();
+    expect(await screen.findByText("rapor.pdf")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Geri al" }));
+    expect(screen.getByLabelText("Analiz hedefi")).toHaveValue("Korunacak özgün hedef");
   });
   it("uygulama kökünü yeni analiz ekranına yönlendirir", async () => {
     renderApp("/app");
@@ -73,12 +78,12 @@ describe("App routes", () => {
     const user = userEvent.setup();
     renderApp("/app/history");
 
-    expect(screen.getByRole("heading", { name: "Geçmiş analizleriniz" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Geçmiş analizleriniz" })).toBeInTheDocument();
     const desktopNavigation = screen.getByRole("navigation", { name: "Ana navigasyon" });
     await user.click(within(desktopNavigation).getByRole("link", { name: "Ayarlar" }));
-    expect(screen.getByRole("heading", { name: "Çalışma alanı ayarları" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Çalışma alanı ayarları" })).toBeInTheDocument();
     await user.click(within(desktopNavigation).getByRole("link", { name: "Plan" }));
-    expect(screen.getByRole("heading", { name: "Planınızı ve sınırlarınızı görün" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Planınızı ve sınırlarınızı görün" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Free" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Premium" })).toBeInTheDocument();
     expect(screen.queryByText("AI analiz katmanı")).not.toBeInTheDocument();
@@ -89,7 +94,7 @@ describe("App routes", () => {
     const user = userEvent.setup();
     renderApp("/app/new-analysis");
 
-    await user.click(screen.getByRole("button", { name: "Premium’a geç" }));
+    await user.click(await screen.findByRole("button", { name: "Premium’a geç" }));
     const premiumNotice = screen.getByRole("region", { name: "Premium ile daha geniş alan" });
     expect(premiumNotice).not.toHaveTextContent("PayTR");
     expect(premiumNotice).toHaveTextContent("toplam 50 MB");

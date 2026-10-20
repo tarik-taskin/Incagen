@@ -1,14 +1,14 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { AuthContext, type AuthState } from "../lib/auth-context";
-import { getServices } from "../lib/firebase";
+import { getAuthServices } from "../lib/firebase-auth";
 
 // Auth SDK oturumunu izler; yapılandırma veya bağlantı hatasında korumalı içeriği açmaz.
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({ user: null, loading: true, error: "" });
   useEffect(() => {
     try {
-      return onAuthStateChanged(getServices().auth,
+      return onAuthStateChanged(getAuthServices().auth,
         user => setState({ user, loading: false, error: "" }),
         () => setState({ user: null, loading: false, error: "Oturum doğrulanamadı." }));
     } catch (error) {

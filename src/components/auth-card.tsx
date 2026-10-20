@@ -6,7 +6,7 @@ import { Apple, BadgeCheck, Check, Circle, Eye, EyeOff, KeyRound, Mail, ShieldCh
 import { tr } from "../i18n/tr";
 import { useAuth } from "../lib/auth-context";
 import { userError } from "../lib/errors";
-import { getServices, usesFirebaseEmulator } from "../lib/firebase";
+import { getAuthServices, usesFirebaseEmulator } from "../lib/firebase-auth";
 import { AnimatedLogo } from "./animated-logo";
 import { AuthSuccessTransition } from "./auth-success-transition";
 import { Button } from "./ui/button";
@@ -138,7 +138,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
     setResetSent(false);
     setResetSending(true);
     try {
-      await sendPasswordResetEmail(getServices().auth, email.trim());
+      await sendPasswordResetEmail(getAuthServices().auth, email.trim());
       setResetSent(true);
     } catch (resetError) {
       setError(userError(resetError));
@@ -158,7 +158,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
 
     try {
       const operation = register ? createUserWithEmailAndPassword : signInWithEmailAndPassword;
-      await operation(getServices().auth, email.trim(), password);
+      await operation(getAuthServices().auth, email.trim(), password);
       setAuthenticated(true);
     } catch (submissionError) {
       setError(userError(submissionError));

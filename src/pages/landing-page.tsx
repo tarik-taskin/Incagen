@@ -1,5 +1,5 @@
 import { LanguageSelector } from "../components/language-selector";
-import { SupportLauncher } from "../components/support-dialog";
+import { SupportLauncher } from "../components/support-launcher";
 import { t, useLocale } from "../i18n/runtime";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { animate, stagger } from "animejs";

@@ -9,6 +9,9 @@ export interface WorkspaceState {
   selection: ReturnType<typeof useFileSelectionState>;
   draft: Draft;
   setDraft: (update: (draft: Draft) => Draft) => void;
+  canUndoObjectiveExample: boolean;
+  applyObjectiveExample: (objective: string) => void;
+  undoObjectiveExample: () => void;
   busy: boolean; progress: number; error: string; activeId: string;
   start: () => Promise<{ id: string; ready: boolean } | undefined>;
   completeDraft: () => void;

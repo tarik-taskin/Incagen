@@ -65,10 +65,3 @@ export function SupportDialog({ open, onClose }: { open: boolean; onClose: () =>
     </div>
   </dialog>;
 }
-
-// Genel sayfalarda da aynı yardım penceresini açan sade bir giriş sağlar.
-export function SupportLauncher() {
-  useLocale();
-  const [open, setOpen] = useState(false);
-  return <><button type="button" onClick={() => setOpen(true)} className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Headphones className="h-4 w-4" aria-hidden="true" />{t("Destek ve yardım")}</button><SupportDialog open={open} onClose={() => setOpen(false)} /></>;
-}
