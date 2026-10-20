@@ -20,6 +20,8 @@ Seçim `incagen-language` altında tarayıcıda tutulur; yeni oturumda korunur, 
 
 Dil seçimi rota, oturum, form girdisi, parola veya seçili dosyaları sıfırlamaz. Kimlik modalında da dil değiştirilebilir. Hesap silmede kullanıcı seçili dildeki onay metnini yazar; istemci bu onayı doğruladıktan sonra mevcut backend onay sabitini gönderir. Yeniden kimlik doğrulama ve sunucu güvenlik kontrolleri korunur.
 
+Hedef örnekleri seçildiği anda `t(example.value)` ile yerelleştirilir. Alana eklendikten sonra diğer kullanıcı girdileri gibi korunur; dil değişimi metni yeniden yazmaz. Örnek denemelerinden önceki hedef çalışma alanı taslağında tutulur, elle hedef düzenlemesinde geçerliliğini kaybeder. Geri alma eylemi ve bildirimi de altı dilde sunulur.
+
 ## Kaynak ve sunum ayrımı
 
 Kullanıcı başlıkları, işletme adları, dosya adları, özgün yorumlar, CSV hücreleri ve PDF/Word alıntıları çevrilmez. Türkçe örnek belgelerin metinleri kaynak dilinde kalır. Arayüz açıklamaları ve kontrollü örnek analiz metinleri yerelleştirilir. [`companyDisplay`](../src/features/reports/company-display.ts) yalnız örneğin sunum cümlelerini biçimlendirir; hesaplar, kimlikler, hash ve konumlar değişmez. Yeni kullanıcı raporunun/model çıktısının otomatik çevirisi bu değişikliğin kapsamında değildir.
@@ -31,6 +33,8 @@ Kullanıcı başlıkları, işletme adları, dosya adları, özgün yorumlar, CS
 [`AdaptiveReport`](../src/features/reports/result-sections.tsx), `AiResult` içindeki metrik, grafik, özet, bulgu ve önerileri kullanır; finansal metrik kimliklerine bağlı değildir. Sayısal çıktısı olmayan rapor boş grafik veya uydurma metrik olmadan gösterilir. Şirket örneği kendi finansal tablolarını bu ortak sunumun yanında korur.
 
 [`ReportDetails`](../src/features/reports/result-sections.tsx), ayrıntıları yerel `details/summary` ile kapalı başlatır. İçerik DOM'da kalır; klavye ile açılabilir. Rapordaki bölüm bağlantısı ilgili ayrıntıyı açarak hedefe gider. Dönem değişimi yeni hesap kapsamını oluşturur ve ayrıntıları yeniden kapatır. Finansal tablolar, yönetim notları, kaynak kütüphanesi, hesap yöntemleri ve öneri dayanakları silinmez.
+
+Kurumsal raporun bölüm adresleri dönem sorgusunu korur; doğrudan bağlantı, yeniden yükleme, aynı bağlantıyı tekrar seçme ve tarayıcı geçmişi kapalı ayrıntıları açar. Başlangıç açıklaması ve bölüm başlıkları kısaltılmıştır; kaynak seçimi ipucu altı kartta tekrarlanmak yerine bir kez sunulur. Sayısal rapor ve özgün kaynak içerikleri bu sadeleştirmeden etkilenmez.
 
 ## Müşteri deneyimi örneği
 

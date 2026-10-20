@@ -20,6 +20,12 @@ Açılır pencereler, içerik dışındaki fare tıklaması veya dokunmayla kapa
 
 Destek ve yardım, kısa yanıtlar ile ayrı bir iletişim adımı sunar; mesajlar kişisel destek içindir. Analiz sonrası yayınlanabilecek kullanıcı geri bildirimleri ayrı veri akışıdır. Ayarlar, veri alanları ve gelecek yayın kapsamı [destek rehberinde](docs/SUPPORT.md) tanımlıdır. Sayfa/oturum/veri yüklemelerinde gerçek içerik düzenini koruyan ortak iskelet kullanılır; sahte yüzde veya ek bekleme uygulanmaz.
 
+Ana sayfa, korumalı ekranları ve belge/veri servislerini ilk açılışta yüklemez. Kimlik oturumu aynı Firebase uygulamasında izlenir; çalışma alanı kodu ilgili rotada, genel yardım kodu ilk yardım isteğinde yüklenir. Yardım bir kez açılınca kapanması gönderilmemiş mesajı silmez. Ekranlar yüklenirken çalışma alanı sağlayıcısı yerinde kalır; dosya taslağı ve devam eden yükleme korunur.
+
+Analiz hedefi örnekleri tıklama anındaki arayüz dilinde eklenir. Birden fazla örnek denenirse tek “Geri al” ilk hedef metnini geri getirir; bu kayıt aynı oturumdaki sayfa/dil gezinmesinde korunur. Kullanıcı hedefi elle düzenlediğinde eski geri alma kaydı kaldırılır; yeni metin eski örnek işlemiyle ezilmez. Dil değiştirmek mevcut hedefi otomatik çevirmez. Başarılı hazırlık yeni çalışma için hedefi ve geri alma kaydını birlikte temizler.
+
+Kurumsal örnek raporun bölüm bağlantıları seçili dönemle birlikte URL'ye yazılır. Doğrudan bağlantı, yenileme ve geri/ileri ilgili kapalı ayrıntıyı açıp hedefe kaydırır; aynı bölüm tekrar seçilince de kapalı içerik açılır. Yeni dönem seçimi bölüm adresini ve açılmış ayrıntıları sıfırlayıp genel bakışı gösterir. Bilinmeyen bölüm adresleri işleme alınmaz. Grafik/kaynak kullanım açıklaması bir kez gösterilir; tablolar, bulgular ve özgün belgeler korunur.
+
 ## Free ve Premium
 
 Ürün limitlerinin belge kaynağı bu tablodur. Frontend plan bilgileri merkezi plan kurallarında, backend uygulanmış Free sınırları ortak analiz sözleşmesinde tutulur; değişiklikte üçü birlikte doğrulanır.

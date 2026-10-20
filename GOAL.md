@@ -7,6 +7,16 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-20 — Furkan / Codex: hafif açılış ve sade rapor akışı
+
+- [x] Sahip: Furkan — İlk açılışta çalışma alanı ekranlarını ihtiyaç halinde yükle; yükleme görünümü, oturum, taslak ve doğrudan rota erişimini koru; önce/sonra üretim paketini ölç.
+- [x] Sahip: Furkan — Hedef örneklerini seçili dilde doldur; mevcut hedefi örnekle değiştirmeyi tek adımda geri almayı sağla; kullanıcı metnini dil/rota değişiminde koru.
+- [x] Sahip: Furkan — Örnek raporun gezinmesini, açıklamalarını ve kaynak erişimini incele; tekrarları sadeleştir, bulunan davranış kusurlarını gider; metrikleri, belgeleri ve bütün ayrıntıları koru.
+
+Kabul: Ana sayfa başlangıç grafiğinde korumalı ekran modülleri yüklenmemeli; gerçek önce/sonra boyutları kaydedilmeli. Altı dilde hedef örneği, geri alma ve sonradan yazılan metnin korunması doğrulanmalı. Rapor başlıkları ve kontroller kısa ve açık olmalı; bölüm/dönem gezinmesi, URL geçmişi, kaynaklar, iki tema, mobil, klavye, RTL ve azaltılmış hareket geçmeli. Lint, birim, build ve ilgili entegrasyon/tarayıcı kontrolleri başarılı; local/remote main/furkan eşit, çalışma ağacı temiz, son GitHub Quality başarılı ve Netlify aynı sürüm olmalı.
+
+Doğrulama: Başlangıç JS grafiği aynı canlı önizleme ayarlarıyla 490.644 → 294.783 gzip bayta indi (yaklaşık %40); korumalı modül sınırı ve 400 KiB bütçe derleme kapısına eklendi. Lint, 70 uygulama + 104 Functions testi, frontend/Functions derlemeleri, 4 entegrasyon ve 46 masaüstü/mobil tarayıcı senaryosu geçti; masaüstüne uygulanmayan 2 dar ekran senaryosu atlandı. Altı dilde hedef ekleme/geri alma, elle düzenleme, taslak ve yardım mesajının korunumu doğrulandı. Raporun doğrudan bölüm bağlantısı, dönem sorgusu, aynı bölümü yeniden açma, yenileme ve geri/ileri geçti. İki tema, RTL, klavye, azaltılmış hareket, mobil taşma ve kaynak/özgün belge bütünlüğü korundu; derlenmiş canlı önizleme ayrıca tarayıcıda hatasız açıldı.
+
 ### 2026-10-18 — Furkan / Codex: bağımlılık kapanış bakımı
 
 - [x] Sahip: Furkan — Denetimde bulunan gRPC, proxy-addr ve brace-expansion uyarılarını uyumlu sürümlerle gider; Functions DOCX kütüphanesinin komut satırı alt bağımlılığında kalan uyarının uygulama erişimini ve takip kapsamını belgele.
@@ -494,7 +504,7 @@ Aşağıdakiler sonraki aşamanın açık kararlarıdır. Bugünkü yerel akış
 - Kota/webhook tekrarları çift ücret veya tüketim doğurmamalıdır.
 - 2026-10-18 bağımlılık bakımında üretimdeki yüksek/kritik uyarılar giderildi. Functions'ın kullanılmayan Mammoth CLI zincirinde 3 orta önem; geliştirme araçlarında 6 yüksek/4 orta kayıt kalıyor. Erişim değerlendirmesi, düzeltme sınırı ve CI eşiği [test rehberindedir](docs/TESTING.md#bağımlılık-denetimi); denetim tamamen temiz sayılmaz, uyumsuz ana sürümler zorlanmaz.
 - Yerel testler bulut IAM/App Check, kalıcı kuyruk ve gerçek veri operasyonunun hazır olduğunu göstermez.
-- Firestore istemci paketi 500 kB build uyarısı veriyor; sonraki performans bütçesi çalışmasında küçültülmeli.
+- Genel arayüz, grafik ve örnek rapor parçalarında 500 kB build uyarısı sürüyor. Başlangıçtaki bütün statik JS grafiği 400 KiB gzip bütçesiyle korunur; mevcut sınır ve ölçüm [test rehberindedir](docs/TESTING.md#ilk-açılış-bütçesi).
 
 ## Karar günlüğü
 

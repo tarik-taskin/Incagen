@@ -21,6 +21,8 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 - Destek, altı dilde kısa yanıtlar ve Web3Forms üzerinden kişisel iletişim sunar; analiz sonrası izinli yayınlanacak geri bildirimlerden ayrıdır. Kurulum ve gelecek veri akışı [destek rehberindedir](docs/SUPPORT.md). Gerçek form ayarları git dışındadır; Gmail parolası kullanılmaz.
 
 - Rota/oturum/veri yüklemeleri ortak, erişilebilir iskeletle sunulur; ileri tarih/durum/sıralama filtreleri açılır alanda, hedef araması görünür aramada kalır.
+- Korumalı ekranlar/veri SDK'ları ve genel yardım ihtiyaç halinde yüklenir; başlangıç JS grafiği üretim derlemesinde 400 KiB gzip bütçesi ve modül sınırıyla korunur. Oturum ve taslak yaşam döngüsü değişmez; ölçüm [test rehberindedir](docs/TESTING.md#ilk-açılış-bütçesi).
+- Hedef örnekleri seçili dilde eklenir, sayfa/dil gezinmesinde tek adımda geri alınabilir; elle hedef düzenlemek eski geri almayı kaldırır. Kurumsal raporun dönem/bölüm adresleri doğrudan açılır ve tarayıcı geçmişini izler; ayrıntılar [FLOW](FLOW.md#dil-ve-rapor-deneyimi) içindedir.
 - Kısmi hazırlıkta belge hataları açık kapsam onayı ister; onay token’ı sunucuda doğrulanır, beklerken kota iade edilir ve geçerli alt küme tek hak tüketir. Türetilmiş dosyalar deneme bazında ayrılır.
 
 ## Tamamlanan özellikler

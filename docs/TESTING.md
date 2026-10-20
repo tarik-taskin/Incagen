@@ -13,6 +13,14 @@ npm run build:functions
 
 `test:run`, uygulama ve Functions testlerini birlikte çalıştırır. `npm run test:references` yalnız referans bütünlüğünü; `npm run test:functions` ayrıştırıcı ve AI sonuç sözleşmesini de kontrol eder. Sonuç sözleşmesi ve analiz paketi testleri AI çağrısı yapmaz. Küçük satış ve kapsamlı şirket örneği özgün CSV/PDF/DOCX belgelerinden yeniden üretilip statik artefaktla ve bağımsız cevaplarla karşılaştırılır. Şirket örneğinde dört dönem kapsamı, farklı parser parçalarındaki kanıt aralıkları, ağırlıklı oranlar ve ZIP/tekli indirme bütünlüğü, PDF sayfaları ve Word metnindeki alıntılar doğrulanır. PDF/DOCX tasarım üretimi için belge aracı kullanılır; uygulama testleri kaydedilmiş dosyaları ayrıştırır ve Python gerektirmez. Kaynaklar değişirse `npm run example:build` ile artefaktı yenileyin; sürüm değişimi kuralları referans rehberindedir. Örnek rapor tarayıcı kontrolleri grafik/tablo eşitliği, dönem ve URL geçmişi, büyük kaynaklarda arama/sayfalama, indirme, odak/Escape, iki tema, normal/azaltılmış hareket ve mobil taşmayı kapsar.
 
+## İlk açılış bütçesi
+
+[`startupBudget`](../scripts/startup-budget.ts) her üretim derlemesinde başlangıç girişini ve bütün statik JS importlarını izler. Korumalı ekranlar veya Firestore/Storage/Functions kodu bu grafiğe girerse derleme durur. Parçalar ayrı ayrı gzip ile ölçülür; toplam sınır 400 KiB'dir. Bu ölçü ağ ve cihazdan bağımsız paket boyutudur; gerçek açılış süresi veya Core Web Vitals sonucu değildir.
+
+2026-10-20 aynı canlı önizleme ayarlarıyla önce/sonra karşılaştırması: 490.644 → 294.783 gzip bayt (yaklaşık %40 azalma). Auth oturumu korunur; veri servisleri ve korumalı ekranlar gerektiğinde yüklenir. Genel yardım da ilk istekte yüklenir ve kapanınca mesaj taslağı korunur.
+
+[`e2e/startup-and-report-links.spec.ts`](../e2e/startup-and-report-links.spec.ts) ana sayfayı korumalı ekran modüllerini engelleyerek açar, yardım taslağını ve raporun bölüm adreslerini sınar. Hedef örnekleri için altı dilde ekleme/geri alma ve kullanıcı düzenlemesini koruma bileşen testlerindedir; çalışma alanı gezinmesi, iki tema ve mobil kabulü tarayıcı paketinde doğrulanır.
+
 ## Bağımlılık denetimi
 
 CI, iki paket ağacında üretim bağımlılıkları için yüksek/kritik uyarıları engeller:
