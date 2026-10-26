@@ -1,14 +1,13 @@
 import { useOutsideDismiss } from "../hooks/use-outside-dismiss";
 import { PageLoading } from "../components/page-loading";
-import { t, useLocale, localeTag } from "../i18n/runtime";
+import { t, useLocale } from "../i18n/runtime";
 import { useEffect, useRef, useState } from "react";
-import { Check, FileCheck2, FilePlus2, Files, HardDrive, Sparkles, TriangleAlert } from "lucide-react";
+import { Check, FilePlus2, TriangleAlert } from "lucide-react";
 import { useWorkspace } from "../lib/workspace-context";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { httpsCallable } from "firebase/functions";
 import { Button } from "../components/ui/button";
-import { formatFileSize } from "../features/files/file-rules";
-import { PLAN_RULES } from "../features/plans/plan-rules";
+import { PreparedDocuments } from "../components/prepared-documents";
 import { useAnalysis } from "../hooks/use-analyses";
 import { getServices } from "../lib/firebase";
 import { userError } from "../lib/errors";
@@ -74,20 +73,8 @@ export function AnalysisPage() {
     </section>}
     {analysis.status === "failed" && !!analysis.preparationFailures?.length && <ul className="mt-5 space-y-3 rounded-2xl border border-border bg-card p-5 text-sm" aria-label={t("Hazırlanamayan belgeler")}>{analysis.preparationFailures.map(source => <li key={source.id}><p className="break-all font-medium">{source.name}</p><p className="mt-1 text-xs leading-5 text-muted-foreground">{t(source.reason)}</p></li>)}</ul>}
     {analysis.status === "completed" && report && <>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-border bg-card p-5"><Files className="h-5 w-5 text-primary dark:text-secondary" aria-hidden="true" /><p className="mt-3 text-sm text-muted-foreground">{t("Hazırlanan belge")}</p><p className="mt-2 text-2xl font-semibold">{report.fileCount.toLocaleString(localeTag())}</p></div>
-        <div className="rounded-2xl border border-border bg-card p-5"><HardDrive className="h-5 w-5 text-primary dark:text-secondary" aria-hidden="true" /><p className="mt-3 text-sm text-muted-foreground">{t("Toplam kaynak boyutu")}</p><p className="mt-2 text-2xl font-semibold">{formatFileSize(report.totalBytes)}</p></div>
-        <div className="rounded-2xl border border-border bg-card p-5"><FileCheck2 className="h-5 w-5 text-primary dark:text-secondary" aria-hidden="true" /><p className="mt-3 text-sm text-muted-foreground">{t("İçerik parçası")}</p><p className="mt-2 text-2xl font-semibold">{report.totalChunks.toLocaleString(localeTag())}</p></div>
-        <div className="rounded-2xl border border-border bg-card p-5"><FileCheck2 className="h-5 w-5 text-primary dark:text-secondary" aria-hidden="true" /><p className="mt-3 text-sm text-muted-foreground">{t("Ayrıştırılan karakter")}</p><p className="mt-2 text-2xl font-semibold">{report.totalCharacters.toLocaleString(localeTag())}</p></div>
-      </div>
-      <section className="mt-6 rounded-3xl border border-border bg-card p-5 sm:p-6" aria-labelledby="prepared-sources-title">
-        <div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"><FileCheck2 className="h-5 w-5" aria-hidden="true" /></span><div><h2 id="prepared-sources-title" className="font-semibold">{t("Belgelerin içeriği ayrıştırıldı")}</h2><p className="text-sm text-muted-foreground">{t("Dosya imzası, içerik türü ve güvenli ayrıştırma sınırları backend tarafından doğrulandı.")}</p></div></div>
-        <ul className="mt-5 divide-y divide-border/70 rounded-2xl border border-border/70" aria-label={t("Hazırlanan belgeler")}>{report.sources.map(source => <li key={source.id} className="px-4 py-3 text-sm"><div className="flex flex-wrap items-center justify-between gap-2"><span className="break-all font-medium">{source.name}</span><span className="text-xs text-muted-foreground">{t(source.category)} · {formatFileSize(source.size)} · {source.detectedMime}</span></div><p className="mt-1 text-xs text-muted-foreground">{source.chunkCount.toLocaleString(localeTag())}  {t("parça ·")} {source.characterCount.toLocaleString(localeTag())}  {t("karakter")}{source.metadata.pages ? t(" · {0} sayfa", source.metadata.pages) : ""}{source.metadata.sheets ? t(" · {0} çalışma sayfası", source.metadata.sheets) : ""}{source.metadata.slides ? t(" · {0} slayt", source.metadata.slides) : ""}{source.metadata.width && source.metadata.height ? t(" · {0}×{1}px", source.metadata.width, source.metadata.height) : ""}</p>{source.warnings.length > 0 && <ul className="mt-2 list-disc space-y-1 ps-5 text-xs text-amber-700 dark:text-amber-300">{source.warnings.map((warning, index) => <li key={`${source.id}-warning-${index}`}>{t(warning)}</li>)}</ul>}</li>)}</ul>
-      </section>
+      <PreparedDocuments key={id} report={report} />
       {!!report.excludedSources?.length && <details className="mt-5 rounded-2xl border border-border bg-card p-5"><summary className="cursor-pointer text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{t("Kapsam dışında kalan {0} belge", report.excludedSources.length)}</summary><ul className="mt-4 space-y-3 text-xs leading-6 text-muted-foreground">{report.excludedSources.map(source => <li key={source.id}><span className="break-all font-medium text-foreground">{source.name}</span> — {t(source.reason)}</li>)}</ul></details>}
-      <section className="mt-6 rounded-3xl border border-primary/15 bg-primary/[0.05] p-5 dark:border-secondary/15 dark:bg-secondary/[0.05]" aria-labelledby="next-step-title">
-        <div className="flex gap-3"><Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary dark:text-secondary" aria-hidden="true" /><div><h2 id="next-step-title" className="font-semibold">{t("Sonraki analiz katmanı")}</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{t("AI yorumları ve {0} bağlantıları henüz etkin değil.", PLAN_RULES.premium.externalSources)}</p></div></div>
-      </section>
     </>}
     <div className="mt-6 flex flex-wrap gap-3">
       <Button asChild><Link className="gap-2" to="/app/new-analysis"><FilePlus2 className="h-4 w-4" aria-hidden="true" />  {t("Yeni analiz oluştur")}</Link></Button>

@@ -21,6 +21,12 @@ npm run build:functions
 
 [`e2e/startup-and-report-links.spec.ts`](../e2e/startup-and-report-links.spec.ts) ana sayfayı korumalı ekran modüllerini engelleyerek açar, yardım taslağını ve raporun bölüm adreslerini sınar. Hedef örnekleri için altı dilde ekleme/geri alma ve kullanıcı düzenlemesini koruma bileşen testlerindedir; çalışma alanı gezinmesi, iki tema ve mobil kabulü tarayıcı paketinde doğrulanır.
 
+## Hazırlama deneyimi
+
+[`WorkspaceProvider` testleri](../src/components/workspace-provider.test.tsx) kayıt açma, bayt bazında aktarım ve bekleyen hazırlığı bağımsız çözülen ağ çağrılarıyla sınar; %100 aktarım tek başına tamamlanmış sonuç sayılmaz. İptal/hata sonrası dosya korunumu, yeniden denemede aynı istek kimliği ve başarılı taslak temizliği kontrol edilir. Native ayrılma dinleyicisinin risk/temizleme/unmount ömrü [hook testinde](../src/hooks/use-before-unload.test.tsx), altı dilde çevrimdışı olayları ve teknik ayrıntıların görünürlüğü ilgili bileşen testlerindedir.
+
+[`preparation-experience.spec.ts`](../e2e/preparation-experience.spec.ts), gerçek yerel backend akışını test ağ kapılarıyla aşama bazında inceler; altı dil, RTL, iki tema, klavye, masaüstü/mobil ve çevrimdışı/yeniden bağlantıda taslak korunur. Native sekme kapatma onayı Chromium masaüstünde test edilir; mobil işletim sistemlerinde diyaloğun garanti edildiği iddia edilmez. Teknik bilgiler yalnız açılınca görünür; belge uyarıları gizlenmez. Testler gerçek müşteri verisi veya e-posta gönderimi kullanmaz.
+
 ## Bağımlılık denetimi
 
 CI, iki paket ağacında üretim bağımlılıkları için yüksek/kritik uyarıları engeller:

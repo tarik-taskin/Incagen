@@ -42,8 +42,12 @@ test("kayıt, belge hazırlığı, geçmiş, silme ve çıkış", async ({ page 
   await expect(page.getByText(objective, { exact: true })).toBeVisible();
   await expect(page.getByText("Belge içerikleri ayrıştırıldı — AI yorumu henüz eklenmedi")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Belgelerin içeriği ayrıştırıldı" })).toBeVisible();
-  await expect(page.getByText("faaliyet-ozeti.txt", { exact: true })).toBeVisible();
-  await expect(page.getByText("Sentetik faaliyet özeti".length.toLocaleString("tr-TR"), { exact: true })).toBeVisible();
+  await expect(page.getByRole("list", { name: "Hazırlanan belgeler" }).getByText("faaliyet-ozeti.txt", { exact: true })).toBeVisible();
+  const technical = page.locator("details").filter({ has: page.getByText("Teknik ayrıntılar", { exact: true }) });
+  await expect(technical).not.toHaveAttribute("open");
+  await page.getByText("Teknik ayrıntılar", { exact: true }).click();
+  await expect(technical.getByText("Sentetik faaliyet özeti".length.toLocaleString("tr-TR"), { exact: true }).first()).toBeVisible();
+  await page.getByText("Teknik ayrıntılar", { exact: true }).click();
   const completedReportUrl = page.url();
   await page.getByRole("link", { name: "Yeni analiz oluştur" }).click();
   await expect(page.getByText("Sentetik İşletme", { exact: true })).toBeVisible();

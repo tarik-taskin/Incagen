@@ -26,6 +26,16 @@ Analiz hedefi örnekleri tıklama anındaki arayüz dilinde eklenir. Birden fazl
 
 Kurumsal örnek raporun bölüm bağlantıları seçili dönemle birlikte URL'ye yazılır. Doğrudan bağlantı, yenileme ve geri/ileri ilgili kapalı ayrıntıyı açıp hedefe kaydırır; aynı bölüm tekrar seçilince de kapalı içerik açılır. Yeni dönem seçimi bölüm adresini ve açılmış ayrıntıları sıfırlayıp genel bakışı gösterir. Bilinmeyen bölüm adresleri işleme alınmaz. Grafik/kaynak kullanım açıklaması bir kez gösterilir; tablolar, bulgular ve özgün belgeler korunur.
 
+### Hazırlama sırasında kullanıcı kontrolü
+
+Çalışma kaydı açma, dosya aktarımı ve belge hazırlama farklı istemci aşamalarıdır. Yüzde yalnız aktarılan baytlardan hesaplanır; %100 aktarım, hazırlığın veya AI analizinin bittiği anlamına gelmez. Hazırlama aşaması gerçek backend yanıtını bekler; açık hata veya belge incelemesi başarılı sonuç gibi gösterilmez. Yeni analiz ekranındaki ayrıntılı durum, başka bir iç sayfada tek kompakt duruma dönüşür; işlem ve taslak aynı sağlayıcıda yaşar. Oluşturma/yükleme iptalinde dosyalar korunur; yeniden deneme aynı içerik için mevcut idempotency anahtarını kullanır.
+
+Yerel dosyalar seçiliyken veya işlem sürerken `beforeunload` dinleyicisi bağlanır; tarayıcı destekliyorsa yenileme/sekme kapatmada native ayrılma onayı ister. Bu özellik otomatik kayıt değildir; cihaz/tarayıcı ve kullanıcı etkileşimi koşullarına bağlıdır. İç sayfa gezinmesini engellemez. Dosyalar temizlenince, başarılı hazırlık taslağı temizleyince veya oturum sağlayıcısı kaldırılınca dinleyici kaldırılır.
+
+Tarayıcı çevrimdışı bildirdiğinde çalışma alanında tek bir bağlantı notu görünür; yeniden çevrimiçi olunca kaldırılır. Bu sinyal backend sağlığı veya internete erişim garantisi değildir. Taslağı değiştirmez, iş başlatmaz, düğmeleri kalıcı engellemez ve otomatik yeniden deneme yapmaz. Hatalar mevcut servis yanıtlarıyla ayrı ele alınır.
+
+Tamamlanan hazırlıkta belge adları, kategorileri, boyutları, sayfa/çalışma sayfası/slayt bilgileri ve okuma uyarıları görünürdür. MIME, parça ve karakter değerleri ortak “Teknik ayrıntılar” alanında korunur. Başarılı ayrıştırma OCR veya AI yorumu olarak sunulmaz; kısmi kapsam ve dışlanan belgeler ayrıca belirtilir.
+
 ## Free ve Premium
 
 Ürün limitlerinin belge kaynağı bu tablodur. Frontend plan bilgileri merkezi plan kurallarında, backend uygulanmış Free sınırları ortak analiz sözleşmesinde tutulur; değişiklikte üçü birlikte doğrulanır.

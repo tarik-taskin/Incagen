@@ -7,6 +7,17 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-26 — Furkan / Codex: sade ve güvenilir belge hazırlığı
+
+- [x] Sahip: Furkan — Çalışma oluşturma, gerçek dosya yükleme ve belge hazırlama aşamalarını ayır; yüzdeyi yalnız gerçek aktarımda göster, sayfa geçişlerinde aynı işlem durumunu koru.
+- [x] Sahip: Furkan — Yerel dosya veya devam eden işlem varken yenileme/sekme kapatmada native ayrılma uyarısını etkinleştir; dosyalar temizlenince/oturum kapanınca kaldır, iç gezinmeyi engelleme.
+- [x] Sahip: Furkan — Hazırlık sonucunda belge kapsamını ve uyarıları öne al; MIME/parça/karakter gibi teknik bilgileri erişilebilir açılır ayrıntıda eksiksiz koru.
+- [x] Sahip: Furkan — Çevrimdışı tarayıcı durumunu çalışma alanında tek, yerelleştirilmiş uyarıyla göster; bağlantı gelince kaldır, taslağı değiştirme ve otomatik yeni iş başlatma.
+
+Kabul: İlerleme sahte süre/yüzde veya AI sonucu üretmemeli; yükleme iptali, hata/yeniden deneme, kısmi onay ve tek kota davranışı korunmalı. Ayrılma uyarısı yalnız riskli durumda bağlı olmalı; tarayıcının kendi metni/desteği geçerlidir, dosyaların diske kaydedildiği söylenmemeli. Sonuçta tüm belgeler, uyarılar ve teknik değerler erişilebilir kalmalı; altı dil, iki tema, RTL, mobil, klavye ve azaltılmış hareket doğrulanmalı. Lint, birim, build, entegrasyon/tarayıcı ve örnek kaynak kontrolleri geçmeli; main/furkan local/remote eşit, çalışma ağacı temiz, GitHub Quality başarılı ve Netlify aynı sürüm olmalı. Firebase servis/yetki ayarları, AI ve Python kapsamı değiştirilmez.
+
+Doğrulama: Lint, 87 uygulama + 104 Functions testi, frontend/Functions ve canlı önizleme derlemeleri, 4 entegrasyon ve 51 masaüstü/mobil tarayıcı senaryosu geçti. Yalnız masaüstüne uygulanmayan 2 dar ekran ve mobilde garanti edilmeyen 1 native diyalog senaryosu atlandı. Son aktif iş bağlantısı rötuşundan sonra ilgili 5 tarayıcı senaryosu tekrar geçti; 1 mobil native kontrolü aynı gerekçeyle atlandı. Gerçek aktarım/hazırlık ayrımı, iptal ve hata sonrası dosya korunumu, aynı istek kimliği, başarılı temizlik, sekme kapatma onayı ve yeniden bağlantıda sıfır otomatik iş doğrulandı. Altı dil, iki tema, RTL, klavye, mobil taşma ve azaltılmış hareket geçti. Pasif dosya seçim alanında yakalanan açıklama kontrastı düzeltildi. Belge uyarıları açık kalırken bütün teknik değerler açılır alanda korundu; özgün örnek kaynakların yeniden üretim kontrolleri değişmedi.
+
 ### 2026-10-20 — Furkan / Codex: hafif açılış ve sade rapor akışı
 
 - [x] Sahip: Furkan — İlk açılışta çalışma alanı ekranlarını ihtiyaç halinde yükle; yükleme görünümü, oturum, taslak ve doğrudan rota erişimini koru; önce/sonra üretim paketini ölç.
