@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-26 — Furkan / Codex: yeni bağımlılık uyarılarının giderilmesi
+
+- [x] Sahip: Furkan — GitHub Quality üretim denetimini durduran Zod ve body-parser kayıtlarını ve geliştirme araçlarının uyumlu düzeltmelerini gider; iki paket ağacını ve kullanıcı akışlarını yeniden doğrula.
+
+Kabul: Ana sürümler ve Firebase servis ayarları değişmemeli; güvenlik kapısı gevşetilmemeli. Üretim denetimleri, lint, birim, frontend/Functions derlemeleri, entegrasyon ve tarayıcı kontrolleri geçmeli. Kalan geliştirme uyarıları açık belgelenmeli; son commit GitHub Quality ve Netlify ile doğrulanmalı.
+
+Doğrulama: İki üretim denetimi 0 uyarıyla geçti; tüm geliştirme ağacında yüksek/kritik kayıt kalmadı, ana sürüm değişimi gerektiren 6 orta önem kaydı test rehberine işlendi. Lint, 87 uygulama + 104 Functions testi, frontend/Functions derlemeleri, 4 entegrasyon ve 51 masaüstü/mobil tarayıcı senaryosu geçti; platforma uygulanmayan 3 senaryo önceki gerekçeleriyle atlandı. Özgün satış ve geri bildirim kaynakları yeniden üretim kontrollerinde değişmedi; CI denetimi gevşetilmedi.
+
 ### 2026-10-26 — Furkan / Codex: sade ve güvenilir belge hazırlığı
 
 - [x] Sahip: Furkan — Çalışma oluşturma, gerçek dosya yükleme ve belge hazırlama aşamalarını ayır; yüzdeyi yalnız gerçek aktarımda göster, sayfa geçişlerinde aynı işlem durumunu koru.
@@ -513,7 +521,7 @@ Aşağıdakiler sonraki aşamanın açık kararlarıdır. Bugünkü yerel akış
 - Saklama/bölge seçimleri gizlilik, maliyet ve operasyonu etkiler; uygulanmadan kararlaştırılmalıdır.
 - AI maliyeti, model erişimi ve şema güvenilirliği gerçek testlerle ölçülmelidir.
 - Kota/webhook tekrarları çift ücret veya tüketim doğurmamalıdır.
-- 2026-10-18 bağımlılık bakımında üretimdeki yüksek/kritik uyarılar giderildi. Functions'ın kullanılmayan Mammoth CLI zincirinde 3 orta önem; geliştirme araçlarında 6 yüksek/4 orta kayıt kalıyor. Erişim değerlendirmesi, düzeltme sınırı ve CI eşiği [test rehberindedir](docs/TESTING.md#bağımlılık-denetimi); denetim tamamen temiz sayılmaz, uyumsuz ana sürümler zorlanmaz.
+- 2026-10-26 bağımlılık bakımında iki üretim ağacında 0 uyarı doğrulandı; geliştirme araçlarında 6 orta önem kaydı kalıyor. Erişim değerlendirmesi, düzeltme sınırı ve CI eşiği [test rehberindedir](docs/TESTING.md#bağımlılık-denetimi); bütün geliştirme denetimi temiz sayılmaz, uyumsuz ana sürümler zorlanmaz.
 - Yerel testler bulut IAM/App Check, kalıcı kuyruk ve gerçek veri operasyonunun hazır olduğunu göstermez.
 - Genel arayüz, grafik ve örnek rapor parçalarında 500 kB build uyarısı sürüyor. Başlangıçtaki bütün statik JS grafiği 400 KiB gzip bütçesiyle korunur; mevcut sınır ve ölçüm [test rehberindedir](docs/TESTING.md#ilk-açılış-bütçesi).
 

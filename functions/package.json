@@ -27,7 +27,7 @@
     "mammoth": "^1.12.3",
     "pdf-parse": "^2.4.5",
     "yauzl": "^3.4.0",
-    "zod": "^4.6.2"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/yauzl": "^3.4.0",

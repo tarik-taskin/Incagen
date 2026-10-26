@@ -38,10 +38,14 @@ npm --prefix functions audit --omit=dev --audit-level=high
 
 Bu eşik orta önem uyarılarını gizlemez; denetim bunları çıktı olarak verir. 2026-10-18 bakımında `@grpc/grpc-js` 1.14.6, `proxy-addr` 2.0.8 ve `brace-expansion` düzeltilmiş dallara taşındı. gRPC override'ı, Firebase istemcisinin eski Node alt bağımlılığını yeniden çözmesini önler. Sürüm gerekçeleri [gRPC](https://github.com/advisories/GHSA-m9gg-hp2v-232j), [proxy-addr](https://github.com/advisories/GHSA-jqcg-44mw-7w3h) ve [brace-expansion](https://github.com/advisories/GHSA-6j4f-fj2g-mc7p) duyurularındadır. Ana Firebase/Office API sürümleri korundu; Firebase CLI ve uyumlu alt bağımlılıklar güncellendi.
 
-Kalan uyarılar ve erişim sınırları:
+2026-10-26 bakımında yeni [Zod](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5) ve [body-parser](https://github.com/advisories/GHSA-27r3-jxmh-p828) kayıtları nedeniyle duran üretim kapısı, Zod 4.6.7 ve body-parser 1.20.9/2.4.0 ile düzeltildi. Express'in iki ana dalı kendi uyumlu parser sürümünü kullanır; yeni override eklenmedi. Geliştirme ağacında Vite 6.4.5, Vitest 5.0.5 ve uyumlu Undici/Hono/fast-uri alt bağımlılıkları da güncellendi; doğrudan bağımlılıkların ana sürümleri korundu.
 
-- Functions: `mammoth → argparse → sprintf-js` zincirinde aynı kök uyarıdan türeyen üç orta önem kaydı vardır. `sprintf-js` için düzeltilmiş npm sürümü henüz yoktur. Uygulama yalnız Mammoth'un `extractRawText({ buffer })` kütüphane API'sini çağırır; `argparse`, Mammoth'un `bin/mammoth` komut satırı girişinde kullanılır ve bu giriş çalıştırılmaz. [Duyuru](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) kapanana veya uyumlu üst paket düzeltmesi gelene kadar izlenir; bu, denetimin tamamen temiz olduğu anlamına gelmez.
-- Kök paketin geliştirme ağacında Tailwind'in dosya/desen ve CSS ayrıştırma araçları ile Firebase CLI telemetri bağımlılığından gelen 10 kayıt (6 yüksek, 4 orta) kalır. Bunlar yayınlanan tarayıcı paketinin üretim bağımlılıkları değildir. Kalan öneriler Tailwind 4 geçişi veya Firebase CLI ana sürüm düşürmesi istediğinden `audit fix --force` uygulanmaz; ayrı uyumluluk çalışmasıyla ele alınır.
+Bu tarihte iki üretim ağacında da **0 uyarı** vardır. Önceden izlenen Mammoth CLI zinciri güncel denetimde raporlanmıyor; bu gözlem ilgili kodun değiştirildiği anlamına gelmez. Tüm geliştirme bağımlılıklarını içeren kök denetimde **6 orta önem kaydı**, 0 yüksek/kritik kalır:
+
+- Firebase CLI'nin `@google-cloud/pubsub → @opentelemetry/core` telemetri zinciri: 3 kayıt. Önerilen otomatik çözüm Firebase CLI'yi 15'ten 14'e düşürdüğünden uygulanmaz.
+- Tailwind 3'ün `postcss-nested → postcss-selector-parser` CSS araç zinciri: 3 kayıt. Otomatik çözüm Tailwind 4 geçişi istediğinden ayrı uyumluluk işi olarak tutulur.
+
+Bu geliştirme araçları yayınlanan tarayıcı paketinin üretim bağımlılıkları değildir; bu ayrım riskin sıfır olduğu anlamına gelmez. `audit fix --force` kullanılmaz; kalan kayıtlar ana sürüm geçişinden önce yeniden değerlendirilir.
 
 Denetim zamanla değişir. Yeni uyarıda yalnız sayıya bakılmaz; etkilenen sürüm, gerçek çağrı yolu ve düzeltmenin uyumu yeniden kontrol edilir. Kontroller kapatılmaz veya uyarılar bastırılmaz.
 
