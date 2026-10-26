@@ -5,6 +5,8 @@ export interface Draft {
   business: string;
   objective: string;
 }
+export type PreparationPhase = "idle" | "creating" | "uploading" | "preparing";
+export interface UploadingFile { name: string; index: number; total: number }
 export interface WorkspaceState {
   selection: ReturnType<typeof useFileSelectionState>;
   draft: Draft;
@@ -13,6 +15,8 @@ export interface WorkspaceState {
   applyObjectiveExample: (objective: string) => void;
   undoObjectiveExample: () => void;
   busy: boolean; progress: number; error: string; activeId: string;
+  phase: PreparationPhase;
+  uploadingFile: UploadingFile | null;
   start: () => Promise<{ id: string; ready: boolean } | undefined>;
   completeDraft: () => void;
   cancel: () => void;

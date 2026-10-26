@@ -3,13 +3,14 @@ import { t, useLocale } from "../../i18n/runtime";
 import { ArrowUpRight, CircleHelp, Crown, FileBarChart2, Headphones, History, Settings } from "lucide-react";
 import { useState } from "react";
 import { SupportDialog } from "../support-dialog";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { AnimatedLogo } from "../animated-logo";
 import { PremiumUpgrade } from "../premium-upgrade";
 import { ThemeToggle } from "../theme-toggle";
 import { PLAN_RULES } from "../../features/plans/plan-rules";
 import { cn } from "../../lib/utils";
-import { useWorkspace } from "../../lib/workspace-context";
+import { ConnectionStatus } from "../connection-status";
+import { PreparationProgress } from "../upload/preparation-progress";
 
 const navigationItems = [
   { to: "/app/new-analysis", label: "Yeni analiz", icon: FileBarChart2 },
@@ -31,7 +32,7 @@ function getDesktopLinkClass(isActive: boolean) {
 // Uygulama sayfalarını ortak responsive navigasyon, başlık ve tema kontrolü içinde sunar.
 export function AppShell() {
   useLocale();
-  const workspace = useWorkspace();
+  const location = useLocation();
   const [helpOpen, setHelpOpen] = useState(false);
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -94,7 +95,8 @@ export function AppShell() {
         </header>
 
         <main id="main-content" className="mx-auto min-h-[calc(100vh-4rem)] max-w-7xl px-5 py-8 pb-28 sm:px-8 lg:pb-10">
-          {workspace.busy && <p role="status" className="mb-4 rounded-xl border border-border bg-card p-3 text-sm">{t("İşleminiz devam ediyor.")} {workspace.activeId && <Link className="underline" to={"/app/analyses/" + workspace.activeId}>{t("İşlemi izle")}</Link>}</p>}
+          <ConnectionStatus />
+          {location.pathname !== "/app/new-analysis" && <PreparationProgress compact />}
           <Outlet />
           <div className="mt-8 flex justify-center border-t border-border/60 pt-5 lg:hidden"><button type="button" onClick={() => setHelpOpen(true)} className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Headphones className="h-4 w-4" aria-hidden="true" />{t("Destek ve yardım")}</button></div>
         </main>

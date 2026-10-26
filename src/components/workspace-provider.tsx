@@ -4,7 +4,8 @@ import { ref, uploadBytesResumable, type UploadTask } from "firebase/storage";
 import { getDoc, doc } from "firebase/firestore";
 import { ANALYSIS_OBJECTIVE_MAX_LENGTH, createSchema, LIMITS, type CreateAnalysis } from "../../functions/src/contracts";
 import { useFileSelectionState } from "../hooks/use-file-selection";
-import { WorkspaceContext, type Draft } from "../lib/workspace-context";
+import { WorkspaceContext, type Draft, type PreparationPhase, type UploadingFile } from "../lib/workspace-context";
+import { useBeforeUnload } from "../hooks/use-before-unload";
 import { getServices } from "../lib/firebase";
 import { userError } from "../lib/errors";
 import { authOnlyPreview } from "../lib/deployment-mode";
@@ -15,7 +16,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const selection = useFileSelectionState();
   const [draftState, setDraftState] = useState<{ draft: Draft; originalObjective: string | null }>({ draft: { title: "", business: "", objective: "" }, originalObjective: null });
   const { draft, originalObjective } = draftState;
-  const [busy, setBusy] = useState(false);
+  const [phase, setPhase] = useState<PreparationPhase>("idle");
+  const busy = phase !== "idle";
+  const [uploadingFile, setUploadingFile] = useState<UploadingFile | null>(null);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
   const [activeId, setActiveId] = useState("");
@@ -23,6 +26,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const lock = useRef(false);
   const cancelled = useRef(false);
   const request = useRef<{ signature: string; id: string } | null>(null);
+  useBeforeUnload(selection.files.length > 0 || busy);
   useEffect(() => () => { cancelled.current = true; task.current?.cancel(); }, []);
 
   // Kullanıcının hedefi değişince eski geri alma kaydını bırakır; başlık/işletme düzenlemek bu kaydı bozmaz.
@@ -66,12 +70,12 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         : `İşletme ve analiz başlığını doldurun. Free sınırları: ${LIMITS.files} dosya ve toplam ${LIMITS.totalBytes / 1024 ** 2} MB/analiz.`);
       return;
     }
-    lock.current = true; cancelled.current = false; setBusy(true); setProgress(0);
+    lock.current = true; cancelled.current = false; setPhase("creating"); setUploadingFile(null); setProgress(0);
     try {
       const services = getServices();
       const create = httpsCallable<CreateAnalysis, { id: string; paths: string[] }>(services.functions, "createAnalysis");
       const { data } = await create(parsed.data);
-      if (cancelled.current) return;
+      if (cancelled.current) throw new Error("Yükleme iptal edildi.");
       setActiveId(data.id);
       const uid = services.auth.currentUser!.uid;
       const existing = await getDoc(doc(services.db, "users", uid, "analyses", data.id));
@@ -80,6 +84,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       let completed = 0;
       for (const [i, item] of selection.files.entries()) {
         if (cancelled.current) throw new Error("Yükleme iptal edildi.");
+        setPhase("uploading");
+        setUploadingFile({ name: item.file.name, index: i + 1, total: selection.files.length });
         await new Promise<void>((resolve, reject) => {
           const upload = uploadBytesResumable(ref(services.storage, data.paths[i]), item.file, { contentType: item.file.type || "application/octet-stream" });
           task.current = upload;
@@ -89,10 +95,12 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       }
       task.current = null;
       if (cancelled.current) throw new Error("Yükleme iptal edildi.");
+      setPhase("preparing");
+      setUploadingFile(null);
       const result = await httpsCallable<{ id: string }, { needsReview?: boolean; ready: boolean }>(services.functions, "prepareAnalysis", { timeout: 310_000 })({ id: data.id });
       return { id: data.id, ready: result.data.ready === true };
     } catch (e) { if (!cancelled.current) setError(userError(e)); else setError("Yükleme iptal edildi; dosyalarınız korundu."); }
-    finally { task.current = null; lock.current = false; setBusy(false); }
+    finally { task.current = null; lock.current = false; setPhase("idle"); setUploadingFile(null); }
   }
   // Başarılı hazırlıktan sonra dosya, başlık ve hedefi temizler; işletme ve son iş bağlantısını korur.
   function completeDraft() {
@@ -106,5 +114,5 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     request.current = null;
   }
   function cancel() { cancelled.current = true; task.current?.cancel(); }
-  return <WorkspaceContext.Provider value={{ selection, draft, setDraft, canUndoObjectiveExample: originalObjective !== null, applyObjectiveExample, undoObjectiveExample, busy, progress, error, activeId, start, completeDraft, cancel }}>{children}</WorkspaceContext.Provider>;
+  return <WorkspaceContext.Provider value={{ selection, draft, setDraft, canUndoObjectiveExample: originalObjective !== null, applyObjectiveExample, undoObjectiveExample, busy, progress, phase, uploadingFile, error, activeId, start, completeDraft, cancel }}>{children}</WorkspaceContext.Provider>;
 }

@@ -5,6 +5,7 @@ import { Building2, Check, Pencil, Target } from "lucide-react";
 import { ANALYSIS_OBJECTIVE_MAX_LENGTH } from "../../functions/src/contracts";
 import { FileDropzone } from "../components/upload/file-dropzone";
 import { SelectedFileList } from "../components/upload/selected-file-list";
+import { PreparationProgress } from "../components/upload/preparation-progress";
 import { DraftReadiness, SelectionSummary } from "../components/upload/preparation-summary";
 import { getPreparationState, type DraftField } from "../features/files/preparation-state";
 import { Button } from "../components/ui/button";
@@ -15,7 +16,7 @@ import { tr } from "../i18n/tr";
 // Farklı iş belgesi türlerini analiz hazırlığı ve güvenli yerel yükleme akışında birleştirir.
 export function NewAnalysisPage() {
   useLocale();
-  const { selection, draft, setDraft, canUndoObjectiveExample, applyObjectiveExample, undoObjectiveExample, busy, progress, error, activeId, start, completeDraft, cancel } = useWorkspace();
+  const { selection, draft, setDraft, canUndoObjectiveExample, applyObjectiveExample, undoObjectiveExample, busy, phase, error, activeId, start, completeDraft, cancel } = useWorkspace();
   const { files, rejections, addFiles, removeFile, clearFiles, dismissRejections } = selection;
   const navigate = useNavigate();
   const [editingBusiness, setEditingBusiness] = useState(() => !draft.business);
@@ -98,10 +99,10 @@ export function NewAnalysisPage() {
         </fieldset>
         <p className="mt-5 rounded-xl border border-primary/10 bg-primary/[0.04] px-3.5 py-3 text-xs leading-5 text-muted-foreground dark:border-secondary/15 dark:bg-secondary/[0.05]"><span className="font-semibold text-foreground">{t("Bir konuya odaklanın.")}</span>  {t("Müşteri geri bildirimleri ya da finans verileri gibi birbiriyle ilişkili belgeleri aynı analizde toplayın.")}</p>
         <DraftReadiness state={preparation} busy={busy} onFocusField={focusField} />
-        {busy && <div role="status" className="mt-4 text-sm"><p>{progress < 100 ? t("Yükleniyor: %{0}", progress) : t(tr.status.processing)}</p><progress aria-label={t("Yükleme ilerlemesi")} className="mt-2 w-full accent-purple-700" value={progress} max={100} /></div>}
+        <PreparationProgress />
         {(localError || error) && <p id="preparation-error" role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{localError || error}</p>}
         <Button className="mt-5 w-full" aria-describedby="preparation-help" disabled={busy || files.length === 0} onClick={submit}>{t(tr.analysis.start)}</Button>
-        {busy && progress < 100 && <Button variant="ghost" className="mt-2 w-full" onClick={cancel}>{t(tr.analysis.cancel)}</Button>}
+        {busy && phase !== "preparing" && <Button variant="ghost" className="mt-2 w-full" onClick={cancel}>{t(tr.analysis.cancel)}</Button>}
         {activeId && <Link className="mt-4 block text-sm underline" to={"/app/analyses/" + activeId}>{t("Son işlemi aç")}</Link>}
         <p className="mt-3 text-xs leading-5 text-muted-foreground">{t("Hazırlama başladığında dosyaların gerçek içerik türü doğrulanır; okunabilir bölümler kaynakları korunarak düzenlenir. Yorum ve öneriler bu aşamada üretilmez.")}</p>
       </aside>

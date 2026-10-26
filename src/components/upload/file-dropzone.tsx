@@ -62,7 +62,8 @@ export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzone
         isDragging
           ? "border-primary bg-primary/[0.08] dark:border-secondary dark:bg-secondary/[0.08]"
           : "border-primary/30 bg-card/75 hover:border-primary/60 hover:bg-card dark:border-secondary/25 dark:hover:border-secondary/55",
-        disabled && "cursor-not-allowed opacity-60",
+        // Açıklamalar pasif alanda da okunur kalır; yalnız gerçek kontroller disabled görünür.
+        disabled && "cursor-not-allowed",
       )}
       role="group"
       aria-label={t("Dosya seçim alanı")}
