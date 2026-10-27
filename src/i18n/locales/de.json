@@ -956,5 +956,14 @@
   "{0}×{1}px": "{0}×{1}px",
   "{0} sayfa__one": "{0} Seite",
   "{0} çalışma sayfası__one": "{0} Tabellenblatt",
-  "{0} slayt__one": "{0} Folie"
+  "{0} slayt__one": "{0} Folie",
+  "Google": "Google",
+  "Google ve e-posta/parola": "Google und E-Mail/Passwort",
+  "Bu hesap Google ile giriş yapıyor. Parolanızı Google hesabınızdan yönetirsiniz.": "Dieses Konto meldet sich mit Google an. Ihr Passwort verwalten Sie in Ihrem Google-Konto.",
+  "Bu işlem hesabınızı, tüm analizlerinizi ve belgelerinizi siler. Onay metnini girin; ardından açılan Google penceresinde kimliğinizi doğrulayın.": "Konto, Analysen und Dokumente werden gelöscht. Bestätigungstext eingeben und danach im Google-Fenster die Identität bestätigen.",
+  "Tarayıcı Google penceresini engelledi. Açılır pencerelere izin verip yeniden deneyin.": "Der Browser hat das Google-Fenster blockiert. Pop-ups erlauben und erneut versuchen.",
+  "Bu e-posta başka bir giriş yöntemiyle kayıtlı. E-posta ve parolanızla giriş yapın.": "Diese E-Mail nutzt eine andere Anmeldemethode. Mit E-Mail und Passwort anmelden.",
+  "Bu giriş yöntemi şu anda etkin değil.": "Diese Anmeldemethode ist derzeit nicht aktiviert.",
+  "Bu adres Google ile giriş için yetkilendirilmedi.": "Diese Adresse ist für die Google-Anmeldung nicht freigegeben.",
+  "Bu hesaba bağlı Google hesabını seçin.": "Das mit diesem Konto verknüpfte Google-Konto wählen."
 }

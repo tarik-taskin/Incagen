@@ -956,5 +956,14 @@
   "{0}×{1}px": "{0}×{1}px",
   "{0} sayfa__one": "{0} página",
   "{0} çalışma sayfası__one": "{0} hoja de cálculo",
-  "{0} slayt__one": "{0} diapositiva"
+  "{0} slayt__one": "{0} diapositiva",
+  "Google": "Google",
+  "Google ve e-posta/parola": "Google y correo/contraseña",
+  "Bu hesap Google ile giriş yapıyor. Parolanızı Google hesabınızdan yönetirsiniz.": "Esta cuenta accede con Google. Gestiona tu contraseña desde tu cuenta de Google.",
+  "Bu işlem hesabınızı, tüm analizlerinizi ve belgelerinizi siler. Onay metnini girin; ardından açılan Google penceresinde kimliğinizi doğrulayın.": "Se eliminarán tu cuenta, análisis y documentos. Introduce el texto de confirmación y verifica tu identidad en la ventana de Google.",
+  "Tarayıcı Google penceresini engelledi. Açılır pencerelere izin verip yeniden deneyin.": "El navegador bloqueó la ventana de Google. Permite las ventanas emergentes e inténtalo de nuevo.",
+  "Bu e-posta başka bir giriş yöntemiyle kayıtlı. E-posta ve parolanızla giriş yapın.": "Este correo usa otro método de acceso. Inicia sesión con tu correo y contraseña.",
+  "Bu giriş yöntemi şu anda etkin değil.": "Este método de acceso no está activado ahora.",
+  "Bu adres Google ile giriş için yetkilendirilmedi.": "Esta dirección no está autorizada para acceder con Google.",
+  "Bu hesaba bağlı Google hesabını seçin.": "Elige la cuenta de Google vinculada a esta cuenta."
 }

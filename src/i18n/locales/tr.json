@@ -956,5 +956,14 @@
   "{0}×{1}px": "{0}×{1}px",
   "{0} sayfa__one": "{0} sayfa",
   "{0} çalışma sayfası__one": "{0} çalışma sayfası",
-  "{0} slayt__one": "{0} slayt"
+  "{0} slayt__one": "{0} slayt",
+  "Google": "Google",
+  "Google ve e-posta/parola": "Google ve e-posta/parola",
+  "Bu hesap Google ile giriş yapıyor. Parolanızı Google hesabınızdan yönetirsiniz.": "Bu hesap Google ile giriş yapıyor. Parolanızı Google hesabınızdan yönetirsiniz.",
+  "Bu işlem hesabınızı, tüm analizlerinizi ve belgelerinizi siler. Onay metnini girin; ardından açılan Google penceresinde kimliğinizi doğrulayın.": "Bu işlem hesabınızı, tüm analizlerinizi ve belgelerinizi siler. Onay metnini girin; ardından açılan Google penceresinde kimliğinizi doğrulayın.",
+  "Tarayıcı Google penceresini engelledi. Açılır pencerelere izin verip yeniden deneyin.": "Tarayıcı Google penceresini engelledi. Açılır pencerelere izin verip yeniden deneyin.",
+  "Bu e-posta başka bir giriş yöntemiyle kayıtlı. E-posta ve parolanızla giriş yapın.": "Bu e-posta başka bir giriş yöntemiyle kayıtlı. E-posta ve parolanızla giriş yapın.",
+  "Bu giriş yöntemi şu anda etkin değil.": "Bu giriş yöntemi şu anda etkin değil.",
+  "Bu adres Google ile giriş için yetkilendirilmedi.": "Bu adres Google ile giriş için yetkilendirilmedi.",
+  "Bu hesaba bağlı Google hesabını seçin.": "Bu hesaba bağlı Google hesabını seçin."
 }

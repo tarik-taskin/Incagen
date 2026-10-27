@@ -956,5 +956,14 @@
   "{0}×{1}px": "{0}×{1} بكسل",
   "{0} sayfa__one": "الصفحات: {0}",
   "{0} çalışma sayfası__one": "أوراق العمل: {0}",
-  "{0} slayt__one": "الشرائح: {0}"
+  "{0} slayt__one": "الشرائح: {0}",
+  "Google": "Google",
+  "Google ve e-posta/parola": "Google والبريد/كلمة المرور",
+  "Bu hesap Google ile giriş yapıyor. Parolanızı Google hesabınızdan yönetirsiniz.": "يسجّل هذا الحساب الدخول عبر Google. أدر كلمة المرور من حساب Google.",
+  "Bu işlem hesabınızı, tüm analizlerinizi ve belgelerinizi siler. Onay metnini girin; ardından açılan Google penceresinde kimliğinizi doğrulayın.": "سيُحذف حسابك وتحليلاتك ومستنداتك. أدخل نص التأكيد، ثم تحقّق من هويتك في نافذة Google.",
+  "Tarayıcı Google penceresini engelledi. Açılır pencerelere izin verip yeniden deneyin.": "حظر المتصفح نافذة Google. اسمح بالنوافذ المنبثقة ثم أعد المحاولة.",
+  "Bu e-posta başka bir giriş yöntemiyle kayıtlı. E-posta ve parolanızla giriş yapın.": "هذا البريد مسجّل بطريقة دخول أخرى. سجّل الدخول بالبريد وكلمة المرور.",
+  "Bu giriş yöntemi şu anda etkin değil.": "طريقة تسجيل الدخول هذه غير مفعّلة حاليًا.",
+  "Bu adres Google ile giriş için yetkilendirilmedi.": "هذا العنوان غير مخوّل لتسجيل الدخول عبر Google.",
+  "Bu hesaba bağlı Google hesabını seçin.": "اختر حساب Google المرتبط بهذا الحساب."
 }

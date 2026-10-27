@@ -956,5 +956,14 @@
   "{0}×{1}px": "{0}×{1}px",
   "{0} sayfa__one": "{0} page",
   "{0} çalışma sayfası__one": "{0} worksheet",
-  "{0} slayt__one": "{0} slide"
+  "{0} slayt__one": "{0} slide",
+  "Google": "Google",
+  "Google ve e-posta/parola": "Google and email/password",
+  "Bu hesap Google ile giriş yapıyor. Parolanızı Google hesabınızdan yönetirsiniz.": "This account signs in with Google. Manage your password in your Google account.",
+  "Bu işlem hesabınızı, tüm analizlerinizi ve belgelerinizi siler. Onay metnini girin; ardından açılan Google penceresinde kimliğinizi doğrulayın.": "This deletes your account, analyses and documents. Enter the confirmation text, then verify your identity in the Google window.",
+  "Tarayıcı Google penceresini engelledi. Açılır pencerelere izin verip yeniden deneyin.": "Your browser blocked the Google window. Allow pop-ups and try again.",
+  "Bu e-posta başka bir giriş yöntemiyle kayıtlı. E-posta ve parolanızla giriş yapın.": "This email uses another sign-in method. Sign in with your email and password.",
+  "Bu giriş yöntemi şu anda etkin değil.": "This sign-in method is not enabled right now.",
+  "Bu adres Google ile giriş için yetkilendirilmedi.": "This address is not authorized for Google sign-in.",
+  "Bu hesaba bağlı Google hesabını seçin.": "Choose the Google account linked to this account."
 }

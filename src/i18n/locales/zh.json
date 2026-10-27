@@ -956,5 +956,14 @@
   "{0}×{1}px": "{0}×{1} 像素",
   "{0} sayfa__one": "{0} 页",
   "{0} çalışma sayfası__one": "{0} 个工作表",
-  "{0} slayt__one": "{0} 张幻灯片"
+  "{0} slayt__one": "{0} 张幻灯片",
+  "Google": "Google",
+  "Google ve e-posta/parola": "Google 和邮箱/密码",
+  "Bu hesap Google ile giriş yapıyor. Parolanızı Google hesabınızdan yönetirsiniz.": "此账户使用 Google 登录。请在 Google 账户中管理密码。",
+  "Bu işlem hesabınızı, tüm analizlerinizi ve belgelerinizi siler. Onay metnini girin; ardından açılan Google penceresinde kimliğinizi doğrulayın.": "此操作会删除账户、全部分析和文档。请输入确认文字，然后在弹出的 Google 窗口中验证身份。",
+  "Tarayıcı Google penceresini engelledi. Açılır pencerelere izin verip yeniden deneyin.": "浏览器拦截了 Google 窗口。请允许弹出窗口后重试。",
+  "Bu e-posta başka bir giriş yöntemiyle kayıtlı. E-posta ve parolanızla giriş yapın.": "该邮箱已使用其他登录方式注册。请使用邮箱和密码登录。",
+  "Bu giriş yöntemi şu anda etkin değil.": "此登录方式当前未启用。",
+  "Bu adres Google ile giriş için yetkilendirilmedi.": "此地址未获授权使用 Google 登录。",
+  "Bu hesaba bağlı Google hesabını seçin.": "请选择与此账户关联的 Google 账户。"
 }

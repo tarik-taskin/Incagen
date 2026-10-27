@@ -1,10 +1,11 @@
 import { LanguageSelector } from "./language-selector";
 import { t, useLocale } from "../i18n/runtime";
 import { useState, type FormEvent, type ReactNode } from "react";
-import { createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
-import { Apple, BadgeCheck, Check, Circle, Eye, EyeOff, KeyRound, Mail, ShieldCheck, Ticket, X } from "lucide-react";
+import { createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { Apple, BadgeCheck, Check, Circle, Eye, EyeOff, KeyRound, LoaderCircle, Mail, ShieldCheck, Ticket, X } from "lucide-react";
 import { tr } from "../i18n/tr";
 import { useAuth } from "../lib/auth-context";
+import { createGoogleProvider, isDismissedPopup } from "../lib/auth-providers";
 import { userError } from "../lib/errors";
 import { getAuthServices, usesFirebaseEmulator } from "../lib/firebase-auth";
 import { AnimatedLogo } from "./animated-logo";
@@ -73,18 +74,30 @@ function MicrosoftMark() {
   );
 }
 
-// Henüz bağlı olmayan sosyal sağlayıcıyı arayüz yerini koruyarak pasif sunar.
-function SocialOption({ action, icon, name }: { action: string; icon: ReactNode; name: string }) {
+interface SocialOptionProps {
+  action: string;
+  disabled?: boolean;
+  icon: ReactNode;
+  name: string;
+  onSelect?: () => void;
+  pending?: boolean;
+}
+
+// Sosyal sağlayıcıyı gösterir; bağlı olmayan sağlayıcı arayüzdeki yerini koruyarak pasif kalır.
+function SocialOption({ action, disabled = false, icon, name, onSelect, pending = false }: SocialOptionProps) {
   useLocale();
+  const label = t("{0} ile {1}", name, t(action));
   return (
     <button
       type="button"
-      disabled
-      title={t("{0} ile {1}", name, t(action))}
-      className="flex h-12 items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-1 text-[11px] font-semibold text-foreground shadow-sm disabled:cursor-not-allowed disabled:opacity-100 sm:gap-2 sm:px-3 sm:text-sm"
-      aria-label={t("{0} ile {1}", name, t(action))}
+      disabled={!onSelect || disabled}
+      aria-busy={pending || undefined}
+      title={label}
+      onClick={onSelect}
+      className="flex h-12 items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-1 text-[11px] font-semibold text-foreground shadow-sm transition-colors enabled:hover:border-primary/30 enabled:hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-100 dark:enabled:hover:border-secondary/30 dark:focus-visible:ring-secondary sm:gap-2 sm:px-3 sm:text-sm"
+      aria-label={label}
     >
-      {icon}
+      {pending ? <LoaderCircle className="h-4 w-4 motion-safe:animate-spin" aria-hidden="true" /> : icon}
       <span>{t(name)}</span>
     </button>
   );
@@ -104,6 +117,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
+  const [googlePending, setGooglePending] = useState(false);
   const [resetSending, setResetSending] = useState(false);
   const [resetSent, setResetSent] = useState(false);
 
@@ -164,6 +178,22 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
       setError(userError(submissionError));
     } finally {
       setBusy(false);
+    }
+  }
+
+  // Google hesabıyla aynı Firebase projesine girer; ilk girişte hesabı Firebase açar, kapatılan pencere hata sayılmaz.
+  async function continueWithGoogle() {
+    if (busy || googlePending || configError) return;
+    setError("");
+    setResetSent(false);
+    setGooglePending(true);
+    try {
+      await signInWithPopup(getAuthServices().auth, createGoogleProvider());
+      setAuthenticated(true);
+    } catch (googleError) {
+      if (!isDismissedPopup(googleError)) setError(userError(googleError));
+    } finally {
+      setGooglePending(false);
     }
   }
 
@@ -296,7 +326,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
 
           {(error || configError) && <p role="alert" className="rounded-xl border border-red-500/20 bg-red-500/10 px-3.5 py-3 text-sm text-red-700 dark:text-red-300">{t(error || configError)}</p>}
 
-          <Button disabled={busy || !!configError || !formValid} className="h-12 w-full rounded-xl text-sm font-semibold shadow-lg shadow-primary/20">
+          <Button disabled={busy || googlePending || !!configError || !formValid} className="h-12 w-full rounded-xl text-sm font-semibold shadow-lg shadow-primary/20">
             {busy ? t("Bekleyin…") : register ? t(tr.auth.register) : t(tr.auth.login)}
           </Button>
         </form>
@@ -308,7 +338,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
         </div>
 
         <div className="grid grid-cols-3 gap-2">
-          <SocialOption action={action} name="Google" icon={<span className="bg-[conic-gradient(from_-45deg,#4285f4_0_25%,#34a853_0_50%,#fbbc05_0_75%,#ea4335_0)] bg-clip-text text-base font-bold text-transparent" aria-hidden="true">{"G"}</span>} />
+          <SocialOption action={action} name="Google" onSelect={continueWithGoogle} pending={googlePending} disabled={busy || googlePending || !!configError} icon={<span className="bg-[conic-gradient(from_-45deg,#4285f4_0_25%,#34a853_0_50%,#fbbc05_0_75%,#ea4335_0)] bg-clip-text text-base font-bold text-transparent" aria-hidden="true">{"G"}</span>} />
           <SocialOption action={action} name="Apple" icon={<Apple className="h-4 w-4" aria-hidden="true" />} />
           <SocialOption action={action} name="Microsoft" icon={<MicrosoftMark />} />
         </div>
