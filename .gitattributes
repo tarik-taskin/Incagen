@@ -1,0 +1,4 @@
+# Örnek kaynakların SHA-256 değerleri testlerde ve raporlarda sabittir.
+# Windows checkout'u satır sonlarını değiştirmemeli; dosyalar bayt bayt korunur.
+fixtures/** -text
+src/features/reports/originals/** -text
