@@ -14,7 +14,7 @@ export default defineConfig({
         onlyExplicitManualChunks: true,
         // Ağır servis ve grafik bağımlılıklarını önbelleklenebilir ayrı parçalarda tutar.
         manualChunks(id) {
-          if (id.includes('/echarts/') || id.includes('/zrender/')) return 'charts';
+          if (/\/node_modules\/(recharts|victory-vendor|d3-[a-z-]+|@reduxjs|react-redux|immer|reselect|es-toolkit|decimal\.js-light|eventemitter3)\//.test(id)) return 'charts';
           if (id.includes('/@firebase/firestore/')) return 'firestore';
           if (id.includes('/@firebase/auth/')) return 'auth';
           if (/\/@firebase\/(app|component|logger|util)\//.test(id)) return 'firebase-core';

@@ -1,5 +1,4 @@
 import { reportColors } from "./report-colors";
-import { useTheme } from "../../hooks/use-theme";
 import { t, useLocale } from "../../i18n/runtime";
 import { useState, type ReactNode } from "react";
 import { AnimatePresence } from "motion/react";
@@ -42,8 +41,7 @@ function ReportMetricValue({ value, unit }: { value: number | null; unit: string
 // Yapılandırılmış metrik ve grafiklerden görünüm üretir; eksik değeri sıfıra dönüştürmez, metin raporuna grafik dayatmaz.
 export function AdaptiveReport({ result, sources, featuredMetricIds, children }: { result: AiResult; sources: ReportSource[]; featuredMetricIds?: string[]; children?: ReactNode }) {
   useLocale();
-  const { theme } = useTheme();
-  const colors = reportColors(theme);
+  const colors = reportColors();
   const [selection, setSelection] = useState<SourceSelection | null>(null);
   const featured = featuredMetricIds ? featuredMetricIds.map(id => result.metrics.find(item => item.id === id)).filter(item => item !== undefined) : result.metrics.slice(0, 4);
   const openMetric = (id: string) => { const metric = result.metrics.find(item => item.id === id); if (metric) setSelection({ title: metric.label, evidence: metric.evidence, method: metric.method }); };

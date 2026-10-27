@@ -1,4 +1,6 @@
-// Grafik ve açıklama işaretlerinde aynı seri sırasını ve iki temanın aynı renklerini korur.
-export function reportColors(theme: "light" | "dark") {
-  return theme === "dark" ? ["#bba6f5", "#80d5d5", "#edb68c", "#96b8ee"] : ["#7351b5", "#328c91", "#bd7d50", "#608cc7"];
+// Grafik ve açıklama işaretlerinde aynı seri sırasını korur; renkler tema tokenlarından gelir, açık/koyu ve glass otomatik uyar.
+export const reportPalette = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
+
+export function reportColors() {
+  return reportPalette;
 }

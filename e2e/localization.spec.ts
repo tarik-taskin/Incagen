@@ -57,7 +57,7 @@ for (const [code, catalog] of Object.entries({ en, de, es, zh, ar })) {
     for (const id of ["problems", "sentiments", "themes"]) {
       await expect(page.getByTestId(`chart-${id}`)).toHaveAttribute("dir", "ltr");
       await page.getByTestId(`chart-${id}`).scrollIntoViewIfNeeded();
-      await expect(page.getByTestId(`chart-${id}`).locator("path[fill='#bba6f5'], path[stroke='#bba6f5']").first()).toBeVisible();
+      await expect(page.getByTestId(`chart-${id}`).locator("path[fill='hsl(var(--chart-1))'], path[stroke='hsl(var(--chart-1))']").first()).toBeVisible();
     }
     await page.getByRole("heading", { level: 1 }).scrollIntoViewIfNeeded();
     await page.screenshot({ path: testInfo.outputPath(`${code}-feedback-dark.png`), fullPage: true });
