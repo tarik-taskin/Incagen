@@ -97,7 +97,8 @@ export function AppShell() {
         <main id="main-content" className="mx-auto min-h-[calc(100vh-4rem)] max-w-7xl px-5 py-8 pb-28 sm:px-8 lg:pb-10">
           <ConnectionStatus />
           {location.pathname !== "/app/new-analysis" && <PreparationProgress compact />}
-          <Outlet />
+          {/* Rota değişiminde içerik yalnız opaklıkla belirir; transform kullanılmadığı için sabit konumlu öğeler kaymaz. */}
+          <div key={location.pathname} className="animate-in fade-in-0 duration-300"><Outlet /></div>
           <div className="mt-8 flex justify-center border-t border-border/60 pt-5 lg:hidden"><button type="button" onClick={() => setHelpOpen(true)} className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Headphones className="h-4 w-4" aria-hidden="true" />{t("Destek ve yardım")}</button></div>
         </main>
       </div>
