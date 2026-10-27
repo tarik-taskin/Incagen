@@ -16,7 +16,7 @@ type CompanyReport = ReturnType<typeof createCompanyReport>;
 type Dataset = AiResult["datasets"][number];
 
 const focus = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
-const panel = "min-w-0 rounded-[1.5rem] border border-border/75 bg-card shadow-[0_8px_30px_-22px_rgba(70,35,110,0.22)]";
+const panel = "surface min-w-0 rounded-[1.5rem] border border-border/75 bg-card shadow-[0_8px_30px_-22px_rgba(70,35,110,0.22)]";
 
 // Aynı doğrulanmış veri kümesini çizim ve erişilebilir tablo halinde sunar; her nokta kendi metriğinin kaynağını açar.
 function ChartPanel({ id, eyebrow, title, subtitle, dataset, comparison, type, onPoint, children }: { id: string; eyebrow: string; title: string; subtitle: string; dataset: Dataset; comparison?: Dataset; type: "line" | "bar" | "horizontal-bar" | "donut"; onPoint: (id: string) => void; children?: React.ReactNode }) {

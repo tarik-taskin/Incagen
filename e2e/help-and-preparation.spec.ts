@@ -7,6 +7,7 @@ import de from "../src/i18n/locales/de.json" with { type: "json" };
 import es from "../src/i18n/locales/es.json" with { type: "json" };
 import zh from "../src/i18n/locales/zh.json" with { type: "json" };
 import ar from "../src/i18n/locales/ar.json" with { type: "json" };
+import { chooseLanguage, setTheme } from "./ui-helpers";
 
 // Dar ekranda genişleyen innerWidth yerine gerçek viewport sınırını ve erişilebilirliği denetler.
 async function checkPage(page: Page) {
@@ -23,7 +24,7 @@ test("yardım altı dilde sade kalır; gerçek servis yerine kontrollü teslimat
   });
   await page.goto("/");
   for (const [code, catalog] of Object.entries({ tr, en, de, es, zh, ar })) {
-    await page.getByRole("combobox").selectOption(code);
+    await chooseLanguage(page, code);
     const trigger = page.getByRole("button", { name: catalog["Destek ve yardım"], exact: true });
     await trigger.click();
     const dialog = page.getByRole("dialog", { name: catalog["Destek ve yardım"], exact: true });
@@ -37,7 +38,7 @@ test("yardım altı dilde sade kalır; gerçek servis yerine kontrollü teslimat
     await expect(dialog).not.toBeVisible();
     await expect(trigger).toBeFocused();
   }
-  await page.getByRole("combobox").selectOption("tr");
+  await chooseLanguage(page, "tr");
   await page.getByRole("button", { name: "Destek ve yardım", exact: true }).click();
   let dialog = page.getByRole("dialog", { name: "Destek ve yardım", exact: true });
   await dialog.getByText("Örnek raporlar hangi verileri kullanıyor?", { exact: true }).click();
@@ -47,14 +48,17 @@ test("yardım altı dilde sade kalır; gerçek servis yerine kontrollü teslimat
   await page.screenshot({ path: testInfo.outputPath("help-light.png") });
   await page.mouse.click(2, 2);
   await expect(dialog).not.toBeVisible();
-  await page.getByRole("button", { name: "Karanlık moda geç", exact: true }).click();
+  await setTheme(page, { mode: "dark" });
   await page.getByRole("button", { name: "Destek ve yardım", exact: true }).click();
   dialog = page.getByRole("dialog", { name: "Destek ve yardım", exact: true });
   await checkPage(page);
   await page.screenshot({ path: testInfo.outputPath("help-dark.png") });
   await dialog.getByRole("button", { name: "Bize yazın", exact: true }).click();
   await dialog.getByLabel("E-posta", { exact: true }).fill("feedback@example.test");
-  await dialog.getByLabel("Konu", { exact: true }).selectOption("feedback");
+  await dialog.getByRole("combobox", { name: "Konu", exact: true }).click();
+  await dialog.getByRole("option", { name: "Bir önerim var", exact: true }).click();
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("combobox", { name: "Konu", exact: true })).toHaveText("Bir önerim var");
   await dialog.getByLabel("Mesajınız", { exact: true }).fill("İncelemek istediğim kaynak hakkında bir sorum var.");
   await dialog.getByRole("button", { name: "Mesajı gönder", exact: true }).click();
   await expect(dialog.getByRole("alert")).toContainText("Mesajınız korundu");
@@ -68,7 +72,7 @@ test("yardım altı dilde sade kalır; gerçek servis yerine kontrollü teslimat
   expect(bodies[0]).toEqual(bodies[1]);
   await checkPage(page);
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: "Aydınlık moda geç", exact: true }).click();
+  await setTheme(page, { mode: "light" });
   await page.getByRole("button", { name: "Destek ve yardım", exact: true }).click();
   await expect(dialog.getByRole("status")).toContainText("Mesajınız bize ulaştı");
   await checkPage(page);
@@ -124,10 +128,11 @@ test("bozuk belge açık onay ister, taslak korunur, geçerli belgeyle sonuç ve
   await expect(page.getByRole("link").filter({ hasText: "Kaynak kontrolü" })).toBeVisible();
   await expect(page.getByRole("combobox", { name: "Tarihe göre filtrele", exact: true })).not.toBeVisible();
   await page.getByText("Filtreler", { exact: true }).click();
-  await page.getByRole("combobox", { name: "Tarihe göre filtrele", exact: true }).selectOption("7d");
+  await page.getByRole("combobox", { name: "Tarihe göre filtrele", exact: true }).click();
+  await page.getByRole("option", { name: "Son 7 gün", exact: true }).click();
   await expect(page).toHaveURL(/period=7d/);
   await page.reload();
   await expect(page.getByRole("searchbox", { name: "Arşivde ara" })).toHaveValue("faaliyet icindeki");
-  await expect(page.getByRole("combobox", { name: "Tarihe göre filtrele", exact: true })).toHaveValue("7d");
+  await expect(page.getByRole("combobox", { name: "Tarihe göre filtrele", exact: true })).toHaveText("Son 7 gün");
   await checkPage(page);
 });

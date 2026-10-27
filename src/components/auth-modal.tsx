@@ -1,4 +1,5 @@
 import { useOutsideDismiss } from "../hooks/use-outside-dismiss";
+import { hasOpenPopover } from "../lib/popover-layers";
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { AuthCard } from "./auth-card";
@@ -21,8 +22,9 @@ export function AuthModal({ open, onAuthenticated, onClose }: AuthModalProps) {
     const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     document.body.style.overflow = "hidden";
 
-    // Escape ile kapatır; Tab odağını modalın etkileşimli öğeleri içinde tutar.
+    // Escape ile kapatır; Tab odağını modalın etkileşimli öğeleri içinde tutar. Açık dil listesi varsa Escape yalnız onu kapatır.
     function handleDialogKeyboard(event: KeyboardEvent) {
+      if (hasOpenPopover()) return;
       if (event.key === "Escape") {
         onClose();
         return;

@@ -7,6 +7,7 @@ import de from "../src/i18n/locales/de.json" with { type: "json" };
 import es from "../src/i18n/locales/es.json" with { type: "json" };
 import zh from "../src/i18n/locales/zh.json" with { type: "json" };
 import ar from "../src/i18n/locales/ar.json" with { type: "json" };
+import { chooseLanguage, setTheme } from "./ui-helpers";
 
 // Yalnız izole test ortamında benzersiz sentetik hesap ve yükleme taslağı oluşturur.
 async function openDraft(page: Page) {
@@ -61,17 +62,17 @@ test("oluşturma, gerçek yükleme ve hazırlama ayrı görünür; rota/dil değ
     await expect(status.getByRole("progressbar")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Yüklemeyi iptal et", exact: true })).toHaveCount(0);
     for (const [code, catalog] of Object.entries({ tr, en, de, es, zh, ar })) {
-      await page.getByRole("combobox").first().selectOption(code);
+      await chooseLanguage(page, code);
       await expect(page.getByRole("region", { name: catalog["Belge hazırlama durumu"], exact: true })).toContainText(catalog["Belgeler hazırlanıyor"]);
       await checkLayout(page);
       if (code === "ar") await page.screenshot({ path: testInfo.outputPath("preparation-rtl.png"), fullPage: true });
     }
-    await page.getByRole("combobox").first().selectOption("tr");
+    await chooseLanguage(page, "tr");
     const nav = page.getByRole("navigation", { name: testInfo.project.name === "mobile-chromium" ? "Mobil navigasyon" : "Ana navigasyon" });
     await nav.getByRole("link", { name: "Geçmiş", exact: true }).click();
     await expect(status).toHaveCount(1);
     await expect(status).toContainText("Belgeler hazırlanıyor");
-    await page.getByRole("button", { name: "Karanlık moda geç", exact: true }).click();
+    await setTheme(page, { mode: "dark" });
     await checkLayout(page);
     await page.screenshot({ path: testInfo.outputPath("preparation-compact-dark.png"), fullPage: true });
     await nav.getByRole("link", { name: "Yeni analiz", exact: true }).click();
@@ -86,7 +87,7 @@ test("oluşturma, gerçek yükleme ve hazırlama ayrı görünür; rota/dil değ
     await page.getByText("Teknik ayrıntılar", { exact: true }).focus();
     await page.keyboard.press("Enter");
     await expect(details.getByText("text/plain", { exact: true })).toBeVisible();
-    await page.getByRole("button", { name: "Aydınlık moda geç", exact: true }).click();
+    await setTheme(page, { mode: "light" });
     await checkLayout(page);
     await page.screenshot({ path: testInfo.outputPath("prepared-details-light.png"), fullPage: true });
   } finally { creation.release(); upload.release(); preparation.release(); }
@@ -103,13 +104,13 @@ test("çevrimdışı uyarısı altı dilde tek kalır; yeniden bağlantı ve iç
   await context.setOffline(true);
   try {
     for (const [code, catalog] of Object.entries({ tr, en, de, es, zh, ar })) {
-      await page.getByRole("combobox").first().selectOption(code);
+      await chooseLanguage(page, code);
       await expect(page.getByText(catalog["Çevrimdışı görünüyorsunuz"], { exact: true })).toHaveCount(1);
       await expect(page.getByLabel(catalog["Analiz hedefi"], { exact: true })).toHaveValue("Belgedeki konuları kaynaklarıyla incele");
       await checkLayout(page);
     }
-    await page.getByRole("combobox").first().selectOption("tr");
-    await page.getByRole("button", { name: "Karanlık moda geç", exact: true }).click();
+    await chooseLanguage(page, "tr");
+    await setTheme(page, { mode: "dark" });
     await checkLayout(page);
     await page.screenshot({ path: testInfo.outputPath("offline-dark.png"), fullPage: true });
     await nav.getByRole("link", { name: "Geçmiş", exact: true }).click();

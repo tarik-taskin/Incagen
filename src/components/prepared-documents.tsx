@@ -7,7 +7,7 @@ import { localeTag, t, useLocale } from "../i18n/runtime";
 export function PreparedDocuments({ report }: { report: Report }) {
   useLocale();
   const number = (value: number) => value.toLocaleString(localeTag());
-  return <section className="mt-6 overflow-hidden rounded-3xl border border-border bg-card" aria-labelledby="prepared-sources-title">
+  return <section className="surface mt-6 overflow-hidden rounded-3xl border border-border bg-card" aria-labelledby="prepared-sources-title">
     <div className="p-5 sm:p-6">
       <div className="flex items-start gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary dark:bg-secondary/10 dark:text-secondary"><FileCheck2 className="h-5 w-5" aria-hidden="true" /></span><div><h2 id="prepared-sources-title" className="font-semibold tracking-tight">{t("Belgelerin içeriği ayrıştırıldı")}</h2><p className="mt-1 text-xs leading-6 text-muted-foreground">{t("Belge kapsamını ve okuma notlarını inceleyin. Ayrıntılı dosya bilgileri aşağıda korunur.")}</p></div></div>
       <dl className="mt-5 flex flex-wrap gap-x-8 gap-y-4 border-t border-border/60 pt-4 text-sm">

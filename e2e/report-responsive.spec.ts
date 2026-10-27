@@ -5,6 +5,7 @@ import es from "../src/i18n/locales/es.json" with { type: "json" };
 import zh from "../src/i18n/locales/zh.json" with { type: "json" };
 import ar from "../src/i18n/locales/ar.json" with { type: "json" };
 import tr from "../src/i18n/locales/tr.json" with { type: "json" };
+import { chooseLanguage } from "./ui-helpers";
 
 // Kırpılan tablo ve dekorları ayırır; sayfa taşarsa görünür sorumlu öğeleri hata mesajına ekler.
 function pageGeometry() {
@@ -30,7 +31,7 @@ for (const font of ["sans-serif", "monospace"]) {
       await page.setViewportSize({ width, height: 915 });
       for (const [code, catalog] of Object.entries({ tr, en, de, es, zh, ar })) {
         await page.goto("/ornek-rapor");
-        await page.getByRole("combobox").selectOption(code);
+        await chooseLanguage(page, code);
         await page.addStyleTag({ content: `:root { font-family: ${font}; }` });
         if (code === "es" && width === 412 && font === "sans-serif") await page.screenshot({ path: testInfo.outputPath("spanish-mobile-header.png") });
         await page.getByRole("link", { name: catalog["Kaynaklar"], exact: true }).click();

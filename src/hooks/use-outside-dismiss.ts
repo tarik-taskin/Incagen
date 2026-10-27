@@ -1,6 +1,8 @@
 import { useEffect, type RefObject } from "react";
+import { hasOpenPopover, isInsidePopover } from "../lib/popover-layers";
 
 // Yalnız dışarıda başlayıp dışarıda biten birincil dokunmayı kapatma sayar; içerik sürükleme ve aktif işlemler korunur.
+// Açık seçim/menü katmanı varken ilk dış dokunma yalnız o katmanı kapatır.
 export function useOutsideDismiss<T extends HTMLElement>(ref: RefObject<T | null>, onDismiss: () => void, enabled = true) {
   useEffect(() => {
     if (!enabled) return;
@@ -8,11 +10,11 @@ export function useOutsideDismiss<T extends HTMLElement>(ref: RefObject<T | null
     let completedOutside = false;
     const outside = (event: PointerEvent) => {
       const element = ref.current;
-      if (!element) return false;
+      if (!element || isInsidePopover(event.target)) return false;
       const bounds = element.getBoundingClientRect();
       return !element.contains(event.target as Node) || event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom;
     };
-    const down = (event: PointerEvent) => { completedOutside = false; outsidePointer = event.isPrimary && event.button === 0 && outside(event) ? event.pointerId : null; };
+    const down = (event: PointerEvent) => { completedOutside = false; outsidePointer = event.isPrimary && event.button === 0 && !hasOpenPopover() && outside(event) ? event.pointerId : null; };
     const up = (event: PointerEvent) => {
       completedOutside = outsidePointer === event.pointerId && outside(event);
       outsidePointer = null;

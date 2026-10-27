@@ -965,5 +965,13 @@
   "Bu e-posta başka bir giriş yöntemiyle kayıtlı. E-posta ve parolanızla giriş yapın.": "Diese E-Mail nutzt eine andere Anmeldemethode. Mit E-Mail und Passwort anmelden.",
   "Bu giriş yöntemi şu anda etkin değil.": "Diese Anmeldemethode ist derzeit nicht aktiviert.",
   "Bu adres Google ile giriş için yetkilendirilmedi.": "Diese Adresse ist für die Google-Anmeldung nicht freigegeben.",
-  "Bu hesaba bağlı Google hesabını seçin.": "Das mit diesem Konto verknüpfte Google-Konto wählen."
+  "Bu hesaba bağlı Google hesabını seçin.": "Das mit diesem Konto verknüpfte Google-Konto wählen.",
+  "Tema": "Design",
+  "Mod": "Modus",
+  "Görünüm": "Darstellung",
+  "Açık": "Hell",
+  "Koyu": "Dunkel",
+  "Sistem": "System",
+  "Klasik": "Klassisch",
+  "Liquid Glass": "Liquid Glass"
 }

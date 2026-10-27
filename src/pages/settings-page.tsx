@@ -105,7 +105,7 @@ export function SettingsPage() {
 
   return (
     <section className="mx-auto w-full max-w-6xl" aria-labelledby="settings-title">
-      <div className="relative overflow-hidden rounded-[2rem] border border-border bg-gradient-to-br from-card via-card to-primary/[0.07] p-6 shadow-sm dark:to-secondary/[0.05] sm:p-8">
+      <div className="surface relative overflow-hidden rounded-[2rem] border border-border bg-gradient-to-br from-card via-card to-primary/[0.07] p-6 shadow-sm dark:to-secondary/[0.05] sm:p-8">
         <span className="pointer-events-none absolute -end-16 -top-28 h-72 w-72 rounded-full border border-primary/10 bg-primary/[0.035] dark:border-secondary/10 dark:bg-secondary/[0.025]" aria-hidden="true" />
         <div className="relative flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
           <div>
@@ -121,7 +121,7 @@ export function SettingsPage() {
       {error && <p role="alert" className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-300">{t(error)}</p>}
 
       <div className="mt-6 grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
-        <article className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-7" aria-labelledby="account-summary-title">
+        <article className="surface rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-7" aria-labelledby="account-summary-title">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary dark:text-secondary">{t("01 / Kimlik")}</p>
           <div className="mt-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:bg-secondary/10 dark:text-secondary">
             <UserRound className="h-6 w-6" aria-hidden="true" />
@@ -142,7 +142,7 @@ export function SettingsPage() {
 
         </article>
 
-        <article className="flex h-full flex-col rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-7" aria-labelledby="password-settings-title">
+        <article className="surface flex h-full flex-col rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-7" aria-labelledby="password-settings-title">
             <p className="mb-6 text-xs font-semibold uppercase tracking-[0.16em] text-primary dark:text-secondary">{t("02 / Güvenlik")}</p>
             <div className="flex flex-col gap-5">
               <div className="flex gap-4">
@@ -178,7 +178,7 @@ export function SettingsPage() {
         </article>
       </div>
 
-      <section className="mt-6 overflow-hidden rounded-[2rem] border border-border bg-card shadow-sm" aria-labelledby="connections-title">
+      <section className="surface mt-6 overflow-hidden rounded-[2rem] border border-border bg-card shadow-sm" aria-labelledby="connections-title">
         <div className="border-b border-border bg-gradient-to-r from-primary/[0.07] via-card to-secondary/[0.12] p-6 dark:from-primary/20 dark:to-secondary/[0.05] sm:p-8">
           <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-primary dark:text-secondary"><Link2 className="h-4 w-4" aria-hidden="true" />  {t("03 / Veri kaynakları")}</span>
           <h2 id="connections-title" className="mt-2 text-2xl font-semibold tracking-tight">{t("Kaynakları bir araya getirin")}</h2>
@@ -196,7 +196,7 @@ export function SettingsPage() {
         </div>
       </section>
 
-      <section className="mt-6 rounded-[2rem] border border-border bg-card p-6 shadow-sm sm:p-8" aria-labelledby="session-settings-title">
+      <section className="surface mt-6 rounded-[2rem] border border-border bg-card p-6 shadow-sm sm:p-8" aria-labelledby="session-settings-title">
         <p className="mb-5 text-xs font-semibold uppercase tracking-[0.16em] text-primary dark:text-secondary">{t("04 / Oturum")}</p>
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex gap-4">
@@ -216,14 +216,14 @@ export function SettingsPage() {
       </section>
 
       <dialog ref={deleteDialogRef} role="alertdialog" aria-labelledby="delete-account-dialog-title" aria-describedby="delete-account-dialog-description" onCancel={event => { if (deletePending) event.preventDefault(); else closeDeleteDialog(); }} onClose={closeDeleteDialog}
-        className="w-[min(92vw,32rem)] max-w-none rounded-[2rem] border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-slate-950/60 backdrop:backdrop-blur-sm">
+        className="surface w-[min(92vw,32rem)] max-w-none overscroll-contain rounded-[2rem] border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-slate-950/60 backdrop:backdrop-blur-sm">
         <div className="p-6 sm:p-8">
           <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/10 text-red-700 dark:text-red-300"><Trash2 className="h-5 w-5" aria-hidden="true" /></span>
           <h2 id="delete-account-dialog-title" className="mt-5 text-2xl font-semibold tracking-tight">{t("Hesabınızı kalıcı olarak silin")}</h2>
           <p id="delete-account-dialog-description" className="mt-2 text-sm leading-6 text-muted-foreground">{methods.password ? t("Bu işlem hesabınızı, tüm analizlerinizi ve belgelerinizi siler. Devam etmek için parolanızı ve aşağıdaki onay metnini girin.") : t("Bu işlem hesabınızı, tüm analizlerinizi ve belgelerinizi siler. Onay metnini girin; ardından açılan Google penceresinde kimliğinizi doğrulayın.")}</p>
           <form className="mt-6 space-y-4" onSubmit={event => { event.preventDefault(); void deleteAccount(); }}>
-            {methods.password && <div><label htmlFor="delete-account-password" className="text-sm font-medium">{t("Mevcut parola")}</label><div className="relative mt-2"><input id="delete-account-password" type={showDeletePassword ? "text" : "password"} autoComplete="current-password" value={deletePassword} onChange={event => setDeletePassword(event.target.value)} disabled={deletePending} className="h-12 w-full rounded-xl border border-input bg-background px-4 pe-12 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary" /><button type="button" aria-label={showDeletePassword ? t("Parolayı gizle") : t("Parolayı göster")} className="absolute end-1 top-1 flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" onClick={() => setShowDeletePassword(value => !value)}>{showDeletePassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button></div></div>}
-            <div><label htmlFor="delete-account-confirmation" className="text-sm font-medium">{t("Onaylamak için")} <strong>{t("HESABIMI SİL")}</strong>  {t("yazın")}</label><input id="delete-account-confirmation" type="text" autoComplete="off" value={deleteConfirmation} onChange={event => setDeleteConfirmation(event.target.value)} disabled={deletePending} className="mt-2 h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary" /></div>
+            {methods.password && <div><label htmlFor="delete-account-password" className="text-sm font-medium">{t("Mevcut parola")}</label><div className="relative mt-2"><input id="delete-account-password" name="delete-account-password" type={showDeletePassword ? "text" : "password"} autoComplete="current-password" value={deletePassword} onChange={event => setDeletePassword(event.target.value)} disabled={deletePending} className="h-12 w-full rounded-xl border border-input bg-background px-4 pe-12 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary" /><button type="button" aria-label={showDeletePassword ? t("Parolayı gizle") : t("Parolayı göster")} className="absolute end-1 top-1 flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" onClick={() => setShowDeletePassword(value => !value)}>{showDeletePassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}</button></div></div>}
+            <div><label htmlFor="delete-account-confirmation" className="text-sm font-medium">{t("Onaylamak için")} <strong>{t("HESABIMI SİL")}</strong>  {t("yazın")}</label><input id="delete-account-confirmation" name="delete-account-confirmation" type="text" autoComplete="off" spellCheck={false} value={deleteConfirmation} onChange={event => setDeleteConfirmation(event.target.value)} disabled={deletePending} className="mt-2 h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary" /></div>
             {deleteError && <p role="alert" className="rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-300">{t(deleteError)}</p>}
             <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end"><Button type="button" variant="outline" className="rounded-xl" disabled={deletePending} onClick={closeDeleteDialog}>{t("Vazgeç")}</Button><Button type="submit" className="rounded-xl bg-red-700 text-white hover:bg-red-800 dark:bg-red-600 dark:hover:bg-red-700" disabled={deletePending || (methods.password && !deletePassword) || deleteConfirmation !== t("HESABIMI SİL")}>{deletePending ? t("Hesap siliniyor…") : t("Hesabı kalıcı olarak sil")}</Button></div>
           </form>

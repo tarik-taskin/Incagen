@@ -56,7 +56,7 @@ export function NewAnalysisPage() {
           <SelectedFileList files={files} limit={FREE_PLAN_FILE_LIMIT} onClear={() => { if (!busy) clearFiles(); }} onRemove={id => { if (!busy) removeFile(id); }} />
         </fieldset>
       </div>
-      <aside className="rounded-3xl border border-border bg-card p-5 shadow-sm xl:sticky xl:top-24" aria-label={t("Analiz ayarları")}>
+      <aside className="surface rounded-3xl border border-border bg-card p-5 shadow-sm xl:sticky xl:top-24" aria-label={t("Analiz ayarları")}>
         <h2 className="text-lg font-semibold">{t("Çalışma ayrıntıları")}</h2>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">{t("Kaynaklarınızı doğru çalışma alanında, konuya özel bir başlıkla düzenleyin.")}</p>
         <div className="mt-5 rounded-2xl border border-border bg-muted/35 p-3.5">

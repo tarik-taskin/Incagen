@@ -31,6 +31,11 @@ interface PasswordFieldProps {
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Klavye ve fare kullanılan cihazda e-postaya odaklanır; dokunmatik ekranda klavyenin kendiliğinden açılmasını önler.
+function prefersFinePointer() {
+  return typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches;
+}
+
 // Parola alanına klavyeyle erişilebilir gösterme ve gizleme kontrolü ekler.
 function PasswordField({ autoComplete, id, label, onChange, onToggle, show, toggleLabel, value }: PasswordFieldProps) {
   useLocale();
@@ -201,7 +206,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
 
   return (
     <>
-    <section className="relative w-full overflow-hidden rounded-[2rem] border border-border/80 bg-card text-card-foreground shadow-[0_30px_100px_-32px_rgba(50,14,59,0.65)]" aria-labelledby={titleId}>
+    <section className="surface relative w-full overflow-hidden rounded-[2rem] border border-border/80 bg-card text-card-foreground shadow-[0_30px_100px_-32px_rgba(50,14,59,0.65)]" aria-labelledby={titleId}>
       <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-secondary via-primary to-[#ff5978]" aria-hidden="true" />
       <div className="relative p-5 sm:p-8">
         <header className="flex items-center justify-between gap-4">
@@ -243,7 +248,8 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
                 type="email"
                 required
                 autoComplete="email"
-                autoFocus
+                autoFocus={prefersFinePointer()}
+                spellCheck={false}
                 value={email}
                 onBlur={() => setEmailTouched(true)}
                 onChange={(event) => { setEmail(event.target.value); setResetSent(false); }}
@@ -319,7 +325,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
               </div>
               <div className="relative mt-2">
                 <Ticket className="pointer-events-none absolute start-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-                <input id="invite-code" name="invite-code" type="text" autoComplete="off" className="form-control h-12 ps-10 uppercase tracking-[0.12em]" placeholder={t("INCAGEN-XXXX")} />
+                <input id="invite-code" name="invite-code" type="text" autoComplete="off" spellCheck={false} className="form-control h-12 ps-10 uppercase tracking-[0.12em]" placeholder={t("INCAGEN-XXXX")} />
               </div>
             </div>
           )}

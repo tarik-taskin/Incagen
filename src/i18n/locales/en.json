@@ -965,5 +965,13 @@
   "Bu e-posta başka bir giriş yöntemiyle kayıtlı. E-posta ve parolanızla giriş yapın.": "This email uses another sign-in method. Sign in with your email and password.",
   "Bu giriş yöntemi şu anda etkin değil.": "This sign-in method is not enabled right now.",
   "Bu adres Google ile giriş için yetkilendirilmedi.": "This address is not authorized for Google sign-in.",
-  "Bu hesaba bağlı Google hesabını seçin.": "Choose the Google account linked to this account."
+  "Bu hesaba bağlı Google hesabını seçin.": "Choose the Google account linked to this account.",
+  "Tema": "Theme",
+  "Mod": "Mode",
+  "Görünüm": "Appearance",
+  "Açık": "Light",
+  "Koyu": "Dark",
+  "Sistem": "System",
+  "Klasik": "Classic",
+  "Liquid Glass": "Liquid Glass"
 }

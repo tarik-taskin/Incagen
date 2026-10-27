@@ -28,7 +28,7 @@ function PlanCard({ plan, premium }: { plan: Plan; premium: boolean }) {
       {premium ? t("High analiz derinliği, daha geniş belge kapasitesi ve ek veri bağlantılarıyla kapsamlı çalışmalar için tasarlandı.") : t("Belgeleri güvenle hazırlamaya ve analiz geçmişinizi oluşturmaya başlamak için mevcut plan.")}
     </p>
     <div className="mt-7 flex items-end gap-2 border-b border-border pb-6">
-      <span className="text-5xl font-semibold tracking-[-0.07em]">{plan.dailyAnalysisLimit}</span>
+      <span className="text-5xl font-semibold tracking-[-0.055em]">{plan.dailyAnalysisLimit}</span>
       <span className="pb-1.5 text-sm text-muted-foreground">{t("analiz / gün")}</span>
     </div>
     <div className="mt-6 grid grid-cols-2 gap-3">
@@ -77,7 +77,7 @@ export function PlanPage() {
       <PlanCard plan={premium} premium />
     </div>
 
-    <section className="mt-8 rounded-[2rem] border border-border bg-card p-5 shadow-sm sm:p-8" aria-labelledby="plan-compare-title">
+    <section className="surface mt-8 rounded-[2rem] border border-border bg-card p-5 shadow-sm sm:p-8" aria-labelledby="plan-compare-title">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border pb-5">
         <div><p className="text-xs font-semibold uppercase tracking-[0.15em] text-primary dark:text-secondary">{t("Yan yana karşılaştırma")}</p><h2 id="plan-compare-title" className="mt-1 text-xl font-semibold">{t("Plan farkları")}</h2></div>
       </div>

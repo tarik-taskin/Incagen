@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { Buffer } from "node:buffer";
+import { setTheme } from "./ui-helpers";
 
 test("kayıt, belge hazırlığı, geçmiş, silme ve çıkış", async ({ page }, testInfo) => {
   const errors: string[] = [];
@@ -24,8 +25,7 @@ test("kayıt, belge hazırlığı, geçmiş, silme ve çıkış", async ({ page 
   const objective = "Faaliyet belgesindeki ana konuları ve kaynaklarını görmek istiyorum.";
   await page.getByLabel("Analiz hedefi", { exact: true }).fill(objective);
   for (const mode of ["light", "dark"]) {
-    const dark = await page.locator("html").evaluate(e => e.classList.contains("dark"));
-    if (dark !== (mode === "dark")) await page.getByRole("button", { name: /moda geç/ }).click();
+    await setTheme(page, { mode: mode as "light" | "dark" });
     expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze()).violations).toEqual([]);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: testInfo.outputPath("objective-" + mode + ".png"), fullPage: true });
@@ -62,8 +62,7 @@ test("kayıt, belge hazırlığı, geçmiş, silme ve çıkış", async ({ page 
   await page.getByRole("link", { name: "Son işlemi aç" }).click();
   await expect(page).toHaveURL(completedReportUrl);
   for (const mode of ["light", "dark"]) {
-    const dark = await page.locator("html").evaluate(e => e.classList.contains("dark"));
-    if (dark !== (mode === "dark")) await page.getByRole("button", { name: /moda geç/ }).click();
+    await setTheme(page, { mode: mode as "light" | "dark" });
     await expect(page.locator("html")).toHaveClass(mode === "dark" ? /dark/ : /^(?!.*dark).*$/);
     await page.evaluate(async () => {
       await document.fonts.ready;
@@ -178,7 +177,7 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
   await page.getByRole("button", { name: "Seç ve sil" }).click();
   await page.getByRole("button", { name: "Görünenleri seç" }).click();
   await expect(page.getByText("1 analiz seçildi")).toBeVisible();
-  await page.getByRole("button", { name: "Karanlık moda geç" }).click();
+  await setTheme(page, { mode: "dark" });
   await page.screenshot({ path: testInfo.outputPath("history-dark-selection.png"), fullPage: true });
   const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   expect(accessibility.violations).toEqual([]);

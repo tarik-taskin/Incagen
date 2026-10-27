@@ -60,7 +60,7 @@ export function AnalysisPage() {
     {(analysis.error || actionError) && <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{t(actionError || analysis.error)}</p>}
     {analysis.status === "uploading" && <p className="mt-5 text-sm">{t("Yükleme tamamlanmadıysa Yeni analiz sayfasından aynı belgelerle devam edin.")}</p>}
     {analysis.status === "processing" && <p className="mt-5 text-sm">{t("Belgelerin içeriği ayrıştırılıyor; sayfadan ayrılabilirsiniz. Beş dakikadan uzun sürerse yeniden denemek güvenlidir.")}</p>}
-    {analysis.status === "review" && analysis.preparationReview && <section className="mt-6 rounded-3xl border border-border bg-card p-5 shadow-sm sm:p-7" aria-labelledby="preparation-review-title">
+    {analysis.status === "review" && analysis.preparationReview && <section className="surface mt-6 rounded-3xl border border-border bg-card p-5 shadow-sm sm:p-7" aria-labelledby="preparation-review-title">
       <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-300"><TriangleAlert className="h-5 w-5" aria-hidden="true" /></span>
       <h2 id="preparation-review-title" className="mt-4 text-xl font-semibold tracking-tight">{t("Belgeleri gözden geçirin")}</h2>
       <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{t("Bazı belgeler hazırlanamadı. Hazır belgelerle devam edebilir veya dosyalarınızı düzenleyebilirsiniz. Henüz analiz hakkınız kullanılmadı.")}</p>
@@ -81,7 +81,7 @@ export function AnalysisPage() {
       {["failed", "processing"].includes(analysis.status) && <Button disabled={busy} onClick={() => action("prepareAnalysis")}>{t(tr.analysis.retry)}</Button>}
       <Button variant="outline" disabled={busy} onClick={() => setDeleteOpen(true)}>{t(tr.analysis.delete)}</Button>
     </div>
-    <dialog ref={deleteDialog} role="alertdialog" aria-labelledby="analysis-delete-title" aria-describedby="analysis-delete-description" onCancel={event => { if (busy) event.preventDefault(); else setDeleteOpen(false); }} onClose={() => { if (!busy) setDeleteOpen(false); }} className="w-[min(92vw,30rem)] max-w-none rounded-3xl border border-border bg-card p-6 text-foreground shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm sm:p-7">
+    <dialog ref={deleteDialog} role="alertdialog" aria-labelledby="analysis-delete-title" aria-describedby="analysis-delete-description" onCancel={event => { if (busy) event.preventDefault(); else setDeleteOpen(false); }} onClose={() => { if (!busy) setDeleteOpen(false); }} className="surface w-[min(92vw,30rem)] max-w-none overscroll-contain rounded-3xl border border-border bg-card p-6 text-foreground shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm sm:p-7">
       <h2 id="analysis-delete-title" className="text-xl font-semibold">{t("Bu analizi silmek istiyor musunuz?")}</h2>
       <p id="analysis-delete-description" className="mt-3 text-sm leading-6 text-muted-foreground">{t(tr.analysis.confirm)}</p>
       <p className="mt-4 break-words rounded-xl bg-muted px-4 py-3 text-sm font-medium">{analysis.title}</p>

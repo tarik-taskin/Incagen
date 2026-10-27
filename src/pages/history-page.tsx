@@ -7,6 +7,8 @@ import { Archive, ArrowRight, ArrowUpRight, CheckCheck, CircleCheckBig, FileCloc
 import { Link, useSearchParams } from "react-router-dom";
 import type { Analysis } from "../../functions/src/contracts";
 import { Button } from "../components/ui/button";
+import { Checkbox } from "../components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { buildHistoryView, DEFAULT_HISTORY_VIEW, parseHistoryView, serializeHistoryView, summarizeHistory, type HistoryPeriodFilter, type HistorySort, type HistoryStatusFilter, type HistoryViewOptions } from "../features/history/history-view";
 import { useAnalyses } from "../hooks/use-analyses";
 import { tr } from "../i18n/tr";
@@ -169,7 +171,7 @@ export function HistoryPage() {
   }
 
   return <section aria-labelledby="history-title" className="max-w-6xl">
-    <div className="relative overflow-hidden rounded-[1.75rem] border border-primary/10 bg-gradient-to-br from-card via-card to-primary/[0.07] p-6 text-foreground shadow-[0_20px_65px_-48px_rgba(70,35,110,0.4)] dark:border-secondary/15 dark:to-secondary/[0.07] sm:p-8 lg:p-10">
+    <div className="surface relative overflow-hidden rounded-[1.75rem] border border-primary/10 bg-gradient-to-br from-card via-card to-primary/[0.07] p-6 text-foreground shadow-[0_20px_65px_-48px_rgba(70,35,110,0.4)] dark:border-secondary/15 dark:to-secondary/[0.07] sm:p-8 lg:p-10">
       <div className="pointer-events-none absolute -end-14 -top-28 h-80 w-80 rounded-full border border-primary/10 bg-primary/[0.04] dark:border-secondary/10 dark:bg-secondary/[0.04]" aria-hidden="true" />
       <div className="pointer-events-none absolute -bottom-24 end-16 h-64 w-64 rounded-full bg-primary/[0.05] blur-3xl dark:bg-secondary/[0.05]" aria-hidden="true" />
       <div className="relative flex flex-wrap items-start justify-between gap-7">
@@ -201,8 +203,8 @@ export function HistoryPage() {
           <div><p className="text-xs font-medium text-muted-foreground">{t(item.label)}</p><p className="mt-2 text-2xl font-semibold tabular-nums">{item.value.toLocaleString(localeTag())}</p></div>
           <span className={"flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border " + item.tone}><item.icon className="h-4.5 w-4.5" aria-hidden="true" /></span>
         </div>
-        <div id={`history-summary-help-${index}`} role="tooltip" className="pointer-events-none invisible absolute bottom-[calc(100%+0.65rem)] start-1/2 z-30 w-64 max-w-[calc(100vw-3rem)] -translate-x-1/2 translate-y-1 rounded-xl border border-primary/15 bg-card px-3.5 py-2.5 text-center text-xs font-medium leading-5 text-foreground opacity-0 shadow-xl shadow-primary/10 transition duration-150 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 dark:border-secondary/20 dark:shadow-secondary/10">
-          {t(item.description)}<span className="absolute start-1/2 top-full h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rotate-45 border-b border-e border-primary/15 bg-card dark:border-secondary/20" aria-hidden="true" />
+        <div id={`history-summary-help-${index}`} role="tooltip" className="pointer-events-none invisible absolute bottom-[calc(100%+0.65rem)] left-1/2 z-30 w-64 max-w-[calc(100vw-3rem)] -translate-x-1/2 translate-y-1 rounded-xl border border-primary/15 bg-card px-3.5 py-2.5 text-center text-xs font-medium leading-5 text-foreground opacity-0 shadow-xl shadow-primary/10 transition duration-150 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 dark:border-secondary/20 dark:shadow-secondary/10">
+          {t(item.description)}<span className="absolute left-1/2 top-full h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rotate-45 border-b border-e border-primary/15 bg-card dark:border-secondary/20" aria-hidden="true" />
         </div>
       </div>)}
     </section>}
@@ -222,24 +224,24 @@ export function HistoryPage() {
         <details open={filtersOpen} onToggle={event => setFiltersOpen(event.currentTarget.open)} className="mt-3">
           <summary className="flex min-h-10 w-fit cursor-pointer list-none items-center gap-2 rounded-lg px-2 text-xs font-semibold text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary [&::-webkit-details-marker]:hidden"><SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />{t("Filtreler")}{advancedCount > 0 && <span className="rounded-full bg-primary/10 px-2 py-0.5 tabular-nums dark:bg-secondary/10">{advancedCount.toLocaleString(localeTag())}</span>}</summary>
           <div className="mt-3 grid min-w-0 gap-3 border-t border-border/60 pt-4 sm:grid-cols-3">
-        <label>
-          <span className="sr-only">{t("Duruma göre filtrele")}</span>
-          <select value={statusFilter} onChange={event => updateView({ status: event.target.value as HistoryStatusFilter })} className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:border-secondary dark:focus:ring-secondary/20">
-            <option value="all">{t("Tüm durumlar")}</option><option value="completed">{t("Analize hazır")}</option><option value="active">{t("Devam ediyor")}</option><option value="failed">{t("Dikkat istiyor")}</option>
-          </select>
-        </label>
-        <label>
-          <span className="sr-only">{t("Tarihe göre filtrele")}</span>
-          <select value={periodFilter} onChange={event => updateView({ period: event.target.value as HistoryPeriodFilter })} className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:border-secondary dark:focus:ring-secondary/20">
-            <option value="all">{t("Tüm tarihler")}</option><option value="7d">{t("Son 7 gün")}</option><option value="30d">{t("Son 30 gün")}</option><option value="90d">{t("Son 90 gün")}</option>
-          </select>
-        </label>
-        <label>
-          <span className="sr-only">{t("Analizleri sırala")}</span>
-          <select value={sort} onChange={event => updateView({ sort: event.target.value as HistorySort })} className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:border-secondary dark:focus:ring-secondary/20">
-            <option value="newest">{t("En yeni")}</option><option value="oldest">{t("En eski")}</option><option value="title">{t("Başlığa göre")}</option>
-          </select>
-        </label>
+        <Select value={statusFilter} onValueChange={value => updateView({ status: value as HistoryStatusFilter })}>
+          <SelectTrigger aria-label={t("Duruma göre filtrele")} className="min-h-11"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("Tüm durumlar")}</SelectItem><SelectItem value="completed">{t("Analize hazır")}</SelectItem><SelectItem value="active">{t("Devam ediyor")}</SelectItem><SelectItem value="failed">{t("Dikkat istiyor")}</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={periodFilter} onValueChange={value => updateView({ period: value as HistoryPeriodFilter })}>
+          <SelectTrigger aria-label={t("Tarihe göre filtrele")} className="min-h-11"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("Tüm tarihler")}</SelectItem><SelectItem value="7d">{t("Son 7 gün")}</SelectItem><SelectItem value="30d">{t("Son 30 gün")}</SelectItem><SelectItem value="90d">{t("Son 90 gün")}</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={sort} onValueChange={value => updateView({ sort: value as HistorySort })}>
+          <SelectTrigger aria-label={t("Analizleri sırala")} className="min-h-11"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="newest">{t("En yeni")}</SelectItem><SelectItem value="oldest">{t("En eski")}</SelectItem><SelectItem value="title">{t("Başlığa göre")}</SelectItem>
+          </SelectContent>
+        </Select>
           </div>
         </details>
       </div>
@@ -258,13 +260,12 @@ export function HistoryPage() {
       </div>
     </div>}
 
-    {loading ? <div className="mt-8"><PageLoading kind="history" label="Geçmiş yükleniyor…" /></div> : error ? authOnlyPreview ? <div className="mt-6 grid overflow-hidden rounded-[1.75rem] border border-border/80 bg-card shadow-sm lg:grid-cols-[minmax(0,1fr)_minmax(15rem,0.75fr)]" role="status">
+    {loading ? <div className="mt-8"><PageLoading kind="history" label="Geçmiş yükleniyor…" /></div> : error ? authOnlyPreview ? <div className="surface mt-6 grid overflow-hidden rounded-[1.75rem] border border-border/80 bg-card shadow-sm lg:grid-cols-[minmax(0,1fr)_minmax(15rem,0.75fr)]" role="status">
       <div className="p-7 sm:p-9"><span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-primary dark:border-secondary/20 dark:bg-secondary/[0.08] dark:text-secondary"><FilePlus2 className="h-3.5 w-3.5" aria-hidden="true" />  {t("İlk çalışmanız")}</span><h2 className="mt-5 max-w-lg text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">{t("Henüz analiz yok.")}</h2><p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">{t("İlk adımı bir konu seçerek atın. İlgili belgeleri aynı çalışma alanında bir araya getirin; hazırladığınız analizleri ve kaynaklarını bu arşivden takip edin.")}</p><Link to="/app/new-analysis" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/15 transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/90">{t("Analize başla")} <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" /></Link></div>
-      <div className="relative flex min-h-56 items-center justify-center overflow-hidden border-t border-border/70 bg-gradient-to-br from-primary/[0.06] via-background to-primary/[0.12] p-8 dark:from-secondary/[0.06] dark:to-secondary/[0.12] lg:border-s lg:border-t-0" aria-hidden="true"><div className="absolute h-52 w-52 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="absolute h-36 w-36 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="relative flex h-24 w-24 items-center justify-center rounded-[1.75rem] border border-primary/15 bg-card shadow-xl shadow-primary/10 dark:border-secondary/20"><FolderOpen className="h-11 w-11 text-primary dark:text-secondary" /></div><span className="absolute bottom-5 end-5 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-muted-foreground shadow-sm">{t("İlk çalışmanız burada")}</span></div>
-    </div> : <div role="alert" className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/[0.05] p-6 text-sm text-red-700 dark:text-red-300"><TriangleAlert className="mb-3 h-5 w-5" aria-hidden="true" />{t(error)}</div> : rows.length && visibleRows.length ? <ul className="mt-6 space-y-3" aria-label={t("Analiz geçmişi")}>{visibleRows.map(analysis => <li key={analysis.id} className="relative overflow-visible rounded-[1.35rem] border border-border/80 bg-card shadow-[0_12px_35px_-32px_rgba(55,20,95,0.7)] transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_40px_-27px_rgba(55,20,95,0.35)] dark:hover:border-secondary/30">
+      <div className="relative flex min-h-56 items-center justify-center overflow-hidden border-t border-border/70 bg-gradient-to-br from-primary/[0.06] via-background to-primary/[0.12] p-8 dark:from-secondary/[0.06] dark:to-secondary/[0.12] lg:border-s lg:border-t-0" aria-hidden="true"><div className="absolute h-52 w-52 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="absolute h-36 w-36 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="surface relative flex h-24 w-24 items-center justify-center rounded-[1.75rem] border border-primary/15 bg-card shadow-xl shadow-primary/10 dark:border-secondary/20"><FolderOpen className="h-11 w-11 text-primary dark:text-secondary" /></div><span className="absolute bottom-5 end-5 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-muted-foreground shadow-sm">{t("İlk çalışmanız burada")}</span></div>
+    </div> : <div role="alert" className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/[0.05] p-6 text-sm text-red-700 dark:text-red-300"><TriangleAlert className="mb-3 h-5 w-5" aria-hidden="true" />{t(error)}</div> : rows.length && visibleRows.length ? <ul className="mt-6 space-y-3" aria-label={t("Analiz geçmişi")}>{visibleRows.map(analysis => <li key={analysis.id} className="surface relative overflow-visible rounded-[1.35rem] border border-border/80 bg-card shadow-[0_12px_35px_-32px_rgba(55,20,95,0.7)] transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_40px_-27px_rgba(55,20,95,0.35)] dark:hover:border-secondary/30">
       {selectionMode ? <label className="flex min-h-24 cursor-pointer flex-wrap items-center gap-4 rounded-2xl p-4 transition-colors hover:bg-muted/40 sm:p-5">
-        <input type="checkbox" className="h-5 w-5 shrink-0 accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          checked={selectedIds.has(analysis.id)} disabled={progress !== null} onChange={() => toggleSelected(analysis.id)} aria-label={t("{0} seç", analysis.title)} />
+        <Checkbox checked={selectedIds.has(analysis.id)} disabled={progress !== null} onCheckedChange={() => toggleSelected(analysis.id)} aria-label={t("{0} seç", analysis.title)} />
         <span className="min-w-0 flex-1"><span className="block break-words font-semibold">{analysis.title}</span><span className="mt-1 block text-xs text-muted-foreground">{analysis.business} · {new Date(analysis.createdAt).toLocaleString(localeTag())}</span></span>
         <span className={"rounded-full border px-3 py-1 text-xs font-medium " + statusTone(analysis.status)}>{t(tr.status[analysis.status])}</span>
       </label> : <div className="flex min-h-28 items-center gap-2 p-2 sm:gap-3">
@@ -280,7 +281,7 @@ export function HistoryPage() {
       </div>}
     </li>)}</ul> : rows.length ? <div className="mt-6 rounded-[1.75rem] border border-dashed border-border bg-card/70 px-6 py-16 text-center shadow-sm">
       <Search className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden="true" /><h2 className="mt-4 text-xl font-semibold">{t("Bu ölçütlerle eşleşen analiz yok")}</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">{t("Arama ifadenizi veya seçtiğiniz durum ve tarih aralığını değiştirerek tekrar deneyin.")}</p><Button variant="outline" className="mt-5 gap-2 rounded-xl" onClick={clearFilters}><RotateCcw className="h-4 w-4" aria-hidden="true" />  {t("Filtreleri temizle")}</Button>
-    </div> : <div className="relative mt-6 overflow-hidden rounded-[1.75rem] border border-border/80 bg-card shadow-sm">
+    </div> : <div className="surface relative mt-6 overflow-hidden rounded-[1.75rem] border border-border/80 bg-card shadow-sm">
       <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(17rem,0.8fr)]">
         <div className="p-7 sm:p-10"><span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.15em] text-primary dark:border-secondary/20 dark:bg-secondary/10 dark:text-secondary"><Sparkles className="h-3.5 w-3.5" aria-hidden="true" />  {t("Yeni bir başlangıç")}</span><h2 className="mt-5 max-w-lg text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">{t("İlk çalışmanız burada yerini alsın.")}</h2><p className="mt-3 max-w-lg text-sm leading-7 text-muted-foreground">{t("{0} Belgelerinizi hazırladığınızda her çalışmaya, kaynaklarına ve durumuna bu arşivden ulaşabilirsiniz.", t(tr.analysis.noHistory))}</p><Link to="/app/new-analysis" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/90">{t("İlk analizini hazırla")} <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" /></Link></div>
         <div className="relative flex min-h-60 items-center justify-center overflow-hidden border-t border-border/70 bg-gradient-to-br from-primary/[0.04] via-background to-primary/[0.12] p-8 dark:from-secondary/[0.04] dark:to-secondary/[0.12] lg:border-s lg:border-t-0" aria-hidden="true"><div className="absolute h-56 w-56 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="absolute h-40 w-40 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="absolute start-1/2 top-1/2 flex h-28 w-28 -translate-x-[65%] -translate-y-[58%] rotate-[-10deg] items-center justify-center rounded-2xl border border-primary/15 bg-card shadow-sm dark:border-secondary/20"><FilePlus2 className="h-8 w-8 text-primary/35 dark:text-secondary/35" /></div><div className="relative flex h-32 w-32 rotate-[7deg] flex-col items-center justify-center rounded-2xl border border-primary/20 bg-card shadow-xl shadow-primary/10 dark:border-secondary/20"><FolderOpen className="h-10 w-10 text-primary dark:text-secondary" /><span className="mt-3 h-1.5 w-16 rounded-full bg-primary/15 dark:bg-secondary/20" /><span className="mt-1.5 h-1.5 w-10 rounded-full bg-primary/10 dark:bg-secondary/15" /></div></div>
@@ -290,7 +291,7 @@ export function HistoryPage() {
     <dialog ref={dialogRef} role="alertdialog" aria-labelledby="history-delete-title" aria-describedby="history-delete-description"
       onCancel={event => { if (progress) event.preventDefault(); else setTarget(null); }}
       onClose={() => { if (!progress) setTarget(null); }}
-      className="w-[min(92vw,30rem)] max-w-none rounded-3xl border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm">
+      className="surface w-[min(92vw,30rem)] max-w-none overscroll-contain rounded-3xl border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm">
       <div className="p-6 sm:p-7">
         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/10 text-red-700 dark:text-red-300"><Trash2 className="h-5 w-5" aria-hidden="true" /></span>
         <h2 id="history-delete-title" className="mt-5 text-xl font-semibold">{target?.items.length === 1 ? t("Bu analizi silmek istiyor musunuz?") : (target?.items.length ?? 0) + " analizi silmek istiyor musunuz?"}</h2>

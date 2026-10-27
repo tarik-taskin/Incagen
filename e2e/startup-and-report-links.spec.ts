@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { setTheme } from "./ui-helpers";
 
 test("ana sayfa çalışma alanı kodu olmadan açılır; ilk açılan yardım gönderilmemiş metni korur", async ({ page }) => {
   const forbiddenRequests: string[] = [];
@@ -46,6 +47,6 @@ test("rapor bölüm adresleri doğrudan açılır; dönem, yeniden açma ve geri
   await expect(page.locator("#financial-details")).not.toHaveAttribute("open");
   await expect(page.getByText("Grafik veya tablodan bir değer seçerek kaynağı açın.", { exact: true })).toHaveCount(1);
   await page.screenshot({ path: testInfo.outputPath("report-overview-light.png"), fullPage: true });
-  await page.getByRole("button", { name: "Karanlık moda geç", exact: true }).click();
+  await setTheme(page, { mode: "dark" });
   await page.screenshot({ path: testInfo.outputPath("report-overview-dark.png"), fullPage: true });
 });

@@ -965,5 +965,13 @@
   "Bu e-posta başka bir giriş yöntemiyle kayıtlı. E-posta ve parolanızla giriş yapın.": "هذا البريد مسجّل بطريقة دخول أخرى. سجّل الدخول بالبريد وكلمة المرور.",
   "Bu giriş yöntemi şu anda etkin değil.": "طريقة تسجيل الدخول هذه غير مفعّلة حاليًا.",
   "Bu adres Google ile giriş için yetkilendirilmedi.": "هذا العنوان غير مخوّل لتسجيل الدخول عبر Google.",
-  "Bu hesaba bağlı Google hesabını seçin.": "اختر حساب Google المرتبط بهذا الحساب."
+  "Bu hesaba bağlı Google hesabını seçin.": "اختر حساب Google المرتبط بهذا الحساب.",
+  "Tema": "السمة",
+  "Mod": "الوضع",
+  "Görünüm": "المظهر",
+  "Açık": "فاتح",
+  "Koyu": "داكن",
+  "Sistem": "النظام",
+  "Klasik": "كلاسيكي",
+  "Liquid Glass": "Liquid Glass"
 }

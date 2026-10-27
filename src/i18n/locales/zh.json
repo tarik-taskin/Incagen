@@ -965,5 +965,13 @@
   "Bu e-posta başka bir giriş yöntemiyle kayıtlı. E-posta ve parolanızla giriş yapın.": "该邮箱已使用其他登录方式注册。请使用邮箱和密码登录。",
   "Bu giriş yöntemi şu anda etkin değil.": "此登录方式当前未启用。",
   "Bu adres Google ile giriş için yetkilendirilmedi.": "此地址未获授权使用 Google 登录。",
-  "Bu hesaba bağlı Google hesabını seçin.": "请选择与此账户关联的 Google 账户。"
+  "Bu hesaba bağlı Google hesabını seçin.": "请选择与此账户关联的 Google 账户。",
+  "Tema": "主题",
+  "Mod": "模式",
+  "Görünüm": "外观",
+  "Açık": "浅色",
+  "Koyu": "深色",
+  "Sistem": "跟随系统",
+  "Klasik": "经典",
+  "Liquid Glass": "Liquid Glass"
 }

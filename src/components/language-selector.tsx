@@ -1,7 +1,28 @@
-import { t, useLocale, languages, setLocale, type Locale } from "../i18n/runtime";
-import { Languages } from "lucide-react";
-// Seçili dilde dil adlarını gösteren yerel select, mobilde ve klavyede ek panel gerektirmeden kullanılabilir.
-export function LanguageSelector() {
+import { lazy, Suspense } from "react";
+import { ChevronDown, Languages } from "lucide-react";
+import { languages, t, useLocale } from "../i18n/runtime";
+
+// Radix seçim kodu ilk açılış paketine girmesin diye ayrı yüklenir; yer tutucu aynı ölçüde çizilir.
+const LanguageSelectMenu = lazy(() => import("./language-select-menu").then(module => ({ default: module.LanguageSelectMenu })));
+
+// Menü kodu gelene kadar aynı görünümde pasif tetikleyici gösterir; sayfada kayma oluşmaz.
+function LanguageSelectorPlaceholder() {
   const locale = useLocale();
-  return <label className="relative inline-flex h-10 min-w-0 items-center rounded-full border border-border bg-card shadow-sm"><Languages aria-hidden="true" className="pointer-events-none absolute start-3 h-4 w-4 text-muted-foreground" /><span className="sr-only">{t("Dil")}</span><select aria-label={t("Dil")} value={locale} onChange={event => setLocale(event.target.value as Locale)} className="h-full w-10 cursor-pointer sm:w-[8.5rem] appearance-none rounded-full bg-transparent ps-9 pe-1 text-xs font-medium text-transparent sm:pe-3 sm:text-foreground [&>option]:text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary">{languages.map(item => <option key={item.code} value={item.code} lang={locale}>{t(item.name)}</option>)}</select></label>;
+  const current = languages.find(item => item.code === locale);
+  return (
+    <button type="button" disabled aria-label={t("Dil")} data-testid="language-select" className="flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full border border-border/70 bg-card/70 px-0 text-foreground shadow-sm backdrop-blur-xl sm:w-[8.75rem] sm:justify-between sm:px-3">
+      <Languages className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+      <span className="hidden min-w-0 flex-1 truncate text-start text-xs font-medium sm:block">{current ? t(current.name) : ""}</span>
+      <ChevronDown className="hidden h-4 w-4 shrink-0 opacity-60 sm:block" aria-hidden="true" />
+    </button>
+  );
+}
+
+// Dil seçiciyi lazy menüyle sunar; diyalog içindeki kullanımlar portal hedefini iletir.
+export function LanguageSelector({ container }: { container?: HTMLElement | null }) {
+  return (
+    <Suspense fallback={<LanguageSelectorPlaceholder />}>
+      <LanguageSelectMenu container={container} />
+    </Suspense>
+  );
 }

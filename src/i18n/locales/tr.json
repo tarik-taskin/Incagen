@@ -965,5 +965,13 @@
   "Bu e-posta başka bir giriş yöntemiyle kayıtlı. E-posta ve parolanızla giriş yapın.": "Bu e-posta başka bir giriş yöntemiyle kayıtlı. E-posta ve parolanızla giriş yapın.",
   "Bu giriş yöntemi şu anda etkin değil.": "Bu giriş yöntemi şu anda etkin değil.",
   "Bu adres Google ile giriş için yetkilendirilmedi.": "Bu adres Google ile giriş için yetkilendirilmedi.",
-  "Bu hesaba bağlı Google hesabını seçin.": "Bu hesaba bağlı Google hesabını seçin."
+  "Bu hesaba bağlı Google hesabını seçin.": "Bu hesaba bağlı Google hesabını seçin.",
+  "Tema": "Tema",
+  "Mod": "Mod",
+  "Görünüm": "Görünüm",
+  "Açık": "Açık",
+  "Koyu": "Koyu",
+  "Sistem": "Sistem",
+  "Klasik": "Klasik",
+  "Liquid Glass": "Liquid Glass"
 }

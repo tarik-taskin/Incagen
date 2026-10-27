@@ -965,5 +965,13 @@
   "Bu e-posta başka bir giriş yöntemiyle kayıtlı. E-posta ve parolanızla giriş yapın.": "Este correo usa otro método de acceso. Inicia sesión con tu correo y contraseña.",
   "Bu giriş yöntemi şu anda etkin değil.": "Este método de acceso no está activado ahora.",
   "Bu adres Google ile giriş için yetkilendirilmedi.": "Esta dirección no está autorizada para acceder con Google.",
-  "Bu hesaba bağlı Google hesabını seçin.": "Elige la cuenta de Google vinculada a esta cuenta."
+  "Bu hesaba bağlı Google hesabını seçin.": "Elige la cuenta de Google vinculada a esta cuenta.",
+  "Tema": "Tema",
+  "Mod": "Modo",
+  "Görünüm": "Apariencia",
+  "Açık": "Claro",
+  "Koyu": "Oscuro",
+  "Sistem": "Sistema",
+  "Klasik": "Clásico",
+  "Liquid Glass": "Liquid Glass"
 }

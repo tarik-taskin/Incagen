@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import gold from "../fixtures/company-example/v3/expected.json" with { type: "json" };
+import { setTheme } from "./ui-helpers";
 
 // Raporun tamamı ve açık dialog için kritik erişilebilirlik ihlallerini durdurur.
 async function accessibility(page: Page) {
@@ -118,7 +119,7 @@ test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı 
   await accessibility(page);
   await page.screenshot({ path: testInfo.outputPath("company-overview-light.png") });
   await page.screenshot({ path: testInfo.outputPath("company-full-light.png"), fullPage: true });
-  await page.getByRole("button", { name: "Karanlık moda geç" }).click();
+  await setTheme(page, { mode: "dark" });
   await expect(page.locator("html")).toHaveClass(/dark/);
   await accessibility(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= (window.visualViewport?.width ?? innerWidth))).toBe(true);

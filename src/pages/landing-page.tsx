@@ -67,28 +67,29 @@ export function LandingPage() {
   }, [location.hash, location.state, navigate]);
 
   return (
-    <div ref={pageRef} className="relative min-h-screen overflow-hidden bg-background text-foreground">
+    <div ref={pageRef} className="relative min-h-screen overflow-hidden bg-background text-foreground glass:bg-transparent">
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
         <div className="ambient ambient-one" />
         <div className="ambient ambient-two" />
         <div className="dot-grid absolute inset-0 opacity-50 dark:opacity-25" />
       </div>
 
+      <a href="#landing-main" className="sr-only z-50 rounded-md bg-primary px-4 py-2 text-primary-foreground focus:not-sr-only focus:fixed focus:start-4 focus:top-4">{t("İçeriğe geç")}</a>
       <header className="relative z-20 mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-10">
-        <Link to={user ? "/app/new-analysis" : "/"} className="flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label={user ? t("Yeni analize git") : t("Incagen ana sayfa")}>
+        <Link to={user ? "/app/new-analysis" : "/"} className="flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-secondary" aria-label={user ? t("Yeni analize git") : t("Incagen ana sayfa")}>
           <AnimatedLogo className="h-9 w-9" compact />
           <span className="text-xl font-semibold tracking-[-0.04em]">{t("Incagen")}</span>
         </Link>
         <div className="flex items-center gap-2"><LanguageSelector /><ThemeToggle /></div>
       </header>
 
-      <main className="relative z-10 mx-auto w-full max-w-7xl px-5 pb-20 pt-5 sm:px-8 lg:px-10 lg:pt-10">
+      <main id="landing-main" tabIndex={-1} className="relative z-10 mx-auto w-full max-w-7xl px-5 pb-20 pt-5 outline-none sm:px-8 lg:px-10 lg:pt-10">
         <div className="grid items-stretch gap-5 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-6">
-          <section className="relative flex min-w-0 flex-col overflow-hidden rounded-[2rem] border border-primary/10 bg-gradient-to-br from-card via-card to-primary/[0.08] p-7 shadow-[0_24px_80px_-55px_rgba(70,35,110,0.35)] dark:border-secondary/10 dark:to-secondary/[0.07] sm:p-10 lg:min-h-[44rem] lg:p-12" aria-labelledby="landing-title">
+          <section className="surface surface-accent relative flex min-w-0 flex-col overflow-hidden rounded-[2rem] border border-primary/10 bg-gradient-to-br from-card via-card to-primary/[0.08] p-7 shadow-[0_24px_80px_-55px_rgba(70,35,110,0.35)] dark:border-secondary/10 dark:to-secondary/[0.07] sm:p-10 lg:min-h-[44rem] lg:p-12" aria-labelledby="landing-title">
             <div className="pointer-events-none absolute -end-28 -top-24 h-80 w-80 rounded-full border border-primary/10 bg-primary/[0.04] dark:border-secondary/10" aria-hidden="true" />
             <div data-reveal className="relative opacity-0"><AnimatedLogo className="h-20 w-20 sm:h-24 sm:w-24" /></div>
             <div data-reveal className="relative mt-7 inline-flex w-fit items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-3.5 py-1.5 text-xs font-semibold text-primary opacity-0 dark:border-secondary/20 dark:text-secondary"><Sparkles className="h-3.5 w-3.5" aria-hidden="true" />  {t("Yapay zekâ destekli iş zekâsı")}</div>
-            <h1 id="landing-title" data-reveal className="relative mt-6 max-w-2xl text-balance text-[clamp(2.6rem,4vw,4.6rem)] font-semibold leading-[1.05] tracking-[-0.065em] opacity-0">{t("Verilerinizdeki büyüme fırsatlarını keşfedin.")}</h1>
+            <h1 id="landing-title" data-reveal className="relative mt-6 max-w-2xl text-balance text-[clamp(2.6rem,4vw,4.6rem)] font-semibold leading-[1.05] tracking-[-0.05em] opacity-0">{t("Verilerinizdeki büyüme fırsatlarını keşfedin.")}</h1>
             <p data-reveal className="relative mt-6 max-w-xl text-pretty text-base leading-7 text-muted-foreground opacity-0">{t("Bir konunun belgelerini aynı çalışma alanında toplayın. Incagen, içeriği kaynaklarıyla düzenli bir başlangıca dönüştürür; içgörü ve öneri katmanı sonraki aşamada açılacak.")}</p>
             <div data-reveal className="relative mt-8 flex flex-wrap items-center gap-4 opacity-0"><Button type="button" className="h-12 rounded-xl px-6 text-base shadow-lg shadow-primary/20" onClick={startAnalysis}>{t("Analize başla")} <ArrowRight className="ms-2 h-4 w-4 rtl:-scale-x-100" aria-hidden="true" /></Button><Link to="/ornek-rapor" className="inline-flex items-center gap-2 rounded-lg px-1 py-3 text-sm font-medium text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-secondary">{t("Örnek raporu incele")} <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" /></Link></div>
             <div className="relative mt-auto grid gap-3 pt-12 sm:grid-cols-2">
@@ -97,7 +98,7 @@ export function LandingPage() {
             </div>
           </section>
 
-          <section id="nasil-calisir" className="min-w-0 scroll-mt-8 rounded-[2rem] border border-border/80 bg-card/90 p-7 shadow-[0_24px_80px_-55px_rgba(70,35,110,0.3)] sm:p-10 lg:p-12" aria-labelledby="nasil-calisir-baslik">
+          <section id="nasil-calisir" className="surface min-w-0 scroll-mt-8 rounded-[2rem] border border-border/80 bg-card/90 p-7 shadow-[0_24px_80px_-55px_rgba(70,35,110,0.3)] sm:p-10 lg:p-12" aria-labelledby="nasil-calisir-baslik">
             <h2 id="nasil-calisir-baslik" className="max-w-xl text-balance text-3xl font-semibold leading-[1.1] tracking-[-0.05em] sm:text-4xl">{t("Dağınık dosyalardan")} <span className="text-primary dark:text-secondary">{t("düzenli bir başlangıca.")}</span></h2>
             <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground">{t("Belge hazırlığının her adımı anlaşılır: konuyu seçin, kaynakları koruyarak düzenleyin, çalışmanıza dilediğinizde geri dönün.")}</p>
             <div className="relative mt-7 space-y-3 before:absolute before:bottom-8 before:start-5 before:top-8 before:w-px before:bg-primary/15 dark:before:bg-secondary/20">
@@ -115,7 +116,7 @@ export function LandingPage() {
           </section>
         </div>
 
-        <section className="mt-6 grid gap-5 rounded-[2rem] border border-primary/10 bg-gradient-to-br from-primary/[0.06] via-card to-card p-7 shadow-sm dark:border-secondary/15 dark:from-secondary/[0.07] sm:p-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-10" aria-labelledby="control-title">
+        <section className="surface surface-accent mt-6 grid gap-5 rounded-[2rem] border border-primary/10 bg-gradient-to-br from-primary/[0.06] via-card to-card p-7 shadow-sm dark:border-secondary/15 dark:from-secondary/[0.07] sm:p-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-10" aria-labelledby="control-title">
           <div><span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-primary dark:text-secondary"><ShieldCheck className="h-4 w-4" aria-hidden="true" />  {t("Kontrol sizde")}</span><h2 id="control-title" className="mt-3 max-w-2xl text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">{t("Verinizin yolculuğu görünür, karar sizin.")}</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">{t("Dosyalar yalnız hazırlama işlemini başlattığınızda işlenir. İçerik türü kontrol edilir, kaynak konumları korunur ve kayıtları çalışma alanınızdan yönetirsiniz.")}</p></div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1"><span className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm"><FileCheck2 className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" />  {t("Kaynakları takip edin")}</span><span className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm"><LockKeyhole className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" />  {t("Kayıtları siz yönetin")}</span></div>
         </section>

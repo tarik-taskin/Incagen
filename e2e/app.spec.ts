@@ -1,6 +1,7 @@
 import { Buffer } from "node:buffer";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { setTheme } from "./ui-helpers";
 
 // Her sayfadaki kritik WCAG A ve AA ihlallerinin test sonucunu durdurmasını sağlar.
 async function expectNoAccessibilityViolations(page: Page) {
@@ -40,7 +41,7 @@ test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru y
   await expect(page.getByRole("heading", { name: "Verilerinizdeki büyüme fırsatlarını keşfedin." })).toBeVisible();
   await expectNoAccessibilityViolations(page);
 
-  await page.getByRole("button", { name: "Karanlık moda geç" }).click();
+  await setTheme(page, { mode: "dark" });
   await expect(page.locator("html")).toHaveClass(/dark/);
 
   await page.getByRole("button", { name: /Analize başla/ }).click();
@@ -66,11 +67,11 @@ test("landing, Premium ve geri dönüş akışı tarayıcı geçmişini doğru y
   await expectNoAccessibilityViolations(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath("plan-dark.png"), fullPage: true });
-  await page.getByRole("button", { name: "Aydınlık moda geç" }).click();
+  await setTheme(page, { mode: "light" });
   await expectNoAccessibilityViolations(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath("plan-light.png"), fullPage: true });
-  await page.getByRole("button", { name: "Karanlık moda geç" }).click();
+  await setTheme(page, { mode: "dark" });
   await navigation.getByRole("link", { name: "Yeni analiz" }).click();
 
   await page.getByRole("button", { name: "Premium’a geç" }).click();
@@ -172,8 +173,7 @@ test("hazırlık özeti kapasiteyi ve eksik alan odağını iki temada korur", a
   await page.getByLabel("Analiz hedefi", { exact: true }).fill("İlgili kaynakların ana konularını incele.");
   await expect(page.getByText("Belgeleriniz ve çalışma ayrıntılarınız hazırlamaya hazır.")).toBeVisible();
   for (const mode of ["light", "dark"]) {
-    const dark = await page.locator("html").evaluate(element => element.classList.contains("dark"));
-    if (dark !== (mode === "dark")) await page.getByRole("button", { name: /moda geç/ }).click();
+    await setTheme(page, { mode: mode as "light" | "dark" });
     await expectNoAccessibilityViolations(page);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.evaluate(async () => {
@@ -209,7 +209,7 @@ test("boş geçmiş, bağlantı taslakları ve doğrulanmış hesap silme", asyn
   await expectNoAccessibilityViolations(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath("empty-history.png"), fullPage: true });
-  await page.getByRole("button", { name: "Karanlık moda geç" }).click();
+  await setTheme(page, { mode: "dark" });
   await expectNoAccessibilityViolations(page);
   await page.screenshot({ path: testInfo.outputPath("empty-history-dark.png"), fullPage: true });
 
@@ -225,7 +225,7 @@ test("boş geçmiş, bağlantı taslakları ve doğrulanmış hesap silme", asyn
   await expectNoAccessibilityViolations(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath("settings-connections-dark.png"), fullPage: true });
-  await page.getByRole("button", { name: "Aydınlık moda geç" }).click();
+  await setTheme(page, { mode: "light" });
   await expectNoAccessibilityViolations(page);
   await page.screenshot({ path: testInfo.outputPath("settings-connections.png"), fullPage: true });
 

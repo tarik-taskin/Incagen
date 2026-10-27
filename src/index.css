@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: theme("fontFamily.sans");
     color-scheme: light;
     --chart-accent: 263 52% 34%;
     font-synthesis: none;
@@ -13,6 +13,15 @@
     --background: 196 60% 98%; --foreground: 285 62% 14%; --card: 0 0% 100%; --card-foreground: 285 62% 14%;
     --primary: 263 52% 34%; --primary-foreground: 0 0% 100%; --secondary: 190 76% 85%; --secondary-foreground: 285 62% 14%;
     --muted: 192 42% 94%; --muted-foreground: 271 14% 43%; --border: 258 24% 86%; --ring: 263 52% 34%;
+    /* shadcn açılır menü, vurgu, uyarı ve form tokenları. */
+    --popover: 0 0% 100%; --popover-foreground: 285 62% 14%; --accent: 258 45% 95%; --accent-foreground: 285 62% 14%;
+    --destructive: 0 72% 42%; --destructive-foreground: 0 0% 100%; --input: 258 24% 82%;
+    /* Grafik serileri; rapor renk sırasıyla aynı tonlar. */
+    --chart-1: 260 40% 51%; --chart-2: 183 49% 38%; --chart-3: 25 45% 53%; --chart-4: 214 48% 58%; --chart-5: 330 45% 52%;
+    /* Liquid Glass: yüzey saydamlığı, kenar ışığı, gölge ve arka plan renk ağı. Yalnız [data-style="glass"] altında kullanılır. */
+    --glass-alpha: 0.6; --glass-popover-alpha: 0.86; --glass-blur: 26px;
+    --glass-edge: 0 0% 100%; --glass-edge-alpha: 0.72; --glass-glow: 0 0% 100%; --glass-glow-alpha: 0.9; --glass-shadow: 263 52% 34%;
+    --glass-tint-1: 190 85% 80%; --glass-tint-2: 263 75% 82%; --glass-tint-3: 330 80% 88%;
   }
   .dark {
     color-scheme: dark;
@@ -20,16 +29,66 @@
     --background: 285 62% 7%; --foreground: 190 76% 94%; --card: 282 48% 11%; --card-foreground: 190 76% 94%;
     --primary: 263 52% 48%; --primary-foreground: 0 0% 100%; --secondary: 190 76% 85%; --secondary-foreground: 285 62% 14%;
     --muted: 282 30% 15%; --muted-foreground: 196 20% 69%; --border: 275 28% 21%; --ring: 190 76% 85%;
+    --popover: 282 45% 12%; --popover-foreground: 190 76% 94%; --accent: 280 32% 19%; --accent-foreground: 190 76% 94%;
+    --destructive: 0 70% 62%; --destructive-foreground: 285 62% 7%; --input: 275 26% 26%;
+    --chart-1: 256 80% 81%; --chart-2: 180 50% 67%; --chart-3: 26 73% 74%; --chart-4: 217 72% 76%; --chart-5: 330 60% 75%;
+    --glass-alpha: 0.5; --glass-popover-alpha: 0.84;
+    --glass-edge: 190 76% 94%; --glass-edge-alpha: 0.13; --glass-glow: 190 76% 94%; --glass-glow-alpha: 0.12; --glass-shadow: 285 70% 2%;
+    --glass-tint-1: 263 70% 36%; --glass-tint-2: 190 70% 26%; --glass-tint-3: 320 62% 28%;
+  }
+  /* Saydamlık efekti olmayan tarayıcıda yüzeyler okunabilir kalsın diye neredeyse opak çizilir. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    [data-style="glass"] { --glass-alpha: 0.94; --glass-popover-alpha: 0.98; }
+  }
+  @media (max-width: 640px) {
+    [data-style="glass"] { --glass-blur: 16px; }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    [data-style="glass"] { --glass-alpha: 1; --glass-popover-alpha: 1; }
   }
   * { @apply border-border; }
   /* Sabit mobil navigasyon, odaklanan ve otomatik kaydırılan kontrolleri örtmemeli. */
   html { scroll-behavior: smooth; scroll-padding-bottom: 7rem; }
   body { @apply m-0 min-w-80 min-h-screen bg-background text-foreground; }
+  /* Glass yüzeylerin arkasında görünen sabit renk ağı; animasyonsuzdur, sayfa sarmalayıcıları glass'ta saydamlaşır. */
+  [data-style="glass"] body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(48rem 34rem at 6% -8%, hsl(var(--glass-tint-1) / 0.75), transparent 62%),
+      radial-gradient(42rem 30rem at 96% 6%, hsl(var(--glass-tint-2) / 0.62), transparent 60%),
+      radial-gradient(54rem 34rem at 58% 108%, hsl(var(--glass-tint-3) / 0.5), transparent 62%);
+  }
 }
 
 @layer components {
   .form-control {
     @apply block w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary dark:focus-visible:ring-secondary;
+  }
+  /* Bütün panellerin ortak yüzeyi; Card bileşeni ve açılır menüler bunu kullanır. */
+  .surface { @apply border border-border bg-card shadow-sm; }
+  .surface-accent { background-image: linear-gradient(135deg, hsl(var(--primary) / 0.07), transparent 58%); }
+  .dark .surface-accent { background-image: linear-gradient(135deg, hsl(var(--secondary) / 0.06), transparent 58%); }
+  [data-style="glass"] .surface,
+  [data-style="glass"] .popover-surface {
+    border-color: hsl(var(--glass-edge) / var(--glass-edge-alpha));
+    box-shadow: inset 0 1px 0 hsl(var(--glass-glow) / var(--glass-glow-alpha)), 0 30px 80px -48px hsl(var(--glass-shadow) / 0.55);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(170%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(170%);
+  }
+  /* Opak kart gradyanları saydamlığı örtmesin; vurgu tonu ayrı ve hafif bir geçişle korunur. */
+  [data-style="glass"] .surface { background-color: hsl(var(--card) / var(--glass-alpha)); background-image: none; }
+  [data-style="glass"] .surface-accent { background-image: linear-gradient(135deg, hsl(var(--primary) / 0.09), transparent 58%); }
+  [data-style="glass"].dark .surface-accent { background-image: linear-gradient(135deg, hsl(var(--secondary) / 0.07), transparent 58%); }
+  [data-style="glass"] .popover-surface { background-color: hsl(var(--popover) / var(--glass-popover-alpha)); }
+  /* İç içe yüzeyler dıştaki bulanıklığı tekrarlamaz; mobil GPU yükü sınırlı kalır. */
+  [data-style="glass"] .surface .surface { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  @media (prefers-reduced-transparency: reduce) {
+    [data-style="glass"] .surface,
+    [data-style="glass"] .popover-surface { -webkit-backdrop-filter: none; backdrop-filter: none; }
   }
 }
 

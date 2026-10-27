@@ -1,10 +1,12 @@
-import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowUpRight, ChevronDown, Headphones, LoaderCircle, Mail, X } from "lucide-react";
 import { useOutsideDismiss } from "../hooks/use-outside-dismiss";
 import { t, useLocale } from "../i18n/runtime";
+import { hasOpenPopover } from "../lib/popover-layers";
 import { Button } from "./ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { getSupportConfig, sendSupportMessage, supportMailto, type SupportTopic } from "../features/support/support";
 
 const questions = [
@@ -19,6 +21,9 @@ export function SupportDialog({ open, onClose }: { open: boolean; onClose: () =>
   const reducedMotion = useReducedMotion();
   const id = useId();
   const dialog = useRef<HTMLDialogElement>(null);
+  // Konu listesi diyaloğun üst katmanında açılabilsin diye öğe state'te de tutulur.
+  const [dialogElement, setDialogElement] = useState<HTMLDialogElement | null>(null);
+  const dialogRef = useCallback((node: HTMLDialogElement | null) => { dialog.current = node; setDialogElement(node); }, []);
   const closeButton = useRef<HTMLButtonElement>(null);
   const controller = useRef<AbortController | null>(null);
   const lock = useRef(false);
@@ -47,7 +52,7 @@ export function SupportDialog({ open, onClose }: { open: boolean; onClose: () =>
     finally { clearTimeout(timeout); controller.current = null; lock.current = false; }
   }
 
-  return <dialog ref={dialog} aria-labelledby={`${id}-title`} aria-describedby={`${id}-description`} onCancel={onClose} onClose={onClose} className="w-[min(92vw,34rem)] max-w-none overflow-y-auto rounded-[1.75rem] border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-slate-950/45 backdrop:backdrop-blur-sm">
+  return <dialog ref={dialogRef} aria-labelledby={`${id}-title`} aria-describedby={`${id}-description`} onCancel={event => { if (hasOpenPopover()) event.preventDefault(); else onClose(); }} onClose={onClose} className="surface w-[min(92vw,34rem)] overscroll-contain max-w-none overflow-y-auto rounded-[1.75rem] border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-slate-950/45 backdrop:backdrop-blur-sm">
     <div className="p-5 sm:p-8">
       <div className="flex items-start justify-between gap-4"><span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/[0.07] text-primary dark:bg-secondary/10 dark:text-secondary"><Headphones className="h-5 w-5" aria-hidden="true" /></span><button ref={closeButton} type="button" aria-label={t("Kapat")} onClick={onClose} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><X className="h-4 w-4" aria-hidden="true" /></button></div>
       <h2 id={`${id}-title`} className="mt-5 text-2xl font-semibold tracking-tight">{t("Destek ve yardım")}</h2><p id={`${id}-description`} className="mt-2 text-sm leading-6 text-muted-foreground">{t("Takıldığınız yerden birlikte ilerleyelim.")}</p>
@@ -56,7 +61,7 @@ export function SupportDialog({ open, onClose }: { open: boolean; onClose: () =>
         <h3 className="mt-5 text-lg font-semibold tracking-tight">{t("Mesajınız bize ulaştı")}</h3><p className="mx-auto mt-2 max-w-xs text-sm leading-6 text-muted-foreground">{t("Yanıtımızı belirttiğiniz e-posta adresine göndereceğiz.")}</p><Button className="mt-6 min-h-11 w-full rounded-xl" onClick={() => { setState("idle"); setCompose(false); }}>{t("Tamam")}</Button>
       </motion.div> : compose ? <form onSubmit={submit} className="mt-6 space-y-4" aria-busy={state === "sending"}>
         <button type="button" onClick={() => setCompose(false)} className="inline-flex min-h-9 items-center gap-2 rounded text-xs font-medium text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><ArrowLeft className="h-3.5 w-3.5 rtl:-scale-x-100" aria-hidden="true" />{t("Yardıma dön")}</button>
-        <fieldset disabled={state === "sending"} className="space-y-4"><label className="block text-sm font-medium">{t("E-posta")}<input type="email" autoComplete="email" required maxLength={254} value={email} onChange={event => setEmail(event.target.value)} className="form-control mt-1.5" /></label><label className="block text-sm font-medium">{t("Konu")}<select aria-label={t("Konu")} value={topic} onChange={event => setTopic(event.target.value as SupportTopic)} className="form-control mt-1.5"><option value="question">{t("Bir sorum var")}</option><option value="issue">{t("Bir sorun yaşıyorum")}</option><option value="feedback">{t("Bir önerim var")}</option></select></label><label className="block text-sm font-medium">{t("Mesajınız")}<textarea aria-label={t("Mesajınız")} required maxLength={2000} rows={4} value={message} onChange={event => setMessage(event.target.value)} className="form-control mt-1.5 min-h-28 resize-y" /></label></fieldset>
+        <fieldset disabled={state === "sending"} className="space-y-4"><label className="block text-sm font-medium">{t("E-posta")}<input type="email" autoComplete="email" required maxLength={254} value={email} onChange={event => setEmail(event.target.value)} className="form-control mt-1.5" /></label><div className="text-sm font-medium"><span id={`${id}-topic`}>{t("Konu")}</span><Select value={topic} onValueChange={value => setTopic(value as SupportTopic)}><SelectTrigger aria-labelledby={`${id}-topic`} className="mt-1.5 h-11 font-normal"><SelectValue /></SelectTrigger><SelectContent container={dialogElement}><SelectItem value="question">{t("Bir sorum var")}</SelectItem><SelectItem value="issue">{t("Bir sorun yaşıyorum")}</SelectItem><SelectItem value="feedback">{t("Bir önerim var")}</SelectItem></SelectContent></Select></div><label className="block text-sm font-medium">{t("Mesajınız")}<textarea aria-label={t("Mesajınız")} required maxLength={2000} rows={4} value={message} onChange={event => setMessage(event.target.value)} className="form-control mt-1.5 min-h-28 resize-y" /></label></fieldset>
         {state === "error" && <p role="alert" className="text-sm leading-6 text-red-700 dark:text-red-300">{t("Gönderimi doğrulayamadık. Mesajınız korundu; yeniden deneyebilir veya bize e-posta yazabilirsiniz.")}</p>}
         {config.accessKey ? <Button type="submit" disabled={state === "sending" || !message.trim()} className="min-h-11 w-full gap-2">{state === "sending" && <LoaderCircle className="h-4 w-4 motion-safe:animate-spin" aria-hidden="true" />}{state === "sending" ? t("Gönderiliyor…") : t("Mesajı gönder")}</Button> : config.email && <Button type="button" className="min-h-11 w-full" onClick={event => { if (event.currentTarget.closest("form")?.reportValidity()) window.location.href = supportMailto(config.email, { email, topic, message }); }}>{t("E-postada aç")}</Button>}
         <p className="text-xs leading-5 text-muted-foreground">{config.accessKey ? t("Mesajınız yalnız destek ekibine iletilir. Analiz belgelerinizi veya parolanızı paylaşmayın.") : t("Göndermeyi e-posta uygulamanızda tamamlayın.")}</p>

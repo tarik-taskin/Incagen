@@ -34,7 +34,15 @@
     "example:build": "npm run build:functions && node scripts/build-sales-example.cjs && node scripts/build-feedback-example.cjs"
   },
   "dependencies": {
+    "@fontsource-variable/geist": "^5.3.0",
+    "@fontsource-variable/geist-mono": "^5.3.0",
+    "@fontsource-variable/noto-sans-arabic": "^5.3.0",
+    "@radix-ui/react-checkbox": "^1.4.1",
+    "@radix-ui/react-direction": "^1.2.0",
+    "@radix-ui/react-dropdown-menu": "^2.2.1",
+    "@radix-ui/react-select": "^2.4.1",
     "@radix-ui/react-slot": "^1.3.3",
+    "@radix-ui/react-tooltip": "^1.4.1",
     "animejs": "^4.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -68,6 +76,7 @@
     "jsdom": "^30.0.1",
     "postcss": "^8.5.27",
     "tailwindcss": "^3.4.17",
+    "tailwindcss-animate": "^1.0.7",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.70.0",
     "vite": "^6.3.5",
