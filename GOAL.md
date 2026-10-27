@@ -7,6 +7,21 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-28 — Tarık / Claude: arayüz yenilemesi
+
+- [x] Sahip: Tarık — shadcn temelini, eksik tasarım tokenlarını ve `@` yol takma adını ekle; mevcut düğme varyantlarını koru.
+- [x] Sahip: Tarık — Geist ve Arapça fontu projeden sun; Türkçe, RTL ve Çince yazım taşma kontrollerini koru.
+- [x] Sahip: Tarık — Açık/koyu/sistem modu ile Klasik/Liquid Glass görünümünü tek tema menüsünde sun; varsayılan Klasik kalsın.
+- [x] Sahip: Tarık — Dil, geçmiş filtreleri ve destek konusu seçimlerini temaya uyan erişilebilir shadcn kontrollerine taşı.
+- [x] Sahip: Tarık — Panelleri ortak yüzey bileşenine topla; web-design-guidelines bulgularını landing, kimlik, ayarlar, geçmiş ve rapor ekranlarında gider.
+- [ ] Sahip: Tarık — Grafiklerde shadcn/Recharts prototipini ECharts ile boyut ve davranış açısından karşılaştır; geçiş Furkan'ın M4 görevi ve FLOW mimari kararı nedeniyle onayına bağlıdır.
+- [ ] Sahip: Tarık — Rapor tablolarını shadcn tablolarına taşı, gerekli yerlerde sıralama ekle; Motion hareketlerini sade ve azaltılmış harekete uyumlu tut.
+- [ ] Sahip: Tarık — Sentetik örneklerden ekran görüntüsü üret; README ve giriş öncesi landing önizlemesinde kullan.
+
+Durum (2026-10-28, ilk beş görev): Radix Select/DropdownMenu/Tooltip/Checkbox, Card/Table/Badge/Skeleton ve `glass:` Tailwind varyantı eklendi; Geist, Geist Mono ve Noto Sans Arabic `unicode-range` ile yalnız gerektiğinde iner. Tema menüsü mod (açık/koyu/sistem) ve görünümü (Klasik/Liquid Glass) ayrı saklar, `theme-color`'ı günceller ve açılıştan önce uygulanır; azaltılmış saydamlıkta ve `backdrop-filter` yokken yüzeyler opaklaşır. Dil, geçmiş filtreleri, destek konusu ve seçim kutuları tema uyumlu kontrollere taşındı; açık liste varken dış tıklama ve Escape modalı/diyaloğu kapatmaz. 30 panel ortak `surface` yüzeyine bağlandı; landing'e içeriğe geç bağlantısı, ayarlara ad/yazım denetimi ve ikon gizleme, diyaloglara kaydırma sınırı eklendi; geçmiş ipucu RTL'de ortalandı. Dil ve tema menüleri lazy yüklenir: ilk açılış 292.286 → 294.096 gzip bayt (menüler ilk pakette kalsaydı 332.379). Lint, 91 uygulama + 104 Functions testi, build, Netlify derlemesi ve 53 + 4 yeni masaüstü/mobil tarayıcı senaryosu geçti; dört kombinasyonda axe ihlali yok. Yük altındaki bir yerel koşuda 3 mobil senaryo 5 saniyelik sayfa geçişi beklemesini aştı; tekrar koşuda ve yalnız mobil koşuda hepsi geçti.
+
+Kabul: İlk açılış JS'i 400 KiB gzip bütçesinde kalmalı; rapor rotasının lazy paketleri önce/sonra ölçülmeli. İki mod × iki görünümde WCAG A/AA taraması, klavye odağı, mobil taşma, RTL ve azaltılmış hareket/saydamlık korunmalı. Mevcut kimlik, hazırlama, geçmiş, silme ve rapor davranışı değişmemeli. Lint, birim, build, Netlify derlemesi, emülatör entegrasyon ve tarayıcı testleri geçmeli; görsellerde yalnız sentetik veri olmalı.
+
 ### 2026-10-28 — Tarık / Claude: Google ile giriş
 
 - [~] Sahip: Tarık — Giriş/kayıt modalındaki Google seçeneğini Firebase Google sağlayıcısına bağla; Apple ve Microsoft pasif kalsın.
