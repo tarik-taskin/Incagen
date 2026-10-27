@@ -64,7 +64,9 @@ npm run test:integration
 npm run test:local
 ```
 
-Kimlik, yetki, kota ve silme kontrolleri entegrasyon paketindedir. Tarayıcı paketi masaüstü/mobil, açık/koyu tema, klavye, erişilebilirlik ve taslak yaşam döngüsünü sınar. Test hizmetleri `demo-incagen` ile loopback adreslerine kilitlidir; eksik servis gerçek bulutla tamamlanmaz. Normal kapanışta test verileri kalıcı değildir.
+Functions kodunun ilk yüklemesi yavaş disklerde (örneğin OneDrive klasörü) 10 saniyeyi aşarsa emülatör "Timeout after 10000" ile fonksiyonları yüklemez. Bu durumda aynı komutlardan önce yalnız yerel kabukta `FUNCTIONS_DISCOVERY_TIMEOUT=60` tanımlayın; repo ayarı değişmez.
+
+Kimlik, yetki, kota ve silme kontrolleri entegrasyon paketindedir. Tarayıcı paketi masaüstü/mobil, açık/koyu tema, klavye, erişilebilirlik ve taslak yaşam döngüsünü sınar. Google ile giriş, emülatörün sahte hesap penceresiyle ilk giriş, yeniden giriş ve Google doğrulamalı hesap silme olarak sınanır; gerçek Google hesabı kullanılmaz. Test hizmetleri `demo-incagen` ile loopback adreslerine kilitlidir; eksik servis gerçek bulutla tamamlanmaz. Normal kapanışta test verileri kalıcı değildir.
 
 ## Görsel inceleme
 
