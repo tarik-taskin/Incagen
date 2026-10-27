@@ -60,7 +60,13 @@ npm run build -- --mode cloud-preview
 
 [netlify.toml](../netlify.toml) yalnız `dist` dizinini yayınlar; iç rotalar `index.html` üzerinden açılır. Derleme ortamı mevcut Firebase Web App yapılandırmasıyla eşleşmelidir. Düz `npm run build` derleme kontrolüdür; ortam yapılandırması olmadan hazırlanmış paket canlı yayın olarak kullanılmaz.
 
-Firebase backend'i ayrı dağıtılır. Storage, Functions, erişim kuralları ve faturalandırma doğrulanmadan `VITE_AUTH_ONLY_PREVIEW=true` koruması kaldırılmaz. Plan yükseltmesi tek başına backend'in dağıtıldığını veya güvenli olduğunu göstermez. Güncel yayın kapsamı ve sistem davranışı [FLOW](../FLOW.md) içindedir.
+Firebase backend'i ayrı dağıtılır:
+
+```bash
+npx firebase deploy --only "firestore:rules,storage,functions" --project incagen-eeef4
+```
+
+Firebase CLI Node 20+ ister; PowerShell'de `--only` listesi tırnak içinde verilir. Kurallar ve Functions, kodun kullandığı `(default)` Firestore veritabanına ve varsayılan Storage bucket'ına bağlanır. Storage, Functions, erişim kuralları ve faturalandırma doğrulanmadan `VITE_AUTH_ONLY_PREVIEW=true` koruması kaldırılmaz. Plan yükseltmesi tek başına backend'in dağıtıldığını veya güvenli olduğunu göstermez. Güncel yayın kapsamı ve sistem davranışı [FLOW](../FLOW.md) içindedir.
 
 ## Değişiklik disiplini
 

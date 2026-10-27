@@ -7,6 +7,15 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-27 — Tarık / Claude: canlı Firebase backend kurulumu
+
+- [x] Sahip: Tarık — `incagen-eeef4` için Blaze faturalandırmasını aç; kodun kullandığı `(default)` Firestore veritabanını europe-west1'de oluştur; Firestore/Storage kurallarını ve dört Cloud Function'ı dağıt.
+- [x] Sahip: Tarık — Windows checkout'unda örnek kaynakların CRLF'e dönüşüp sabit SHA-256 değerlerini bozmasını `.gitattributes` ile önle.
+
+Kabul: Canlı kurallar repodaki `firestore.rules` ve `storage.rules` olmalı; dört Function europe-west1'de çalışmalı ve oturumsuz çağrıyı reddetmeli; oturumsuz Firestore/Storage okuması reddedilmeli. Eski veritabanına, emülatör akışına ve Netlify'daki `VITE_AUTH_ONLY_PREVIEW=true` korumasına dokunulmamalı; repoya sır yazılmamalı. Örnek kaynaklar Windows'ta Git kaydıyla bayt bayt aynı açılmalı; lint, birim/Functions testleri ve derlemeler geçmeli.
+
+Doğrulama: Blaze etkin ve `incagen-eeef4.firebasestorage.app` bucket'ı hazır. Projedeki tek veritabanı `default` adlı Enterprise (eur3) olduğundan kodun beklediği `(default)` Standard veritabanı europe-west1'de oluşturuldu; eski veritabanına dokunulmadı. Kurallar ve Functions tek `firebase deploy` ile yayınlandı; Storage'a çapraz servis kuralı için IAM rolü verildi, fonksiyon imajları için 1 günlük temizlik tanımlandı. `functions:list` dört v2 callable fonksiyonu (europe-west1, nodejs22, 1 GiB) gösterdi; dördü de oturumsuz çağrıda `401 UNAUTHENTICATED`, Firestore `(default)` ve Storage oturumsuz okumada `403` döndü. `.gitattributes` öncesi Windows checkout'unda 40 metin kaynağı CRLF'e dönüşüyordu; sonrasında 50/50 dosya Git kaydıyla aynı. Node 24 ile lint, 87 uygulama + 104 Functions testi ve frontend/Functions derlemeleri geçti; ilk koşuda `App.test.tsx` landing başlığı 1 saniyelik beklemeyi aşıp bir kez düştü, dosya üç tekrarda ve tüm takım yeniden çalıştırılınca geçti. Tam kullanıcı akışı canlıda henüz doğrulanmadı; Netlify yalnız Auth önizlemesinde kalıyor. CLI, `firebase-functions` paketinin güncel olmadığını uyardı; ayrı bakım işidir.
+
 ### 2026-10-26 — Furkan / Codex: yeni bağımlılık uyarılarının giderilmesi
 
 - [x] Sahip: Furkan — GitHub Quality üretim denetimini durduran Zod ve body-parser kayıtlarını ve geliştirme araçlarının uyumlu düzeltmelerini gider; iki paket ağacını ve kullanıcı akışlarını yeniden doğrula.
@@ -271,7 +280,7 @@ Doğrulama: lint, production build, 38 uygulama ve 7 Functions/parser testi geç
 
 ### 2026-09-21 — Furkan / Codex: çalışan Netlify önizlemesi
 
-- [!] Sahip: Furkan — `incagen.netlify.app` üzerinde e-posta/parola kimliği, çıkış ve hesap silme dahil gerçek Firebase servislerine bağlı manuel Netlify yayını hazırla. Engel: `incagen-eeef4` Spark planında; Storage ve Cloud Functions için proje sahibi Blaze faturalandırmasını etkinleştirmeli.
+- [~] Sahip: Furkan — `incagen.netlify.app` üzerinde e-posta/parola kimliği, çıkış ve hesap silme dahil gerçek Firebase servislerine bağlı manuel Netlify yayını hazırla. Blaze engeli kalktı; backend [2026-10-27'de dağıtıldı](#2026-10-27--tarık--claude-canlı-firebase-backend-kurulumu). Kalan: sentetik hesapla tam akışı canlıda doğrulamak ve Netlify'da `VITE_AUTH_ONLY_PREVIEW=false` ile yeniden yayınlamak.
 
 Kabul: localhost emülatör akışı korunmalı; canlı frontend yalnız açıkça verilen Firebase web yapılandırmasını kullanmalı; Auth, Firestore, Storage ve Functions aynı gerçek projeye bağlanmalı; Netlify SPA rotaları yenilemede çalışmalı; giriş, kayıt, çıkış, parola sıfırlama ve hesap silme URL üzerinde doğrulanmalı. Tam backend akışı doğrulanmadan çalışıyor olarak sunulmayacak; yalnız Auth'un etkin olduğu önizleme kodu kullanıcı onayıyla PR açılmadan `main`e alınabilir.
 
@@ -428,7 +437,7 @@ Durum: [~]
 - [x] Sahip: Furkan — GitHub Actions üzerinde lint, birim/bileşen testi, build, masaüstü/mobil tarayıcı ve erişilebilirlik kontrolleri.
 - [x] Sahip: Furkan — Günlük branch/main eşitleme ve koşullu PR çalışma düzenini belgele.
 - [x] Sahip: Tarık — Buluta kapalı demo emülatörleri ve güvenli environment şablonu.
-- [ ] Sahip: Atanmadı — Gerçek dev/prod Firebase kaynakları ve bulut güvenlik doğrulaması.
+- [~] Sahip: Tarık — Gerçek dev/prod Firebase kaynakları ve bulut güvenlik doğrulaması. Tek canlı proje `incagen-eeef4` [2026-10-27'de dağıtıldı](#2026-10-27--tarık--claude-canlı-firebase-backend-kurulumu); ayrı dev/prod kararı ve iki hesapla canlı izolasyon doğrulaması kaldı.
 
 Kapanış: görevler incelenmiş; CI kontrolleri başarılı; repoda sır veya müşteri verisi yok.
 
@@ -523,6 +532,7 @@ Aşağıdakiler sonraki aşamanın açık kararlarıdır. Bugünkü yerel akış
 - Kota/webhook tekrarları çift ücret veya tüketim doğurmamalıdır.
 - 2026-10-26 bağımlılık bakımında iki üretim ağacında 0 uyarı doğrulandı; geliştirme araçlarında 6 orta önem kaydı kalıyor. Erişim değerlendirmesi, düzeltme sınırı ve CI eşiği [test rehberindedir](docs/TESTING.md#bağımlılık-denetimi); bütün geliştirme denetimi temiz sayılmaz, uyumsuz ana sürümler zorlanmaz.
 - Yerel testler bulut IAM/App Check, kalıcı kuyruk ve gerçek veri operasyonunun hazır olduğunu göstermez.
+- `incagen-eeef4` Blaze planında; maliyet alarmı henüz yok. Firestore ücretsiz kotası kod tarafından kullanılmayan eski `default` (Enterprise, eur3) veritabanında; kodun kullandığı `(default)` veritabanında ücretsiz kota yok. Eski veritabanını silme kararı proje sahibindedir.
 - Genel arayüz, grafik ve örnek rapor parçalarında 500 kB build uyarısı sürüyor. Başlangıçtaki bütün statik JS grafiği 400 KiB gzip bütçesiyle korunur; mevcut sınır ve ölçüm [test rehberindedir](docs/TESTING.md#ilk-açılış-bütçesi).
 
 ## Karar günlüğü
