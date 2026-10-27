@@ -8,11 +8,17 @@ function getAppNavigation(page: Page) {
 }
 
 // Auth emülatörünün sahte Google penceresinde yeni sentetik hesap oluşturur.
+// Pencere alanları görünür etiketle bağlanmadığından emülatörün sabit alan kimlikleri kullanılır.
 async function addEmulatorGoogleAccount(popup: Page, email: string) {
-  await popup.getByRole("button", { name: /add new account/i }).click();
-  await popup.getByLabel(/^email/i).fill(email);
-  await popup.getByLabel(/display name/i).fill("Sentetik Google");
-  await popup.getByRole("button", { name: /sign in with google/i }).click();
+  await popup.locator("#add-account-button").click();
+  await popup.locator("#email-input").fill(email);
+  await popup.locator("#display-name-input").fill("Sentetik Google");
+  await popup.locator("#sign-in").click();
+}
+
+// Emülatör penceresinde daha önce oluşturulan sentetik Google hesabını seçer.
+async function chooseEmulatorGoogleAccount(popup: Page, email: string) {
+  await popup.locator("#accounts-list").getByText(email).click();
 }
 
 // Google düğmesine basar ve açılan emülatör penceresinde verilen işlemi yürütür.
@@ -44,7 +50,7 @@ test("Google ile ilk giriş hesap açar, yeniden girişte aynı hesaba döner ve
   await expect(page).toHaveURL(/\/$/);
   await page.getByRole("button", { name: "Analize başla" }).click();
   await expect(page.getByRole("dialog", { name: "Giriş yap" })).toBeVisible();
-  await continueWithGoogle(page, () => page.getByRole("button", { name: "Google ile giriş yap" }).click(), popup => popup.getByText(email).click());
+  await continueWithGoogle(page, () => page.getByRole("button", { name: "Google ile giriş yap" }).click(), popup => chooseEmulatorGoogleAccount(popup, email));
   await expect(page.getByRole("heading", { name: "Belgelerinizi analize hazırlayın" })).toBeVisible();
 
   await getAppNavigation(page).getByRole("link", { name: "Ayarlar" }).click();
@@ -54,7 +60,8 @@ test("Google ile ilk giriş hesap açar, yeniden girişte aynı hesaba döner ve
   await expect(dialog).toBeVisible();
   await expect(dialog.getByLabel("Mevcut parola")).toHaveCount(0);
   await dialog.getByLabel(/Onaylamak için/).fill("HESABIMI SİL");
-  await continueWithGoogle(page, () => dialog.getByRole("button", { name: "Hesabı kalıcı olarak sil" }).click(), popup => popup.getByText(email).click());
-  await expect(page).toHaveURL(/\/$/);
+  await continueWithGoogle(page, () => dialog.getByRole("button", { name: "Hesabı kalıcı olarak sil" }).click(), popup => chooseEmulatorGoogleAccount(popup, email));
+  // Silme Functions, Firestore ve Storage temizliğini bekler; soğuk emülatörde varsayılan 5 saniyeyi aşabilir.
+  await expect(page).toHaveURL(/\/$/, { timeout: 30_000 });
   await expect(page.getByRole("heading", { name: "Verilerinizdeki büyüme fırsatlarını keşfedin." })).toBeVisible();
 });
