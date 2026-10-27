@@ -7,6 +7,15 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-28 — Tarık / Claude: Google ile giriş
+
+- [~] Sahip: Tarık — Giriş/kayıt modalındaki Google seçeneğini Firebase Google sağlayıcısına bağla; Apple ve Microsoft pasif kalsın.
+- [~] Sahip: Tarık — Ayarlarda giriş yöntemini doğru göster; yalnız Google kullanan hesapta parola bağlantısını gizle, hesap silmede Google ile yeniden doğrula.
+
+Kabul: Google ile ilk girişte hesap açılmalı, sonraki girişte aynı hesaba dönülmeli. Pencereyi kapatmak hata göstermemeli; engellenen pencere ve başka yöntemle kayıtlı e-posta anlaşılır mesaj vermeli. E-posta/parola akışı, kota, kullanıcı izolasyonu ve sunucunun 5 dakikalık yeniden doğrulama kuralı değişmemeli. Altı dil, iki tema, RTL, mobil ve klavye korunmalı. Lint, birim, build, emülatör entegrasyon ve tarayıcı testleri geçmeli; canlıda Google sağlayıcısı proje sahibi tarafından Firebase konsolunda etkinleştirilmeli.
+
+Durum (2026-10-28): Lint, 91 uygulama + 104 Functions testi ve frontend/Functions derlemeleri geçti; ilk açılış 292.286 gzip bayt. Altı dilde 9 yeni metin eklendi. Google düğmesinin iki temada klavye odağı ve taşmasızlığı yerel tarayıcıda doğrulandı. Emülatörde ilk giriş → yeniden giriş → Google doğrulamalı hesap silme senaryosu yazıldı, ancak Firebase CLI Java 21 istediği ve makinede Java 17 olduğu için entegrasyon ve tarayıcı testleri yerelde çalıştırılamadı; CI Temurin 21 kullanır. Canlıda Google sağlayıcısı henüz etkin değil.
+
 ### 2026-10-27 — Tarık / Claude: canlı Firebase backend kurulumu
 
 - [x] Sahip: Tarık — `incagen-eeef4` için Blaze faturalandırmasını aç; kodun kullandığı `(default)` Firestore veritabanını europe-west1'de oluştur; Firestore/Storage kurallarını ve dört Cloud Function'ı dağıt.
@@ -516,7 +525,7 @@ Aşağıdakiler sonraki aşamanın açık kararlarıdır. Bugünkü yerel akış
 - Python işçisi için Cloud Run Job mu, service mi; örnek işlerin süresi, retry ve maliyetine göre seçim.
 - Parser/OCR: Docling adayının örnek belgelerde doğrulanması; kalite eşikleri ve analiz başına süre/token/maliyet bütçeleri.
 - Beta erişimi: davetli mi, açık mı?
-- Authentication: e-posta/parolaya ek Google girişi ne zaman gerekli?
+- Authentication: Google dışında Apple ve Microsoft girişi gerekli mi?
 - Ortamlar: ayrı dev/prod ve europe-west1 varsayımının gerçek veri/gizlilik gereksinimleriyle doğrulanması.
 - Veri modeli: UID modelinden workspaceId tabanlı ekip desteğine geçiş zamanı.
 - PDF: MVP içinde mi, sonraki milestone'da mı?
@@ -537,6 +546,7 @@ Aşağıdakiler sonraki aşamanın açık kararlarıdır. Bugünkü yerel akış
 
 ## Karar günlüğü
 
+- 2026-10-28 — Tarık'ın kararıyla e-posta/parolaya ek olarak Google ile giriş eklenir. Firebase'in bir e-posta için tek hesap kuralı korunur; Apple ve Microsoft seçenekleri pasif kalır.
 - 2026-10-10 — Furkan'ın onayıyla [FLOW.md hedef mimarisi](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) kabul edildi: dosya türüne göre ayrıştırma/görsel okuma, Python işçisiyle hesaplama, kaynaklı LLM yorumlama ve React/ECharts ile doğrulanmış grafik sunumu. Mevcut TypeScript hazırlama hattı korunur; bu karar uygulama teslimatı değildir. Cloud Run job/service, parser/OCR ve kalite bütçeleri örnek seti değerlendirmesinde kesinleştirilir.
 - 2026-09-18 — Tarık/Codex teslimatında destek kapsamı gerçekten ayrıştırılan CSV/TSV/XLSX, PDF/DOCX/TXT/Markdown, PPTX, JSON ve PNG/JPEG/WebP ile sınırlandı. Ortak sürümlü belge modeli, server-only sıkıştırılmış türetilmiş içerik ve kaynak özeti mevcut hazırlama akışına bağlandı. OCR, görsel anlamlandırma, Gemini, tavsiye ve grafik üretimi sonraki M3/M4 işidir.
 - 2026-09-11 — Tarık'ın karar yetkisiyle bugünkü işler Tarık/Codex'e aittir; Furkan'a yeni iş atanmadı. Yerel emülatör, e-posta/parola, UID izolasyonu, TypeScript Functions ve deterministik tablo raporu prototipi uygulandı. Bu prototip daha sonra genel belge hazırlama hattıyla değiştirildi. Kota, geçici sınırlar ve silme davranışı FLOW.md'dedir; AI, gerçek bulut ve ödeme kapsam dışıdır.
