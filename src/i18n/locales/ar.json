@@ -973,5 +973,16 @@
   "Koyu": "داكن",
   "Sistem": "النظام",
   "Klasik": "كلاسيكي",
-  "Liquid Glass": "Liquid Glass"
+  "Liquid Glass": "Liquid Glass",
+  "Ürün önizlemesi": "معاينة المنتج",
+  "Hazırlanan raporun nasıl göründüğünü inceleyin.": "اطّلع على شكل التقرير المُعَدّ.",
+  "Kurgusal bir şirketin örnek belgeleriyle hazırlanan raporda metrikleri, grafikleri ve kaynağına bağlanan tabloları görün.": "استعرض المؤشرات والرسوم والجداول المرتبطة بمصادرها في تقرير مُعَدّ من مستندات نموذجية لشركة خيالية.",
+  "Rapor özeti": "ملخص التقرير",
+  "Grafikler": "الرسوم البيانية",
+  "Kaynak tablosu": "جدول المصادر",
+  "Canlı örneği aç": "افتح المثال المباشر",
+  "Önizleme görünümü": "عرض المعاينة",
+  "Örnek raporun özet ekranı: net satış, brüt kâr, bütçe gerçekleşmesi ve zamanında tamamlanma kartları": "ملخص التقرير النموذجي: بطاقات صافي المبيعات وإجمالي الربح وتحقيق الميزانية والإنجاز في الوقت المحدد",
+  "Örnek raporun grafik bölümü: hizmet alanı katkısı, kanal karması ve bölgesel performans": "رسوم التقرير النموذجي: مساهمة مجالات الخدمة ومزيج القنوات والأداء الإقليمي",
+  "Örnek raporun aylık performans tablosu: net satış, bütçe, brüt kâr ve hizmet düzeyi": "جدول الأداء الشهري في التقرير النموذجي: صافي المبيعات والميزانية وإجمالي الربح ومستوى الخدمة"
 }

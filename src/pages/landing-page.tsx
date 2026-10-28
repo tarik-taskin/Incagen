@@ -7,6 +7,7 @@ import { ArrowRight, FileCheck2, FileSearch, Files, FolderOpen, Lightbulb, LockK
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AnimatedLogo } from "../components/animated-logo";
 import { AuthModal } from "../components/auth-modal";
+import { ProductPreview } from "../components/product-preview";
 import { ThemeToggle } from "../components/theme-toggle";
 import { Button } from "../components/ui/button";
 import { useAuth } from "../lib/auth-context";
@@ -116,6 +117,7 @@ export function LandingPage() {
           </section>
         </div>
 
+        <ProductPreview />
         <section className="surface surface-accent mt-6 grid gap-5 rounded-[2rem] border border-primary/10 bg-gradient-to-br from-primary/[0.06] via-card to-card p-7 shadow-sm dark:border-secondary/15 dark:from-secondary/[0.07] sm:p-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-10" aria-labelledby="control-title">
           <div><span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-primary dark:text-secondary"><ShieldCheck className="h-4 w-4" aria-hidden="true" />  {t("Kontrol sizde")}</span><h2 id="control-title" className="mt-3 max-w-2xl text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">{t("Verinizin yolculuğu görünür, karar sizin.")}</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">{t("Dosyalar yalnız hazırlama işlemini başlattığınızda işlenir. İçerik türü kontrol edilir, kaynak konumları korunur ve kayıtları çalışma alanınızdan yönetirsiniz.")}</p></div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1"><span className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm"><FileCheck2 className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" />  {t("Kaynakları takip edin")}</span><span className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm"><LockKeyhole className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" />  {t("Kayıtları siz yönetin")}</span></div>

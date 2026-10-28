@@ -6,6 +6,24 @@ Incagen, işletme belgelerini, tablolarını ve müşteri geri bildirimlerini or
 
 [Uygulamayı incele](https://incagen.netlify.app) · [Geliştirici rehberi](docs/DEVELOPMENT.md) · [Ürün akışı](FLOW.md)
 
+## Ekran görüntüleri
+
+Görseller kurgusal Atlas Teknoloji örneğinden ve sentetik bir çalışma alanından Liquid Glass görünümünde üretilmiştir; GitHub temanıza göre açık veya koyu sürüm gösterilir. Yeniden üretmek için `npm run screenshots`.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/report-overview-dark.webp">
+  <img src="docs/screenshots/report-overview-light.webp" alt="Örnek raporun özet ekranı: net satış, brüt kâr, bütçe gerçekleşmesi ve zamanında tamamlanma kartları" width="1440">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/report-charts-dark.webp">
+  <img src="docs/screenshots/report-charts-light.webp" alt="Örnek raporun grafik bölümü: hizmet alanı katkısı, kanal karması ve bölgesel performans" width="1440">
+</picture>
+
+| Kaynağa bağlı tablolar | Müşteri deneyimi örneği | Çalışma alanı |
+|---|---|---|
+| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/report-table-dark.webp"><img src="docs/screenshots/report-table-light.webp" alt="Aylık performans tablosu" width="480"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/feedback-report-dark.webp"><img src="docs/screenshots/feedback-report-light.webp" alt="Müşteri geri bildirimi örnek raporu" width="480"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/workspace-dark.webp"><img src="docs/screenshots/workspace-light.webp" alt="Yeni analiz çalışma alanı" width="480"></picture> |
+
 ## Çalışma alanı
 
 - **Hedefi belli çalışmalar.** Analiz başlığı ve hedefi, aynı konuyla ilgili belgeleri tek bir çerçevede toplar.

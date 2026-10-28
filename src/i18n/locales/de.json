@@ -973,5 +973,16 @@
   "Koyu": "Dunkel",
   "Sistem": "System",
   "Klasik": "Klassisch",
-  "Liquid Glass": "Liquid Glass"
+  "Liquid Glass": "Liquid Glass",
+  "Ürün önizlemesi": "Produktvorschau",
+  "Hazırlanan raporun nasıl göründüğünü inceleyin.": "Sehen Sie, wie ein vorbereiteter Bericht aussieht.",
+  "Kurgusal bir şirketin örnek belgeleriyle hazırlanan raporda metrikleri, grafikleri ve kaynağına bağlanan tabloları görün.": "Kennzahlen, Diagramme und quellverknüpfte Tabellen in einem Bericht aus Beispieldokumenten eines fiktiven Unternehmens.",
+  "Rapor özeti": "Berichtsübersicht",
+  "Grafikler": "Diagramme",
+  "Kaynak tablosu": "Quelltabelle",
+  "Canlı örneği aç": "Live-Beispiel öffnen",
+  "Önizleme görünümü": "Vorschauansicht",
+  "Örnek raporun özet ekranı: net satış, brüt kâr, bütçe gerçekleşmesi ve zamanında tamamlanma kartları": "Übersicht des Beispielberichts: Karten zu Nettoumsatz, Bruttogewinn, Budgeterfüllung und pünktlicher Erledigung",
+  "Örnek raporun grafik bölümü: hizmet alanı katkısı, kanal karması ve bölgesel performans": "Diagramme des Beispielberichts: Beitrag der Leistungsbereiche, Kanalmix und regionale Leistung",
+  "Örnek raporun aylık performans tablosu: net satış, bütçe, brüt kâr ve hizmet düzeyi": "Monatliche Leistungstabelle des Beispielberichts: Nettoumsatz, Budget, Bruttogewinn und Servicelevel"
 }

@@ -973,5 +973,16 @@
   "Koyu": "深色",
   "Sistem": "跟随系统",
   "Klasik": "经典",
-  "Liquid Glass": "Liquid Glass"
+  "Liquid Glass": "Liquid Glass",
+  "Ürün önizlemesi": "产品预览",
+  "Hazırlanan raporun nasıl göründüğünü inceleyin.": "看看准备好的报告是什么样子。",
+  "Kurgusal bir şirketin örnek belgeleriyle hazırlanan raporda metrikleri, grafikleri ve kaynağına bağlanan tabloları görün.": "查看基于虚构公司示例文档生成的报告中的指标、图表和可追溯来源的表格。",
+  "Rapor özeti": "报告概览",
+  "Grafikler": "图表",
+  "Kaynak tablosu": "来源表格",
+  "Canlı örneği aç": "打开在线示例",
+  "Önizleme görünümü": "预览视图",
+  "Örnek raporun özet ekranı: net satış, brüt kâr, bütçe gerçekleşmesi ve zamanında tamamlanma kartları": "示例报告概览：净销售额、毛利、预算达成率和按时完成卡片",
+  "Örnek raporun grafik bölümü: hizmet alanı katkısı, kanal karması ve bölgesel performans": "示例报告图表：服务领域贡献、渠道构成和区域表现",
+  "Örnek raporun aylık performans tablosu: net satış, bütçe, brüt kâr ve hizmet düzeyi": "示例报告月度表现表：净销售额、预算、毛利和服务水平"
 }

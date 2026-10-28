@@ -973,5 +973,16 @@
   "Koyu": "Dark",
   "Sistem": "System",
   "Klasik": "Classic",
-  "Liquid Glass": "Liquid Glass"
+  "Liquid Glass": "Liquid Glass",
+  "Ürün önizlemesi": "Product preview",
+  "Hazırlanan raporun nasıl göründüğünü inceleyin.": "See what a prepared report looks like.",
+  "Kurgusal bir şirketin örnek belgeleriyle hazırlanan raporda metrikleri, grafikleri ve kaynağına bağlanan tabloları görün.": "Explore metrics, charts and source-linked tables in a report built from a fictional company's sample documents.",
+  "Rapor özeti": "Report summary",
+  "Grafikler": "Charts",
+  "Kaynak tablosu": "Source table",
+  "Canlı örneği aç": "Open the live example",
+  "Önizleme görünümü": "Preview view",
+  "Örnek raporun özet ekranı: net satış, brüt kâr, bütçe gerçekleşmesi ve zamanında tamamlanma kartları": "Sample report summary: net sales, gross profit, budget attainment and on-time completion cards",
+  "Örnek raporun grafik bölümü: hizmet alanı katkısı, kanal karması ve bölgesel performans": "Sample report charts: service line contribution, channel mix and regional performance",
+  "Örnek raporun aylık performans tablosu: net satış, bütçe, brüt kâr ve hizmet düzeyi": "Sample report monthly performance table: net sales, budget, gross profit and service level"
 }

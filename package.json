@@ -31,7 +31,8 @@
     "test:integration": "npm run build:functions && firebase emulators:exec --project demo-incagen --only auth,firestore,storage,functions \"node --test integration/*.test.mjs\"",
     "test:local": "npm run build:functions && firebase emulators:exec --project demo-incagen --only auth,firestore,storage,functions \"npm run test:e2e\"",
     "test:references": "vitest run --config vitest.functions.config.ts functions/src/parsing/reference.test.ts",
-    "example:build": "npm run build:functions && node scripts/build-sales-example.cjs && node scripts/build-feedback-example.cjs"
+    "example:build": "npm run build:functions && node scripts/build-sales-example.cjs && node scripts/build-feedback-example.cjs",
+    "screenshots": "npm run build:functions && firebase emulators:exec --project demo-incagen --only auth,firestore,storage,functions \"playwright test -c playwright.screenshots.config.ts\""
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
@@ -75,6 +76,7 @@
     "globals": "^17.12.0",
     "jsdom": "^30.0.1",
     "postcss": "^8.5.27",
+    "sharp": "^0.35.5",
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "~5.8.3",
