@@ -7,6 +7,8 @@ export default defineConfig({
   // CI'da ortak Firebase emülatörlerine aynı anda yük bindirmemek için senaryoları sırayla çalıştırır.
   workers: process.env.CI ? 1 : 2,
   timeout: 60000,
+  // Kayıt sonrası 3 sn'lik tasarım gereği geçiş ve dev sunucusunun lazy rotaları ilk kez derlemesi yük altında 5 sn'yi aşabilir.
+  expect: { timeout: 10000 },
   retries: 1,
   reporter: [["list"], ["html", { open: "never" }]],
   use: {

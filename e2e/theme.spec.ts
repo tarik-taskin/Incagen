@@ -40,8 +40,11 @@ test("tema ve dil menüleri klavyeyle kullanılır; Arapçada liste sağdan hiza
   await page.keyboard.press("Enter");
   const listbox = page.getByRole("listbox");
   await expect(listbox).toBeVisible();
-  const [triggerBox, listBox] = [await trigger.boundingBox(), await listbox.boundingBox()];
-  expect(triggerBox && listBox && Math.abs(triggerBox.x - listBox.x) <= 2).toBe(true);
+  // Açılış animasyonu ölçeklendiği için konum oturana kadar yeniden ölçülür.
+  await expect.poll(async () => {
+    const [triggerBox, listBox] = [await trigger.boundingBox(), await listbox.boundingBox()];
+    return triggerBox && listBox ? Math.abs(triggerBox.x - listBox.x) : Number.POSITIVE_INFINITY;
+  }).toBeLessThanOrEqual(2);
   await page.keyboard.press("Escape");
   await expect(listbox).toHaveCount(0);
   await chooseLanguage(page, "tr");
