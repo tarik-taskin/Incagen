@@ -20,6 +20,10 @@ Açılır pencereler, içerik dışındaki fare tıklaması veya dokunmayla kapa
 
 Destek ve yardım, kısa yanıtlar ile ayrı bir iletişim adımı sunar; mesajlar kişisel destek içindir. Analiz sonrası yayınlanabilecek kullanıcı geri bildirimleri ayrı veri akışıdır. Ayarlar, veri alanları ve gelecek yayın kapsamı [destek rehberinde](docs/SUPPORT.md) tanımlıdır. Sayfa/oturum/veri yüklemelerinde gerçek içerik düzenini koruyan ortak iskelet kullanılır; sahte yüzde veya ek bekleme uygulanmaz.
 
+Görünüm menüsü renk modunu (açık, koyu, sistem) ve yüzey görünümünü (Klasik, Liquid Glass) ayrı seçtirir; varsayılan Klasik ve sistem modudur. Seçim tarayıcıda kalır, ilk çizimden önce uygulanır ve tarayıcı çubuğu rengini günceller. Liquid Glass yarı saydam yüzeyler ve sabit bir renk ağı kullanır; azaltılmış saydamlık tercihinde veya desteklenmeyen tarayıcıda yüzeyler opaklaşır. Dil ve tema menüleri temaya uyan açılır listelerdir; açık bir liste varken dış tıklama veya Escape yalnız listeyi kapatır.
+
+Ana sayfadaki ürün önizlemesi, kurgusal örnek rapordan alınmış rapor özeti, grafik ve tablo görüntülerini seçili moda göre gösterir; görseller gecikmeli yüklenir ve canlı örnek rapora bağlanır. Görseller `npm run screenshots` ile emülatör ve sentetik veriden yeniden üretilir.
+
 Ana sayfa, korumalı ekranları ve belge/veri servislerini ilk açılışta yüklemez. Kimlik oturumu aynı Firebase uygulamasında izlenir; çalışma alanı kodu ilgili rotada, genel yardım kodu ilk yardım isteğinde yüklenir. Yardım bir kez açılınca kapanması gönderilmemiş mesajı silmez. Ekranlar yüklenirken çalışma alanı sağlayıcısı yerinde kalır; dosya taslağı ve devam eden yükleme korunur.
 
 Analiz hedefi örnekleri tıklama anındaki arayüz dilinde eklenir. Birden fazla örnek denenirse tek “Geri al” ilk hedef metnini geri getirir; bu kayıt aynı oturumdaki sayfa/dil gezinmesinde korunur. Kullanıcı hedefi elle düzenlediğinde eski geri alma kaydı kaldırılır; yeni metin eski örnek işlemiyle ezilmez. Dil değiştirmek mevcut hedefi otomatik çevirmez. Başarılı hazırlık yeni çalışma için hedefi ve geri alma kaydını birlikte temizler.

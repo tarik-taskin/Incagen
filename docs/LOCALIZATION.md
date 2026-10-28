@@ -22,6 +22,8 @@ Dil seçimi rota, oturum, form girdisi, parola veya seçili dosyaları sıfırla
 
 Hedef örnekleri seçildiği anda `t(example.value)` ile yerelleştirilir. Alana eklendikten sonra diğer kullanıcı girdileri gibi korunur; dil değişimi metni yeniden yazmaz. Örnek denemelerinden önceki hedef çalışma alanı taslağında tutulur, elle hedef düzenlemesinde geçerliliğini kaybeder. Geri alma eylemi ve bildirimi de altı dilde sunulur.
 
+Yazı tipi Geist'tir; Türkçe karakterler latin-ext alt kümesiyle gelir. Arapça metin görününce Noto Sans Arabic iner, Çince sistem yazı tipine düşer; dosyalar `unicode-range` ile yalnız gerektiğinde indirilir. Radix menü ve seçimleri dil yönünü `LocaleDirection` üzerinden alır; Arapçada açılır listeler sağdan hizalanır.
+
 ## Kaynak ve sunum ayrımı
 
 Kullanıcı başlıkları, işletme adları, dosya adları, özgün yorumlar, CSV hücreleri ve PDF/Word alıntıları çevrilmez. Türkçe örnek belgelerin metinleri kaynak dilinde kalır. Arayüz açıklamaları ve kontrollü örnek analiz metinleri yerelleştirilir. [`companyDisplay`](../src/features/reports/company-display.ts) yalnız örneğin sunum cümlelerini biçimlendirir; hesaplar, kimlikler, hash ve konumlar değişmez. Yeni kullanıcı raporunun/model çıktısının otomatik çevirisi bu değişikliğin kapsamında değildir.

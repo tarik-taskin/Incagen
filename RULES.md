@@ -17,6 +17,13 @@ Bu kurallar uygulama büyürken tema, bileşen ve sayfa stillerinin birbirini ya
 6. Üçüncü taraf bir kütüphane CSS gerektiriyorsa kurallar benzersiz bir üst sınıf altında scope edilir; global element seçicileriyle uygulamanın geri kalanı etkilenmez.
 7. `!important` yalnızca erişilebilirlik gibi zorunlu bir global override için ve nedeni açıkça belgelenerek kullanılabilir.
 
+## Tema, yüzey ve bileşenler
+
+- shadcn bileşenleri `src/components/ui/` altında, Tailwind 3 uyumlu kaynak olarak tutulur; Radix tabanlı seçim ve menüler tema tokenlarını (`popover`, `accent`, `input`, `destructive`) kullanır. İlk açılışta gerekmeyen menüler lazy yüklenir.
+- Renk modu `html.dark`, görünüm `html[data-style="glass"]` ile uygulanır. Liquid Glass yalnız `surface` / `popover-surface` sınıflarında ve `glass:` varyantında tanımlanır; bileşenler kendi `backdrop-filter` kuralını yazmaz. Büyük paneller `surface` ya da `Card` kullanır; iç içe yüzey bulanıklığı tekrarlamaz.
+- Glass yüzeyleri `prefers-reduced-transparency` ve `backdrop-filter` desteği yokken opaklaşır; metin taşıyan yüzeylerde saydamlık okunabilirliği bozamaz ve axe taraması dört mod/görünüm kombinasyonunda temiz kalmalıdır.
+- Grafik ve açıklama renkleri `--chart-1..5` tokenlarından gelir. Yazı tipi Geist; Arapça için Noto Sans Arabic, Çince için sistem yazı tipi kullanılır. Font dosyaları projeden sunulur, harici font servisine istek gönderilmez.
+
 ## Tailwind katmanları
 
 - Temel token ve reset ekleri `@layer base` içinde tutulur.

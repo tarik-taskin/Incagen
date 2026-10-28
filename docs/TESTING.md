@@ -78,7 +78,11 @@ npm run dev:emulator
 
 Terminaldeki adresi kullanın. Gerçek Auth hesabıyla test hesabı ayrı tutulur. Servis portları 9099, 8080, 9199 ve 5001; yardımcı portlar 4400, 4500 ve 9150'dir. Playwright sunucusu 4173 kullanır.
 
-Stil değişikliğinde iki tema, mobil taşma, klavye odağı ve `prefers-reduced-motion` davranışı incelenir. Testlerin geçmesi bulut IAM/App Check, gerçek saklama politikası veya LLM'nin anlamsal doğruluğunu kanıtlamaz. Ayrı kabul kriterleri [GOAL](../GOAL.md) ve [AI değerlendirme protokolünde](../fixtures/analysis-reference/evaluation.md) tutulur.
+Tarayıcı testleri dil ve tema seçimini [`e2e/ui-helpers.ts`](../e2e/ui-helpers.ts) üzerinden yapar (`chooseLanguage`, `setTheme`); seçenekler görünen addan bağımsız `data-locale` ve `data-theme-option` ile bulunur. [`theme.spec.ts`](../e2e/theme.spec.ts) dört mod/görünüm kombinasyonunda axe ve kalıcılığı, [`report-tables.spec.ts`](../e2e/report-tables.spec.ts) tablo sıralamasını sınar.
+
+README ve landing görselleri normal takımın dışındaki [`e2e/screenshots/capture.shot.ts`](../e2e/screenshots/capture.shot.ts) ile üretilir: `npm run screenshots` emülatörü başlatır, sentetik hesap ve kurgusal örnek raporla Liquid Glass görünümünde açık/koyu ekranları yakalar ve webp olarak `docs/screenshots/` ile `public/showcase/` altına yazar.
+
+Stil değişikliğinde iki mod ve iki görünüm, mobil taşma, klavye odağı ve `prefers-reduced-motion` davranışı incelenir. Testlerin geçmesi bulut IAM/App Check, gerçek saklama politikası veya LLM'nin anlamsal doğruluğunu kanıtlamaz. Ayrı kabul kriterleri [GOAL](../GOAL.md) ve [AI değerlendirme protokolünde](../fixtures/analysis-reference/evaluation.md) tutulur.
 
 ## Dil ve farklı rapor türleri
 
