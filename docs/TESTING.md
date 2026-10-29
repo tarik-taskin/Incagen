@@ -40,12 +40,14 @@ Bu eşik orta önem uyarılarını gizlemez; denetim bunları çıktı olarak ve
 
 2026-10-26 bakımında yeni [Zod](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5) ve [body-parser](https://github.com/advisories/GHSA-27r3-jxmh-p828) kayıtları nedeniyle duran üretim kapısı, Zod 4.6.7 ve body-parser 1.20.9/2.4.0 ile düzeltildi. Express'in iki ana dalı kendi uyumlu parser sürümünü kullanır; yeni override eklenmedi. Geliştirme ağacında Vite 6.4.5, Vitest 5.0.5 ve uyumlu Undici/Hono/fast-uri alt bağımlılıkları da güncellendi; doğrudan bağımlılıkların ana sürümleri korundu.
 
-Bu tarihte iki üretim ağacında da **0 uyarı** vardır. Önceden izlenen Mammoth CLI zinciri güncel denetimde raporlanmıyor; bu gözlem ilgili kodun değiştirildiği anlamına gelmez. Tüm geliştirme bağımlılıklarını içeren kök denetimde **6 orta önem kaydı**, 0 yüksek/kritik kalır:
+26 Ekim denetiminde iki üretim ağacında da **0 uyarı** vardı. Önceden izlenen Mammoth CLI zinciri bu denetimde raporlanmıyordu; bu gözlem ilgili kodun değiştirildiği anlamına gelmez. Tüm geliştirme bağımlılıklarını içeren kök denetimde **6 orta önem kaydı**, 0 yüksek/kritik kalmıştı:
 
 - Firebase CLI'nin `@google-cloud/pubsub → @opentelemetry/core` telemetri zinciri: 3 kayıt. Önerilen otomatik çözüm Firebase CLI'yi 15'ten 14'e düşürdüğünden uygulanmaz.
 - Tailwind 3'ün `postcss-nested → postcss-selector-parser` CSS araç zinciri: 3 kayıt. Otomatik çözüm Tailwind 4 geçişi istediğinden ayrı uyumluluk işi olarak tutulur.
 
 Bu geliştirme araçları yayınlanan tarayıcı paketinin üretim bağımlılıkları değildir; bu ayrım riskin sıfır olduğu anlamına gelmez. `audit fix --force` kullanılmaz; kalan kayıtlar ana sürüm geçişinden önce yeniden değerlendirilir.
+
+29 Ekim yayın denetiminde Firestore Web SDK'sının `re2js` 2.8.6 alt bağımlılığı, mevcut `^2.8.3` aralığı içinde 2.9.1'e alındı. [Yeni denetim kaydı](https://github.com/advisories/GHSA-gg6h-894w-4m9c) 2.8.7 öncesindeki isteğe bağlı `LOOKBEHINDS` eşleştirmesini etkiler. Uygulama bu seçeneği doğrudan kullanmaz; güncelleme bir uygulama açığının kanıtlandığı iddiası değildir. Firebase SDK sürümü, ürün kodu ve CI eşiği değişmedi. İki üretim ağacı yeniden **0 uyarı** verdi. Tam kök denetimde geliştirme araçlarına ait **7 orta**, 0 yüksek/kritik kayıt vardır: Firebase CLI/telemetri zincirinde 3, Hono node-server, Express, qs ve PostCSS selector parser'da birer kayıt. Bunlar güncel duyuru ve uyumluluklarıyla ayrı bakımda değerlendirilir; 26 Ekim sayıları tarihsel kayıttır.
 
 Denetim zamanla değişir. Yeni uyarıda yalnız sayıya bakılmaz; etkilenen sürüm, gerçek çağrı yolu ve düzeltmenin uyumu yeniden kontrol edilir. Kontroller kapatılmaz veya uyarılar bastırılmaz.
 

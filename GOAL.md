@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-29 — Furkan / Codex: yayın öncesi bağımlılık düzeltmesi
+
+- [x] Sahip: Furkan — Üretim denetimindeki yeni re2js kaydını Firestore SDK'sının uyumlu alt bağımlılık düzeltmesiyle gider; Tarık'ın tamamlanan arayüzü için kalite kapısını ve yayını doğrula.
+
+Kabul: SDK ana sürümü, ürün davranışı ve Auth önizleme sınırı değişmemeli; grafik prototipi ayrı kalmalı. Üretim denetimleri, lint, birim testleri, derlemeler ve ilgili kullanıcı akışı kontrolleri geçmeli. Yerel/uzak main ve furkan aynı commit olmalı; Netlify doğrulanmış yayınla eşleşmeli.
+
+Doğrulama: Firestore SDK 4.17.2 korunarak re2js 2.8.6 → 2.9.1 güncellendi; ürün kodu değişmedi. İki üretim denetimi 0 uyarı verdi. Lint, 91 uygulama + 104 Functions testi, frontend/Functions ve Auth önizleme derlemeleri, 4 entegrasyon ve 59 masaüstü/mobil tarayıcı senaryosu geçti; platforma uygulanmayan 3 senaryo atlandı. Tam geliştirme denetimindeki 7 orta önem kaydı test rehberinde tarihlendi; CI eşiği değiştirilmedi.
+
 ### 2026-10-28 — Tarık / Claude: arayüz yenilemesi
 
 - [x] Sahip: Tarık — shadcn temelini, eksik tasarım tokenlarını ve `@` yol takma adını ekle; mevcut düğme varyantlarını koru.
@@ -554,7 +562,7 @@ Aşağıdakiler sonraki aşamanın açık kararlarıdır. Bugünkü yerel akış
 - Saklama/bölge seçimleri gizlilik, maliyet ve operasyonu etkiler; uygulanmadan kararlaştırılmalıdır.
 - AI maliyeti, model erişimi ve şema güvenilirliği gerçek testlerle ölçülmelidir.
 - Kota/webhook tekrarları çift ücret veya tüketim doğurmamalıdır.
-- 2026-10-26 bağımlılık bakımında iki üretim ağacında 0 uyarı doğrulandı; geliştirme araçlarında 6 orta önem kaydı kalıyor. Erişim değerlendirmesi, düzeltme sınırı ve CI eşiği [test rehberindedir](docs/TESTING.md#bağımlılık-denetimi); bütün geliştirme denetimi temiz sayılmaz, uyumsuz ana sürümler zorlanmaz.
+- 2026-10-29 yayın denetiminde iki üretim ağacında 0 uyarı doğrulandı; geliştirme araçlarında 7 orta önem kaydı kalıyor. Erişim değerlendirmesi, düzeltme sınırı ve CI eşiği [test rehberindedir](docs/TESTING.md#bağımlılık-denetimi); bütün geliştirme denetimi temiz sayılmaz, uyumsuz ana sürümler zorlanmaz.
 - Yerel testler bulut IAM/App Check, kalıcı kuyruk ve gerçek veri operasyonunun hazır olduğunu göstermez.
 - `incagen-eeef4` Blaze planında; maliyet alarmı henüz yok. Firestore ücretsiz kotası kod tarafından kullanılmayan eski `default` (Enterprise, eur3) veritabanında; kodun kullandığı `(default)` veritabanında ücretsiz kota yok. Eski veritabanını silme kararı proje sahibindedir.
 - Genel arayüz, grafik ve örnek rapor parçalarında 500 kB build uyarısı sürüyor. Başlangıçtaki bütün statik JS grafiği 400 KiB gzip bütçesiyle korunur; mevcut sınır ve ölçüm [test rehberindedir](docs/TESTING.md#ilk-açılış-bütçesi).
