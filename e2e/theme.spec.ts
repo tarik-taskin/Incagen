@@ -1,10 +1,12 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { chooseLanguage, setTheme } from "./ui-helpers";
+import sharp from "sharp";
 
 test("tema menüsü dört mod/görünüm kombinasyonunda erişilebilir ve seçim kalıcıdır", async ({ page }, testInfo) => {
   await page.goto("/ornek-rapor");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  const classic = new Map<string, Uint8Array>();
   for (const style of ["classic", "glass"] as const) {
     for (const mode of ["light", "dark"] as const) {
       await setTheme(page, { mode, style });
@@ -12,7 +14,18 @@ test("tema menüsü dört mod/görünüm kombinasyonunda erişilebilir ve seçim
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       const themeColor = await page.locator('meta[name="theme-color"]').getAttribute("content");
       expect(themeColor).toMatch(/^hsl\(/);
-      await page.screenshot({ path: testInfo.outputPath(`report-${style}-${mode}.png`) });
+      const screenshot = await page.screenshot({ path: testInfo.outputPath(`report-${style}-${mode}.png`) });
+      if (style === "classic") classic.set(mode, screenshot);
+      else {
+        // Gerçek çizimde fark arar; yalnız data-style niteliğinin değişmesi bu kabul için yeterli değildir.
+        const original = await sharp(classic.get(mode)!).resize({ width: 240 }).removeAlpha().raw().toBuffer();
+        const glass = await sharp(screenshot).resize({ width: 240 }).removeAlpha().raw().toBuffer();
+        let changed = 0;
+        for (let i = 0; i < original.length; i += 3) {
+          if (Math.abs(original[i] - glass[i]) + Math.abs(original[i + 1] - glass[i + 1]) + Math.abs(original[i + 2] - glass[i + 2]) > 30) changed++;
+        }
+        expect(changed / (original.length / 3), `${mode}: Glass görünür bir yüzey farkı oluşturmalı`).toBeGreaterThan(0.12);
+      }
     }
   }
   await page.reload();

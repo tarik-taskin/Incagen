@@ -19,8 +19,8 @@
     /* Grafik serileri; rapor renk sırasıyla aynı tonlar. */
     --chart-1: 260 40% 51%; --chart-2: 183 49% 38%; --chart-3: 25 45% 53%; --chart-4: 214 48% 58%; --chart-5: 330 45% 52%;
     /* Liquid Glass: yüzey saydamlığı, kenar ışığı, gölge ve arka plan renk ağı. Yalnız [data-style="glass"] altında kullanılır. */
-    --glass-alpha: 0.6; --glass-popover-alpha: 0.86; --glass-blur: 26px;
-    --glass-edge: 0 0% 100%; --glass-edge-alpha: 0.72; --glass-glow: 0 0% 100%; --glass-glow-alpha: 0.9; --glass-shadow: 263 52% 34%;
+    --glass-alpha: 0.66; --glass-popover-alpha: 0.94; --glass-blur: 30px;
+    --glass-edge: 0 0% 100%; --glass-edge-alpha: 0.9; --glass-glow: 0 0% 100%; --glass-glow-alpha: 0.95; --glass-shadow: 263 52% 34%;
     --glass-tint-1: 190 85% 80%; --glass-tint-2: 263 75% 82%; --glass-tint-3: 330 80% 88%;
   }
   .dark {
@@ -32,25 +32,31 @@
     --popover: 282 45% 12%; --popover-foreground: 190 76% 94%; --accent: 280 32% 19%; --accent-foreground: 190 76% 94%;
     --destructive: 0 70% 62%; --destructive-foreground: 285 62% 7%; --input: 275 26% 26%;
     --chart-1: 256 80% 81%; --chart-2: 180 50% 67%; --chart-3: 26 73% 74%; --chart-4: 217 72% 76%; --chart-5: 330 60% 75%;
-    --glass-alpha: 0.5; --glass-popover-alpha: 0.84;
-    --glass-edge: 190 76% 94%; --glass-edge-alpha: 0.13; --glass-glow: 190 76% 94%; --glass-glow-alpha: 0.12; --glass-shadow: 285 70% 2%;
+    --glass-alpha: 0.72; --glass-popover-alpha: 0.96;
+    --glass-edge: 190 76% 94%; --glass-edge-alpha: 0.24; --glass-glow: 190 76% 94%; --glass-glow-alpha: 0.18; --glass-shadow: 285 70% 2%;
     --glass-tint-1: 263 70% 36%; --glass-tint-2: 190 70% 26%; --glass-tint-3: 320 62% 28%;
   }
+  [data-style="glass"] { --background: 240 45% 94%; }
+  [data-style="glass"].dark { --background: 258 44% 8%; }
   /* Saydamlık efekti olmayan tarayıcıda yüzeyler okunabilir kalsın diye neredeyse opak çizilir. */
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    [data-style="glass"] { --glass-alpha: 0.94; --glass-popover-alpha: 0.98; }
+    [data-style="glass"] { --glass-alpha: 1; --glass-popover-alpha: 1; }
+    [data-style="glass"] body::before { display: none; }
   }
   @media (max-width: 640px) {
     [data-style="glass"] { --glass-blur: 16px; }
   }
   @media (prefers-reduced-transparency: reduce) {
     [data-style="glass"] { --glass-alpha: 1; --glass-popover-alpha: 1; }
+    [data-style="glass"] body::before { display: none; }
   }
   * { @apply border-border; }
   /* Sabit mobil navigasyon, odaklanan ve otomatik kaydırılan kontrolleri örtmemeli. */
   html { scroll-behavior: smooth; scroll-padding-bottom: 7rem; }
   body { @apply m-0 min-w-80 min-h-screen bg-background text-foreground; }
-  /* Glass yüzeylerin arkasında görünen sabit renk ağı; animasyonsuzdur, sayfa sarmalayıcıları glass'ta saydamlaşır. */
+  /* Ayrı stacking context, renk ağını body boyasının arkasında kaybetmeden panellerin altında tutar. */
+  [data-style="glass"] body { isolation: isolate; }
+  /* Sabit renk ağı camın içinden görünür; hareketli filtre veya resim indirmesi gerektirmez. */
   [data-style="glass"] body::before {
     content: "";
     position: fixed;
@@ -58,9 +64,9 @@
     z-index: -1;
     pointer-events: none;
     background:
-      radial-gradient(48rem 34rem at 6% -8%, hsl(var(--glass-tint-1) / 0.75), transparent 62%),
-      radial-gradient(42rem 30rem at 96% 6%, hsl(var(--glass-tint-2) / 0.62), transparent 60%),
-      radial-gradient(54rem 34rem at 58% 108%, hsl(var(--glass-tint-3) / 0.5), transparent 62%);
+      radial-gradient(ellipse 75% 80% at 3% 5%, hsl(var(--glass-tint-1) / 0.88), transparent 70%),
+      radial-gradient(ellipse 80% 85% at 98% 24%, hsl(var(--glass-tint-2) / 0.82), transparent 72%),
+      radial-gradient(ellipse 85% 75% at 48% 105%, hsl(var(--glass-tint-3) / 0.7), transparent 72%);
   }
 }
 
@@ -75,15 +81,17 @@
   [data-style="glass"] .surface,
   [data-style="glass"] .popover-surface {
     border-color: hsl(var(--glass-edge) / var(--glass-edge-alpha));
-    box-shadow: inset 0 1px 0 hsl(var(--glass-glow) / var(--glass-glow-alpha)), 0 30px 80px -48px hsl(var(--glass-shadow) / 0.55);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(170%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(170%);
+    box-shadow: inset 0 1px 0 hsl(var(--glass-glow) / var(--glass-glow-alpha)), inset 0 -1px 0 hsl(var(--glass-glow) / 0.12), 0 22px 65px -32px hsl(var(--glass-shadow) / 0.38), 0 4px 14px -8px hsl(var(--glass-shadow) / 0.18);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(155%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(155%);
   }
   /* Opak kart gradyanları saydamlığı örtmesin; vurgu tonu ayrı ve hafif bir geçişle korunur. */
-  [data-style="glass"] .surface { background-color: hsl(var(--card) / var(--glass-alpha)); background-image: none; }
-  [data-style="glass"] .surface-accent { background-image: linear-gradient(135deg, hsl(var(--primary) / 0.09), transparent 58%); }
-  [data-style="glass"].dark .surface-accent { background-image: linear-gradient(135deg, hsl(var(--secondary) / 0.07), transparent 58%); }
+  [data-style="glass"] .surface { background-color: hsl(var(--card) / var(--glass-alpha)); background-image: linear-gradient(125deg, hsl(var(--glass-glow) / 0.22), transparent 45%, hsl(var(--glass-tint-2) / 0.09)); }
+  [data-style="glass"] .surface-accent { background-image: linear-gradient(125deg, hsl(var(--glass-glow) / 0.3), hsl(var(--glass-tint-1) / 0.1) 42%, hsl(var(--glass-tint-2) / 0.2)); }
+  [data-style="glass"].dark .surface-accent { background-image: linear-gradient(125deg, hsl(var(--glass-glow) / 0.06), hsl(var(--glass-tint-1) / 0.15) 42%, hsl(var(--glass-tint-2) / 0.18)); }
   [data-style="glass"] .popover-surface { background-color: hsl(var(--popover) / var(--glass-popover-alpha)); }
+  [data-style="glass"] .ambient,
+  [data-style="glass"] .dot-grid { opacity: 0; }
   /* İç içe yüzeyler dıştaki bulanıklığı tekrarlamaz; mobil GPU yükü sınırlı kalır. */
   [data-style="glass"] .surface .surface { -webkit-backdrop-filter: none; backdrop-filter: none; }
   @media (prefers-reduced-transparency: reduce) {

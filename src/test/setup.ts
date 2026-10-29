@@ -2,6 +2,9 @@ import "@testing-library/jest-dom/vitest";
 import { afterEach } from "vitest";
 import { cleanup } from "@testing-library/react";
 
+// jsdom kaydırma düzeni hesaplamaz; gerçek viewport davranışı tarayıcı testlerinde sınanır.
+window.scrollTo = () => undefined;
+
 // Her bileşen testinden sonra oluşturulan DOM ağacını temizler.
 afterEach(() => cleanup());
 

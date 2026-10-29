@@ -984,5 +984,11 @@
   "Önizleme görünümü": "预览视图",
   "Örnek raporun özet ekranı: net satış, brüt kâr, bütçe gerçekleşmesi ve zamanında tamamlanma kartları": "示例报告概览：净销售额、毛利、预算达成率和按时完成卡片",
   "Örnek raporun grafik bölümü: hizmet alanı katkısı, kanal karması ve bölgesel performans": "示例报告图表：服务领域贡献、渠道构成和区域表现",
-  "Örnek raporun aylık performans tablosu: net satış, bütçe, brüt kâr ve hizmet düzeyi": "示例报告月度表现表：净销售额、预算、毛利和服务水平"
+  "Örnek raporun aylık performans tablosu: net satış, bütçe, brüt kâr ve hizmet düzeyi": "示例报告月度表现表：净销售额、预算、毛利和服务水平",
+  "Hesap ve giriş": "账户与登录",
+  "Veriler ve gizlilik": "数据与隐私",
+  "Sayfa değiştirince dosyalarım kaybolur mu?": "切换页面后，文件会丢失吗？",
+  "Uygulama içindeki Geçmiş, Ayarlar ve Plan sayfaları arasında dolaşırken aynı sekmedeki dosya seçiminiz ve çalışma ayrıntılarınız korunur. Sayfayı yenilemek veya sekmeyi kapatmak yerel dosya seçimini silebilir. Tarayıcı ayrılma uyarısı gösterirse devam etmeden önce çalışmanızı kontrol edin; dosyalarınız cihazınızda kalır.": "在同一标签页内切换历史记录、设置和套餐页面时，已选文件和工作详情会保留。刷新页面或关闭标签页可能会清除本地文件选择。如果浏览器提示是否离开，请先检查当前工作。原始文件仍保存在你的设备上。",
+  "Kaynakları ve okuma uyarılarını nerede bulurum?": "在哪里查看来源和读取提示？",
+  "Hazırlık özeti, belge kapsamını ve okuma uyarılarını birlikte gösterir. MIME, parça ve karakter sayıları gibi bilgiler Teknik ayrıntılar bölümündedir. Örnek raporlarda bir metrik, grafik değeri veya Kaynakları incele bağlantısı üzerinden ilgili belgeye ulaşabilirsiniz; özgün dosyayı indirip bulgunun dayanağını karşılaştırabilirsiniz.": "准备摘要会列出已纳入的文档及读取提示。在“技术详情”中可查看 MIME 类型、分块数和字符数。在示例报告中，选择指标、图表数值或“查看来源”，即可打开对应文档。你也可以下载原始文件，核对结论的依据。"
 }

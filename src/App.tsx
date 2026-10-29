@@ -3,6 +3,7 @@ import { PageLoading } from "./components/page-loading";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { LandingPage } from "./pages/landing-page";
 import { lazy, Suspense, type ReactNode } from "react";
+import { RouteViewport } from "./components/route-viewport";
 
 const RequireAuth = lazy(() => import("./components/require-auth").then(module => ({ default: module.RequireAuth })));
 const AppShell = lazy(() => import("./components/layout/app-shell").then(module => ({ default: module.AppShell })));
@@ -25,7 +26,7 @@ function WorkspaceScreen({ children, history = false }: { children: ReactNode; h
 function App() {
   useLocale();
   return (
-    <Routes>
+    <><RouteViewport /><Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/ornek-rapor" element={<Suspense fallback={<PageLoading fullPage label="Örnek rapor yükleniyor…" />}><ExampleReportPage /></Suspense>} />
       <Route path="/ornek-rapor/musteri-deneyimi" element={<Suspense fallback={<PageLoading fullPage label="Örnek rapor yükleniyor…" />}><FeedbackReportPage /></Suspense>} />
@@ -40,7 +41,7 @@ function App() {
       </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    </Routes></>
   );
 }
 

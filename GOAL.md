@@ -7,6 +7,17 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-29 — Furkan / Codex: tutarlı rapor ve çalışma alanı deneyimi
+
+- [x] Sahip: Furkan — İki örnek raporda ortak başlık, genişlik ve hizalama kullan; ana sayfanın ekran görüntülü ürün önizlemesini kaldır, örnek rapor bağlantısını koru.
+- [x] Sahip: Furkan — Liquid Glass görünümünü belirgin renk derinliği, cam kenarları ve saydam yüzeylerle ayrıştır; iki modda okunabilirliği, azaltılmış saydamlığı ve mobil performansı koru.
+- [x] Sahip: Furkan — Desteğe iki odaklı konu ve iki açıklayıcı yardım sorusu ekle; altı dil, taslak, teslimat ve kişisel destek sınırını koru.
+- [x] Sahip: Furkan — Ana sayfa, plan, rapor ve navigasyondan açılan analiz ekranını her zaman baştan göster; rapor bölüm adresleri, geri/ileri ve dosya taslağı korunmalı.
+
+Kabul: Rapor genişlikleri masaüstü/mobil/RTL'de aynı olmalı; landing'de ekran görüntülü önizleme olmamalı. Glass seçimi ilk bakışta fark edilmeli, hareket zorunlu olmamalı ve erişilebilirlik taraması iki mod/görünümde geçmeli. Yardım ve konu seçenekleri beşer öğeyle sınırlı kalmalı. Kaydırma düzeltmesi hiçbir içeriği gizlememeli veya yeni analiz başlatmamalı. Lint, birim, derleme ve ilgili entegrasyon/tarayıcı kontrolleri geçmeli; local/remote main/furkan eşit, çalışma ağacı temiz, CI başarılı ve Netlify aynı sürüm olmalı.
+
+Yerel doğrulama: Lint, 93 uygulama + 104 Functions testi, frontend/Functions ve Auth önizleme derlemeleri, 4 entegrasyon ve 65 masaüstü/mobil tarayıcı senaryosu geçti; platforma uygulanmayan 3 senaryo atlandı. Altı dil, RTL, rapor bölüm adresleri ve geri/ileri akışı mevcut paketle korundu. İki mod × iki görünümde axe ve taşma taraması, gerçek ekran görüntülerinde Glass farkı ve azaltılmış saydamlık kontrolü geçti. README için 10 görsel yeniden üretildi; iki üretim bağımlılık denetimi 0 uyarı verdi.
+
 ### 2026-10-29 — Furkan / Codex: yayın öncesi bağımlılık düzeltmesi
 
 - [x] Sahip: Furkan — Üretim denetimindeki yeni re2js kaydını Firestore SDK'sının uyumlu alt bağımlılık düzeltmesiyle gider; Tarık'ın tamamlanan arayüzü için kalite kapısını ve yayını doğrula.

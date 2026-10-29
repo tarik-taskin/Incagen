@@ -1,4 +1,8 @@
-export const supportTopics = ["question", "issue", "feedback"] as const;
+export const supportTopics = ["question", "issue", "feedback", "account", "privacy"] as const;
+export const supportTopicLabels: Record<typeof supportTopics[number], string> = {
+  question: "Bir sorum var", issue: "Bir sorun yaşıyorum", feedback: "Bir önerim var",
+  account: "Hesap ve giriş", privacy: "Veriler ve gizlilik",
+};
 export type SupportTopic = typeof supportTopics[number];
 export interface SupportMessage { email: string; topic: SupportTopic; message: string }
 
@@ -11,7 +15,7 @@ export function getSupportConfig() {
 
 // E-posta uygulamasına yalnız kullanıcının yazdığı mesajı taşır; gönderilmiş gibi başarı üretmez.
 export function supportMailto(address: string, message?: SupportMessage) {
-  const params = new URLSearchParams({ subject: "Incagen Support", ...(message ? { body: `${message.message}\n\n${message.email}` } : {}) });
+  const params = new URLSearchParams({ subject: message ? `Incagen Support — ${message.topic}` : "Incagen Support", ...(message ? { body: `${message.message}\n\n${message.email}` } : {}) });
   return `mailto:${address}?${params.toString().replace(/\+/g, "%20")}`;
 }
 

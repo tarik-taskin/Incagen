@@ -5,6 +5,13 @@ const message = { email: "person@example.test", topic: "issue" as const, message
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 describe("destek teslimatı", () => {
+  it.each(["account", "privacy"] as const)("%s konusunu servis ve e-posta taslağında korur", async topic => {
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: true }), { status: 200 }));
+    vi.stubGlobal("fetch", fetch);
+    await sendSupportMessage({ ...message, topic }, "public-form-id", new AbortController().signal);
+    expect(JSON.parse(fetch.mock.calls[0][1].body).subject).toBe(`Incagen Support — ${topic}`);
+    expect(new URL(supportMailto("support@example.test", { ...message, topic })).searchParams.get("subject")).toBe(`Incagen Support — ${topic}`);
+  });
   it("sunucu veya HTTP reddini başarılı gönderim saymaz", async () => {
     const fetch = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ success: false }), { status: 200 })).mockResolvedValueOnce(new Response(JSON.stringify({ success: true }), { status: 429 })).mockResolvedValueOnce(new Response("not json", { status: 502 }));
     vi.stubGlobal("fetch", fetch);

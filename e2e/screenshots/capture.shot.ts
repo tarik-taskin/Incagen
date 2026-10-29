@@ -6,7 +6,6 @@ import sharp from "sharp";
 type Mode = "light" | "dark";
 
 const docsDir = path.resolve("docs/screenshots");
-const showcaseDir = path.resolve("public/showcase");
 
 // Liquid Glass görünümünü ve istenen modu ilk çizimden önce uygular.
 async function useTheme(page: Page, mode: Mode) {
@@ -16,12 +15,11 @@ async function useTheme(page: Page, mode: Mode) {
   }, [mode]);
 }
 
-// Görünen alanı webp olarak README klasörüne, istenirse daha küçük bir kopyasını landing klasörüne yazar.
-async function save(page: Page, name: string, mode: Mode, showcase = false) {
+// Görünen alanı README için webp olarak kaydeder; ana sayfaya ekran görüntüsü eklemez.
+async function save(page: Page, name: string, mode: Mode) {
   await page.evaluate(() => document.fonts.ready);
   const png = await page.screenshot();
   await sharp(png).webp({ quality: 82 }).toFile(path.join(docsDir, `${name}-${mode}.webp`));
-  if (showcase) await sharp(png).resize({ width: 1200 }).webp({ quality: 78 }).toFile(path.join(showcaseDir, `${name}-${mode}.webp`));
 }
 
 // Bölümü başlığının hemen altından görünür alana alır; grafiklerin geç başlaması için kısa süre bekler.
@@ -36,7 +34,6 @@ async function scrollTo(page: Page, selector: string, offset = 96) {
 
 test.beforeAll(async () => {
   await mkdir(docsDir, { recursive: true });
-  await mkdir(showcaseDir, { recursive: true });
 });
 
 for (const mode of ["light", "dark"] as const) {
@@ -45,16 +42,16 @@ for (const mode of ["light", "dark"] as const) {
     await page.goto("/ornek-rapor");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await page.waitForTimeout(600);
-    await save(page, "report-overview", mode, true);
+    await save(page, "report-overview", mode);
 
     for (const id of ["trend", "category", "channel", "region"]) await scrollTo(page, `[data-testid="chart-${id}"]`, 360);
     await scrollTo(page, "#ticari-performans", 88);
-    await save(page, "report-charts", mode, true);
+    await save(page, "report-charts", mode);
 
     await page.getByRole("link", { name: "Finansal detay", exact: true }).click();
     await expect(page.locator("#financial-details")).toHaveAttribute("open");
     await scrollTo(page, "#financial-details", 76);
-    await save(page, "report-table", mode, true);
+    await save(page, "report-table", mode);
 
     await page.goto("/ornek-rapor/musteri-deneyimi");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
