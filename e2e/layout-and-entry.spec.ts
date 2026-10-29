@@ -65,3 +65,24 @@ test("ana sayfa alt çağrısı, üst çağrı, plan, rapor ve aktif navigasyon 
   await page.getByRole("link", { name: "Analize başla", exact: true }).click();
   await expectAnalysisAtTop(page);
 });
+
+// Sekme gezinmesi geçmişi doldurmamalı; tarayıcının gerçek Geri/İleri davranışı korunmalı.
+test("örnek rapor sekmelerinden geri doğrudan ana sayfaya, ileri son örneğe döner", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Örnek raporu incele", exact: true }).click();
+  await page.getByRole("link", { name: "Müşteri deneyimi", exact: true }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Müşterinin sesinden");
+  await page.goBack();
+  await expect(page).toHaveURL("/");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Verilerinizdeki büyüme fırsatlarını keşfedin.");
+  await page.goForward();
+  await expect(page).toHaveURL("/ornek-rapor/musteri-deneyimi");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Müşterinin sesinden");
+  await page.reload();
+  for (const name of ["Ticari performans", "Müşteri deneyimi", "Ticari performans", "Müşteri deneyimi"]) {
+    await page.getByRole("link", { name, exact: true }).click();
+  }
+  await page.goBack();
+  await expect(page).toHaveURL("/");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Verilerinizdeki büyüme fırsatlarını keşfedin.");
+});

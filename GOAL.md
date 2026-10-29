@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-29 — Furkan / Codex: örnek rapordan geri dönüş
+
+- [x] Sahip: Furkan — Örnek rapor türleri arasında geçişi aynı geçmiş kaydında tut; ana sayfadan açılan örnekte tarayıcının geri tuşu doğrudan ana sayfaya dönmeli. İleri gezinme, rapor bölüm geçmişi ve çalışma alanı gezinmesi korunmalı.
+
+Kabul: Masaüstü ve mobilde ana sayfa → ticari örnek → müşteri deneyimi → geri → ana sayfa akışı, ileri dönüş ve tekrarlı sekme geçişi doğrulanmalı. Lint, birim testleri, derlemeler, entegrasyon ve tarayıcı kontrolleri geçmeli; yerel/uzak main/furkan ile Netlify aynı sürüme gelmeli.
+
+Doğrulama: Lint, 93 uygulama + 104 Functions testi, frontend ve Auth önizleme derlemeleri, 4 entegrasyon ve 67 masaüstü/mobil tarayıcı senaryosu geçti; platforma uygulanmayan 3 senaryo atlandı. Yeni test gerçek tarayıcı Geri/İleri, yenileme ve tekrarlı örnek türü geçişini iki ekran boyutunda doğrular.
+
 ### 2026-10-29 — Furkan / Codex: tutarlı rapor ve çalışma alanı deneyimi
 
 - [x] Sahip: Furkan — İki örnek raporda ortak başlık, genişlik ve hizalama kullan; ana sayfanın ekran görüntülü ürün önizlemesini kaldır, örnek rapor bağlantısını koru.
