@@ -14,7 +14,7 @@ function megabytes(bytes: number) {
 function PlanCard({ plan, premium }: { plan: Plan; premium: boolean }) {
   useLocale();
   return <article className={"relative flex h-full flex-col overflow-hidden rounded-[2rem] border bg-card p-6 shadow-sm sm:p-8 " + (premium ? "border-primary/35 shadow-primary/10 dark:border-secondary/35" : "border-border")}>
-    {premium && <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-brand to-brand/40" aria-hidden="true" />}
+    {premium && <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-fuchsia-500 to-rose-400" aria-hidden="true" />}
     <div className="flex flex-wrap items-start justify-between gap-3">
       <span className={"flex h-12 w-12 items-center justify-center rounded-2xl " + (premium ? "bg-primary/10 text-primary dark:bg-secondary/10 dark:text-secondary" : "bg-muted text-foreground")}>
         {premium ? <Crown className="h-6 w-6" aria-hidden="true" /> : <ShieldCheck className="h-6 w-6" aria-hidden="true" />}
@@ -42,7 +42,7 @@ function PlanCard({ plan, premium }: { plan: Plan; premium: boolean }) {
     </ul>
     <div className="mt-5 rounded-2xl border border-border/70 p-4"><p className="flex items-center gap-2 text-xs font-semibold"><Link2 className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" />{t("Veri bağlantıları")}</p><p className="mt-2 text-xs leading-6 text-muted-foreground">{premium ? t(plan.externalSources) : t("Çalışmalarınız için yüklediğiniz belgeler")}</p></div>
     <div className="mt-auto pt-8">
-      {premium ? <button type="button" disabled className="min-h-11 w-full cursor-not-allowed rounded-xl border border-primary/20 bg-primary/10 px-5 text-sm font-semibold text-primary/60 dark:border-secondary/20 dark:bg-secondary/10 dark:text-secondary/60">{t("Premium'a geç")}</button> : <Link to="/app/new-analysis" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand px-5 text-sm font-semibold text-brand-foreground transition-colors hover:bg-brand/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">{t("Yeni analiz aç")} <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" /></Link>}
+      {premium ? <button type="button" disabled className="min-h-11 w-full cursor-not-allowed rounded-xl border border-primary/20 bg-primary/10 px-5 text-sm font-semibold text-primary/60 dark:border-secondary/20 dark:bg-secondary/10 dark:text-secondary/60">{t("Premium'a geç")}</button> : <Link to="/app/new-analysis" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">{t("Yeni analiz aç")} <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" /></Link>}
     </div>
   </article>;
 }
@@ -61,9 +61,9 @@ export function PlanPage() {
   ];
 
   return <section className="mx-auto w-full max-w-6xl" aria-labelledby="plan-title">
-    <div className="surface brand-hero relative overflow-hidden rounded-[2rem] px-6 py-8 text-white shadow-xl sm:px-10 sm:py-10">
+    <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-violet-800 to-slate-950 px-6 py-8 text-white shadow-xl sm:px-10 sm:py-10">
       <span className="pointer-events-none absolute -end-16 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" aria-hidden="true" />
-      <span className="pointer-events-none absolute bottom-0 end-1/3 h-36 w-36 rounded-full bg-brand/15 blur-3xl" aria-hidden="true" />
+      <span className="pointer-events-none absolute bottom-0 end-1/3 h-36 w-36 rounded-full bg-fuchsia-400/15 blur-3xl" aria-hidden="true" />
       <div className="relative z-10 max-w-2xl">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/75">{t("Çalışma alanı / Plan")}</p>
         <h1 id="plan-title" className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{t("Planınızı ve sınırlarınızı görün")}</h1>

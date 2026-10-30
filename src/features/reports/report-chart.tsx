@@ -1,4 +1,4 @@
-import { reportColors, reportTone } from "./report-colors";
+import { reportColors } from "./report-colors";
 import { t, useLocale, localeTag, getLocale } from "../../i18n/runtime";
 import { useEffect, useRef } from "react";
 import { init, use as registerCharts, graphic, type EChartsCoreOption } from "echarts/core";
@@ -44,29 +44,29 @@ export function ReportChart({ dataset, comparison, type, onPoint, testId = "repo
     const instance = chart.current;
     if (!instance || !visible) return;
     const horizontal = type === "horizontal-bar", dark = theme === "dark", percent = dataset.unit === "%";
-    const ink = reportTone("muted-foreground", dark ? "#a8b8c0" : "#52646f");
+    const ink = dark ? "#c7bed5" : "#756383";
     const colors = reportColors(theme);
     const category = { type: "category", data: dataset.points.map(point => t(point.label)), boundaryGap: type !== "line", axisTick: { show: false }, axisLine: { show: false }, axisLabel: { color: ink, fontSize: 11, margin: 14, hideOverlap: true } };
-    const value = { type: "value", splitNumber: 3, min: Math.min(0, ...dataset.points.map(point => point.value ?? 0)), ...(percent ? { max: 100 } : {}), axisLabel: { color: ink, fontSize: 10, hideOverlap: true, formatter: (n: number) => axisNumber(n) + (percent ? "%" : "") }, splitLine: { lineStyle: { color: reportTone("border", dark ? "#29373f" : "#d6e0e5"), type: "dashed" } } };
+    const value = { type: "value", splitNumber: 3, min: Math.min(0, ...dataset.points.map(point => point.value ?? 0)), ...(percent ? { max: 100 } : {}), axisLabel: { color: ink, fontSize: 10, hideOverlap: true, formatter: (n: number) => axisNumber(n) + (percent ? "%" : "") }, splitLine: { lineStyle: { color: dark ? "#392b48" : "#ece7f2", type: "dashed" } } };
     const series = (data: Dataset, secondary = false) => ({
       id: data.id, name: t(data.label), type: type === "line" ? "line" : "bar", smooth: false, connectNulls: false,
       symbol: "circle", symbolSize: 6, showSymbol: false, barMaxWidth: horizontal ? 28 : 34,
       lineStyle: { color: secondary ? colors[1] : colors[0], width: secondary ? 2 : 3, type: secondary ? "dashed" : "solid" },
-      ...(type === "line" && !secondary ? { areaStyle: { opacity: 0.16, color: new graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: colors[0] }, { offset: 1, color: "transparent" }]) } } : {}),
+      ...(type === "line" && !secondary ? { areaStyle: { color: new graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: dark ? "#bba6f538" : "#7351b530" }, { offset: 1, color: "#7351b500" }]) } } : {}),
       label: { show: horizontal || dataset.points.length < 5, position: horizontal ? "right" : "top", color: ink, fontSize: 11, formatter: (params: { value: unknown }) => typeof params.value === "number" ? axisNumber(params.value) : "—" },
       data: data.points.map((point, index) => ({ name: t(point.label), value: point.value, itemStyle: { color: type === "line" ? (secondary ? colors[1] : colors[0]) : colors[index % colors.length], borderRadius: horizontal ? [0, 5, 5, 0] : [5, 5, 0, 0] } })), emphasis: { focus: "series" }, cursor: "pointer",
     });
     let option: EChartsCoreOption = {
       animation: !reducedMotion, animationDuration: 1050, animationDurationUpdate: 650, animationEasing: "cubicOut", animationDelay: (index: number) => index * 22,
       grid: { left: 4, right: horizontal ? 66 : 12, top: 20, bottom: 8, containLabel: true },
-      tooltip: { trigger: type === "line" ? "axis" : "item", renderMode: "richText", confine: true, backgroundColor: reportTone("popover", dark ? "#101a20" : "#ffffff"), borderColor: reportTone("border", dark ? "#29373f" : "#d6e0e5"), textStyle: { color: reportTone("foreground", dark ? "#eef5f7" : "#10202a"), fontSize: 12 }, valueFormatter: (n: unknown) => typeof n === "number" ? `${new Intl.NumberFormat(localeTag(), { maximumFractionDigits: 2 }).format(n)} ${dataset.unit === "TRY" ? "TL" : dataset.unit}` : "—" },
+      tooltip: { trigger: type === "line" ? "axis" : "item", renderMode: "richText", confine: true, backgroundColor: dark ? "#251732" : "#ffffff", borderColor: dark ? "#463254" : "#e2daec", textStyle: { color: dark ? "#eee8f7" : "#320e3b", fontSize: 12 }, valueFormatter: (n: unknown) => typeof n === "number" ? `${new Intl.NumberFormat(localeTag(), { maximumFractionDigits: 2 }).format(n)} ${dataset.unit === "TRY" ? "TL" : dataset.unit}` : "—" },
       xAxis: horizontal ? value : category, yAxis: horizontal ? { ...category, inverse: true } : value, series: comparison ? [series(dataset), series(comparison, true)] : [series(dataset)],
     };
     if (type === "donut") {
       const total = dataset.points.reduce((n, point) => n + (point.value ?? 0), 0);
       if (dataset.points.some(point => point.value === null || point.value < 0) || total <= 0) throw new Error("Dağılım grafiği pozitif ve eksiksiz bir toplam gerektirir.");
       option = { ...option, xAxis: undefined, yAxis: undefined, grid: undefined,
-        title: { text: axisNumber(total), subtext: dataset.unit === "TRY" ? t("NET SATIŞ · TL") : t(dataset.unit), left: "center", top: "40%", textStyle: { fontSize: 25, fontWeight: 600, color: reportTone("foreground", dark ? "#eef5f7" : "#10202a") }, subtextStyle: { color: ink, fontSize: 9 } },
+        title: { text: axisNumber(total), subtext: dataset.unit === "TRY" ? t("NET SATIŞ · TL") : t(dataset.unit), left: "center", top: "40%", textStyle: { fontSize: 25, fontWeight: 600, color: dark ? "#e8f8fb" : "#320e3b" }, subtextStyle: { color: ink, fontSize: 9 } },
         tooltip: { ...option.tooltip as object, trigger: "item" },
         series: [{ id: dataset.id, name: t(dataset.label), type: "pie", radius: ["63%", "82%"], center: ["50%", "49%"], padAngle: 3, startAngle: 90, label: { show: false }, emphasis: { scaleSize: 7 }, itemStyle: { borderRadius: 8 }, data: dataset.points.map((point, index) => ({ name: t(point.label), value: point.value, itemStyle: { color: colors[index % colors.length] } })) }],
       };

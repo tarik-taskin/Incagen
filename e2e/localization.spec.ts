@@ -5,7 +5,7 @@ import de from "../src/i18n/locales/de.json" with { type: "json" };
 import es from "../src/i18n/locales/es.json" with { type: "json" };
 import zh from "../src/i18n/locales/zh.json" with { type: "json" };
 import ar from "../src/i18n/locales/ar.json" with { type: "json" };
-import { chartSeriesPaths, chooseLanguage, languageOptionNames, setTheme } from "./ui-helpers";
+import { chooseLanguage, languageOptionNames, setTheme } from "./ui-helpers";
 
 // Dil seçicide görünen ad, seçili dilin kataloğunda bu anahtarla çevrilir.
 const languageNames = { en: "English", de: "Deutsch", es: "Español", zh: "简体中文", ar: "العربية" } as const;
@@ -57,7 +57,7 @@ for (const [code, catalog] of Object.entries({ en, de, es, zh, ar })) {
     for (const id of ["problems", "sentiments", "themes"]) {
       await expect(page.getByTestId(`chart-${id}`)).toHaveAttribute("dir", "ltr");
       await page.getByTestId(`chart-${id}`).scrollIntoViewIfNeeded();
-      await expect((await chartSeriesPaths(page, id)).first()).toBeVisible();
+      await expect(page.getByTestId(`chart-${id}`).locator("path[fill='#bba6f5'], path[stroke='#bba6f5']").first()).toBeVisible();
     }
     await page.getByRole("heading", { level: 1 }).scrollIntoViewIfNeeded();
     await page.screenshot({ path: testInfo.outputPath(`${code}-feedback-dark.png`), fullPage: true });

@@ -1,11 +1,4 @@
-// ECharts'in renk ayrıştırıcısı için tema tokenını virgüllü HSL biçimine çevirir; SSR/testte güvenli renk döndürür.
-export function reportTone(token: string, fallback: string) {
-  const value = typeof document === "undefined" ? "" : getComputedStyle(document.documentElement).getPropertyValue(`--${token}`).trim();
-  return value ? `hsl(${value.split(/\s+/).join(", ")})` : fallback;
-}
-
-// Grafik ve açıklama işaretleri aynı merkezi seri tokenlarını kullanır; iş verisi ve seri sırası değişmez.
+// Grafik ve açıklama işaretlerinde aynı seri sırasını ve iki temanın aynı renklerini korur.
 export function reportColors(theme: "light" | "dark") {
-  const fallback = theme === "dark" ? ["#40bcf7", "#fb9d70", "#76cbbf", "#a3b5c7"] : ["#0683b2", "#e94f1e", "#208477", "#617a98"];
-  return fallback.map((color, index) => reportTone(`chart-${index + 1}`, color));
+  return theme === "dark" ? ["#bba6f5", "#80d5d5", "#edb68c", "#96b8ee"] : ["#7351b5", "#328c91", "#bd7d50", "#608cc7"];
 }

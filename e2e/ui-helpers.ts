@@ -4,15 +4,6 @@ type Scope = Page | Locator;
 type ThemeMode = "light" | "dark" | "system";
 type ThemeStyle = "classic" | "glass";
 
-// İlk veri serisinin gerçek SVG yollarını merkezi tema rengiyle seçer; yalnız SVG kabuğunun varlığı yeterli değildir.
-export async function chartSeriesPaths(page: Page, id: string, filled = false) {
-  const color = await page.evaluate(() => {
-    const token = getComputedStyle(document.documentElement).getPropertyValue("--chart-1").trim();
-    return `hsl(${token.split(/\s+/).join(", ")})`;
-  });
-  return page.getByTestId(`chart-${id}`).locator(filled ? `path[fill='${color}']` : `path[fill='${color}'], path[stroke='${color}']`);
-}
-
 // Locator verildiyse sahibi olan sayfayı, sayfa verildiyse kendisini döndürür.
 function pageOf(scope: Scope): Page {
   return "keyboard" in scope ? scope : scope.page();
