@@ -1,7 +1,7 @@
 import { t, useLocale } from "../i18n/runtime";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Building2, Check, Pencil, Target } from "lucide-react";
+import { Building2, Check, Pencil, Sparkles, Target } from "lucide-react";
 import { ANALYSIS_OBJECTIVE_MAX_LENGTH } from "../../functions/src/contracts";
 import { FileDropzone } from "../components/upload/file-dropzone";
 import { SelectedFileList } from "../components/upload/selected-file-list";
@@ -10,6 +10,7 @@ import { DraftReadiness, SelectionSummary } from "../components/upload/preparati
 import { getPreparationState, type DraftField } from "../features/files/preparation-state";
 import { Button } from "../components/ui/button";
 import { FREE_PLAN_FILE_LIMIT } from "../features/files/file-rules";
+import { suggestAnalysisTitle } from "../features/files/title-suggestion";
 import { useWorkspace } from "../lib/workspace-context";
 import { tr } from "../i18n/tr";
 
@@ -23,6 +24,8 @@ export function NewAnalysisPage() {
   const [attempted, setAttempted] = useState(false);
   const preparation = getPreparationState(files, draft);
   const localError = attempted ? preparation.firstInvalidField?.message : undefined;
+  const suggestedTitle = files.length > 0 ? suggestAnalysisTitle(files[0].file.name) : "";
+  const showSuggestion = Boolean(suggestedTitle && draft.title.trim() !== suggestedTitle && !busy);
   // Kapalı çalışma alanı özetini gerektiğinde açar ve ilk eksik alana odağı taşır.
   function focusField(field: DraftField) {
     if (field === "business") setEditingBusiness(true);
@@ -76,7 +79,21 @@ export function NewAnalysisPage() {
           )}
         </div>
         <fieldset disabled={busy} className="mt-5">
-          <label className="block text-sm font-medium">{t(tr.analysis.titleLabel)}<input id="analysis-title" className="form-control mt-1.5" maxLength={100} value={draft.title} aria-invalid={attempted && !preparation.fields[1].valid} aria-describedby={attempted && preparation.firstInvalidField?.field === "title" ? "preparation-error" : undefined} placeholder={t("Örn. Müşteri geri bildirimleri")} onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} /></label>
+          <label className="block text-sm font-medium">{t(tr.analysis.titleLabel)}<input id="analysis-title" className="form-control mt-1.5" maxLength={100} value={draft.title} aria-invalid={attempted && !preparation.fields[1].valid} aria-describedby={attempted && preparation.firstInvalidField?.field === "title" ? "preparation-error" : showSuggestion ? "title-suggestion-hint" : undefined} placeholder={t("Örn. Müşteri geri bildirimleri")} onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} /></label>
+          {showSuggestion && (
+            <div id="title-suggestion-hint" className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="shrink-0">{t("Öneri:")}</span>
+              <button
+                type="button"
+                className="inline-flex min-h-7 items-center rounded-md border border-primary/20 bg-primary/[0.04] px-2 py-0.5 font-medium text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:border-secondary/25 dark:bg-secondary/[0.06] dark:text-secondary dark:hover:bg-secondary/15"
+                onClick={() => setDraft(d => ({ ...d, title: suggestedTitle }))}
+                title={t("Önerilen başlığı kullan")}
+              >
+                <Sparkles className="me-1 h-3 w-3 shrink-0" aria-hidden="true" />
+                <span className="max-w-[200px] truncate sm:max-w-[240px]">{suggestedTitle}</span>
+              </button>
+            </div>
+          )}
           <p className="mt-2 text-xs leading-5 text-muted-foreground">{t("Konuyu anlatan kısa bir başlık seçin; çalışmanızı geçmişte bu adla bulacaksınız.")}</p>
           <div className="mt-5 border-t border-border pt-5">
             <div className="flex items-center justify-between gap-2">

@@ -192,4 +192,41 @@ describe("NewAnalysisPage", () => {
     expect(screen.queryByText("asan.txt", { exact: true })).not.toBeInTheDocument();
     expect(summary.getByRole("progressbar")).toHaveAttribute("value", String(25 * 1024 ** 2));
   });
+
+  it("ilk seçilen dosyadan sade bir başlık önerir; tek tıkla kabul edilir ve kullanıcı metnini ezmez", async () => {
+    const user = setupUser();
+    renderPage();
+    const input = screen.getByLabelText("Analiz edilecek dosyaları seç");
+    const titleInput = screen.getByLabelText("Analiz başlığı");
+
+    // Dosya yokken öneri görünmemeli
+    expect(screen.queryByText("Öneri:")).not.toBeInTheDocument();
+
+    // satis_2026_q3.xlsx dosyasını yükle
+    await user.upload(input, new File(["content"], "satis_2026_q3.xlsx", { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+
+    // Öneri butonu görünmeli: Satis 2026 Q3
+    expect(screen.getByText("Öneri:")).toBeInTheDocument();
+    const suggestionBtn = screen.getByRole("button", { name: "Satis 2026 Q3" });
+    expect(suggestionBtn).toBeInTheDocument();
+
+    // Kullanıcı henüz bir şey yazmadı, öneriye tıklayınca başlık alanına dolmalı
+    await user.click(suggestionBtn);
+    expect(titleInput).toHaveValue("Satis 2026 Q3");
+    // Başlık öneriyle aynı olduğu için çip kaybolmalı
+    expect(screen.queryByText("Öneri:")).not.toBeInTheDocument();
+
+    // Kullanıcı başlığı elle değiştirdiğinde kullanıcı metni ezilmez
+    await user.clear(titleInput);
+    await user.type(titleInput, "Kendi Özel Başlığım");
+    expect(titleInput).toHaveValue("Kendi Özel Başlığım");
+    // Öneri tekrar belirmeli çünkü kullanıcının başlığı öneriyle farklı
+    expect(screen.getByText("Öneri:")).toBeInTheDocument();
+
+    // Dosya kaldırıldığında öneri kaybolmalı
+    await user.click(screen.getByRole("button", { name: "satis_2026_q3.xlsx dosyasını kaldır" }));
+    expect(screen.queryByText("Öneri:")).not.toBeInTheDocument();
+    // Kullanıcının elle girdiği başlık korunmalı
+    expect(titleInput).toHaveValue("Kendi Özel Başlığım");
+  });
 });
