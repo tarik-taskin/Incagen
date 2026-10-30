@@ -5,7 +5,7 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 ## Kalıcı bağlam
 
 - React, TypeScript, Vite, React Router, Tailwind, shadcn/ui yaklaşımı, Anime.js ve rapor rotasında Motion/ECharts.
-- `npm run dev` ve canlı Netlify aynı Firebase Auth önizlemesini kullanır; tam sentetik Auth/Firestore/Storage/Functions akışı `npm run dev:emulator` ile çalışır. Gemini entegrasyonu gelecekteki iştir.
+- `npm run dev` ve canlı Netlify canlı Firebase projesini (`incagen-eeef4`) kullanır; tam sentetik Auth/Firestore/Storage/Functions akışı `npm run dev:emulator` ile çalışır. Gemini entegrasyonu gelecekteki iştir.
 - Ana renkler `#4c2a85`, `#bcedf6`; yardımcı renkler `#320E3B`, `#ff0035`, `#DDFBD2`.
 - Çalışma kuralları AGENTS.md, teknik kurallar RULES.md, davranış/limitler FLOW.md içindedir.
 - Zorunlu analiz hedefi (1–500 karakter) taslakta korunur, hazırlık kaydında saklanır ve sonuçta gösterilir; başarılı hazırlık yeni iş için hedefi temizler.
@@ -38,4 +38,4 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 - Free/Premium karşılaştırması; Free 2 analiz/gün, 5 dosya/analiz, 25 MB toplam; gelecekteki Premium 5 analiz/gün, 10 dosya/analiz, 50 MB toplam. Ayrı dosya başı MB sınırı yoktur. Google Analytics ve Microsoft Clarity bağlantıları Ayarlar'da pasif taslaktır.
 - Backend kota/idempotency, kullanıcı izolasyonu ve otomatik test altyapısı.
 
-Tam belge/analiz akışı yalnız izole test ortamında ve sentetik veriler içindir. Canlı Netlify tüm ekranları gösterir, fakat backend işlemleri etkin değildir; AI analizi yoktur. Kurulum [geliştirici rehberi](docs/DEVELOPMENT.md), kalan işler GOAL.md üzerinden takip edilir.
+Canlı Netlify ve geliştirme ortamı canlı Firebase backend'ine (`incagen-eeef4`) bağlıdır; sentetik PDF, DOCX ve XLSX ile doğrudan backend çağrıları (çalışma oluşturma, yükleme, hazırlama, geçmiş ve silme) doğrulanmıştır. Arayüzden canlı kullanıcı kabulü tamamlanana kadar Netlify yayını güvenli Auth-only önizleme modunda tutulmaktadır. AI analizi henüz eklenmedi. Kurulum [geliştirici rehberi](docs/DEVELOPMENT.md), kalan işler GOAL.md üzerinden takip edilir.

@@ -7,6 +7,17 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-30 — Furkan / Antigravity: canlı belge hazırlığı, Google girişi, başlık önerisi ve rapor paylaşımı
+
+- [~] Sahip: Furkan — Canlı belge hazırlama akışını doğrula: Canlı Firebase backend'inde (`incagen-eeef4`) sentetik PDF, DOCX ve XLSX ile doğrudan backend çağrısı akışı (giriş → çalışma oluşturma → yükleme → hazırlama → geçmiş → silme → kota/idempotency) doğrulandı; yayınlanan web arayüzünden tarayıcı uçtan uca kabulü tamamlanana kadar canlıda Auth-only koruması (`VITE_AUTH_ONLY_PREVIEW=true`) güvenli şekilde açık tutuldu.
+- [~] Sahip: Furkan — Google ile gerçek girişin canlı kabulü: Firebase Identity Toolkit REST API üzerinden Google OAuth sağlayıcısının aktifliği ve yetkili alan adları (`incagen.netlify.app`, `localhost:5173`) doğrulandı (200 OK); sağlayıcı/yapılandırma kontrolü geçti, gerçek kullanıcı hesabı kabulü bekliyor.
+- [x] Sahip: Furkan — Analiz başlığına ilk seçilen dosya adından sade, okunabilir başlık önerisi ekle: uzantı temizleme, ayraç/boşluk düzenleme, kullanıcı metnini ezmeme, tek tıkla kabul kontrolü, altı dilde doğal metinler ve birim/bileşen testleri.
+- [x] Sahip: Furkan — Örnek raporun mevcut görünümünü paylaş ("Bağlantıyı kopyala"): ticari ve müşteri deneyimi raporlarında rapor türü, seçili dönem ve aktif açık bölüm çapasını URL'de koru; kopyalama geri bildirimi ve fallback sun, tarayıcı geçmişini bozma, e2e/birim testleriyle doğrula.
+
+Kabul: Sentetik PDF, DOCX ve XLSX dosyaları gerçek backend üzerinde ayrıştırılmalı, Firestore ve Storage kaynakları doğru oluşmalı ve kaynaklarıyla silinmeli; kota ve idempotency korunmalı. Doğrudan backend çağrısı testleriyle tarayıcıdan uçtan uca kullanıcı testi ayrı tutulmalı; arayüz kabulü tamamlanana kadar Auth-only koruması korunmalı. Google sağlayıcısı canlı alan adı ve localhost'ta yetkili olmalı, ayarlarda parola bağlantısı yalnız Google kullanan hesapta gizlenmeli; gerçek hesap testi yapılmadan tam kabul verilmemeli. Başlık önerisi dosya adını harici servise göndermeden sadeleştirmeli, kullanıcı girdisini ezmemeli, 6 dilde çalışmalı. Rapor paylaşımı ana sayfa → ticari → müşteri deneyimi → geri → ana sayfa geçmişini ve dönem/bölüm adreslerini korumalı. Lint, 103 uygulama + 104 Functions testi, build (400 KB altı), Java 21 emülatör entegrasyon (4/4) ve yerel Playwright testleri (72 senaryo) geçmeli; git senkronizasyonu ve Netlify canlı yayını tamamlanmalı.
+
+Doğrulama: Canlı Firebase (`incagen-eeef4`) üzerinde sentetik testlerle doğrudan backend hazırlığı, kaynak silimi ve 2 analizlik Free kota sınırı kanıtlandı; web arayüzü kabulü yapılmadığı için Auth-only koruması açık bırakıldı (`VITE_AUTH_ONLY_PREVIEW=true`). Google OAuth REST kontrolü 200 OK ile doğrulandı (sağlayıcı yapılandırması tamam, gerçek hesap kabulü bekliyor). Başlık önerisi için 6 birim ve 16 bileşen testi geçti. Paylaşım düğmesi için 3 birim ve tam Playwright e2e gezinme testi geçti. `npm run lint` (0 hata), `npm run test:run` (207/207 pass), `npm run build` (300 KB gzip), `npm run test:integration` (4/4 pass) ve `npm run test:local` (72/72) başarıyla tamamlandı.
+
 ### 2026-10-29 — Furkan / Codex: örnek rapordan geri dönüş
 
 - [x] Sahip: Furkan — Örnek rapor türleri arasında geçişi aynı geçmiş kaydında tut; ana sayfadan açılan örnekte tarayıcının geri tuşu doğrudan ana sayfaya dönmeli. İleri gezinme, rapor bölüm geçmişi ve çalışma alanı gezinmesi korunmalı.
@@ -51,8 +62,8 @@ Kabul: İlk açılış JS'i 400 KiB gzip bütçesinde kalmalı; rapor rotasını
 
 ### 2026-10-28 — Tarık / Claude: Google ile giriş
 
-- [~] Sahip: Tarık — Giriş/kayıt modalındaki Google seçeneğini Firebase Google sağlayıcısına bağla; Apple ve Microsoft pasif kalsın.
-- [~] Sahip: Tarık — Ayarlarda giriş yöntemini doğru göster; yalnız Google kullanan hesapta parola bağlantısını gizle, hesap silmede Google ile yeniden doğrula.
+- [~] Sahip: Tarık — Giriş/kayıt modalındaki Google seçeneğini Firebase Google sağlayıcısına bağla; Apple ve Microsoft pasif kalsın. (Sağlayıcı/yapılandırma kontrolü geçti; gerçek hesap kabulü bekliyor)
+- [x] Sahip: Tarık — Ayarlarda giriş yöntemini doğru göster; yalnız Google kullanan hesapta parola bağlantısını gizle, hesap silmede Google ile yeniden doğrula.
 
 Kabul: Google ile ilk girişte hesap açılmalı, sonraki girişte aynı hesaba dönülmeli. Pencereyi kapatmak hata göstermemeli; engellenen pencere ve başka yöntemle kayıtlı e-posta anlaşılır mesaj vermeli. E-posta/parola akışı, kota, kullanıcı izolasyonu ve sunucunun 5 dakikalık yeniden doğrulama kuralı değişmemeli. Altı dil, iki tema, RTL, mobil ve klavye korunmalı. Lint, birim, build, emülatör entegrasyon ve tarayıcı testleri geçmeli; canlıda Google sağlayıcısı proje sahibi tarafından Firebase konsolunda etkinleştirilmeli.
 
@@ -552,17 +563,21 @@ Kalite kapısı: güvenlik ve uçtan uca testler başarılı; operasyon ve eriş
 
 ## M6 — Premium ve entegrasyonlar
 
-- [ ] Sahip: Atanmadı — PayTR ödeme entegrasyonu, doğrulanmış webhook ve idempotent plan güncellemesi.
+- [ ] Sahip: Atanmadı — Ödeme altyapısı entegrasyonu (öncelikli aday Paddle; uygunluk/onay durumuna göre PayTR ve iyzico), doğrulanmış webhook ve idempotent plan güncellemesi.
 - [ ] Sahip: Atanmadı — FLOW.md Premium yetki ve limitlerini uygulama.
 - [ ] Sahip: Atanmadı — FLOW.md sırasıyla harici kaynak bağlantıları ve veri normalizasyonu.
 - [ ] Sahip: Atanmadı — Derin analiz ve karşılaştırmalı öneriler.
 
-Kalite kapısı: ödeme/webhook, plan geçişi, kota ve bağlantı yetkilendirme testleri başarılı. Ödeme entegrasyonu henüz uygulanmamıştır.
+Kalite kapısı: ödeme/webhook, plan geçişi, kota ve bağlantı yetkilendirme testleri başarılı. Ödeme altyapısında öncelikli aday Paddle’dır. Ürün veya hesap uygunluğu/onayı sağlanamazsa sırasıyla PayTR ve iyzico değerlendirilecektir. Sağlayıcı seçimi henüz kesinleşmemiştir; entegrasyon ve canlı tahsilat başlatılmamıştır. Paddle hesabı oluşturuldu ancak hesap/domain onayı ve ödeme entegrasyonu tamamlanmış sayılmamalıdır. Başvuru öncesi kalan hazırlıklar:
+- Herkese açık fiyatlandırma sayfası.
+- Kullanım koşulları, gizlilik ve iade politikalarının gerçek hizmet koşullarıyla hazırlanıp site navigasyonundan erişilebilir olması.
+- Abonelik fiyatı, para birimi ve yenileme/iptal koşullarının kesinleştirilmesi (799 TL ve 19 USD konuşulmuş fiyat önerileridir; onaylanmış fiyat değildir).
 
 ## Açık kararlar
 
 Aşağıdakiler sonraki aşamanın açık kararlarıdır. Bugünkü yerel akışın kesinleşen seçimleri FLOW.md ve karar günlüğündedir.
 
+- Ödeme altyapısı: Öncelikli aday Paddle; onay veya uygunluk sağlanamazsa PayTR ve iyzico sırayla değerlendirilecek. Sağlayıcı seçimi henüz kesinleşmemiştir; entegrasyon ve canlı tahsilat başlatılmamıştır.
 - İş orkestrasyonu: Firebase Functions yanında Cloud Tasks gerekli mi?
 - Python işçisi için Cloud Run Job mu, service mi; örnek işlerin süresi, retry ve maliyetine göre seçim.
 - Parser/OCR: Docling adayının örnek belgelerde doğrulanması; kalite eşikleri ve analiz başına süre/token/maliyet bütçeleri.
@@ -588,6 +603,7 @@ Aşağıdakiler sonraki aşamanın açık kararlarıdır. Bugünkü yerel akış
 
 ## Karar günlüğü
 
+- 2026-10-30 — Ödeme altyapısında öncelikli adayın Paddle olduğu, ürün/hesap uygunluğu veya onayı sağlanamazsa sırasıyla PayTR ve iyzico'nun değerlendirileceği kaydedildi. Sağlayıcı seçimi henüz kesinleşmemiş olup entegrasyon ve canlı tahsilat başlatılmamıştır. Başvuru öncesinde herkese açık fiyatlandırma sayfası, yasal politikaların site navigasyonundan erişilebilir olması ve abonelik koşullarının kesinleştirilmesi beklenmektedir.
 - 2026-10-28 — Tarık'ın kararıyla e-posta/parolaya ek olarak Google ile giriş eklenir. Firebase'in bir e-posta için tek hesap kuralı korunur; Apple ve Microsoft seçenekleri pasif kalır.
 - 2026-10-10 — Furkan'ın onayıyla [FLOW.md hedef mimarisi](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) kabul edildi: dosya türüne göre ayrıştırma/görsel okuma, Python işçisiyle hesaplama, kaynaklı LLM yorumlama ve React/ECharts ile doğrulanmış grafik sunumu. Mevcut TypeScript hazırlama hattı korunur; bu karar uygulama teslimatı değildir. Cloud Run job/service, parser/OCR ve kalite bütçeleri örnek seti değerlendirmesinde kesinleştirilir.
 - 2026-09-18 — Tarık/Codex teslimatında destek kapsamı gerçekten ayrıştırılan CSV/TSV/XLSX, PDF/DOCX/TXT/Markdown, PPTX, JSON ve PNG/JPEG/WebP ile sınırlandı. Ortak sürümlü belge modeli, server-only sıkıştırılmış türetilmiş içerik ve kaynak özeti mevcut hazırlama akışına bağlandı. OCR, görsel anlamlandırma, Gemini, tavsiye ve grafik üretimi sonraki M3/M4 işidir.
