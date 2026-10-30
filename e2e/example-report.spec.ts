@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import gold from "../fixtures/company-example/v3/expected.json" with { type: "json" };
-import { setTheme } from "./ui-helpers";
+import { chartSeriesPaths, setTheme } from "./ui-helpers";
 
 // Raporun tamamı ve açık dialog için kritik erişilebilirlik ihlallerini durdurur.
 async function accessibility(page: Page) {
@@ -46,7 +46,7 @@ test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı 
   await expect(net).toBeFocused();
 
   await page.getByTestId("chart-trend").scrollIntoViewIfNeeded();
-  await expect(page.getByTestId("chart-trend").locator("path[fill='#7351b5'], path[stroke='#7351b5']").first()).toBeVisible();
+  await expect((await chartSeriesPaths(page, "trend")).first()).toBeVisible();
   await page.getByRole("button", { name: "Aylık net satış veri tablosu" }).click();
   await expect(page.getByRole("table", { name: "Aylık net satış, TRY" }).locator("tbody tr")).toHaveCount(12);
   await page.getByRole("button", { name: "Aylık net satış Oca kaynağı" }).click();
@@ -57,9 +57,9 @@ test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı 
 
   for (const id of ["category", "channel", "region", "profit", "service"]) {
     await page.getByTestId(`chart-${id}`).scrollIntoViewIfNeeded();
-    await expect(page.getByTestId(`chart-${id}`).locator("path[fill='#7351b5'], path[stroke='#7351b5']").first()).toBeVisible();
+    await expect((await chartSeriesPaths(page, id)).first()).toBeVisible();
   }
-  await page.getByTestId("chart-category").locator("path[fill='#7351b5']").first().click();
+  await (await chartSeriesPaths(page, "category", true)).first().click();
   await expect(page.getByRole("dialog", { name: "Bulut hizmetleri", exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
   await page.getByRole("link", { name: "Finansal detay", exact: true }).click();
@@ -112,7 +112,7 @@ test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı 
   await page.screenshot({ path: testInfo.outputPath("enterprise-library.png") });
   for (const id of ["trend", "category", "channel", "region", "profit", "service"]) {
     await page.getByTestId(`chart-${id}`).scrollIntoViewIfNeeded();
-    await expect(page.getByTestId(`chart-${id}`).locator("path[fill='#7351b5'], path[stroke='#7351b5']").first()).toBeVisible();
+    await expect((await chartSeriesPaths(page, id)).first()).toBeVisible();
   }
   await page.getByRole("link", { name: "Genel bakış", exact: true }).click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= (window.visualViewport?.width ?? innerWidth))).toBe(true);

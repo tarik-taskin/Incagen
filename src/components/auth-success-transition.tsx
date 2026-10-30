@@ -56,7 +56,7 @@ export function AuthSuccessTransition({ onComplete }: { onComplete: () => void }
           </h2>
         </div>
         <div className="mx-auto mt-5 h-2 w-full max-w-xl overflow-hidden rounded-full bg-primary/10 shadow-inner dark:bg-secondary/10" aria-hidden="true">
-          <div className={`h-full origin-left rounded-full bg-gradient-to-r from-secondary via-primary to-[#ff5978] transition-transform duration-[3000ms] ease-linear ${progressing ? "scale-x-100" : "scale-x-0"}`} />
+          <div className={`h-full origin-left rounded-full bg-gradient-to-r from-primary via-primary to-brand transition-transform duration-[3000ms] ease-linear ${progressing ? "scale-x-100" : "scale-x-0"}`} />
         </div>
         <p className="mt-4 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
           <Sparkles className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" />  {t("Çalışma alanınıza geçiş yapılıyor")} </p>

@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-30 — Furkan / Codex: derin mavi, beyaz ve pembe tasarım sistemi
+
+- [x] Sahip: Furkan — Derin mavi/beyaz ana paleti ve ölçülü pembe vurguyu bütün ekranlara, marka işaretine ve grafiklere uygula; Liquid Glass yüzeylerini aynı kimlikle yenile. İş mantığı, veri, rotalar, kimlik doğrulama, taslak ve canlı yayın modu değişmemeli.
+
+Kabul: Açık/koyu ve Klasik/Glass görünümleri, masaüstü/mobil, altı dil/RTL, klavye odağı, grafik/legend eşliği, azaltılmış hareket/saydamlık ve okunabilirlik doğrulanmalı. README görselleri yeni tasarımla yenilenmeli. Lint, birim, frontend derlemesi ve ilgili tarayıcı kontrolleri geçmeli. Yayın, AGENTS.md içindeki branch eşitliği ve temiz çalışma ağacı kuralına, GitHub Quality kapısına ve Netlify dosya eşliği kontrolüne tabidir.
+
+Doğrulama: Lint, 103 uygulama + 104 Functions testi, frontend/Auth önizleme derlemeleri, 4 entegrasyon ve 77 masaüstü/mobil tarayıcı senaryosu geçti; platforma uygulanmayan mevcut 3 senaryo atlandı. Marka paneli ve giriş/kayıt için dört mod/görünümde yeni axe kontrolleri eklendi; analiz, plan, ayarlar ve geçmiş de dört görünümde tarandı. Grafik/legend renkleri gerçek SVG çizimi ve mobil tema geçişinde eşleşti. README için 10 görsel yenilendi; iki üretim bağımlılık denetimi 0 uyarı verdi. İlk açılış 307.995 gzip baytla 400 KiB bütçesinin altında. İş mantığı, kaynak veriler, backend ve Auth-only yayın modu değişmedi.
+
 ### 2026-10-30 — Furkan / Antigravity: canlı belge hazırlığı, Google girişi, başlık önerisi ve rapor paylaşımı
 
 - [~] Sahip: Furkan — Canlı belge hazırlama akışını doğrula: Canlı Firebase backend'inde (`incagen-eeef4`) sentetik PDF, DOCX ve XLSX ile doğrudan backend çağrısı akışı (giriş → çalışma oluşturma → yükleme → hazırlama → geçmiş → silme → kota/idempotency) doğrulandı; yayınlanan web arayüzünden tarayıcı uçtan uca kabulü tamamlanana kadar canlıda Auth-only koruması (`VITE_AUTH_ONLY_PREVIEW=true`) güvenli şekilde açık tutuldu.

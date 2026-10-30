@@ -171,7 +171,7 @@ export function HistoryPage() {
   }
 
   return <section aria-labelledby="history-title" className="max-w-6xl">
-    <div className="surface relative overflow-hidden rounded-[1.75rem] border border-primary/10 bg-gradient-to-br from-card via-card to-primary/[0.07] p-6 text-foreground shadow-[0_20px_65px_-48px_rgba(70,35,110,0.4)] dark:border-secondary/15 dark:to-secondary/[0.07] sm:p-8 lg:p-10">
+    <div className="surface relative overflow-hidden rounded-[1.75rem] border border-primary/10 bg-gradient-to-br from-card via-card to-primary/[0.07] p-6 text-foreground shadow-[0_20px_65px_-48px_rgba(9,49,141,0.22)] dark:border-secondary/15 dark:to-secondary/[0.07] sm:p-8 lg:p-10">
       <div className="pointer-events-none absolute -end-14 -top-28 h-80 w-80 rounded-full border border-primary/10 bg-primary/[0.04] dark:border-secondary/10 dark:bg-secondary/[0.04]" aria-hidden="true" />
       <div className="pointer-events-none absolute -bottom-24 end-16 h-64 w-64 rounded-full bg-primary/[0.05] blur-3xl dark:bg-secondary/[0.05]" aria-hidden="true" />
       <div className="relative flex flex-wrap items-start justify-between gap-7">

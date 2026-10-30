@@ -6,7 +6,7 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 
 - React, TypeScript, Vite, React Router, Tailwind, shadcn/ui yaklaşımı, Anime.js ve rapor rotasında Motion/ECharts.
 - `npm run dev` ve canlı Netlify canlı Firebase projesini (`incagen-eeef4`) kullanır; tam sentetik Auth/Firestore/Storage/Functions akışı `npm run dev:emulator` ile çalışır. Gemini entegrasyonu gelecekteki iştir.
-- Ana renkler `#4c2a85`, `#bcedf6`; yardımcı renkler `#320E3B`, `#ff0035`, `#DDFBD2`.
+- Marka paleti derin mavi `#09318D`, beyaz ve pembe `#FD91CC`; açık/koyu, grafik, logo ve Liquid Glass tokenları `src/index.css` içinde merkezidir. Pembe ölçülü vurgu için kullanılır; hata/başarı durumları anlamsal renklerini korur.
 - Çalışma kuralları AGENTS.md, teknik kurallar RULES.md, davranış/limitler FLOW.md içindedir.
 - Zorunlu analiz hedefi (1–500 karakter) taslakta korunur, hazırlık kaydında saklanır ve sonuçta gösterilir; başarılı hazırlık yeni iş için hedefi temizler.
 - Kabul edilen sonraki AI mimarisi ve kalite kapısı [FLOW.md](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) içindedir; Python işçisi ve kaynaklı LLM sonuçları geliştirme hedefidir; bağımsız sentetik rapor ECharts/Motion sunumunu gösterir.

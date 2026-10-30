@@ -3,6 +3,26 @@ import { expect, test } from "@playwright/test";
 import { chooseLanguage, setTheme } from "./ui-helpers";
 import sharp from "sharp";
 
+for (const style of ["classic", "glass"] as const) {
+  for (const mode of ["light", "dark"] as const) {
+    test(`marka paneli ve giriş/kayıt penceresi okunabilir (${style}, ${mode})`, async ({ page }) => {
+      await page.goto("/");
+      await setTheme(page, { mode, style });
+      await expect(page.locator("#landing-title")).toBeVisible();
+      expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze()).violations).toEqual([]);
+      await page.getByRole("button", { name: "Analize başla", exact: true }).click();
+      await expect(page.getByRole("dialog")).toBeVisible();
+      expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze()).violations).toEqual([]);
+      await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+      await expect(page.getByRole("heading", { name: "Hesap oluştur", exact: true })).toBeVisible();
+      expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze()).violations).toEqual([]);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.getByRole("button", { name: "Giriş penceresini kapat", exact: true }).click();
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+    });
+  }
+}
+
 test("tema menüsü dört mod/görünüm kombinasyonunda erişilebilir ve seçim kalıcıdır", async ({ page }, testInfo) => {
   await page.goto("/ornek-rapor");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
