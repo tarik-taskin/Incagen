@@ -8,7 +8,7 @@ import { ReportChart } from "./report-chart";
 import { reportNumber } from "./report-format";
 import { SourceDialog, type ReportSource, type SourceSelection } from "./source-dialog";
 
-export const reportPanel = "surface min-w-0 rounded-3xl border border-border/75 bg-card shadow-[0_8px_30px_-22px_rgba(9,49,141,0.16)]";
+export const reportPanel = "surface min-w-0 rounded-3xl border border-border/75 bg-card shadow-[0_8px_30px_-22px_rgba(2,7,10,0.16)]";
 const focus = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
 
 // Ayrıntıları kaybetmeden bölümün amacını ön planda tutar; yerel details klavye ve erişilebilirlik davranışını sağlar.

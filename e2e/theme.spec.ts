@@ -3,6 +3,24 @@ import { expect, test } from "@playwright/test";
 import { chooseLanguage, setTheme } from "./ui-helpers";
 import sharp from "sharp";
 
+// Gece navigasyonunun açık cam zeminde saydamlaşıp kontrastını kaybetmesini önler.
+test("gece navigasyonu çalışma alanında dört görünümde okunur", async ({ page }) => {
+  await page.goto("/app/new-analysis");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await page.getByLabel("E-posta", { exact: true }).fill(`theme-${crypto.randomUUID()}@example.test`);
+  await page.getByLabel("Parola", { exact: true }).fill("Synthetic123!");
+  await page.getByLabel("Parola tekrarı", { exact: true }).fill("Synthetic123!");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Belgelerinizi analize hazırlayın", exact: true })).toBeVisible();
+  for (const style of ["classic", "glass"] as const) {
+    for (const mode of ["light", "dark"] as const) {
+      await setTheme(page, { mode, style });
+      expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze()).violations).toEqual([]);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    }
+  }
+});
+
 for (const style of ["classic", "glass"] as const) {
   for (const mode of ["light", "dark"] as const) {
     test(`marka paneli ve giriş/kayıt penceresi okunabilir (${style}, ${mode})`, async ({ page }) => {

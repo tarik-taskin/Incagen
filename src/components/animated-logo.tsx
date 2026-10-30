@@ -55,7 +55,7 @@ export function AnimatedLogo({ className, compact = false }: AnimatedLogoProps) 
   }, []);
 
   return (
-    <svg ref={logoRef} viewBox="42 387 238 250" role="img" aria-label={t("Incagen logosu")} className={cn("overflow-visible drop-shadow-[0_12px_28px_rgba(9,49,141,0.16)]", className)}>
+    <svg ref={logoRef} viewBox="42 387 238 250" role="img" aria-label={t("Incagen logosu")} className={cn("overflow-visible drop-shadow-[0_12px_28px_rgba(2,7,10,0.16)]", className)}>
       <defs>
         <linearGradient id={gradientId} x1="75" y1="594" x2="245" y2="418" gradientUnits="userSpaceOnUse">
           <stop stopColor="hsl(var(--logo-start))" />

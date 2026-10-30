@@ -206,7 +206,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
 
   return (
     <>
-    <section className="surface relative w-full overflow-hidden rounded-[2rem] border border-border/80 bg-card text-card-foreground shadow-[0_30px_100px_-32px_rgba(9,25,62,0.55)]" aria-labelledby={titleId}>
+    <section className="surface relative w-full overflow-hidden rounded-[2rem] border border-border/80 bg-card text-card-foreground shadow-[0_30px_100px_-32px_rgba(2,7,10,0.55)]" aria-labelledby={titleId}>
       <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary to-brand" aria-hidden="true" />
       <div className="relative p-5 sm:p-8">
         <header className="flex items-center justify-between gap-4">

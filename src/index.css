@@ -9,40 +9,39 @@
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
-    /* Marka paleti: derin mavi #09318D, beyaz ve bubblegum pembe #FD91CC. */
-    --brand-deep: 222 88% 29%; --brand-night: 224 72% 13%; --brand-pink: 327 96% 78%;
-    --background: 220 50% 98%; --foreground: 224 55% 16%; --card: 0 0% 100%; --card-foreground: 224 55% 16%;
-    --primary: 222 88% 29%; --primary-foreground: 0 0% 100%; --secondary: 217 90% 93%; --secondary-foreground: 222 88% 29%;
-    --brand: 327 96% 78%; --brand-foreground: 224 72% 13%; --brand-ink: 326 70% 36%;
-    --muted: 220 42% 95%; --muted-foreground: 220 20% 40%; --border: 220 32% 87%; --ring: 222 88% 38%;
-    --popover: 0 0% 100%; --popover-foreground: 224 55% 16%; --accent: 220 75% 95%; --accent-foreground: 222 88% 29%;
-    --destructive: 0 72% 42%; --destructive-foreground: 0 0% 100%; --input: 220 30% 79%;
-    /* Grafikler ve legend aynı tokenlardan beslenir; pembe bir kategori rengidir, hata göstergesi değildir. */
-    --chart-accent: 222 88% 29%;
-    --chart-1: 222 88% 39%; --chart-2: 326 62% 49%; --chart-3: 184 57% 33%; --chart-4: 218 36% 55%; --chart-5: 38 67% 42%;
-    --logo-shell: 222 88% 29%; --logo-start: 0 0% 100%; --logo-end: 327 96% 78%;
-    /* Cam yüzeylerinin renk ağı, kenar ışığı ve opaklıkları tek yerde tanımlanır. */
-    --glass-alpha: 0.72; --glass-popover-alpha: 0.97; --glass-blur: 28px;
-    --glass-edge: 0 0% 100%; --glass-edge-alpha: 0.95; --glass-glow: 0 0% 100%; --glass-glow-alpha: 1; --glass-shadow: 222 70% 25%;
-    --glass-tint-1: 216 100% 81%; --glass-tint-2: 327 96% 86%; --glass-tint-3: 224 90% 82%;
+    /* Gece siyahı #02070A, elektrik mavisi #0297DE ve turuncu #FC734D. */
+    --brand-deep: 199 97% 32%; --brand-night: 203 67% 2%; --brand-warm: 14 97% 65%;
+    --background: 200 30% 97%; --foreground: 205 42% 10%; --card: 0 0% 100%; --card-foreground: 205 42% 10%;
+    --primary: 199 94% 28%; --primary-foreground: 0 0% 100%; --secondary: 196 70% 91%; --secondary-foreground: 199 94% 28%;
+    --brand: 14 97% 65%; --brand-foreground: 203 67% 2%; --brand-ink: 14 75% 35%;
+    --muted: 200 25% 93%; --muted-foreground: 205 17% 39%; --border: 200 20% 84%; --ring: 199 94% 35%;
+    --popover: 0 0% 100%; --popover-foreground: 205 42% 10%; --accent: 195 65% 94%; --accent-foreground: 199 94% 28%;
+    --destructive: 0 72% 42%; --destructive-foreground: 0 0% 100%; --input: 200 20% 76%;
+    /* Grafik renkleri kategorileri belirtir; olumlu/olumsuz durumlar kendi anlamsal renklerini korur. */
+    --chart-accent: 199 94% 28%;
+    --chart-1: 199 94% 36%; --chart-2: 14 80% 51%; --chart-3: 174 58% 30%; --chart-4: 209 22% 49%; --chart-5: 39 70% 38%;
+    --logo-shell: 199 97% 32%; --logo-start: 0 0% 100%; --logo-end: 14 97% 65%;
+    --glass-alpha: 0.75; --glass-popover-alpha: 0.97; --glass-blur: 24px;
+    --glass-edge: 0 0% 100%; --glass-edge-alpha: 0.95; --glass-glow: 0 0% 100%; --glass-glow-alpha: 1; --glass-shadow: 203 60% 12%;
+    --glass-tint-1: 195 100% 78%; --glass-tint-2: 20 100% 85%; --glass-tint-3: 203 60% 82%;
   }
   .dark {
     color-scheme: dark;
-    --background: 224 54% 7%; --foreground: 220 60% 96%; --card: 224 45% 11%; --card-foreground: 220 60% 96%;
-    --primary: 222 83% 55%; --primary-foreground: 0 0% 100%; --secondary: 218 100% 83%; --secondary-foreground: 224 72% 13%;
-    --brand: 327 96% 78%; --brand-foreground: 224 72% 13%; --brand-ink: 327 96% 78%;
-    --muted: 223 34% 16%; --muted-foreground: 220 25% 73%; --border: 223 31% 24%; --ring: 218 100% 83%;
-    --popover: 224 42% 12%; --popover-foreground: 220 60% 96%; --accent: 223 40% 20%; --accent-foreground: 220 60% 96%;
-    --destructive: 0 75% 68%; --destructive-foreground: 224 54% 7%; --input: 223 30% 33%;
-    --chart-accent: 218 100% 83%;
-    --chart-1: 218 100% 76%; --chart-2: 327 90% 77%; --chart-3: 180 46% 65%; --chart-4: 220 32% 70%; --chart-5: 38 73% 70%;
-    --logo-shell: 218 100% 83%; --logo-start: 224 72% 13%; --logo-end: 326 70% 36%;
-    --glass-alpha: 0.82; --glass-popover-alpha: 0.98;
-    --glass-edge: 218 100% 83%; --glass-edge-alpha: 0.25; --glass-glow: 218 100% 91%; --glass-glow-alpha: 0.2; --glass-shadow: 224 80% 2%;
-    --glass-tint-1: 222 90% 33%; --glass-tint-2: 327 68% 29%; --glass-tint-3: 217 80% 23%;
+    --background: 203 67% 2%; --foreground: 195 30% 96%; --card: 205 30% 7%; --card-foreground: 195 30% 96%;
+    --primary: 199 98% 56%; --primary-foreground: 203 67% 2%; --secondary: 194 90% 78%; --secondary-foreground: 203 67% 2%;
+    --brand: 14 97% 65%; --brand-foreground: 203 67% 2%; --brand-ink: 18 100% 76%;
+    --muted: 205 24% 12%; --muted-foreground: 200 17% 70%; --border: 205 22% 21%; --ring: 194 90% 78%;
+    --popover: 205 28% 9%; --popover-foreground: 195 30% 96%; --accent: 203 35% 15%; --accent-foreground: 195 30% 96%;
+    --destructive: 0 75% 68%; --destructive-foreground: 203 67% 2%; --input: 205 20% 32%;
+    --chart-accent: 194 90% 78%;
+    --chart-1: 199 92% 61%; --chart-2: 18 95% 71%; --chart-3: 174 45% 63%; --chart-4: 209 24% 71%; --chart-5: 39 73% 70%;
+    --logo-shell: 199 98% 56%; --logo-start: 0 0% 100%; --logo-end: 14 97% 65%;
+    --glass-alpha: 0.84; --glass-popover-alpha: 0.98;
+    --glass-edge: 196 85% 83%; --glass-edge-alpha: 0.23; --glass-glow: 196 80% 92%; --glass-glow-alpha: 0.15; --glass-shadow: 203 67% 1%;
+    --glass-tint-1: 199 98% 26%; --glass-tint-2: 17 78% 26%; --glass-tint-3: 209 50% 17%;
   }
-  [data-style="glass"] { --background: 220 60% 95%; }
-  [data-style="glass"].dark { --background: 224 60% 8%; }
+  [data-style="glass"] { --background: 200 35% 94%; }
+  [data-style="glass"].dark { --background: 203 60% 3%; }
   /* Saydamlık efekti olmayan tarayıcıda yüzeyler okunabilir kalsın diye neredeyse opak çizilir. */
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     [data-style="glass"] { --glass-alpha: 1; --glass-popover-alpha: 1; }
@@ -81,14 +80,14 @@
   }
   /* Bütün panellerin ortak yüzeyi; Card bileşeni ve açılır menüler bunu kullanır. */
   .surface { @apply border border-border bg-card; box-shadow: 0 2px 4px -2px hsl(var(--brand-deep) / 0.04), 0 16px 48px -32px hsl(var(--brand-deep) / 0.16); }
-  .surface-accent { background-image: radial-gradient(ellipse at 0% 0%, hsl(var(--primary) / 0.08), transparent 65%), linear-gradient(135deg, transparent 65%, hsl(var(--brand-pink) / 0.08)); }
-  .dark .surface-accent { background-image: linear-gradient(135deg, hsl(var(--secondary) / 0.07), transparent 60%, hsl(var(--brand-pink) / 0.04)); }
+  .surface-accent { background-image: radial-gradient(ellipse at 0% 0%, hsl(var(--primary) / 0.08), transparent 65%), linear-gradient(135deg, transparent 65%, hsl(var(--brand-warm) / 0.08)); }
+  .dark .surface-accent { background-image: linear-gradient(135deg, hsl(var(--secondary) / 0.07), transparent 60%, hsl(var(--brand-warm) / 0.04)); }
   [data-style="glass"] .surface,
   [data-style="glass"] .popover-surface {
     border-color: hsl(var(--glass-edge) / var(--glass-edge-alpha));
     box-shadow: inset 0 1px 0 hsl(var(--glass-glow) / var(--glass-glow-alpha)), inset 0 -1px 0 hsl(var(--glass-glow) / 0.12), 0 22px 65px -32px hsl(var(--glass-shadow) / 0.38), 0 4px 14px -8px hsl(var(--glass-shadow) / 0.18);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(135%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(135%);
   }
   /* Opak kart gradyanları saydamlığı örtmesin; vurgu tonu ayrı ve hafif bir geçişle korunur. */
   [data-style="glass"] .surface { background-color: hsl(var(--card) / var(--glass-alpha)); background-image: linear-gradient(125deg, hsl(var(--glass-glow) / 0.22), transparent 45%, hsl(var(--glass-tint-2) / 0.055)); }
@@ -99,22 +98,29 @@
   [data-style="glass"] .dot-grid { opacity: 0; }
   /* İç içe yüzeyler dıştaki bulanıklığı tekrarlamaz; mobil GPU yükü sınırlı kalır. */
   [data-style="glass"] .surface .surface { -webkit-backdrop-filter: none; backdrop-filter: none; }
-  /* Ana marka panelleri iki modda da aynı mavi zemin ve okunabilir ters tokenları kullanır. */
+  /* Marka panelleri ve navigasyon aynı gece yüzeyini iki renk modunda da kullanır. */
+  .brand-inverse,
+  .brand-hero {
+    --foreground: 195 30% 96%; --card-foreground: 195 30% 96%; --muted-foreground: 200 18% 76%;
+    --primary: 199 98% 62%; --primary-foreground: 203 67% 2%; --secondary: 194 90% 78%; --secondary-foreground: 203 67% 2%;
+    --card: 205 30% 7%; --background: 203 67% 2%; --border: 205 22% 28%; --muted: 205 24% 12%;
+    --popover: 205 28% 9%; --popover-foreground: 195 30% 96%;
+    --logo-shell: 199 98% 56%; --logo-start: 0 0% 100%; --logo-end: 14 97% 65%;
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--background));
+  }
   .brand-hero,
   [data-style="glass"] .surface.brand-hero {
-    --foreground: 0 0% 100%; --card-foreground: 0 0% 100%; --muted-foreground: 220 65% 87%;
-    --primary: 327 96% 78%; --primary-foreground: 224 72% 13%; --secondary: 217 100% 88%;
-    --card: 222 76% 24%; --background: 224 72% 17%; --border: 220 40% 52%;
-    --logo-shell: 0 0% 100%; --logo-start: 222 88% 29%; --logo-end: 326 70% 36%;
-    color: hsl(var(--foreground));
-    border-color: hsl(var(--brand-deep) / 0.35);
-    background-color: hsl(var(--brand-deep));
-    background-image: radial-gradient(ellipse at 4% 0%, hsl(218 100% 58% / 0.52), transparent 60%), radial-gradient(ellipse at 110% 110%, hsl(var(--brand-pink) / 0.28), transparent 56%), linear-gradient(145deg, hsl(var(--brand-deep)), hsl(var(--brand-night)));
-    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.22), 0 24px 64px -32px hsl(var(--brand-deep) / 0.55);
+    border-color: hsl(199 80% 70% / 0.18);
+    background-color: hsl(var(--brand-night));
+    background-image: radial-gradient(ellipse 65% 85% at 48% 110%, hsl(199 98% 44% / 0.35), transparent 72%), radial-gradient(ellipse 35% 65% at 85% 110%, hsl(var(--brand-warm) / 0.2), transparent 75%);
+    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.08), 0 24px 64px -40px hsl(var(--brand-night) / 0.5);
   }
+  [data-style="glass"] .brand-hero,
   [data-style="glass"] .surface.brand-hero {
-    border-color: hsl(218 100% 88% / 0.45);
-    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.45), inset 0 -1px 0 hsl(var(--brand-pink) / 0.3), 0 28px 70px -30px hsl(var(--brand-deep) / 0.6);
+    border-color: hsl(196 85% 83% / 0.32);
+    background-image: radial-gradient(ellipse 65% 85% at 38% 105%, hsl(199 98% 44% / 0.57), transparent 72%), radial-gradient(ellipse 40% 60% at 80% 110%, hsl(var(--brand-warm) / 0.4), transparent 75%);
+    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.18), inset 0 -1px 0 hsl(199 98% 56% / 0.25), 0 28px 70px -35px hsl(var(--brand-night) / 0.6);
   }
   @media (prefers-reduced-transparency: reduce) {
     [data-style="glass"] .surface,
@@ -128,8 +134,8 @@
 }
 
 .ambient { position: absolute; border-radius: 9999px; filter: blur(90px); opacity: 0.24; }
-.ambient-one { left: -8rem; top: 4rem; height: 30rem; width: 30rem; background: hsl(218 100% 75%); }
-.ambient-two { right: -10rem; bottom: -8rem; height: 35rem; width: 35rem; background: hsl(var(--brand-pink)); opacity: 0.15; }
+.ambient-one { left: -8rem; top: 4rem; height: 30rem; width: 30rem; background: hsl(199 98% 56%); }
+.ambient-two { right: -10rem; bottom: -8rem; height: 35rem; width: 35rem; background: hsl(var(--brand-warm)); opacity: 0.15; }
 .dark .ambient-one { opacity: 0.1; }
 .dark .ambient-two { opacity: 0.26; }
 .dot-grid { background-image: radial-gradient(circle, hsl(var(--brand-deep) / 0.13) 1px, transparent 1px); background-size: 28px 28px; mask-image: linear-gradient(to bottom, black, transparent 88%); }

@@ -42,7 +42,7 @@ export function AppShell() {
       >
          {t("İçeriğe geç")} </a>
 
-      <aside className="popover-surface fixed inset-y-0 start-0 z-30 hidden w-72 border-e border-border/70 bg-card/85 px-5 py-6 backdrop-blur-xl glass:bg-card/45 glass:backdrop-saturate-150 lg:flex lg:flex-col">
+      <aside className="brand-inverse popover-surface fixed inset-y-0 start-0 z-30 hidden w-72 border-e border-border/70 bg-card/85 px-5 py-6 backdrop-blur-xl glass:bg-card/95 glass:backdrop-saturate-150 lg:flex lg:flex-col">
         <Link to="/app/new-analysis" className="flex items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" aria-label={t("Yeni analize git")}>
           <AnimatedLogo className="h-10 w-10" compact />
           <div>
@@ -103,7 +103,7 @@ export function AppShell() {
         </main>
       </div>
 
-      <nav className="popover-surface fixed inset-x-4 bottom-4 z-30 grid grid-cols-4 rounded-2xl border border-border/70 bg-card/95 p-1.5 shadow-xl backdrop-blur-xl glass:bg-card/65 glass:backdrop-saturate-150 lg:hidden" aria-label={t("Mobil navigasyon")}>
+      <nav className="brand-inverse popover-surface fixed inset-x-4 bottom-4 z-30 grid grid-cols-4 rounded-2xl border border-border/70 bg-card/95 p-1.5 shadow-xl backdrop-blur-xl glass:bg-card/95 glass:backdrop-saturate-150 lg:hidden" aria-label={t("Mobil navigasyon")}>
         {navigationItems.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}

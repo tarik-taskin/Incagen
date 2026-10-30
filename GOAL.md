@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-10-30 — Furkan / Codex: gece siyahı, elektrik mavisi ve turuncu arayüz
+
+- [x] Sahip: Furkan — Gece siyahı/elektrik mavisi/turuncu kimliğini merkezî palete uygula; ana sayfayı daha açık bir görsel hiyerarşiyle yeniden düzenle, çalışma alanı ve rapor yüzeylerini aynı kimliğe taşı. Liquid Glass, açık/koyu mod, altı dil ve erişilebilirlik korunmalı; iş mantığı ve yayın modu değişmemeli.
+
+Kabul: Yeni ana sayfa düzeni, duyarlı yerleşim, kontrast, klavye, azaltılmış hareket/saydamlık, grafik/legend eşliği ve mevcut kullanıcı akışları doğrulanmalı. Lint, birim testleri, derlemeler ve ilgili tarayıcı kontrolleri geçmeli; README görselleri yenilenmeli. Yayın AGENTS.md içindeki Git eşitliği, temiz ağaç, GitHub Quality ve Netlify dosya eşliği kontrollerine tabidir.
+
+Doğrulama: Lint, 103 uygulama + 104 Functions testi ve frontend/Auth önizleme derlemeleri geçti. Ana tarayıcı paketinde 77 senaryo geçti; platforma uygulanmayan mevcut 3 senaryo atlandı. Gece navigasyonuna eklenen dört görünüm kontrast kontrolü masaüstü/mobilde ayrıca 2/2 geçti; 4 entegrasyon kontrolü başarılı. Giriş/kayıt ve analiz/plan/ayarlar/geçmiş ekranları dört görünümde axe ile tarandı; mobil Arapça/Çince ve rapordan geri dönüş doğrulandı. 10 README görseli yenilendi, iki üretim bağımlılık denetimi 0 uyarı verdi. İlk açılış 308.143 gzip bayt; 400 KiB bütçesi, iş mantığı ve Auth-only yayın sınırı korundu.
+
 ### 2026-10-30 — Furkan / Codex: derin mavi, beyaz ve pembe tasarım sistemi
 
 - [x] Sahip: Furkan — Derin mavi/beyaz ana paleti ve ölçülü pembe vurguyu bütün ekranlara, marka işaretine ve grafiklere uygula; Liquid Glass yüzeylerini aynı kimlikle yenile. İş mantığı, veri, rotalar, kimlik doğrulama, taslak ve canlı yayın modu değişmemeli.
