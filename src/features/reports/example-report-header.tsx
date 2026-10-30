@@ -6,11 +6,12 @@ import { ThemeToggle } from "../../components/theme-toggle";
 import { Button } from "../../components/ui/button";
 import { t, useLocale } from "../../i18n/runtime";
 import { ExampleSwitch } from "./example-switch";
+import { ShareLinkButton } from "./share-link-button";
 
 export const reportContainer = "mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-10";
 
-// Her iki örneğin başlığını, kontrollerini ve sekmelerini aynı içerik ekseninde tutar.
-export function ExampleReportHeader({ active }: { active: "commercial" | "feedback" }) {
+// Her iki örneğin başlığını, kontrollerini, sekmelerini ve görünüm paylaşımını aynı içerik ekseninde tutar.
+export function ExampleReportHeader({ active, activeSection }: { active: "commercial" | "feedback"; activeSection?: string }) {
   useLocale();
   return <>
     <header className="popover-surface border-b border-border/60 bg-card/70">
@@ -22,6 +23,9 @@ export function ExampleReportHeader({ active }: { active: "commercial" | "feedba
         <div className="ms-auto flex min-w-0 max-w-full items-center gap-2 sm:gap-3"><LanguageSelector /><ThemeToggle /><Button asChild className="h-auto min-h-10 min-w-0 whitespace-normal rounded-xl"><Link to="/app/new-analysis">{t("Analize başla")}<ArrowRight className="ms-2 h-4 w-4 shrink-0 rtl:-scale-x-100" aria-hidden="true" /></Link></Button></div>
       </nav>
     </header>
-    <div className={`${reportContainer} pt-5`}><ExampleSwitch active={active} /></div>
+    <div className={`${reportContainer} flex flex-wrap items-center justify-between gap-3 pt-5`}>
+      <ExampleSwitch active={active} />
+      <ShareLinkButton activeSection={activeSection} />
+    </div>
   </>;
 }

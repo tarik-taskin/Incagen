@@ -992,5 +992,8 @@
   "Kaynakları ve okuma uyarılarını nerede bulurum?": "Kaynakları ve okuma uyarılarını nerede bulurum?",
   "Hazırlık özeti, belge kapsamını ve okuma uyarılarını birlikte gösterir. MIME, parça ve karakter sayıları gibi bilgiler Teknik ayrıntılar bölümündedir. Örnek raporlarda bir metrik, grafik değeri veya Kaynakları incele bağlantısı üzerinden ilgili belgeye ulaşabilirsiniz; özgün dosyayı indirip bulgunun dayanağını karşılaştırabilirsiniz.": "Hazırlık özeti, belge kapsamını ve okuma uyarılarını birlikte gösterir. MIME, parça ve karakter sayıları gibi bilgiler Teknik ayrıntılar bölümündedir. Örnek raporlarda bir metrik, grafik değeri veya Kaynakları incele bağlantısı üzerinden ilgili belgeye ulaşabilirsiniz; özgün dosyayı indirip bulgunun dayanağını karşılaştırabilirsiniz.",
   "Öneri:": "Öneri:",
-  "Önerilen başlığı kullan": "Önerilen başlığı kullan"
+  "Önerilen başlığı kullan": "Önerilen başlığı kullan",
+  "Bağlantıyı kopyala": "Bağlantıyı kopyala",
+  "Bağlantı kopyalandı": "Bağlantı kopyalandı",
+  "Bağlantıyı kopyalayın:": "Bağlantıyı kopyalayın:"
 }

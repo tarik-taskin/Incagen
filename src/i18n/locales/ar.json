@@ -992,5 +992,8 @@
   "Kaynakları ve okuma uyarılarını nerede bulurum?": "أين أجد المصادر وتنبيهات القراءة؟",
   "Hazırlık özeti, belge kapsamını ve okuma uyarılarını birlikte gösterir. MIME, parça ve karakter sayıları gibi bilgiler Teknik ayrıntılar bölümündedir. Örnek raporlarda bir metrik, grafik değeri veya Kaynakları incele bağlantısı üzerinden ilgili belgeye ulaşabilirsiniz; özgün dosyayı indirip bulgunun dayanağını karşılaştırabilirsiniz.": "يعرض ملخص التجهيز المستندات المشمولة وتنبيهات القراءة. افتح التفاصيل التقنية للاطلاع على أنواع MIME وعدد المقاطع والأحرف. في التقارير النموذجية، اختر مقياسًا أو قيمة في الرسم أو عرض المصادر لفتح المستند المرتبط. يمكنك تنزيل الملف الأصلي للتحقق من الأدلة التي يستند إليها الاستنتاج.",
   "Öneri:": "اقتراح:",
-  "Önerilen başlığı kullan": "استخدام العنوان المقترح"
+  "Önerilen başlığı kullan": "استخدام العنوان المقترح",
+  "Bağlantıyı kopyala": "نسخ الرابط",
+  "Bağlantı kopyalandı": "تم نسخ الرابط",
+  "Bağlantıyı kopyalayın:": "انسخ هذا الرابط:"
 }

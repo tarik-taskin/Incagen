@@ -992,5 +992,8 @@
   "Kaynakları ve okuma uyarılarını nerede bulurum?": "Where can I find sources and reading warnings?",
   "Hazırlık özeti, belge kapsamını ve okuma uyarılarını birlikte gösterir. MIME, parça ve karakter sayıları gibi bilgiler Teknik ayrıntılar bölümündedir. Örnek raporlarda bir metrik, grafik değeri veya Kaynakları incele bağlantısı üzerinden ilgili belgeye ulaşabilirsiniz; özgün dosyayı indirip bulgunun dayanağını karşılaştırabilirsiniz.": "The preparation summary shows which documents were included and any reading warnings. Open Technical details for MIME types, chunk counts and character counts. In sample reports, select a metric, a chart value or View sources to open the related document. Download the original file to check the evidence behind a finding.",
   "Öneri:": "Suggestion:",
-  "Önerilen başlığı kullan": "Use suggested title"
+  "Önerilen başlığı kullan": "Use suggested title",
+  "Bağlantıyı kopyala": "Copy link",
+  "Bağlantı kopyalandı": "Link copied",
+  "Bağlantıyı kopyalayın:": "Copy this link:"
 }

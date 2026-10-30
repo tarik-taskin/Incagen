@@ -182,3 +182,58 @@ test("Excel, sunum ve yapılandırılmış metin kaynakları özgün formatları
   }
   await accessibility(page);
 });
+
+test("örnek raporda bağlantıyı kopyala mevcut görünümü korur ve tarayıcı geçmişini bozmaz", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+
+  // 1. Ana sayfadan ticari örneğe geç
+  await page.goto("/");
+  await page.getByRole("link", { name: "Örnek raporu incele" }).click();
+  await expect(page).toHaveURL(/\/ornek-rapor$/);
+
+  // 2. Müşteri deneyimi örneğine geç
+  await page.getByRole("link", { name: "Müşteri deneyimi", exact: true }).click();
+  await expect(page).toHaveURL(/\/ornek-rapor\/musteri-deneyimi$/);
+
+  // Müşteri deneyiminde "Bağlantıyı kopyala" butonunu kontrol et ve tıkla
+  const feedbackCopyBtn = page.getByRole("button", { name: "Bağlantıyı kopyala" });
+  await expect(feedbackCopyBtn).toBeVisible();
+  await feedbackCopyBtn.click();
+  await expect(page.getByRole("status")).toHaveText("Bağlantı kopyalandı");
+  const feedbackClipboard = await page.evaluate(() => navigator.clipboard.readText());
+  expect(feedbackClipboard).toContain("/ornek-rapor/musteri-deneyimi");
+
+  // 3. Mevcut akışı doğrula: ana sayfa → ticari örnek → müşteri deneyimi → tarayıcı Geri → ana sayfa
+  await page.goBack();
+  await expect(page).toHaveURL(/\/$/);
+
+  // 4. İleri basınca müşteri deneyimine dönmeli
+  await page.goForward();
+  await expect(page).toHaveURL(/\/ornek-rapor\/musteri-deneyimi$/);
+
+  // 5. Ticari örneğe dön, dönem seç ve açık bölümle bağlantıyı kopyala
+  await page.getByRole("link", { name: "Ticari performans", exact: true }).click();
+  await expect(page).toHaveURL(/\/ornek-rapor$/);
+
+  const copyBtn = page.getByRole("button", { name: "Bağlantıyı kopyala" });
+  await expect(copyBtn).toBeVisible();
+
+  await page.getByRole("button", { name: "Son çeyrek", exact: true }).click();
+  await expect(page).toHaveURL(/period=q4/);
+
+  // Linkin güncel dönem parametresini aldığını bekle ve tıkla
+  const sectionLink = page.getByRole("link", { name: "Finansal detay", exact: true });
+  await expect(sectionLink).toHaveAttribute("href", /period=q4/);
+  await sectionLink.click();
+  await expect(page).toHaveURL(/period=q4.*#finansal-detay/);
+
+  await copyBtn.click();
+  await expect(page.getByRole("status")).toHaveText("Bağlantı kopyalandı");
+  const commercialClipboard = await page.evaluate(() => navigator.clipboard.readText());
+  expect(commercialClipboard).toContain("/ornek-rapor?period=q4#finansal-detay");
+
+  // 6. Paylaşılan adresi doğrudan yeni sayfada açınca aynı görünüm oluşmalı
+  await page.goto(commercialClipboard);
+  await expect(page.getByRole("button", { name: "Son çeyrek", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("table", { name: "Kanal performansı", exact: true })).toBeVisible();
+});

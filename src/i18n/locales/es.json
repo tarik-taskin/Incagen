@@ -992,5 +992,8 @@
   "Kaynakları ve okuma uyarılarını nerede bulurum?": "¿Dónde encuentro las fuentes y los avisos de lectura?",
   "Hazırlık özeti, belge kapsamını ve okuma uyarılarını birlikte gösterir. MIME, parça ve karakter sayıları gibi bilgiler Teknik ayrıntılar bölümündedir. Örnek raporlarda bir metrik, grafik değeri veya Kaynakları incele bağlantısı üzerinden ilgili belgeye ulaşabilirsiniz; özgün dosyayı indirip bulgunun dayanağını karşılaştırabilirsiniz.": "El resumen de preparación muestra los documentos incluidos y los avisos de lectura. Abre Detalles técnicos para ver tipos MIME y cantidades de fragmentos y caracteres. En los informes de ejemplo, selecciona una métrica, un valor del gráfico o Ver fuentes para abrir el documento relacionado. Descarga el archivo original para comprobar el fundamento de un hallazgo.",
   "Öneri:": "Sugerencia:",
-  "Önerilen başlığı kullan": "Usar título sugerido"
+  "Önerilen başlığı kullan": "Usar título sugerido",
+  "Bağlantıyı kopyala": "Copiar enlace",
+  "Bağlantı kopyalandı": "Enlace copiado",
+  "Bağlantıyı kopyalayın:": "Copie este enlace:"
 }

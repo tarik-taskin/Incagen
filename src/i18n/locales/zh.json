@@ -992,5 +992,8 @@
   "Kaynakları ve okuma uyarılarını nerede bulurum?": "在哪里查看来源和读取提示？",
   "Hazırlık özeti, belge kapsamını ve okuma uyarılarını birlikte gösterir. MIME, parça ve karakter sayıları gibi bilgiler Teknik ayrıntılar bölümündedir. Örnek raporlarda bir metrik, grafik değeri veya Kaynakları incele bağlantısı üzerinden ilgili belgeye ulaşabilirsiniz; özgün dosyayı indirip bulgunun dayanağını karşılaştırabilirsiniz.": "准备摘要会列出已纳入的文档及读取提示。在“技术详情”中可查看 MIME 类型、分块数和字符数。在示例报告中，选择指标、图表数值或“查看来源”，即可打开对应文档。你也可以下载原始文件，核对结论的依据。",
   "Öneri:": "建议：",
-  "Önerilen başlığı kullan": "使用建议标题"
+  "Önerilen başlığı kullan": "使用建议标题",
+  "Bağlantıyı kopyala": "复制链接",
+  "Bağlantı kopyalandı": "链接已复制",
+  "Bağlantıyı kopyalayın:": "复制此链接："
 }
