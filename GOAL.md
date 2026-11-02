@@ -9,14 +9,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ### 2026-11-02 — Furkan / Codex: canlı kabul ve ilk analiz bağlantıları
 
-- [~] Sahip: Furkan — Yayın arayüzünden sentetik PDF/DOCX/XLSX hazırlama, geçmiş, kaynak silme ve kullanıcı izolasyonu kabulünü tamamla; yalnız doğrulanınca Auth-only yayın sınırını kaldır.
+- [x] Sahip: Furkan — Yerel arayüz ve gerçek Netlify yayını üzerinden sentetik PDF/DOCX/XLSX hazırlama, geçmiş/yenileme, kaynak silme ve iki hesapla izolasyon kabulü tamamlandı. Kullanıcının açık onayıyla Auth-only sınırı kaldırıldı.
 - [x] Sahip: Furkan — Google girişinin normal tarayıcı kabulü kullanıcı tarafından doğrulandı. Otomasyon/hata ayıklama penceresinde dönüşün takılması ayrı sınır olarak kaydedildi; normal çalışan giriş kodu değiştirilmedi.
 - [x] Sahip: Furkan — Gemini backend adaptörü ve sınırlı bağlantı kontrolünü ekle; anahtar yalnız sunucuda saklansın ve son giriş kullanıcıya kalsın. Sahte sağlayıcı testleri ile gerçek ücretli çağrı kabulü açıkça ayrılsın; kullanıcı belgeleri bağlantı kontrolünde gönderilmesin.
 - [x] Sahip: Furkan — İzole Python ortamını ve PDF/Word/Excel/metin extraction temelini kur; kaynak hash/konumlarını koruyan örneklerle doğrula. Mevcut TypeScript hazırlama hattını ve sonuç sözleşmesini bozma; OCR ve üretim Python işçisi dağıtımını tamamlanmış sayma.
 
 Kabul: Eksik anahtarda güvenli hata, yetki/maliyet sınırları, zaman aşımı ve geçersiz sağlayıcı çıktısı test edilmeli. Python bağımlılıkları yeniden kurulabilir olmalı, sentetik extraction testleri geçmeli. Lint, birim, Functions/frontend derlemesi, entegrasyon ve tarayıcı kontrolleri başarılı olmalı; doğrulanan değişiklikler commit/push, main/furkan eşitlemesi ve Netlify yayınıyla teslim edilmeli. Gerçek Google hesabı veya Gemini anahtarı bekleyen kabul açık kalmalı.
 
-Ara doğrulama: 103 uygulama + 123 Functions testi, 15 Python extraction/sözleşme testi ve 5 emülatör entegrasyon kontrolü geçti. Canlı Firebase yerel arayüzden iki sentetik hesap ve PDF/DOCX/XLSX ile hazırlama → geçmiş/yenileme → erişim reddi → silme akışını geçti; hesaplar ile ham/türetilmiş artefaktların yokluğu metadata üzerinden doğrulandı. Kullanıcı, Auth-only sınırının üretimde kaldırılmasına açık onay verdi. Anahtar girilmedi; gerçek Gemini çağrısı yapılmadı. Üretim arayüzü kabulü ve son yayın kontrolü sürüyor.
+Doğrulama: 103 uygulama + 123 Functions testi, 15 Python extraction/sözleşme testi ve 5 emülatör entegrasyon kontrolü geçti. Yerel arayüzden ve sonra gerçek Netlify yayını üzerinden iki sentetik hesap ve PDF/DOCX/XLSX ile hazırlama → geçmiş/yenileme → erişim reddi → silme akışı geçti; Auth hesapları, Firestore kaydı ve ham/türetilmiş Storage artefaktlarının yokluğu metadata üzerinden doğrulandı. 69 tarayıcı senaryosu tamamlandı (bir mobil pano senaryosu tekrarda geçti), mevcut 3 platform senaryosu atlandı; ilgili pano kontrolü üç bağımsız masaüstü/mobil turda ayrıca 6/6 geçti. Standart/Functions ve canlı derlemeler başarılı; SDK/anahtar frontend paketine girmiyor. Gemini teşhisi canlıda oturumsuz ve normal kullanıcı erişimini reddetti. Kullanıcının açık onayıyla Auth-only sınırı kaldırıldı. Anahtar girilmedi; gerçek Gemini çağrısı yapılmadı.
 
 ### 2026-10-30 — Furkan / Codex: özgün temaya dönüş
 
@@ -44,8 +44,8 @@ Doğrulama: Lint, 103 uygulama + 104 Functions testi, frontend/Auth önizleme de
 
 ### 2026-10-30 — Furkan / Antigravity: canlı belge hazırlığı, Google girişi, başlık önerisi ve rapor paylaşımı
 
-- [~] Sahip: Furkan — Canlı belge hazırlama akışını doğrula: Canlı Firebase backend'inde (`incagen-eeef4`) sentetik PDF, DOCX ve XLSX ile doğrudan backend çağrısı akışı (giriş → çalışma oluşturma → yükleme → hazırlama → geçmiş → silme → kota/idempotency) doğrulandı; yayınlanan web arayüzünden tarayıcı uçtan uca kabulü tamamlanana kadar canlıda Auth-only koruması (`VITE_AUTH_ONLY_PREVIEW=true`) güvenli şekilde açık tutuldu.
-- [~] Sahip: Furkan — Google ile gerçek girişin canlı kabulü: Firebase Identity Toolkit REST API üzerinden Google OAuth sağlayıcısının aktifliği ve yetkili alan adları (`incagen.netlify.app`, `localhost:5173`) doğrulandı (200 OK); sağlayıcı/yapılandırma kontrolü geçti, gerçek kullanıcı hesabı kabulü bekliyor.
+- [x] Sahip: Furkan — Canlı belge hazırlama akışını doğrula: Canlı Firebase backend'inde (`incagen-eeef4`) sentetik PDF, DOCX ve XLSX ile doğrudan backend çağrısı akışı (giriş → çalışma oluşturma → yükleme → hazırlama → geçmiş → silme → kota/idempotency) doğrulandı; yayın arayüzü kabulü 2 Kasım teslimatında tamamlandı; kullanıcının açık onayıyla Auth-only sınırı kaldırıldı.
+- [x] Sahip: Furkan — Google ile gerçek girişin canlı kabulü: Firebase Identity Toolkit REST API üzerinden Google OAuth sağlayıcısının aktifliği ve yetkili alan adları (`incagen.netlify.app`, `localhost:5173`) doğrulandı (200 OK); sağlayıcı/yapılandırma kontrolü geçti; normal tarayıcı kabulü 2 Kasım tarihinde kullanıcı tarafından doğrulandı, otomasyon sınırı ayrı kaydedildi.
 - [x] Sahip: Furkan — Analiz başlığına ilk seçilen dosya adından sade, okunabilir başlık önerisi ekle: uzantı temizleme, ayraç/boşluk düzenleme, kullanıcı metnini ezmeme, tek tıkla kabul kontrolü, altı dilde doğal metinler ve birim/bileşen testleri.
 - [x] Sahip: Furkan — Örnek raporun mevcut görünümünü paylaş ("Bağlantıyı kopyala"): ticari ve müşteri deneyimi raporlarında rapor türü, seçili dönem ve aktif açık bölüm çapasını URL'de koru; kopyalama geri bildirimi ve fallback sun, tarayıcı geçmişini bozma, e2e/birim testleriyle doğrula.
 
@@ -534,7 +534,7 @@ Durum: [~]
 - [x] Sahip: Furkan — GitHub Actions üzerinde lint, birim/bileşen testi, build, masaüstü/mobil tarayıcı ve erişilebilirlik kontrolleri.
 - [x] Sahip: Furkan — Günlük branch/main eşitleme ve koşullu PR çalışma düzenini belgele.
 - [x] Sahip: Tarık — Buluta kapalı demo emülatörleri ve güvenli environment şablonu.
-- [~] Sahip: Tarık — Gerçek dev/prod Firebase kaynakları ve bulut güvenlik doğrulaması. Tek canlı proje `incagen-eeef4` [2026-10-27'de dağıtıldı](#2026-10-27--tarık--claude-canlı-firebase-backend-kurulumu); ayrı dev/prod kararı ve iki hesapla canlı izolasyon doğrulaması kaldı.
+- [~] Sahip: Tarık — Gerçek dev/prod Firebase kaynakları ve bulut güvenlik doğrulaması. Tek canlı proje `incagen-eeef4` [2026-10-27'de dağıtıldı](#2026-10-27--tarık--claude-canlı-firebase-backend-kurulumu); iki hesapla canlı izolasyon 2 Kasım kabulünde doğrulandı; ayrı dev/prod kararı kaldı.
 
 Kapanış: görevler incelenmiş; CI kontrolleri başarılı; repoda sır veya müşteri verisi yok.
 
