@@ -1,5 +1,6 @@
 import { t, useLocale } from "../i18n/runtime";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { ShieldCheck, Sparkles } from "lucide-react";
 import { AUTH_TRANSITION_DURATION_MS, selectAuthTransitionMessages } from "../features/auth/auth-transition-content";
 import { AnimatedLogo } from "./animated-logo";
@@ -39,8 +40,15 @@ export function AuthSuccessTransition({ onComplete }: { onComplete: () => void }
     };
   }, [messages.length]);
 
-  return (
-    <div className="fixed inset-0 z-[140] flex min-h-screen items-center justify-center overflow-hidden bg-background/95 px-6 text-foreground backdrop-blur-2xl" role="status" aria-live="polite" aria-atomic="true">
+  const content = (
+    <div
+      className="fixed inset-0 z-[140] flex min-h-screen items-center justify-center overflow-hidden bg-background/95 px-6 text-foreground backdrop-blur-2xl"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      onClick={(event) => event.stopPropagation()}
+      onPointerDown={(event) => event.stopPropagation()}
+    >
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
         <div className="ambient ambient-one" />
         <div className="ambient ambient-two" />
@@ -63,4 +71,6 @@ export function AuthSuccessTransition({ onComplete }: { onComplete: () => void }
       </div>
     </div>
   );
+
+  return typeof document !== "undefined" ? createPortal(content, document.body) : content;
 }

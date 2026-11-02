@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-11-02 — Furkan / Antigravity: kimlik geçiş ekranı etkileşim ve dış tıklama düzeltmesi
+
+- [x] Sahip: Furkan — Google veya e-posta ile giriş onaylandığında arka plandaki formu ve butonları DOM'dan kaldır; geçiş ekranında (`AuthSuccessTransition`) boş alanda fare gezinirken alttaki butonun ("Google ile giriş yap") hover olmasını ve boş alana tıklayınca dış tıklama (`useOutsideDismiss`) yüzünden modalın kapanıp ana ekrana atmasını önle. Geçiş ekranını tam ekran portala taşı; geçiş sırasında dış tıklama ve Escape ile modal kapanmasını devre dışı bırak.
+
+Kabul: Başarılı giriş sonrasında form unmount olmalı, arka plandaki hiçbir buton veya tooltip fare etkileşimi almamalı. Geçiş ekranında boşluğa tıklamak veya Escape tuşuna basmak modalı kapatmamalı; ilerleme çubuğu ve hazırlık mesajları tamamlanınca doğrudan hedef çalışma alanına (`/app/new-analysis`) yönlenmeli. Lint, birim testleri, derleme ve CI kontrolleri geçmeli; yerel/uzak main/furkan eşitlenmeli ve Netlify yayını güncellenmeli.
+
+Doğrulama: `AuthCard` başarılı girişte formu unmount ederek doğrudan `AuthSuccessTransition` döner. `AuthSuccessTransition` `createPortal(..., document.body)` ile tam ekrana taşındı ve olay yayılımı durduruldu. `AuthModal` geçiş durumunda `useOutsideDismiss`'i devre dışı bırakır (`open && !authenticated`). 104 frontend + 123 Functions testi geçti; `auth-modal.test.tsx` ve `auth-card.test.tsx` geçiş sırasındaki tıklama korumasını ve form unmount davranışını doğrular. Lint ve iki derleme başarılı.
+
 ### 2026-11-02 — Furkan / Codex: canlı kabul ve ilk analiz bağlantıları
 
 - [x] Sahip: Furkan — Kullanıcının Secret Manager'a girdiği Gemini anahtarının backend servis hesabıyla erişimini ve canlı `gemini-3.8-flash` bağlantısını sabit sentetik bir çağrıyla doğrula; anahtarı Git, frontend ve Netlify'dan uzak tut, geçici test yetkilerini temizle.

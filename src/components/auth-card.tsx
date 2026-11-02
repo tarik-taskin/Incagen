@@ -16,6 +16,7 @@ interface AuthCardProps {
   onAuthenticated: () => void;
   onClose: () => void;
   titleId: string;
+  onAuthenticatedChange?: (authenticated: boolean) => void;
 }
 
 interface PasswordFieldProps {
@@ -109,7 +110,7 @@ function SocialOption({ action, disabled = false, icon, name, onSelect, pending 
 }
 
 // Firebase kimlik işlemlerini doğrulamalı ve iki modlu modal formunda yürütür.
-export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
+export function AuthCard({ onAuthenticated, onClose, titleId, onAuthenticatedChange }: AuthCardProps) {
   useLocale();
   const { error: configError } = useAuth();
   const [register, setRegister] = useState(false);
@@ -179,6 +180,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
       const operation = register ? createUserWithEmailAndPassword : signInWithEmailAndPassword;
       await operation(getAuthServices().auth, email.trim(), password);
       setAuthenticated(true);
+      onAuthenticatedChange?.(true);
     } catch (submissionError) {
       setError(userError(submissionError));
     } finally {
@@ -195,6 +197,7 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
     try {
       await signInWithPopup(getAuthServices().auth, createGoogleProvider());
       setAuthenticated(true);
+      onAuthenticatedChange?.(true);
     } catch (googleError) {
       if (!isDismissedPopup(googleError)) setError(userError(googleError));
     } finally {
@@ -204,8 +207,11 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
 
   const action = register ? "kayıt ol" : "giriş yap";
 
+  if (authenticated) {
+    return <AuthSuccessTransition onComplete={onAuthenticated} />;
+  }
+
   return (
-    <>
     <section className="surface relative w-full overflow-hidden rounded-[2rem] border border-border/80 bg-card text-card-foreground shadow-[0_30px_100px_-32px_rgba(50,14,59,0.65)]" aria-labelledby={titleId}>
       <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-secondary via-primary to-[#ff5978]" aria-hidden="true" />
       <div className="relative p-5 sm:p-8">
@@ -357,7 +363,5 @@ export function AuthCard({ onAuthenticated, onClose, titleId }: AuthCardProps) {
         </p>
       </div>
     </section>
-    {authenticated && <AuthSuccessTransition onComplete={onAuthenticated} />}
-    </>
   );
 }

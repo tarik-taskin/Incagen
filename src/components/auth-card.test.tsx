@@ -88,6 +88,8 @@ describe("Kimlik kartı", () => {
     expect(auth).toEqual({ name: "test-auth" });
     expect(provider).toMatchObject({ parameters: { prompt: "select_account" } });
     expect(await screen.findByRole("status")).toHaveTextContent("Çalışma alanınıza geçiş yapılıyor");
+    expect(screen.queryByRole("button", { name: "Google ile giriş yap" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("E-posta", { exact: true })).not.toBeInTheDocument();
   });
 
   it("kapatılan Google penceresini hata saymaz, başka yöntemle kayıtlı e-postayı açıklar", async () => {

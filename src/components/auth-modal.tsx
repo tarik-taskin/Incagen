@@ -1,6 +1,6 @@
 import { useOutsideDismiss } from "../hooks/use-outside-dismiss";
 import { hasOpenPopover } from "../lib/popover-layers";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AuthCard } from "./auth-card";
 
@@ -12,8 +12,19 @@ interface AuthModalProps {
 
 // Landing içeriğini yerinde tutarak giriş ve kayıt kartını en üst katmanda sunar.
 export function AuthModal({ open, onAuthenticated, onClose }: AuthModalProps) {
+  const [authenticated, setAuthenticated] = useState(false);
+  const [prevOpen, setPrevOpen] = useState(open);
   const dialogRef = useRef<HTMLDivElement>(null);
-  useOutsideDismiss(dialogRef, onClose, open);
+
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+    if (!open && authenticated) {
+      setAuthenticated(false);
+    }
+  }
+
+  // Giriş onaylanıp geçiş ekranı başladığında dış tıklama ve kapatma devre dışı bırakılır.
+  useOutsideDismiss(dialogRef, onClose, open && !authenticated);
 
   useEffect(() => {
     if (!open) return;
@@ -22,9 +33,9 @@ export function AuthModal({ open, onAuthenticated, onClose }: AuthModalProps) {
     const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     document.body.style.overflow = "hidden";
 
-    // Escape ile kapatır; Tab odağını modalın etkileşimli öğeleri içinde tutar. Açık dil listesi varsa Escape yalnız onu kapatır.
+    // Escape ile kapatır; Tab odağını modalın etkileşimli öğeleri içinde tutar. Açık dil listesi veya aktif geçiş varsa Escape kapatmaz.
     function handleDialogKeyboard(event: KeyboardEvent) {
-      if (hasOpenPopover()) return;
+      if (authenticated || hasOpenPopover()) return;
       if (event.key === "Escape") {
         onClose();
         return;
@@ -51,16 +62,27 @@ export function AuthModal({ open, onAuthenticated, onClose }: AuthModalProps) {
       document.removeEventListener("keydown", handleDialogKeyboard);
       previouslyFocused?.focus();
     };
-  }, [onClose, open]);
+  }, [authenticated, onClose, open]);
 
   if (!open) return null;
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-foreground/45 p-3 backdrop-blur-lg sm:p-6"
+      className={`fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto ${authenticated ? "p-0" : "bg-foreground/45 p-3 backdrop-blur-lg sm:p-6"}`}
     >
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="landing-auth-title" className="my-auto w-full max-w-lg py-3">
-        <AuthCard titleId="landing-auth-title" onAuthenticated={onAuthenticated} onClose={onClose} />
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={authenticated ? undefined : "landing-auth-title"}
+        className={authenticated ? "w-full" : "my-auto w-full max-w-lg py-3"}
+      >
+        <AuthCard
+          titleId="landing-auth-title"
+          onAuthenticated={onAuthenticated}
+          onClose={onClose}
+          onAuthenticatedChange={setAuthenticated}
+        />
       </div>
     </div>,
     document.body,
