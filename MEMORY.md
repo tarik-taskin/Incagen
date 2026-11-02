@@ -5,7 +5,7 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 ## Kalıcı bağlam
 
 - React, TypeScript, Vite, React Router, Tailwind, shadcn/ui yaklaşımı, Anime.js ve rapor rotasında Motion/ECharts.
-- `npm run dev` ve canlı Netlify canlı Firebase projesini (`incagen-eeef4`) kullanır; tam sentetik Auth/Firestore/Storage/Functions akışı `npm run dev:emulator` ile çalışır. Gemini SDK adaptörü ve sınırlı geliştirici kontrolü backend'dedir; anahtar/gerçek sağlayıcı kabulü ve kullanıcı analiz hattına bağlama bekler.
+- `npm run dev` ve canlı Netlify canlı Firebase projesini (`incagen-eeef4`) kullanır; tam sentetik Auth/Firestore/Storage/Functions akışı `npm run dev:emulator` ile çalışır. Gemini anahtarı doğrudan Secret Manager'dadır; sınırlı geliştirici kontrolüyle gerçek `gemini-3.8-flash` bağlantısı 2 Kasım'da doğrulandı. Kullanıcı analiz hattına bağlama ve analiz kalitesi kabulü bekler; [backend rehberi](docs/GEMINI.md).
 - Ana renkler `#4c2a85`, `#bcedf6`; yardımcı renkler `#320E3B`, `#ff0035`, `#DDFBD2`.
 - Renk denemeleri kullanıcı talebiyle kaldırıldı; özgün mor palet ve Klasik/Glass korunur. Ana sayfada ortalanmış başlık ve üç adımlı yatay yerleşim kullanılır; ürün davranışı değişmez.
 - Çalışma kuralları AGENTS.md, teknik kurallar RULES.md, davranış/limitler FLOW.md içindedir.

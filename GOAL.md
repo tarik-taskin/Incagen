@@ -9,6 +9,7 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ### 2026-11-02 — Furkan / Codex: canlı kabul ve ilk analiz bağlantıları
 
+- [x] Sahip: Furkan — Kullanıcının Secret Manager'a girdiği Gemini anahtarının backend servis hesabıyla erişimini ve canlı `gemini-3.8-flash` bağlantısını sabit sentetik bir çağrıyla doğrula; anahtarı Git, frontend ve Netlify'dan uzak tut, geçici test yetkilerini temizle.
 - [x] Sahip: Furkan — Yerel arayüz ve gerçek Netlify yayını üzerinden sentetik PDF/DOCX/XLSX hazırlama, geçmiş/yenileme, kaynak silme ve iki hesapla izolasyon kabulü tamamlandı. Kullanıcının açık onayıyla Auth-only sınırı kaldırıldı.
 - [x] Sahip: Furkan — Google girişinin normal tarayıcı kabulü kullanıcı tarafından doğrulandı. Otomasyon/hata ayıklama penceresinde dönüşün takılması ayrı sınır olarak kaydedildi; normal çalışan giriş kodu değiştirilmedi.
 - [x] Sahip: Furkan — Gemini backend adaptörü ve sınırlı bağlantı kontrolünü ekle; anahtar yalnız sunucuda saklansın ve son giriş kullanıcıya kalsın. Sahte sağlayıcı testleri ile gerçek ücretli çağrı kabulü açıkça ayrılsın; kullanıcı belgeleri bağlantı kontrolünde gönderilmesin.
@@ -17,6 +18,8 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 Kabul: Eksik anahtarda güvenli hata, yetki/maliyet sınırları, zaman aşımı ve geçersiz sağlayıcı çıktısı test edilmeli. Python bağımlılıkları yeniden kurulabilir olmalı, sentetik extraction testleri geçmeli. Lint, birim, Functions/frontend derlemesi, entegrasyon ve tarayıcı kontrolleri başarılı olmalı; doğrulanan değişiklikler commit/push, main/furkan eşitlemesi ve Netlify yayınıyla teslim edilmeli. Gerçek Google hesabı veya Gemini anahtarı bekleyen kabul açık kalmalı.
 
 Doğrulama: 103 uygulama + 123 Functions testi, 15 Python extraction/sözleşme testi ve 5 emülatör entegrasyon kontrolü geçti. Yerel arayüzden ve sonra gerçek Netlify yayını üzerinden iki sentetik hesap ve PDF/DOCX/XLSX ile hazırlama → geçmiş/yenileme → erişim reddi → silme akışı geçti; Auth hesapları, Firestore kaydı ve ham/türetilmiş Storage artefaktlarının yokluğu metadata üzerinden doğrulandı. 69 tarayıcı senaryosu tamamlandı (bir mobil pano senaryosu tekrarda geçti), mevcut 3 platform senaryosu atlandı; ilgili pano kontrolü üç bağımsız masaüstü/mobil turda ayrıca 6/6 geçti. Standart/Functions ve canlı derlemeler başarılı; SDK/anahtar frontend paketine girmiyor. Gemini teşhisi canlıda oturumsuz ve normal kullanıcı erişimini reddetti. Kullanıcının açık onayıyla Auth-only sınırı kaldırıldı. Anahtar girilmedi; gerçek Gemini çağrısı yapılmadı.
+
+Sonraki canlı bağlantı kabulü (2 Kasım): Kullanıcı anahtarı doğrudan Secret Manager'a girdi. Tek secret kapsamındaki okuma rolü gerçek Functions servis hesabına verildi; secret herkese açık değil. Geçici sentetik geliştirici hesabıyla gerçek backend → Secret Manager → `gemini-3.8-flash` çağrısı 200/`ok` döndü (10,3 saniye); oturumsuz 401, normal kullanıcı 403, serbest prompt 400 ve hızlı tekrar 429 doğrulandı. Anahtar değeri yerel teste indirilmedi. Test hesabı, claim, oturumlar ve kişisel teşhis kaydı temizlendi; proje günlük sayacı doğru biçimde korundu. Kullanıcı belgeleriyle otomatik AI analizi ve analiz kalitesi kabulü halen sonraki aşamadır. [Ayrıntılar](docs/GEMINI.md).
 
 ### 2026-10-30 — Furkan / Codex: özgün temaya dönüş
 
