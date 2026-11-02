@@ -93,3 +93,13 @@ Stil değişikliğinde iki mod ve iki görünüm, mobil taşma, klavye odağı v
 ```bash
 node scripts/build-feedback-example.cjs --check
 ```
+
+## Analiz bağlantıları ve canlı kabul
+
+- `npm run test:python`: hash kilitli Python ortamında extraction ve mevcut TypeScript kaynak sözleşmesi kabulü. Önce `npm run build:functions` çalıştırılır. [Kurulum ve kapsam](../python/README.md).
+- Gemini adaptörünün birim testleri sağlayıcıyı taklit eder; anahtar veya gerçek model çağrısı kullanmaz. `integration/gemini.test.mjs` geliştirici claim'ini, eksik anahtarı ve atomik maliyet sınırını yalnız `demo-incagen` üzerinde doğrular. Gerçek kısa bağlantı kontrolü ayrı `npm run gemini:check` komutudur; [anahtar kurulumu](GEMINI.md).
+- `INCAGEN_CLOUD_ACCEPTANCE=1 INCAGEN_ACCEPTANCE_URL=http://127.0.0.1:4177 npm run test:cloud`, yalnız açık opt-in ile canlı `incagen-eeef4` projesini kullanır. Yerel sunucu `VITE_AUTH_ONLY_PREVIEW=false npm run dev -- --host 127.0.0.1 --port 4177` ile açılır. Bu komut herkese açık yayın yapmaz. Onaylı üretim yayını sonrasında URL `https://incagen.netlify.app` olabilir.
+- Canlı kabul testi UUID içeren iki sentetik hesap ve küçük PDF/DOCX/XLSX belgeleri oluşturur. Arayüzden hazırlama, yenileme, geçmişten açma ve silme; bağımsız hesapla Firestore/Storage/Functions erişim reddi test edilir. Yalnız oluşturduğu hesaplar `finally` içinde temizlenir. CI canlı teste girmez; iz/kimlik bilgisi dosyası kaydetmez.
+- Google'ın normal tarayıcıdaki gerçek hesap kabulü ile otomasyon/hata ayıklama oturumu ayrı tutulur. Kullanıcının normal tarayıcıda doğruladığı kabul, otomatik uçtan uca kanıt olarak gösterilmez.
+
+2 Kasım 2026 üretim denetiminde kök paket ağacı 0 uyarı, Functions ağacı 9 orta önem kaydı verdi; yüksek/kritik kayıt yok. Orta kayıtlar Office arşivleme zincirindeki `glob`/`minimatch` ve bir `google-gax` alt zincirine aittir. CI eşiği değiştirilmedi; uyumsuz Office ana sürümü düşürme veya zorlanmış override uygulanmadı. Önceki 29 Ekim 0 uyarı kaydı kendi tarihindeki durumdur.

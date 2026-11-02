@@ -18,6 +18,8 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@google-cloud/secret-manager": "^7.2.0",
+    "@google/genai": "^2.32.0",
     "csv-parse": "^7.0.2",
     "exceljs": "^4.4.0",
     "fast-xml-parser": "^5.11.1",

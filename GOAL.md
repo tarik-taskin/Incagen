@@ -7,6 +7,17 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
 
+### 2026-11-02 — Furkan / Codex: canlı kabul ve ilk analiz bağlantıları
+
+- [~] Sahip: Furkan — Yayın arayüzünden sentetik PDF/DOCX/XLSX hazırlama, geçmiş, kaynak silme ve kullanıcı izolasyonu kabulünü tamamla; yalnız doğrulanınca Auth-only yayın sınırını kaldır.
+- [x] Sahip: Furkan — Google girişinin normal tarayıcı kabulü kullanıcı tarafından doğrulandı. Otomasyon/hata ayıklama penceresinde dönüşün takılması ayrı sınır olarak kaydedildi; normal çalışan giriş kodu değiştirilmedi.
+- [x] Sahip: Furkan — Gemini backend adaptörü ve sınırlı bağlantı kontrolünü ekle; anahtar yalnız sunucuda saklansın ve son giriş kullanıcıya kalsın. Sahte sağlayıcı testleri ile gerçek ücretli çağrı kabulü açıkça ayrılsın; kullanıcı belgeleri bağlantı kontrolünde gönderilmesin.
+- [x] Sahip: Furkan — İzole Python ortamını ve PDF/Word/Excel/metin extraction temelini kur; kaynak hash/konumlarını koruyan örneklerle doğrula. Mevcut TypeScript hazırlama hattını ve sonuç sözleşmesini bozma; OCR ve üretim Python işçisi dağıtımını tamamlanmış sayma.
+
+Kabul: Eksik anahtarda güvenli hata, yetki/maliyet sınırları, zaman aşımı ve geçersiz sağlayıcı çıktısı test edilmeli. Python bağımlılıkları yeniden kurulabilir olmalı, sentetik extraction testleri geçmeli. Lint, birim, Functions/frontend derlemesi, entegrasyon ve tarayıcı kontrolleri başarılı olmalı; doğrulanan değişiklikler commit/push, main/furkan eşitlemesi ve Netlify yayınıyla teslim edilmeli. Gerçek Google hesabı veya Gemini anahtarı bekleyen kabul açık kalmalı.
+
+Ara doğrulama: 103 uygulama + 123 Functions testi, 15 Python extraction/sözleşme testi ve 5 emülatör entegrasyon kontrolü geçti. Canlı Firebase yerel arayüzden iki sentetik hesap ve PDF/DOCX/XLSX ile hazırlama → geçmiş/yenileme → erişim reddi → silme akışını geçti; hesaplar ile ham/türetilmiş artefaktların yokluğu metadata üzerinden doğrulandı. Kullanıcı, Auth-only sınırının üretimde kaldırılmasına açık onay verdi. Anahtar girilmedi; gerçek Gemini çağrısı yapılmadı. Üretim arayüzü kabulü ve son yayın kontrolü sürüyor.
+
 ### 2026-10-30 — Furkan / Codex: özgün temaya dönüş
 
 - [x] Sahip: Furkan — İki renk denemesini kaldır; özgün mor paleti, logo, grafik ve Klasik/Glass yüzeylerini geri getir. Kullanıcının beğendiği ortalanmış ana sayfa yerleşimi ve yatay üç adım korunmalı; ürün akışı ve iş mantığı değişmemeli.

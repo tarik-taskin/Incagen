@@ -37,3 +37,11 @@ functions/lib/
 
 # Local Netlify folder
 .netlify
+
+# Isolated Python tools, runtime and environments
+.tools/
+.python-runtime/
+.venv/
+**/__pycache__/
+*.pyc
+.pytest_cache/

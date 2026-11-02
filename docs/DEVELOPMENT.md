@@ -40,6 +40,8 @@ Analiz başlığı, çalışma alanı ve hedef ortak alan kurallarına göre do�
 
 Normalize içerik kullanıcıya kapalı Storage alanında tutulur; Firestore kaynak ve hazırlık özetini taşır. İstemci sonuç, kota veya hazırlık durumunu yazmaz. Sürümlü AI çıktısı ancak [sonuç doğrulayıcısından](AI-RESULTS.md) geçerse sonraki hatta kullanılabilir; bu modül model çağrısı veya otomatik yayın yapmaz.
 
+Gemini anahtar/bağlantı kurulumu [Gemini rehberinde](GEMINI.md), izole Python kurulumu ve extraction sınırları [Python rehberindedir](../python/README.md). Anahtar frontend değişkenine konmaz.
+
 ## Kalite kapısı
 
 ```bash

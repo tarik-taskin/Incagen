@@ -47,6 +47,13 @@ jobs:
       - name: Run unit and component tests
         run: npm run test:run
 
+      - name: Validate Python extraction and source contract
+        run: |
+          python3 -m venv python/.venv
+          python/.venv/bin/python -m pip install --require-hashes -r python/requirements.lock
+          npm run build:functions
+          npm run test:python
+
       - name: Build production bundle
         run: npm run build
 

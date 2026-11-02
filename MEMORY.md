@@ -5,7 +5,7 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 ## Kalıcı bağlam
 
 - React, TypeScript, Vite, React Router, Tailwind, shadcn/ui yaklaşımı, Anime.js ve rapor rotasında Motion/ECharts.
-- `npm run dev` ve canlı Netlify canlı Firebase projesini (`incagen-eeef4`) kullanır; tam sentetik Auth/Firestore/Storage/Functions akışı `npm run dev:emulator` ile çalışır. Gemini entegrasyonu gelecekteki iştir.
+- `npm run dev` ve canlı Netlify canlı Firebase projesini (`incagen-eeef4`) kullanır; tam sentetik Auth/Firestore/Storage/Functions akışı `npm run dev:emulator` ile çalışır. Gemini SDK adaptörü ve sınırlı geliştirici kontrolü backend'dedir; anahtar/gerçek sağlayıcı kabulü ve kullanıcı analiz hattına bağlama bekler.
 - Ana renkler `#4c2a85`, `#bcedf6`; yardımcı renkler `#320E3B`, `#ff0035`, `#DDFBD2`.
 - Renk denemeleri kullanıcı talebiyle kaldırıldı; özgün mor palet ve Klasik/Glass korunur. Ana sayfada ortalanmış başlık ve üç adımlı yatay yerleşim kullanılır; ürün davranışı değişmez.
 - Çalışma kuralları AGENTS.md, teknik kurallar RULES.md, davranış/limitler FLOW.md içindedir.
@@ -27,6 +27,8 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 - Örnek raporlar ortak genişlik/başlık kullanır; landing doğrudan etkileşimli örneğe bağlanır. Yeni analiz tüm girişlerde baştan açılır, rapor bölüm adresleri korunur. Glass yüzeyleri görünür renk derinliğiyle ayrışır; destek beş konu/beş soru sunar. Ayrıntılar [FLOW](FLOW.md#dil-ve-rapor-deneyimi) içindedir.
 - Hazırlama oluşturma/aktarım/işleme aşamalarını ayırır; yüzde yalnız gerçek aktarıma aittir. Native ayrılma uyarısı yerel dosya/iş riskinde bağlıdır; çevrimdışı notu otomatik işlem başlatmaz. Sonuçta kapsam/uyarılar görünür, teknik değerler açılır ayrıntıdadır. Davranış ve tarayıcı sınırları [FLOW](FLOW.md#hazırlama-sırasında-kullanıcı-kontrolü) içindedir.
 - Kısmi hazırlıkta belge hataları açık kapsam onayı ister; onay token’ı sunucuda doğrulanır, beklerken kota iade edilir ve geçerli alt küme tek hak tüketir. Türetilmiş dosyalar deneme bazında ayrılır.
+
+- Python 3.12 extraction ortamı, hash kilitli PDF/Word/Excel/metin paketleri ve mevcut kaynak sözleşmesine geçen sentetik testler [python rehberindedir](python/README.md). Cloud Run/OCR ve otomatik kullanıcı analizi açılmadı.
 
 ## Tamamlanan özellikler
 

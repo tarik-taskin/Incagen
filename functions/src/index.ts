@@ -224,3 +224,6 @@ export const deleteAccount = onCall(options, async request => {
   await userRef.delete();
   return { deleted: true };
 });
+
+// Gemini yalnız sunucuda, geliştiriciye özel sınırlı bağlantı kontrolüyle açılır.
+export { checkGemini } from "./analysis/gemini-diagnostic";
