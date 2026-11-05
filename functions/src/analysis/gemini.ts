@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import type { AnalysisPacket } from "./input-packet";
 import { aiResultJsonSchema, validateAiResult } from "./result-contract";
 
@@ -10,11 +10,11 @@ export type GeminiFailureCode = "not-configured" | "unavailable" | "invalid-resp
 export class GeminiError extends Error {
   constructor(readonly code: GeminiFailureCode) { super(`Gemini: ${code}`); this.name = "GeminiError"; }
 }
-export interface GeminiRequest { prompt: string; system: string; schema: unknown; maxOutputTokens: number }
+export interface GeminiRequest { prompt: string; system: string; schema: unknown; maxOutputTokens: number; thinkingLevel?: "low" | "medium" }
 export type GeminiGenerate = (request: GeminiRequest) => Promise<string>;
 
 // Resmî SDK yalnız backend'de çalışır; otomatik ücretli retry, araç ve kod yürütme açılmaz.
-export function createGeminiGenerate(apiKey: string): GeminiGenerate {
+export function createGeminiGenerate(apiKey: string, onUsage?: (usage: { promptTokens: number; outputTokens: number; totalTokens: number }) => void): GeminiGenerate {
   if (!apiKey.trim()) throw new GeminiError("not-configured");
   const client = new GoogleGenAI({ apiKey, httpOptions: { timeout: GEMINI_LIMITS.timeoutMs, retryOptions: { attempts: 1 } } });
   return async request => {
@@ -23,10 +23,15 @@ export function createGeminiGenerate(apiKey: string): GeminiGenerate {
         model: GEMINI_MODEL, contents: request.prompt,
         config: { systemInstruction: request.system, temperature: 0, maxOutputTokens: request.maxOutputTokens,
           responseMimeType: "application/json", responseJsonSchema: request.schema,
+          ...(request.thinkingLevel ? { thinkingConfig: { thinkingLevel: request.thinkingLevel === "low" ? ThinkingLevel.LOW : ThinkingLevel.MEDIUM } } : {}),
           abortSignal: AbortSignal.timeout(GEMINI_LIMITS.timeoutMs) },
       });
       if (!response.text || response.candidates?.[0]?.finishReason !== "STOP"
         || Buffer.byteLength(response.text) > GEMINI_LIMITS.outputBytes) throw new GeminiError("invalid-response");
+      const usage = response.usageMetadata;
+      if (usage && [usage.promptTokenCount, usage.candidatesTokenCount, usage.totalTokenCount, usage.thoughtsTokenCount ?? 0].every(value => Number.isSafeInteger(value) && value! >= 0)) {
+        onUsage?.({ promptTokens: usage.promptTokenCount!, outputTokens: usage.candidatesTokenCount! + (usage.thoughtsTokenCount ?? 0), totalTokens: usage.totalTokenCount! });
+      }
       return response.text;
     } catch (error) {
       if (error instanceof GeminiError) throw error;

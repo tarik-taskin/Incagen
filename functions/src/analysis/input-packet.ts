@@ -20,7 +20,7 @@ const chunkSchema = z.object({
   }
 });
 const positive = z.number().int().positive();
-const documentSchema = z.object({
+export const parsedDocumentSchema = z.object({
   version: z.literal(1), sourceId: identifier, fileName: z.string().min(1).max(200),
   sha256: z.string().regex(/^[a-f0-9]{64}$/), extension: z.enum(SUPPORTED_FILE_EXTENSIONS),
   detectedMime: z.string().min(1).max(200), category: z.enum(["Tablo", "Belge", "Sunum", "Veri", "Görsel"]),
@@ -29,7 +29,7 @@ const documentSchema = z.object({
   chunks: z.array(chunkSchema).min(1).max(PARSING_LIMITS.chunksPerFile),
   warnings: z.array(z.string().min(1).max(4000)).max(1000),
 }).strict();
-const documentsSchema = z.array(documentSchema).min(1).max(ANALYSIS_PACKET_LIMITS.documents);
+const documentsSchema = z.array(parsedDocumentSchema).min(1).max(ANALYSIS_PACKET_LIMITS.documents);
 
 export interface AnalysisPacketInput {
   analysisId: string;
@@ -44,9 +44,12 @@ export interface AnalysisPacketInput {
 // Bütçe aşımını açık ve yeniden ele alınabilir bir hata olarak taşır; içerik sessizce kesilmez.
 export class AnalysisPacketBudgetError extends Error {
   readonly code = "analysis-packet/budget-exceeded";
-  constructor(readonly actualBytes: number, readonly budgetBytes: number) {
+  readonly actualBytes: number;
+  readonly budgetBytes: number;
+  constructor(actualBytes: number, budgetBytes: number) {
     super(`Analiz veri paketi ${budgetBytes} bayt bütçesini aşıyor (${actualBytes} bayt). Kaynak kapsamını açıkça daraltın.`);
     this.name = "AnalysisPacketBudgetError";
+    this.actualBytes = actualBytes; this.budgetBytes = budgetBytes;
   }
 }
 

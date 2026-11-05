@@ -4,7 +4,7 @@ import { checkGeminiConnection, createGeminiGenerate, generateValidatedAnalysis,
 import { requireGeminiDeveloper } from "./gemini-diagnostic";
 
 const sdk = vi.hoisted(() => ({ generate: vi.fn(), constructor: vi.fn() }));
-vi.mock("@google/genai", () => ({ GoogleGenAI: class { models = { generateContent: sdk.generate }; constructor(options: unknown) { sdk.constructor(options); } } }));
+vi.mock("@google/genai", () => ({ ThinkingLevel: { LOW: "LOW", MEDIUM: "MEDIUM" }, GoogleGenAI: class { models = { generateContent: sdk.generate }; constructor(options: unknown) { sdk.constructor(options); } } }));
 const document = { version: 1, sourceId: "file-0", fileName: "brief.txt", sha256: "a".repeat(64), extension: "txt", detectedMime: "text/plain", category: "Belge", parserVersion: "test/1", metadata: {}, warnings: [], chunks: [{ id: "chunk-1", kind: "text", text: "Revenue increased. Costs require review.", locator: { section: "brief" } }] };
 const packet = buildAnalysisPacket({ analysisId: "analysis-1", objective: "Summarize the brief.", documents: [document] });
 const evidence = { sourceId: "file-0", sha256: document.sha256, chunkId: "chunk-1", locator: { section: "brief" } };
@@ -24,6 +24,13 @@ describe("Gemini backend boundary", () => {
     expect(sdk.generate.mock.calls[0][0]).toMatchObject({ model: GEMINI_MODEL, config: { maxOutputTokens: 512, responseMimeType: "application/json", temperature: 0 } });
     expect(sdk.generate.mock.calls[0][0].contents).not.toContain("Revenue");
     expect(sdk.generate.mock.calls[0][0].config.tools).toBeUndefined();
+  });
+  it("sets supported low thinking explicitly and records actual usage without model content", async () => {
+    sdk.generate.mockResolvedValue({ text: '{}', candidates: [{ finishReason: "STOP" }], usageMetadata: { promptTokenCount: 120, candidatesTokenCount: 40, thoughtsTokenCount: 20, totalTokenCount: 180 } });
+    const usage = vi.fn();
+    await createGeminiGenerate("synthetic-key", usage)({ prompt: "test", system: "test", schema: {}, maxOutputTokens: 4096, thinkingLevel: "low" });
+    expect(sdk.generate.mock.calls[0][0].config.thinkingConfig).toEqual({ thinkingLevel: "LOW" });
+    expect(usage).toHaveBeenCalledWith({ promptTokens: 120, outputTokens: 60, totalTokens: 180 });
   });
   it("sanitizes raw provider errors", async () => {
     sdk.generate.mockRejectedValue(new Error("https://provider.test?key=private-key document-content"));

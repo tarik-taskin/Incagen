@@ -171,4 +171,5 @@ export interface Analysis {
   preparationReview?: PreparationReview | null;
   preparationFailures?: PreparationFailure[];
   report?: Report;
+  ai?: import("./analysis/tabular-contract").AiJob;
 }

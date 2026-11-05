@@ -8,6 +8,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { z } from "zod";
 import { createSchema, getQuotaDay, LIMITS, type CreateAnalysis, type ReportSource, type PreparationFailure, type PreparationReview } from "./contracts";
 import { countDocumentCharacters, DocumentParseError, parseDocument } from "./parsing";
+import { AI_JOB_LIMITS } from "./analysis/tabular-contract";
 
 initializeApp();
 const db = getFirestore();
@@ -184,6 +185,7 @@ export const deleteAnalysis = onCall(options, async request => {
     if (!snap.exists) return false;
     const data = snap.data()!;
     if (data.status === "processing" && Date.now() - data.updatedAt < processingLeaseMs) throw new HttpsError("failed-precondition", "İşlem sürerken silinemez.");
+    if (data.ai?.status === "running" && Date.now() - data.ai.startedAt < AI_JOB_LIMITS.leaseMs) throw new HttpsError("failed-precondition", "Analiz sürerken silinemez.");
     if (data.status === "processing" && data.quotaDay) {
       const quotaRef = db.doc(`users/${uid}/quotas/${data.quotaDay}`);
       const quota = await tx.get(quotaRef);
@@ -209,8 +211,12 @@ export const deleteAccount = onCall(options, async request => {
 
   const userRef = db.doc(`users/${uid}`);
   await db.runTransaction(async tx => {
-    const analyses = await tx.get(userRef.collection("analyses").where("status", "==", "processing"));
-    if (analyses.docs.some(doc => Date.now() - doc.data().updatedAt < processingLeaseMs)) {
+    const [analyses, aiAnalyses] = await Promise.all([
+      tx.get(userRef.collection("analyses").where("status", "==", "processing")),
+      tx.get(userRef.collection("analyses").where("ai.status", "==", "running")),
+    ]);
+    if (analyses.docs.some(doc => Date.now() - doc.data().updatedAt < processingLeaseMs)
+      || aiAnalyses.docs.some(doc => Date.now() - doc.data().ai.startedAt < AI_JOB_LIMITS.leaseMs)) {
       throw new HttpsError("failed-precondition", "Devam eden analiz bitince hesabınızı silin.");
     }
     tx.set(userRef, { deletingAccount: true, updatedAt: Date.now() }, { merge: true });
@@ -227,3 +233,5 @@ export const deleteAccount = onCall(options, async request => {
 
 // Gemini yalnız sunucuda, geliştiriciye özel sınırlı bağlantı kontrolüyle açılır.
 export { checkGemini } from "./analysis/gemini-diagnostic";
+export { startAnalysis } from "./analysis/tabular-jobs";
+export { getAnalysisTables, getAnalysisResult } from "./analysis/tabular-storage";
