@@ -37,7 +37,7 @@ Cloud callable `checkGemini` için Firebase Auth kullanıcısının güvenilir y
 
 `generateValidatedAnalysis(packet, generate)` mevcut analiz veri paketi ve `validateAiResult` kapısını kullanır. 256 KiB girdi, 64 KiB yanıt, 8.192 çıktı token'ı sınırı vardır. Belge içeriği talimat sayılmaz; metrik/veri kümesi yalnız sunucunun doğruladığı defterden gelebilir. Araç/kod yürütme açılmaz, kesilmiş veya filtrelenmiş model sonucu kabul edilmez.
 
-Bu yardımcı henüz kullanıcı çalışma uçlarına veya rapor kayıtlarına bağlanmadı. Kuyruk/idempotency, maliyet ölçümü ve model kalitesi kabulü tamamlanmadan otomatik analiz açılmaz. Şema/kaynak doğrulaması, serbest metindeki bütün anlamsal iddiaların doğru olduğunu kanıtlamaz. Gerçek değerlendirme [referans protokolü](../fixtures/analysis-reference/evaluation.md) ile yapılmalıdır.
+Bu genel yardımcı kullanıcı çalışma uçlarına bağlanmaz; ilk CSV/XLSX hattı aşağıdaki ayrı, doğrulanmış hesap defteriyle çalışan dar yorum adaptörünü kullanır. Kuyruk/idempotency, maliyet ölçümü ve model kalitesi kabulü tamamlanmadan otomatik analiz açılmaz. Şema/kaynak doğrulaması, serbest metindeki bütün anlamsal iddiaların doğru olduğunu kanıtlamaz. Gerçek değerlendirme [referans protokolü](../fixtures/analysis-reference/evaluation.md) ile yapılmalıdır.
 
 Birim testleri sentetik sağlayıcı yanıtlarını kullanır; emülatör testleri yetki, eksik anahtar ve eşzamanlı maliyet sınırını doğrular. Bunlar gerçek Gemini çağrısı yapıldığı anlamına gelmez.
 
@@ -51,4 +51,4 @@ Resmî kaynaklar: [SDK ve başlangıç](https://ai.google.dev/gemini-api/docs/ge
 
 ## Kullanıcı tablosuyla kaynaklı analiz
 
-5 Kasım geliştirmesi, `startAnalysis` üzerinden seçilen tek CSV/XLSX tablosunun doğrulanmış Python hesaplarını modelin kısa yorumuyla birleştirir. Metrik/grafik değerleri modelden alınmaz; anahtar mevcut sunucu secret okuyucusunda kalır. Bu iş akışının limitleri geliştiriciye özel `checkGemini` limitlerinden ayrıdır. Kod yerelde doğrulanıyor; yeni üretim worker/callable dağıtımı ve canlı kalite kabulü bekleniyor. Güncel kapsam ve onay planı [tablo analizi rehberindedir](TABULAR-ANALYSIS.md).
+5 Kasım geliştirmesi, `startAnalysis` üzerinden seçilen tek CSV/XLSX tablosunun doğrulanmış Python hesaplarını modelin kısa yorumuyla birleştirir. Metrik/grafik değerleri modelden alınmaz; anahtar mevcut sunucu secret okuyucusunda kalır. Bu iş akışının limitleri geliştiriciye özel `checkGemini` limitlerinden ayrıdır. Özel worker/callable uçları dağıtıldı. Analiz çağrısı 90 saniye, bağlantı kontrolü 45 saniye ile sınırlıdır; otomatik tekrar yoktur. Gerçek analiz denemeleri `503 / capacity` aldı; minimal bağlantı kontrolü de başarısızdı. Altı dilde canlı model kalite kabulü tamamlanmadığından backend ve arayüz yayın kapıları kapalıdır. Bu durum anahtarın eksik olduğu anlamına gelmez; anahtar değeri teşhis için yerel ortama alınmadı. Güncel kapsam ve onay planı [tablo analizi rehberindedir](TABULAR-ANALYSIS.md).

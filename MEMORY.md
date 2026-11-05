@@ -1,21 +1,21 @@
 # Incagen Proje Hafızası
 
-- 5 Kasım: İlk gerçek CSV/XLSX Python hesabı → Gemini yorumu → özel rapor/geçmiş bağlantısı yerelde doğrulandı. Yeni Cloud Run/build kaynakları ve kaynak IAM kapsamı otomatik onay denetiminde durdu; üretim dağıtımı/gerçek kalite kabulü ve main/Netlify yayını bekliyor. Devam noktası [GOAL](GOAL.md#2026-11-05--furkan--codex-ilk-gerçek-tablo-analizi) ve [dağıtım planı](docs/TABULAR-ANALYSIS.md#somut-dağıtım-kapsamı).
+- 5 Kasım: CSV/XLSX Python hesabı → Gemini yorumu → özel rapor/geçmiş hattı ve örnek rapor keşif rehberi eklendi. Onaylı özel Cloud Run/Functions dağıtımı ve yerel/izole testler geçti. Gerçek Gemini `503 / capacity` nedeniyle kalite kabulü tamamlanamadı; `INCAGEN_TABULAR_ANALYSIS_ENABLED` ve `VITE_TABULAR_ANALYSIS_ENABLED` canlıda kapalı, hazırlık akışı korunur. Devam noktası [GOAL](GOAL.md#2026-11-05--furkan--codex-ilk-gerçek-tablo-analizi) ve [yayın kapısı](docs/TABULAR-ANALYSIS.md#yayın-kapısı-ve-canlı-kabul).
 
 Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretmeyi amaçlar.
 
 ## Kalıcı bağlam
 
 - React, TypeScript, Vite, React Router, Tailwind, shadcn/ui yaklaşımı, Anime.js ve rapor rotasında Motion/ECharts.
-- `npm run dev` ve canlı Netlify canlı Firebase projesini (`incagen-eeef4`) kullanır; tam sentetik Auth/Firestore/Storage/Functions akışı `npm run dev:emulator` ile çalışır. Gemini anahtarı doğrudan Secret Manager'dadır; sınırlı geliştirici kontrolüyle gerçek `gemini-3.8-flash` bağlantısı 2 Kasım'da doğrulandı. Kullanıcı analiz hattına bağlama ve analiz kalitesi kabulü bekler; [backend rehberi](docs/GEMINI.md).
+- `npm run dev` ve canlı Netlify canlı Firebase projesini (`incagen-eeef4`) kullanır; tam sentetik Auth/Firestore/Storage/Functions akışı `npm run dev:emulator` ile çalışır. Gemini anahtarı doğrudan Secret Manager'dadır; sınırlı geliştirici kontrolüyle gerçek `gemini-3.8-flash` bağlantısı 2 Kasım'da doğrulandı. Dar CSV/XLSX hattı kodda bağlıdır; kullanıcıya açılış ve gerçek analiz kalitesi kabulü sağlayıcı kapasite hatası nedeniyle bekler; [backend rehberi](docs/GEMINI.md).
 - Ana renkler `#4c2a85`, `#bcedf6`; yardımcı renkler `#320E3B`, `#ff0035`, `#DDFBD2`.
 - Renk denemeleri kullanıcı talebiyle kaldırıldı; özgün mor palet ve Klasik/Glass korunur. Ana sayfada ortalanmış başlık ve üç adımlı yatay yerleşim kullanılır; ürün davranışı değişmez.
 - Çalışma kuralları AGENTS.md, teknik kurallar RULES.md, davranış/limitler FLOW.md içindedir.
 - Zorunlu analiz hedefi (1–500 karakter) taslakta korunur, hazırlık kaydında saklanır ve sonuçta gösterilir; başarılı hazırlık yeni iş için hedefi temizler.
-- Kabul edilen sonraki AI mimarisi ve kalite kapısı [FLOW.md](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) içindedir; Python işçisi ve kaynaklı LLM sonuçları geliştirme hedefidir; bağımsız sentetik rapor ECharts/Motion sunumunu gösterir.
+- Kabul edilen sonraki AI mimarisi ve kalite kapısı [FLOW.md](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) içindedir; CSV/XLSX Python işçisi dağıtıldı, kullanıcıya açılış gerçek model kalite kabulüne bağlıdır; bağımsız sentetik rapor ECharts/Motion sunumunu gösterir.
 - Özetleme başlangıç referansları [fixtures/analysis-reference](fixtures/analysis-reference/README.md) içindedir; sentetik satış/yorum kaynakları, elle yazılmış cevaplar ve kalite protokolü mevcut parser üzerinden doğrulanır. LLM değerlendirmesi henüz çalıştırılmadı.
 - Belge seçimi gerçek bayt toplamını ve kalan kapasiteyi gösterir; hazırlık kontrolü ortak alan kurallarıyla çalışır ve eksik alana odak verir.
-- Bağımsız AI sonuç v1 şeması ve güvenilir kaynak/metrik kapısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içindedir; CSV/XLSX için kaynaklı Python/Gemini/kayıt bağlantısı kodda eklendi; üretim dağıtımı/onayı ve canlı kalite kabulü henüz tamamlanmadı ([kapsam ve plan](docs/TABULAR-ANALYSIS.md)). Analiz veri paketi içerik/konum/uyarıları ve güvenilir hesap bağlamını ayrı tutar; 256 KiB aşımında sessiz kesmez.
+- Bağımsız AI sonuç v1 şeması ve güvenilir kaynak/metrik kapısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içindedir; CSV/XLSX için kaynaklı Python/Gemini/kayıt bağlantısı kodda eklendi; onaylı backend dağıtıldı; sağlayıcı kapasitesi ve canlı kalite kabulü bekleniyor ([kapsam ve plan](docs/TABULAR-ANALYSIS.md)). Analiz veri paketi içerik/konum/uyarıları ve güvenilir hesap bağlamını ayrı tutar; 256 KiB aşımında sessiz kesmez.
 
 - `/ornek-rapor`: 12 aylık 3.612 tablo kaydı, Atlas Teknoloji için CSV/XLSX, PDF/Word/PowerPoint, JSON/Markdown/metin kaynaklarından oluşan dokuz belgeli şirket dosyası; altı grafik/üç finansal tablo ve aramalı/sayfalı kaynak paneli içeren örnek rapor; AI üretimi değildir ve hesaba yazılmaz. Üretim/doğrulama ve korunan sürümler [kaynak rehberindedir](fixtures/company-example/README.md).
 
@@ -30,7 +30,7 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 - Hazırlama oluşturma/aktarım/işleme aşamalarını ayırır; yüzde yalnız gerçek aktarıma aittir. Native ayrılma uyarısı yerel dosya/iş riskinde bağlıdır; çevrimdışı notu otomatik işlem başlatmaz. Sonuçta kapsam/uyarılar görünür, teknik değerler açılır ayrıntıdadır. Davranış ve tarayıcı sınırları [FLOW](FLOW.md#hazırlama-sırasında-kullanıcı-kontrolü) içindedir.
 - Kısmi hazırlıkta belge hataları açık kapsam onayı ister; onay token’ı sunucuda doğrulanır, beklerken kota iade edilir ve geçerli alt küme tek hak tüketir. Türetilmiş dosyalar deneme bazında ayrılır.
 
-- Python 3.12 extraction ortamı, hash kilitli PDF/Word/Excel/metin paketleri ve mevcut kaynak sözleşmesine geçen sentetik testler [python rehberindedir](python/README.md). Cloud Run/OCR ve otomatik kullanıcı analizi açılmadı.
+- Python 3.12 extraction ortamı, hash kilitli PDF/Word/Excel/metin paketleri ve mevcut kaynak sözleşmesine geçen sentetik testler [python rehberindedir](python/README.md). Özel CSV/XLSX Cloud Run işçisi dağıtıldı; OCR ve otomatik kullanıcı analizi açılmadı.
 
 ## Tamamlanan özellikler
 

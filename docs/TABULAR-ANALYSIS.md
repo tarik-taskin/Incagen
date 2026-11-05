@@ -1,6 +1,6 @@
 # İlk gerçek tablo analizi
 
-**Durum (5 Kasım 2026):** Uygulama kodu yerel demo ortamında doğrulanıyor. Üretim Python servisi, yeni Functions ve gerçek kullanıcı analizi henüz yayımlanmadı. Yeni kalıcı bulut kaynakları/IAM kapsamı için dağıtım onayı bekleniyor. Mevcut canlı belge hazırlığı çalışmaya devam eder. Kabul durumu [GOAL](../GOAL.md#2026-11-05--furkan--codex-ilk-gerçek-tablo-analizi) içinde tutulur.
+**Durum (5 Kasım 2026):** Özel Python Cloud Run işçisi ve analiz Functions uçları kullanıcı onayıyla dağıtıldı. Linux container, IAM ve yerel hesap/rapor kontrolleri geçti. Gerçek Gemini denemeleri `503 / capacity` ile reddedildi; en küçük bağlantı kontrolü de yanıt vermedi. Gerçek modelin altı dilde kalite kabulü tamamlanmadı. Bu nedenle ücretli analiz hem backend hem arayüzde kapalıdır; canlı belge hazırlığı, geçmiş ve örnek raporlar çalışmaya devam eder. Kabul durumu [GOAL](../GOAL.md#2026-11-05--furkan--codex-ilk-gerçek-tablo-analizi) içinde tutulur.
 
 ## Kullanıcı akışı ve kapsam
 
@@ -26,22 +26,30 @@
 - `getAnalysisTables`, `startAnalysis`, `getAnalysisResult`: Auth UID ve sahibi olunan tamamlanmış hazırlık kaydı zorunlu. İstemci dosya yolu, çalışma kodu, API anahtarı veya serbest prompt gönderemez.
 - Atomik fingerprint: kaynak hash/kimlik + açık ayarlar + rapor dili. Aynı çalışan/tamamlanan istek tekrar kullanılır. Tamamlanmış kapsam değiştirilemez; farklı kapsam yeni çalışma gerektirir.
 - Başlangıç açılım sınırı: İstanbul gününde kullanıcı başına iki farklı iş; proje başına **100 deneme/gün**, iş başına **üç deneme**. Başarısız ve zaman aşan denemeler de sayılır. Önceden hesaplanmış bu dar kapsamda model `low` thinking ve en fazla 4.096 çıktı tokenıyla çağrılır; bu ayar canlı kalite kabulünde ayrıca ölçülür. [Resmî thinking seçenekleri](https://aistudio.google.com/docs/thinking?generate-content=true). Otomatik ücretli yeniden deneme yoktur. Bu sınırlar fatura tutarı garantisi değildir.
-- Aşamalar hesaplama → yorumlama → kayıt; 180 saniye Functions sınırı, 240 saniye iş kilidi. Yeni deneme/eski yanıt ve silme yarışları transaction ile korunur. Aktif iş varken kayıt/hesap silme reddedilir; geç gelen sonuç silinen/kapanan hesaba yazılmaz. Kaydedilip sahiplenilemeyen artefakt temizlenir.
+- Aşamalar hesaplama → yorumlama → kayıt; 180 saniye Functions sınırı, 90 saniye model sınırı ve 240 saniye iş kilidi. Yeni deneme/eski yanıt ve silme yarışları transaction ile korunur. Aktif iş varken kayıt/hesap silme reddedilir; geç gelen sonuç silinen/kapanan hesaba yazılmaz. Kaydedilip sahiplenilemeyen artefakt temizlenir.
 - Sonuç/sınırlı kaynak görünümü gzip/hash ile UID'ye ait `derived/…/ai/…` altında, istemciye kapalı tutulur. Yalnız yetkili callable döndürür. Özgün dosya indirme oturumlu Storage SDK kullanır; paylaşılabilir kalıcı download token'ı oluşturmaz.
 - Gemini anahtarı yalnız mevcut backend Secret Manager akışındadır. Python runtime hesabına Storage/Firestore/Gemini/Secret Manager rolü verilmez. Ham belge, sağlayıcı yanıtı, token veya anahtar uygulama günlüklerine yazılmaz.
 - Demo proje + Functions emülatörü birlikte seçilirse gerçek yerel Python ve açıkça `emulator` etiketli sabit yorum taklidi kullanılır. Demo, üretim sağlayıcı anahtarını okumaz. Bu testler gerçek Gemini kalite kabulü olarak gösterilmez.
 
+## Yayın kapısı ve canlı kabul
+
+- `INCAGEN_TABULAR_ANALYSIS_ENABLED=true` açıkça verilmedikçe sunucu yeni analiz işi rezerve etmez, Python/model çağırmaz. Firebase ortam parametresi Git dışındadır. Yalnız `demo-*` projesi ve Functions emülatörü birlikte bu kapıyı test için aşar.
+- `VITE_TABULAR_ANALYSIS_ENABLED=true` açıkça verilmedikçe canlı arayüz yeni analiz ayarlarını göstermez; hazırlık raporu korunur. Var olan AI kaydının okunması bu anahtardan bağımsızdır. Bu arayüz anahtarı güvenlik sınırı değildir; backend kapısı bağımsız uygulanır.
+- Model/şema doğrulaması gevşetilmez, sessiz model değişimi ve otomatik ücretli tekrar yapılmaz. Güvenli tanı yalnız HTTP durum kodu, sabit hata kategorisi veya bitiş nedenidir; ham hata, belge ve yanıt metni loglanmaz.
+- `scripts/accept-tabular-cloud.mjs` açık opt-in ile altı dilde üç CSV toplamı ve üç XLSX ortalaması çalıştırır; model yanıtı, kesin hesap/kaynak, tekrar çağrı, gerçek rapor/indirme ve temizliği doğrular. İlk model hatasında durur. `--verify-closed` yalnız bir sentetik hazırlık oluşturur; kapının işi rezerve etmeden reddini ve hazırlık arayüzünü doğrular, modele çağrı yapmaz.
+- Altı canlı yanıtın insan tarafından kaynak/amaç eşliğinde değerlendirilmesi ve gerçek süre/token ölçümü tamamlanmadan iki yayın anahtarı açılmaz. Tek bir bağlantı testi veya emülatör taklidi kalite kabulü sayılmaz. Test hesapları, ham/türetilmiş dosyalar ve kişisel kayıtlar temizlenir; global maliyet sayaçları sıfırlanmaz.
+
 ## Somut dağıtım kapsamı
 
-Aşağıdaki plan **henüz uygulanmadı**. Ağ/oturum kullanmadan görüntülemek için:
+Aşağıdaki kapsam 5 Kasım açık kullanıcı onayıyla dağıtıldı. Ağ/oturum kullanmadan sabit hedefleri görüntülemek için:
 
 ```bash
 node scripts/deploy-python-worker.cjs --plan
 ```
 
-Onay sonrası script: `incagen-eeef4` / `europe-west1` içinde IAM ile özel `incagen-extract` Cloud Run servisi; ayrı `incagen-extract-runtime` hesabı; tek instance, tek eşzamanlı istek, 1 CPU/1 GiB, sıfıra ölçeklenme. HTTP gövdesi en fazla 25 MiB özgün dosyadır; metadata yalnız ad/kimlik/ayarları taşır. Çocuk parser CPU/bellek/süre sınırlarıyla çalışır; öldürülen parserın geçici dosyasını üst süreç de temizler.
+Dağıtım scripti: `incagen-eeef4` / `europe-west1` içinde IAM ile özel `incagen-extract` Cloud Run servisi; ayrı `incagen-extract-runtime` hesabı; tek instance, tek eşzamanlı istek, 1 CPU/1 GiB, sıfıra ölçeklenme. HTTP gövdesi en fazla 25 MiB özgün dosyadır; metadata yalnız ad/kimlik/ayarları taşır. Çocuk parser CPU/bellek/süre sınırlarıyla çalışır; öldürülen parserın geçici dosyasını üst süreç de temizler.
 
-Build için özel `incagen-analysis-build-483199933468` bucket'ı (uniform erişim, public access prevention, bir günlük nesne temizliği) ve `incagen-analysis` image deposu oluşturulur. Mevcut backend/build hesabına yalnız bu kaynaklarda gerekli image writer/source reader ve **işçi servisi üzerinde** invoker rolleri eklenir. Container'a yalnız Python kaynakları ve hash kilitli runtime bağımlılıkları girer; Git, ortam dosyaları, test verileri ve venv gönderilmez. Cloud Run image digest ile sabitlenir. İşçi adresi Git dışı Functions ortam dosyasına yazılır. Dağıtım sırasında yeni kaynakların ve IAM politikasının tekrar okunarak doğrulanması gerekir; script çıktısı tek başına kabul değildir.
+Build için özel `incagen-analysis-build-483199933468` bucket'ı (uniform erişim, public access prevention, bir günlük nesne temizliği) ve `incagen-analysis` image deposu oluşturulur. Mevcut backend/build hesabına yalnız bu kaynaklarda gerekli image writer/source reader ve **işçi servisi üzerinde** invoker rolleri eklenir. Mevcut backend hesabının proje üzerindeki önceden var olan Editor rolü bu dağıtımda değiştirilmedi; yalnız yeni Python runtime hesabının proje/secret rolü bulunmadığı doğrulandı. Container'a yalnız Python kaynakları ve hash kilitli runtime bağımlılıkları girer; Git, ortam dosyaları, test verileri ve venv gönderilmez. Cloud Run image digest ile sabitlenir. İşçi adresi Git dışı Functions ortam dosyasına yazılır. Firebase yükleme listesinden `.env*` ve `.secret.local` açıkça çıkarılır; CLI ortam parametrelerini kaynak arşivinden ayrı uygular. Dağıtım sırasında yeni kaynakların ve IAM politikasının tekrar okunarak doğrulanması gerekir; script çıktısı tek başına kabul değildir.
 
 Yeni callable'lar worker hazır olmadan canlı frontend'e açılmamalıdır. Sonrasında gerçek sentetik CSV/XLSX → Python → Gemini → saklama/yeniden açma/silme kabulü, hesap/kaynak eşliği, süre/token ölçümü ve sınırlı insan kalite değerlendirmesi yapılır. Anahtar yerel kabul scriptine indirilmez. Başarılı canlı kabulden sonra main/furkan, GitHub Quality ve Netlify dosya/commit eşliği doğrulanır. Fatura oluşabilecek işlemler onay kapsamına dahildir.
 

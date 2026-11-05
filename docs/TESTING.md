@@ -109,3 +109,14 @@ node scripts/build-feedback-example.cjs --check
 `integration/tabular.test.mjs`, demo projesinde gerçek Python hesabını; CSV ondalık toplamı, seçili XLSX sayfasında satır ağırlıklı ortalamayı, tekrar çağrı/yeniden deneme, yetki/kota ve silme yarışını doğrular. Model yanıtı emülatörde sabit taklittir. `e2e/tabular-analysis.spec.ts` gerçek upload → rapor → kaynak/indirme → geçmiş/yenileme, hatalı ölçümden sayım ile devam, RTL/Glass ve iki örneğin klavye rehberini kontrol eder. Canlı Python/Gemini kalite kabulünün yerine geçmez. [Kapsam ve yayın kapısı](TABULAR-ANALYSIS.md).
 
 5 Kasım 2026 üretim bağımlılık denetimi: kökte 0, Functions'ta 4 orta kayıt (`google-gax` → `rimraf`/`glob`/`minimatch` zinciri); yüksek/kritik yok. Bu oturumda uyumsuz bağımlılık yükseltmesi veya zorlanmış override yapılmadı. Önceki tarihli sayımlar tarihsel kayıttır.
+
+
+5 Kasım devam kabulü: özel worker’ın Cloud Build içindeki ağsız/1 GiB/tek CPU Linux testi geçti; gerçek digest, ayrı runtime kimliği, max instance/eşzamanlılık ve IAM politikası tekrar okundu. Runtime hesabının proje ve Gemini secret rolü yoktur. Mevcut backend hesabındaki önceden var olan Editor rolü değiştirilmedi. Yeni Functions ortamında sağlayıcı anahtarı bulunmadığı, kaynak arşivinin `.env*`/`.secret.local` içermediği doğrulandı. Canlı PDF/DOCX/XLSX hazırlama, geçmiş/yenileme, çapraz hesap reddi ve silme kabulü geçti.
+
+Gerçek Gemini analiz denemeleri `503 / capacity` ile durdu; en küçük sabit bağlantı kontrolü de başarısız oldu. Tamamlanmış gerçek model yanıtı, altı dilde kalite puanı veya başarılı model maliyet ölçümü raporlanmaz. Sentetik test hesapları ve ham/türetilmiş dosyaları `finally` sonrasında bağımsız metadata kontrolleriyle silinmiş doğrulandı; geçici teşhis claim’i kaldırıldı. Kodun model taklidi testleri bu dış servis engelinin yerine geçmez.
+
+`INCAGEN_LIVE_MODEL_ACCEPTANCE=1 INCAGEN_ACCEPTANCE_URL=http://127.0.0.1:4177 node scripts/accept-tabular-cloud.mjs --verify-closed`, sunucu/arayüz kapalıyken hazırlığı ve iş rezervasyonu oluşmadan reddi doğrular; model çağrısı yapmaz. Tam altı dilli kabul aynı komutun `--verify-closed` olmadan çalışmasıdır; yalnız onaylı test penceresinde sunucu kapısı ve yerel `VITE_TABULAR_ANALYSIS_ENABLED=true` açılır. Tam başarılı cevaplar insan değerlendirmesinden geçmeden genel canlı açılış yapılmaz. CI gerçek sağlayıcı veya müşteri hesabı kullanmaz.
+
+Kapalı-yayın canlı kabulü geçti: normal kullanıcının geçerli CSV hazırlığında `startAnalysis` yapılandırma durumuyla reddedildi; `ai` işi oluşmadı, model çağrısı yapılmadı. Arayüz kaynaklı hazırlık görünümünü korudu. Sentetik hesap, Firestore kaydı ve Storage prefixleri bağımsız metadata okumalarıyla temizlenmiş doğrulandı. Son birim sayıları 106 frontend + 134 Functions; Python 39, demo entegrasyon 8.
+
+Son dondurulmuş tarayıcı paketi 75 geçti / mevcut 3 platform atlaması ile tamamlandı. Kapalı canlı derleme ilk açılışta 323.326 gzip bayt ile 409.600 bayt bütçesinin altında kaldı.
