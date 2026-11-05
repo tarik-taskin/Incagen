@@ -6,6 +6,7 @@ afterEach(() => setLocale("tr"));
 // Doğrulanmış ondalıklar küçük kart/tooltip/tablo gösteriminde sıfıra veya tam sayıya yuvarlanmaz.
 it("sayı ve para hassasiyetini, negatif/sıfır değerleri ve kaynak birimini korur", () => {
   expect(reportNumber(0.123456, "number", true)).toBe("0,123456");
+  expect(reportNumber(19000.5, "USD")).toBe("19.000,50 USD");
   expect(reportNumber(-0.3, "USD")).toBe("-0,30 USD");
   expect(reportNumber(0, "EUR")).toBe("0,00 EUR");
   expect(reportNumber(2, "count")).toBe("2 kayıt");

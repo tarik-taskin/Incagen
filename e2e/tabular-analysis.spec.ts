@@ -57,7 +57,7 @@ test("gerçek hesap → kaynaklı rapor → geçmiş/yenileme; altı dil ve özg
   await page.getByRole("button", { name: "Analizi oluştur", exact: true }).click();
   const report = page.getByRole("region", { name: "Analiz raporu", exact: true });
   await expect(report).toBeVisible({ timeout: 30_000 });
-  await expect(report).toContainText("0,3 USD");
+  await expect(report).toContainText("0,30 USD");
   await report.getByText("Veri tablosu", { exact: true }).click();
   await expect(report.getByRole("table")).toContainText("0,20 USD");
   await report.getByRole("button", { name: "Store kaynağı", exact: true }).click();
@@ -71,7 +71,7 @@ test("gerçek hesap → kaynaklı rapor → geçmiş/yenileme; altı dil ve özg
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
   const url = page.url(); await page.reload();
-  await expect(report).toContainText("0,3 USD");
+  await expect(report).toContainText("0,30 USD");
   const nav = page.getByRole("navigation", { name: info.project.name === "mobile-chromium" ? "Mobil navigasyon" : "Ana navigasyon", exact: true });
   await nav.getByRole("link", { name: "Geçmiş", exact: true }).click();
   await expect(page.getByText("Analiz hazır", { exact: true }).first()).toBeVisible();
@@ -79,7 +79,9 @@ test("gerçek hesap → kaynaklı rapor → geçmiş/yenileme; altı dil ve özg
   await chooseLanguage(page, "ar");
   await expect(page.getByRole("region", { name: ar["Analiz raporu"] })).toBeVisible();
   // Saklanan rapor yeniden çevrilmez ve özgün kaynak/grup adları kaybolmaz.
-  await expect(page.getByText("Web", { exact: true }).first()).toBeVisible();
+  const chart = page.getByTestId("chart-group-chart");
+  await chart.scrollIntoViewIfNeeded();
+  await expect(chart.getByText("Web", { exact: true })).toBeVisible();
   await setTheme(page, { mode: "dark", style: "glass" });
   await layout(page);
   await page.screenshot({ path: info.outputPath("actual-report-rtl-dark.png"), fullPage: true });
