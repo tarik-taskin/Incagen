@@ -1,5 +1,6 @@
+import { reportNumber } from "./report-format";
 import { reportColors } from "./report-colors";
-import { t, useLocale, localeTag, getLocale } from "../../i18n/runtime";
+import { t, useLocale } from "../../i18n/runtime";
 import { useEffect, useRef } from "react";
 import { init, use as registerCharts, graphic, type EChartsCoreOption } from "echarts/core";
 import { BarChart, LineChart, PieChart } from "echarts/charts";
@@ -11,19 +12,13 @@ import type { AiResult } from "../../../functions/src/analysis/result-contract";
 
 registerCharts([BarChart, LineChart, PieChart, GridComponent, TooltipComponent, TitleComponent, SVGRenderer]);
 type Dataset = AiResult["datasets"][number];
-interface Props { dataset: Dataset; comparison?: Dataset; type: AiResult["charts"][number]["type"]; onPoint: (metricId: string) => void; testId?: string }
+interface Props { dataset: Dataset; comparison?: Dataset; type: AiResult["charts"][number]["type"]; onPoint: (metricId: string) => void; testId?: string; translateContent?: boolean }
 
 // Büyük değerleri eksende okunabilir tutar; tooltip ve tabloda tam değer korunur.
-function axisNumber(value: number) {
-  if (getLocale() !== "tr") return new Intl.NumberFormat(localeTag(), { notation: "compact", maximumFractionDigits: 1 }).format(value);
-  if (Math.abs(value) >= 1_000_000_000) return new Intl.NumberFormat(localeTag(), { maximumFractionDigits: 2 }).format(value / 1_000_000_000) + " mlr";
-  if (Math.abs(value) >= 1_000_000) return new Intl.NumberFormat(localeTag(), { maximumFractionDigits: 1 }).format(value / 1_000_000) + " mn";
-  if (Math.abs(value) >= 10_000) return new Intl.NumberFormat(localeTag(), { maximumFractionDigits: 0 }).format(value / 1000) + " bin";
-  return new Intl.NumberFormat(localeTag(), { maximumFractionDigits: 1 }).format(value);
-}
+function axisNumber(value: number) { return reportNumber(value, "number", true); }
 
 // Grafik görünürken başlar; seçili dönemin doğrulanmış değerlerini ve isteğe bağlı bütçeyi birlikte çizer.
-export function ReportChart({ dataset, comparison, type, onPoint, testId = "report-chart" }: Props) {
+export function ReportChart({ dataset, comparison, type, onPoint, testId = "report-chart", translateContent = true }: Props) {
   const locale = useLocale();
   const element = useRef<HTMLDivElement>(null);
   const chart = useRef<ReturnType<typeof init> | null>(null);
@@ -43,23 +38,24 @@ export function ReportChart({ dataset, comparison, type, onPoint, testId = "repo
   useEffect(() => {
     const instance = chart.current;
     if (!instance || !visible) return;
-    const horizontal = type === "horizontal-bar", dark = theme === "dark", percent = dataset.unit === "%";
+    const content = (value: string) => translateContent ? t(value) : value;
+    const horizontal = type === "horizontal-bar", dark = theme === "dark", percent = dataset.unit === "%" || dataset.unit === "percent";
     const ink = dark ? "#c7bed5" : "#756383";
     const colors = reportColors(theme);
-    const category = { type: "category", data: dataset.points.map(point => t(point.label)), boundaryGap: type !== "line", axisTick: { show: false }, axisLine: { show: false }, axisLabel: { color: ink, fontSize: 11, margin: 14, hideOverlap: true } };
-    const value = { type: "value", splitNumber: 3, min: Math.min(0, ...dataset.points.map(point => point.value ?? 0)), ...(percent ? { max: 100 } : {}), axisLabel: { color: ink, fontSize: 10, hideOverlap: true, formatter: (n: number) => axisNumber(n) + (percent ? "%" : "") }, splitLine: { lineStyle: { color: dark ? "#392b48" : "#ece7f2", type: "dashed" } } };
+    const category = { type: "category", data: dataset.points.map(point => content(point.label)), boundaryGap: type !== "line", axisTick: { show: false }, axisLine: { show: false }, axisLabel: { color: ink, fontSize: 11, margin: 14, hideOverlap: true, ...(horizontal ? { width: 110, overflow: "truncate" } : {}) } };
+    const value = { type: "value", splitNumber: 3, min: Math.min(0, ...[...dataset.points, ...(comparison?.points ?? [])].map(point => point.value ?? 0)), ...(percent ? { max: Math.max(100, ...dataset.points.map(point => point.value ?? 0)) } : {}), axisLabel: { color: ink, fontSize: 10, hideOverlap: true, formatter: (n: number) => axisNumber(n) + (percent ? "%" : "") }, splitLine: { lineStyle: { color: dark ? "#392b48" : "#ece7f2", type: "dashed" } } };
     const series = (data: Dataset, secondary = false) => ({
-      id: data.id, name: t(data.label), type: type === "line" ? "line" : "bar", smooth: false, connectNulls: false,
+      id: data.id, name: content(data.label), type: type === "line" ? "line" : "bar", smooth: false, connectNulls: false,
       symbol: "circle", symbolSize: 6, showSymbol: false, barMaxWidth: horizontal ? 28 : 34,
       lineStyle: { color: secondary ? colors[1] : colors[0], width: secondary ? 2 : 3, type: secondary ? "dashed" : "solid" },
       ...(type === "line" && !secondary ? { areaStyle: { color: new graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: dark ? "#bba6f538" : "#7351b530" }, { offset: 1, color: "#7351b500" }]) } } : {}),
       label: { show: horizontal || dataset.points.length < 5, position: horizontal ? "right" : "top", color: ink, fontSize: 11, formatter: (params: { value: unknown }) => typeof params.value === "number" ? axisNumber(params.value) : "—" },
-      data: data.points.map((point, index) => ({ name: t(point.label), value: point.value, itemStyle: { color: type === "line" ? (secondary ? colors[1] : colors[0]) : colors[index % colors.length], borderRadius: horizontal ? [0, 5, 5, 0] : [5, 5, 0, 0] } })), emphasis: { focus: "series" }, cursor: "pointer",
+      data: data.points.map((point, index) => ({ name: content(point.label), value: point.value, itemStyle: { color: type === "line" ? (secondary ? colors[1] : colors[0]) : colors[index % colors.length], borderRadius: horizontal ? [0, 5, 5, 0] : [5, 5, 0, 0] } })), emphasis: { focus: "series" }, cursor: "pointer",
     });
     let option: EChartsCoreOption = {
       animation: !reducedMotion, animationDuration: 1050, animationDurationUpdate: 650, animationEasing: "cubicOut", animationDelay: (index: number) => index * 22,
       grid: { left: 4, right: horizontal ? 66 : 12, top: 20, bottom: 8, containLabel: true },
-      tooltip: { trigger: type === "line" ? "axis" : "item", renderMode: "richText", confine: true, backgroundColor: dark ? "#251732" : "#ffffff", borderColor: dark ? "#463254" : "#e2daec", textStyle: { color: dark ? "#eee8f7" : "#320e3b", fontSize: 12 }, valueFormatter: (n: unknown) => typeof n === "number" ? `${new Intl.NumberFormat(localeTag(), { maximumFractionDigits: 2 }).format(n)} ${dataset.unit === "TRY" ? "TL" : dataset.unit}` : "—" },
+      tooltip: { trigger: type === "line" ? "axis" : "item", renderMode: "richText", confine: true, backgroundColor: dark ? "#251732" : "#ffffff", borderColor: dark ? "#463254" : "#e2daec", textStyle: { color: dark ? "#eee8f7" : "#320e3b", fontSize: 12 }, valueFormatter: (n: unknown) => typeof n === "number" ? reportNumber(n, dataset.unit) : "—" },
       xAxis: horizontal ? value : category, yAxis: horizontal ? { ...category, inverse: true } : value, series: comparison ? [series(dataset), series(comparison, true)] : [series(dataset)],
     };
     if (type === "donut") {
@@ -68,7 +64,7 @@ export function ReportChart({ dataset, comparison, type, onPoint, testId = "repo
       option = { ...option, xAxis: undefined, yAxis: undefined, grid: undefined,
         title: { text: axisNumber(total), subtext: dataset.unit === "TRY" ? t("NET SATIŞ · TL") : t(dataset.unit), left: "center", top: "40%", textStyle: { fontSize: 25, fontWeight: 600, color: dark ? "#e8f8fb" : "#320e3b" }, subtextStyle: { color: ink, fontSize: 9 } },
         tooltip: { ...option.tooltip as object, trigger: "item" },
-        series: [{ id: dataset.id, name: t(dataset.label), type: "pie", radius: ["63%", "82%"], center: ["50%", "49%"], padAngle: 3, startAngle: 90, label: { show: false }, emphasis: { scaleSize: 7 }, itemStyle: { borderRadius: 8 }, data: dataset.points.map((point, index) => ({ name: t(point.label), value: point.value, itemStyle: { color: colors[index % colors.length] } })) }],
+        series: [{ id: dataset.id, name: content(dataset.label), type: "pie", radius: ["63%", "82%"], center: ["50%", "49%"], padAngle: 3, startAngle: 90, label: { show: false }, emphasis: { scaleSize: 7 }, itemStyle: { borderRadius: 8 }, data: dataset.points.map((point, index) => ({ name: content(point.label), value: point.value, itemStyle: { color: colors[index % colors.length] } })) }],
       };
     }
     instance.setOption(option, { notMerge: true });
@@ -78,7 +74,7 @@ export function ReportChart({ dataset, comparison, type, onPoint, testId = "repo
     };
     instance.on("click", select);
     return () => { instance.off("click", select); };
-  }, [dataset, comparison, type, theme, reducedMotion, visible, locale]);
+  }, [dataset, comparison, type, theme, reducedMotion, visible, locale, translateContent]);
   // SVG eksen koordinatları LTR kalır; Arapça etiketler yerelleştirilir, dış arayüz RTL düzenini korur.
   return <div dir="ltr" ref={element} className="h-64 w-full sm:h-72" aria-hidden="true" data-testid={testId} />;
 }

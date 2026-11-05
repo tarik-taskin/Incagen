@@ -1,7 +1,8 @@
+import { analysisDisplayStatus } from "../features/reports/analysis-status";
 import { useOutsideDismiss } from "../hooks/use-outside-dismiss";
 import { PageLoading } from "../components/page-loading";
 import { t, useLocale } from "../i18n/runtime";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Check, FilePlus2, TriangleAlert } from "lucide-react";
 import { useWorkspace } from "../lib/workspace-context";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -13,6 +14,8 @@ import { getServices } from "../lib/firebase";
 import { userError } from "../lib/errors";
 import { tr } from "../i18n/tr";
 
+const TabularAnalysisPanel = lazy(() => import("../features/reports/tabular-analysis-panel").then(module => ({ default: module.TabularAnalysisPanel })));
+
 // İş durumunu ve doğrulanmış belge hazırlığını canlı izler; silme öncesi açık kullanıcı onayı ister.
 export function AnalysisPage() {
   useLocale();
@@ -21,6 +24,7 @@ export function AnalysisPage() {
   const workspace = useWorkspace();
   const [actionError, setActionError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [statusNow, setStatusNow] = useState(Date.now);
   const navigate = useNavigate();
   const [deleteOpen, setDeleteOpen] = useState(false);
   const deleteDialog = useRef<HTMLDialogElement>(null);
@@ -30,6 +34,13 @@ export function AnalysisPage() {
     if (deleteOpen && !dialog?.open) dialog?.showModal();
     else if (!deleteOpen && dialog?.open) dialog.close();
   }, [deleteOpen]);
+
+  // Aktif işin kilidi dolduğunda başlık da yeniden deneme durumuna geçer.
+  useEffect(() => {
+    if (analysis?.ai?.status !== "running") return;
+    const timer = setTimeout(() => setStatusNow(Date.now()), Math.max(0, analysis.ai.leaseUntil - Date.now()) + 100);
+    return () => clearTimeout(timer);
+  }, [analysis?.ai?.status, analysis?.ai?.leaseUntil]);
 
   // Başarısız hazırlığı yeniden çalıştırır veya kullanıcı onayıyla analiz kaynaklarını siler.
   async function action(name: "prepareAnalysis" | "deleteAnalysis", reviewToken?: string) {
@@ -51,12 +62,14 @@ export function AnalysisPage() {
   if (loading) return <PageLoading label="Analiz hazırlanıyor…" />;
   if (error || !analysis) return <div><p role="alert">{t(error || "Analiz bulunamadı veya silindi.")}</p><Link className="underline" to="/app/history">{t("Geçmişe dön")}</Link></div>;
   const report = analysis.report;
+  const tabular = report?.sources.some(source => /\.(csv|xlsx)$/i.test(source.name));
+  const status = analysisDisplayStatus(analysis, statusNow).label;
 
   return <section aria-labelledby="report-title">
     <Link to="/app/history" className="text-sm text-primary underline dark:text-secondary">{t("← Geçmiş analizler")}</Link>
-    <div className="mt-4 flex flex-wrap items-start justify-between gap-4"><div><p className="text-sm text-muted-foreground">{analysis.business}</p><h1 id="report-title" className="mt-1 break-words text-3xl font-semibold">{analysis.title}</h1></div><span role="status" className="rounded-full border border-border bg-card px-4 py-2 text-sm">{t(tr.status[analysis.status])}</span></div>
+    <div className="mt-4 flex flex-wrap items-start justify-between gap-4"><div><p className="text-sm text-muted-foreground">{analysis.business}</p><h1 id="report-title" className="mt-1 break-words text-3xl font-semibold">{analysis.title}</h1></div><span role="status" className="rounded-full border border-border bg-card px-4 py-2 text-sm">{t(status)}</span></div>
     {analysis.objective && <section className="mt-5 rounded-2xl border border-border bg-card p-4 sm:p-5" aria-labelledby="saved-objective-title"><h2 id="saved-objective-title" className="text-xs font-semibold uppercase tracking-wider text-primary dark:text-secondary">{t("Analiz hedefi")}</h2><p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6">{analysis.objective}</p></section>}
-    {analysis.status === "completed" && <p className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm dark:border-secondary/20">{t(tr.analysis.disclaimer)}</p>}
+    {analysis.status === "completed" && !tabular && <p className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm dark:border-secondary/20">{t(tr.analysis.disclaimer)}</p>}
     {(analysis.error || actionError) && <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{t(actionError || analysis.error)}</p>}
     {analysis.status === "uploading" && <p className="mt-5 text-sm">{t("Yükleme tamamlanmadıysa Yeni analiz sayfasından aynı belgelerle devam edin.")}</p>}
     {analysis.status === "processing" && <p className="mt-5 text-sm">{t("Belgelerin içeriği ayrıştırılıyor; sayfadan ayrılabilirsiniz. Beş dakikadan uzun sürerse yeniden denemek güvenlidir.")}</p>}
@@ -73,7 +86,7 @@ export function AnalysisPage() {
     </section>}
     {analysis.status === "failed" && !!analysis.preparationFailures?.length && <ul className="mt-5 space-y-3 rounded-2xl border border-border bg-card p-5 text-sm" aria-label={t("Hazırlanamayan belgeler")}>{analysis.preparationFailures.map(source => <li key={source.id}><p className="break-all font-medium">{source.name}</p><p className="mt-1 text-xs leading-5 text-muted-foreground">{t(source.reason)}</p></li>)}</ul>}
     {analysis.status === "completed" && report && <>
-      <PreparedDocuments key={id} report={report} />
+      {tabular ? <><Suspense fallback={<PageLoading label="Analiz yükleniyor…" />}><TabularAnalysisPanel key={id} analysis={analysis} /></Suspense><details className="mt-6 rounded-2xl border border-border bg-card p-5"><summary className="w-fit cursor-pointer rounded text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{t("Hazırlanan belgeler")}</summary><PreparedDocuments report={report} /></details></> : <PreparedDocuments key={id} report={report} />}
       {!!report.excludedSources?.length && <details className="mt-5 rounded-2xl border border-border bg-card p-5"><summary className="cursor-pointer text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{t("Kapsam dışında kalan {0} belge", report.excludedSources.length)}</summary><ul className="mt-4 space-y-3 text-xs leading-6 text-muted-foreground">{report.excludedSources.map(source => <li key={source.id}><span className="break-all font-medium text-foreground">{source.name}</span> — {t(source.reason)}</li>)}</ul></details>}
     </>}
     <div className="mt-6 flex flex-wrap gap-3">

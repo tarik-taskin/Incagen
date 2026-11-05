@@ -1,3 +1,4 @@
+import { analysisDisplayStatus } from "../features/reports/analysis-status";
 import { useOutsideDismiss } from "../hooks/use-outside-dismiss";
 import { PageLoading } from "../components/page-loading";
 import { t, useLocale, localeTag } from "../i18n/runtime";
@@ -267,15 +268,15 @@ export function HistoryPage() {
       {selectionMode ? <label className="flex min-h-24 cursor-pointer flex-wrap items-center gap-4 rounded-2xl p-4 transition-colors hover:bg-muted/40 sm:p-5">
         <Checkbox checked={selectedIds.has(analysis.id)} disabled={progress !== null} onCheckedChange={() => toggleSelected(analysis.id)} aria-label={t("{0} seç", analysis.title)} />
         <span className="min-w-0 flex-1"><span className="block break-words font-semibold">{analysis.title}</span><span className="mt-1 block text-xs text-muted-foreground">{analysis.business} · {new Date(analysis.createdAt).toLocaleString(localeTag())}</span></span>
-        <span className={"rounded-full border px-3 py-1 text-xs font-medium " + statusTone(analysis.status)}>{t(tr.status[analysis.status])}</span>
+        <span className={"rounded-full border px-3 py-1 text-xs font-medium " + statusTone(analysisDisplayStatus(analysis).state)}>{t(analysisDisplayStatus(analysis).label)}</span>
       </label> : <div className="flex min-h-28 items-center gap-2 p-2 sm:gap-3">
         <Link className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl px-2 py-3 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:gap-5 sm:px-4" to={"/app/analyses/" + analysis.id}>
           <span className="hidden h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-primary/[0.07] text-primary dark:bg-secondary/[0.08] dark:text-secondary sm:flex"><span className="text-lg font-bold leading-none">{new Date(analysis.createdAt).toLocaleDateString(localeTag(), { day: "2-digit" })}</span><span className="mt-1 text-[10px] font-semibold uppercase">{new Date(analysis.createdAt).toLocaleDateString(localeTag(), { month: "short" })}</span></span>
-          <span className="min-w-0 flex-1"><span className="block break-words text-sm font-semibold tracking-tight sm:text-base">{analysis.title}</span><span className="mt-1.5 block break-words text-xs text-muted-foreground">{analysis.business} <span aria-hidden="true">·</span> {new Date(analysis.createdAt).toLocaleString(localeTag())}</span><span className={"mt-2 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium sm:hidden " + statusTone(analysis.status)}>{t(tr.status[analysis.status])}</span></span>
+          <span className="min-w-0 flex-1"><span className="block break-words text-sm font-semibold tracking-tight sm:text-base">{analysis.title}</span><span className="mt-1.5 block break-words text-xs text-muted-foreground">{analysis.business} <span aria-hidden="true">·</span> {new Date(analysis.createdAt).toLocaleString(localeTag())}</span><span className={"mt-2 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium sm:hidden " + statusTone(analysisDisplayStatus(analysis).state)}>{t(analysisDisplayStatus(analysis).label)}</span></span>
           <ArrowUpRight className="hidden h-4 w-4 shrink-0 text-muted-foreground sm:block" aria-hidden="true" />
         </Link>
         <div className="flex shrink-0 items-center gap-1 pe-1 sm:gap-2 sm:pe-2">
-          <span className={"hidden rounded-full border px-3 py-1 text-xs font-medium sm:inline-flex " + statusTone(analysis.status)}>{t(tr.status[analysis.status])}</span>
+          <span className={"hidden rounded-full border px-3 py-1 text-xs font-medium sm:inline-flex " + statusTone(analysisDisplayStatus(analysis).state)}>{t(analysisDisplayStatus(analysis).label)}</span>
           <HistoryActions analysis={analysis} disabled={progress !== null} onDelete={() => setTarget({ items: [{ id: analysis.id, title: analysis.title }] })} />
         </div>
       </div>}
