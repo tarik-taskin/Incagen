@@ -118,7 +118,16 @@ def extract_document(path: str | Path, source_id: str = "file-0") -> dict:
     try:
         if extension in ("csv", "tsv"):
             text = data.decode("utf-8-sig", errors="strict")
-            delimiter = "\t" if extension == "tsv" else csv.Sniffer().sniff(text[:8192], delimiters=",;\t").delimiter
+            if extension == "tsv":
+                delimiter = "\t"
+            else:
+                try:
+                    delimiter = csv.Sniffer().sniff(text[:8192], delimiters=",;\t").delimiter
+                except csv.Error:
+                    # A single-column CSV has no delimiter to sniff; do not guess ambiguous separators.
+                    if any(candidate in text for candidate in ",;\t"):
+                        raise
+                    delimiter = ","
             values = []
             for row in csv.reader(io.StringIO(text), delimiter=delimiter, strict=True):
                 if len(values) > MAX_ROWS or len(row) > MAX_COLUMNS or (len(values) + 1) * max(1, len(row)) > MAX_CELLS + MAX_COLUMNS:

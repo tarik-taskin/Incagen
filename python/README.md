@@ -34,3 +34,7 @@ Windows'ta sanal ortam komutları `python/.venv/Scripts/python.exe` ile çalış
 - Office arşivi açılım sınırı, tekrarlı/tehlikeli yollar, dış ilişkiler, entity, makro ve gömülü aktif içerik kontrol edilir. Bu kontroller zararlı yazılım taraması veya süreç izolasyonunun yerine geçmez.
 
 Bu teslimat bir üretim Cloud Run işçisi değildir. Docling/OCR, kalıcı iş kuyruğu, süreç CPU/bellek/zaman izolasyonu, hedefe göre içerik seçimi ve güvenilir finansal hesaplayıcı sonraki adımdır. Python çıktısı sunucu paket kapısından geçmeden modele verilmez. Testler küçük sentetik PDF/DOCX/XLSX/CSV, kaynak eşliği, bozuk/parolalı belge, formül, satır aralığı ve TypeScript sözleşmesini kapsar.
+
+## Seçili tablo hesabı ve özel HTTP işçisi
+
+`incagen_extract.analyze`, CSV/XLSX içinden kullanıcı tarafından seçilen tablo/ölçümü `Decimal` ile hesaplar. `server` modülü sabit HTTP sınırı ve süre/bellek kısıtlı çocuk parser kullanır; model veya veri servisi kimlik bilgisi almaz. Container runtime bağımlılıkları test araçlarından ayrı `requirements.runtime.lock` içindedir. Üretim dağıtımı henüz yapılmadı. Kapsam, hesap kuralları ve somut dağıtım planı [ilk tablo analizi rehberindedir](../docs/TABULAR-ANALYSIS.md).

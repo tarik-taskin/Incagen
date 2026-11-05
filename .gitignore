@@ -45,3 +45,7 @@ functions/lib/
 **/__pycache__/
 *.pyc
 .pytest_cache/
+
+# Backend deployment parameters stay local; never commit per-project environment files.
+functions/.env.*
+!functions/.env.example
