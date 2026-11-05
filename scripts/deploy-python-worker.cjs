@@ -92,7 +92,25 @@ async function main() {
     await request(`https://storage.googleapis.com/upload/storage/v1/b/${bucketName}/o?uploadType=media&name=${object}`, { method: "POST", headers: { "Content-Type": "application/gzip" }, body: fs.readFileSync(context.archive) });
     const started = await request(`https://cloudbuild.googleapis.com/v1/projects/${project}/locations/${region}/builds`, { method: "POST", body: JSON.stringify({
       source: { storageSource: { bucket: bucketName, object } }, serviceAccount: `projects/${project}/serviceAccounts/${callerEmail}`,
-      steps: [{ name: "gcr.io/cloud-builders/docker", args: ["build", "-t", image, "."] }], images: [image], timeout: "600s", options: { logging: "CLOUD_LOGGING_ONLY" },
+      steps: [
+        { name: "gcr.io/cloud-builders/docker", args: ["build", "-t", image, "."] },
+        // Aynı Linux image'ını ağsız ve gerçek bellek/CPU sınırıyla sınar; dağıtımdan önce IPC ve Decimal sonucu doğrulanır.
+        { name: "gcr.io/cloud-builders/docker", args: ["run", "--rm", "--network=none", "--memory=1g", "--cpus=1", "--entrypoint=python", image, "-c", `
+import json, multiprocessing, tempfile
+from incagen_extract.server import isolated_calculation, MAX_RESPONSE_BYTES
+ctx = multiprocessing.get_context("spawn")
+parent, child = ctx.Pipe(duplex=False)
+meta = {"sourceId":"file-0","fileName":"smoke.csv","selection":{"sheet":None,"valueColumn":1,"groupColumn":None,"aggregation":"sum","numberFormat":"plain","unit":"USD"}}
+with tempfile.TemporaryDirectory() as work:
+    process = ctx.Process(target=isolated_calculation, args=(child, b"Channel,Amount\\nWeb,0.10\\nStore,0.20\\n", meta, work))
+    process.start(); child.close()
+    assert parent.poll(20), "worker timeout"
+    result = json.loads(parent.recv_bytes(MAX_RESPONSE_BYTES))
+    process.join(5)
+    assert process.exitcode == 0 and result.get("result", {}).get("metrics", [{}, {}])[1].get("value") == 0.3, "worker acceptance failed"
+print("Worker Decimal/IPC acceptance passed")
+`] },
+      ], images: [image], timeout: "600s", options: { logging: "CLOUD_LOGGING_ONLY" },
     }) });
     const buildId = started.metadata?.build?.id;
     if (!buildId) throw new Error("Missing build ID.");
