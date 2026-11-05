@@ -33,7 +33,13 @@ async function fixture(kind) {
 }
 
 // Yalnız testte üretilen oturumla callable çağırır; model için otomatik tekrar yoktur.
-function call(account, name, body) { return httpsCallable(getFunctions(account.app, "europe-west1"), name, { timeout: 190000 })(body); }
+async function call(account, name, body) {
+  try { return await httpsCallable(getFunctions(account.app, "europe-west1"), name, { timeout: 190000 })(body); }
+  catch (error) {
+    console.log(JSON.stringify({ callable: name, code: error?.code || "unknown", ...(typeof error?.details?.analysisFailure === "string" ? { analysisFailure: error.details.analysisFailure } : {}) }));
+    throw error;
+  }
+}
 
 // Defter, kaynak hash/konumları ve kayıtlı kullanım gerçek servisten bağımsız cevap anahtarıyla karşılaştırılır.
 function checkResult(artifact, record, expected, id, locale) {
@@ -74,7 +80,7 @@ async function assertCleanup(accounts, config) {
 }
 
 // Yeni arayüz aynı gerçek kayıtla açılır; okuma/yenileme/kaynak inceleme yeni model çağrısı yapmaz.
-async function checkBrowser(account, id, baseURL) {
+async function checkBrowser(account, id, baseURL, closed = false) {
   const browser = await chromium.launch();
   try {
     const page = await browser.newPage({ reducedMotion: "reduce" });
@@ -85,6 +91,13 @@ async function checkBrowser(account, id, baseURL) {
     await page.getByRole("button", { name: "Giriş yap", exact: true }).click();
     await page.waitForURL("**/app/new-analysis", { timeout: 30000 });
     await page.goto(`${baseURL}/app/analyses/${id}`);
+    if (closed) {
+      await page.getByRole("heading", { name: "Synthetic service analysis", exact: true }).waitFor({ timeout: 30000 });
+      await page.getByRole("heading", { name: "Belgelerin içeriği ayrıştırıldı", exact: true }).waitFor({ timeout: 30000 });
+      assert.equal(await page.getByRole("heading", { name: "Tablodan net bir özet.", exact: true }).count(), 0);
+      console.log(JSON.stringify({ browser: "closed-rollout-preserves-preparation", status: "passed" }));
+      return;
+    }
     const report = page.getByRole("region", { name: "Analiz raporu", exact: true });
     await report.waitFor({ timeout: 30000 });
     assert.match(await report.innerText(), /19\.000,50 USD/);
@@ -93,6 +106,11 @@ async function checkBrowser(account, id, baseURL) {
     const dialog = page.getByRole("dialog", { name: "Cloud", exact: true });
     await dialog.waitFor(); assert.match(await dialog.getByRole("table").innerText(), /-500\.10/);
     assert.ok(!(await dialog.getByRole("table").innerText()).includes("Consulting"));
+    const downloadEvent = page.waitForEvent("download", { timeout: 30000 });
+    await dialog.getByRole("button", { name: "Özgün belgeyi indir", exact: true }).click();
+    const download = await downloadEvent;
+    assert.equal(download.suggestedFilename(), "synthetic-service-revenue.csv");
+    assert.equal(createHash("sha256").update(readFileSync(await download.path())).digest("hex"), createHash("sha256").update((await fixture("csv")).bytes).digest("hex"));
     await page.keyboard.press("Escape"); await page.reload(); await report.waitFor({ timeout: 30000 });
     assert.match(await report.innerText(), /19\.000,50 USD/);
     await page.screenshot({ path: "/tmp/incagen-live-tabular-report.png", fullPage: true });
@@ -103,15 +121,16 @@ async function checkBrowser(account, id, baseURL) {
 // En fazla altı gerçek çağrı yapar; hata halinde durur ve yalnız kendi sentetik hesaplarını temizler.
 async function main() {
   const config = configuration(), accounts = [], results = [], cleanupErrors = [];
+  const closed = process.argv.includes("--verify-closed");
   let failure;
   try {
-    for (let index = 0; index < 3; index++) {
+    for (let index = 0; index < (closed ? 1 : 3); index++) {
       const app = initializeApp(config.firebase, `live-table-${randomUUID()}`), email = `table-acceptance-${randomUUID()}@example.test`, password = `Synthetic-${randomUUID()}!`;
       const account = { app, email, password, ids: [] }; accounts.push(account);
       const created = await createUserWithEmailAndPassword(getAuth(app), email, password); account.uid = created.user.uid;
     }
     writeFileSync("/tmp/incagen-live-tabular-resources.json", JSON.stringify(accounts.map(({ uid, ids }) => ({ uid, ids }))), { mode: 0o600 });
-    for (let index = 0; index < locales.length; index++) {
+    for (let index = 0; index < (closed ? 1 : locales.length); index++) {
       const account = accounts[Math.floor(index / 2)], other = accounts[(Math.floor(index / 2) + 1) % 3], locale = locales[index], input = await fixture(index % 2 ? "xlsx" : "csv");
       const created = (await call(account, "createAnalysis", { requestId: randomUUID(), title: "Synthetic service analysis", business: "Synthetic acceptance", objective: input.objective, files: [{ name: input.name, size: input.bytes.length, contentType: input.type }] })).data;
       account.ids.push(created.id);
@@ -120,8 +139,16 @@ async function main() {
       await call(account, "prepareAnalysis", { id: created.id });
       const catalog = (await call(account, "getAnalysisTables", { id: created.id })).data;
       assert.ok(catalog.tables.some(table => table.sheet === input.selection.sheet && table.rows === input.rows));
-      await assert.rejects(call(other, "getAnalysisResult", { id: created.id }), { code: "functions/not-found" });
       const request = { id: created.id, sourceId: "file-0", selection: input.selection, locale };
+      if (closed) {
+        await assert.rejects(call(account, "startAnalysis", request), { code: "functions/failed-precondition", details: { analysisFailure: "configuration" } });
+        const record = (await getDoc(doc(getFirestore(account.app), `users/${account.uid}/analyses/${created.id}`))).data();
+        assert.equal(record.ai, undefined, "Closed rollout must not reserve a paid job.");
+        await checkBrowser(account, created.id, config.url, true);
+        console.log(JSON.stringify({ phase: "closed-rollout", paidJobReserved: false, modelCalls: 0, status: "passed" }));
+        break;
+      }
+      await assert.rejects(call(other, "getAnalysisResult", { id: created.id }), { code: "functions/not-found" });
       console.log(JSON.stringify({ phase: "real-model-start", run: index + 1, locale, format: index % 2 ? "xlsx" : "csv" }));
       await call(account, "startAnalysis", request);
       const path = `users/${account.uid}/analyses/${created.id}`, record = (await getDoc(doc(getFirestore(account.app), path))).data();
@@ -133,7 +160,7 @@ async function main() {
       writeFileSync("/tmp/incagen-live-tabular-results.json", JSON.stringify(results, null, 2));
       console.log(JSON.stringify({ phase: "real-model-passed", run: index + 1, locale, aggregate: input.total, durationMs: record.ai.durationMs, tokens: record.ai.usage.totalTokens }));
     }
-    await checkBrowser(accounts[0], accounts[0].ids[0], config.url);
+    if (!closed) await checkBrowser(accounts[0], accounts[0].ids[0], config.url);
   } catch (error) { failure = error; }
   finally {
     for (const account of accounts) {
@@ -157,8 +184,8 @@ async function main() {
     console.log(JSON.stringify({ phase: "cleanup", status: "verified", accounts: accounts.filter(account => account.uid).length }));
   }
   if (failure) throw failure;
-  assert.equal(results.length, 6);
-  console.log("Live Python/Gemini/source/report acceptance passed in six languages.");
+  assert.equal(results.length, closed ? 0 : 6);
+  console.log(closed ? "Closed rollout acceptance passed without model calls." : "Live Python/Gemini/source/report acceptance passed in six languages.");
 }
 
 main().catch(error => { console.error(JSON.stringify({ status: "failed", code: error?.code || error?.name || "unknown", message: error instanceof assert.AssertionError ? String(error.message).slice(0, 300) : "Inspect the phase and sanitized backend status." })); process.exitCode = 1; });

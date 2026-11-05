@@ -85,8 +85,21 @@ async function main() {
   let viewer = bucketPolicy.bindings.find(binding => binding.role === "roles/storage.objectViewer");
   if (!viewer) { viewer = { role: "roles/storage.objectViewer", members: [] }; bucketPolicy.bindings.push(viewer); }
   if (!viewer.members.includes(`serviceAccount:${callerEmail}`)) { viewer.members.push(`serviceAccount:${callerEmail}`); await request(`${bucketUrl}/iam`, { method: "PUT", body: JSON.stringify(bucketPolicy) }); }
-  const context = contextArchive(), tag = `source-${context.hash.slice(0, 20)}`, image = `${region}-docker.pkg.dev/${project}/incagen-analysis/extract:${tag}`;
   let digest;
+  const reuse = process.argv.find(value => value.startsWith("--reuse-build="))?.split("=")[1];
+  if (reuse) {
+    // Yalnız aynı projenin başarılı, kısıtlı Linux kontrolü içeren build'i yeniden kullanılabilir; image digest değişmez.
+    if (!/^[a-f0-9-]{36}$/.test(reuse)) throw new Error("Invalid build ID.");
+    const build = await request(`https://cloudbuild.googleapis.com/v1/projects/${project}/locations/${region}/builds/${reuse}`);
+    const image = build.results?.images?.[0];
+    if (build.status !== "SUCCESS" || build.source?.storageSource?.bucket !== bucketName
+      || !new RegExp(`^${region}-docker\\.pkg\\.dev/${project}/incagen-analysis/extract:source-[a-f0-9]{20}$`).test(image?.name || "")
+      || build.steps?.length !== 2 || !build.steps[1].args?.includes("--network=none") || !build.steps[1].args?.includes(image.name)
+      || !build.steps[1].args?.includes("--memory=1g") || !build.steps[1].args?.includes("--cpus=1")) throw new Error("Build does not match the verified private worker pipeline.");
+    digest = image.digest;
+    console.log(JSON.stringify({ phase: "build-reused", id: reuse, status: build.status }));
+  } else {
+  const context = contextArchive(), tag = `source-${context.hash.slice(0, 20)}`, image = `${region}-docker.pkg.dev/${project}/incagen-analysis/extract:${tag}`;
   try {
     const object = `${tag}.tgz`;
     await request(`https://storage.googleapis.com/upload/storage/v1/b/${bucketName}/o?uploadType=media&name=${object}`, { method: "POST", headers: { "Content-Type": "application/gzip" }, body: fs.readFileSync(context.archive) });
@@ -125,11 +138,12 @@ print("Worker Decimal/IPC acceptance passed")
       await sleep(10_000);
     }
   } finally { fs.rmSync(context.temporary, { recursive: true, force: true }); }
+  }
   if (!/^sha256:[a-f0-9]{64}$/.test(digest || "")) throw new Error("Missing immutable image digest.");
   const runUrl = `https://run.googleapis.com/v2/${serviceName}`;
   const current = await request(runUrl, {}, true);
   if (current && current.template?.serviceAccount !== runtimeEmail) throw new Error("Existing service has an unexpected runtime identity.");
-  const service = { name: serviceName, ingress: "INGRESS_TRAFFIC_ALL", invokerIamDisabled: false, template: {
+  const service = { ...(current ? { name: serviceName } : {}), ingress: "INGRESS_TRAFFIC_ALL", invokerIamDisabled: false, template: {
     serviceAccount: runtimeEmail, timeout: "90s", maxInstanceRequestConcurrency: 1, scaling: { minInstanceCount: 0, maxInstanceCount: 1 },
     containers: [{ image: `${region}-docker.pkg.dev/${project}/incagen-analysis/extract@${digest}`, ports: [{ containerPort: 8080 }], resources: { limits: { cpu: "1", memory: "1Gi" }, cpuIdle: true }, startupProbe: { httpGet: { path: "/healthz", port: 8080 }, periodSeconds: 3, failureThreshold: 20 } }],
   } };

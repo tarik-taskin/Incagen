@@ -62,7 +62,8 @@ export function AnalysisPage() {
   if (loading) return <PageLoading label="Analiz hazırlanıyor…" />;
   if (error || !analysis) return <div><p role="alert">{t(error || "Analiz bulunamadı veya silindi.")}</p><Link className="underline" to="/app/history">{t("Geçmişe dön")}</Link></div>;
   const report = analysis.report;
-  const tabular = report?.sources.some(source => /\.(csv|xlsx)$/i.test(source.name));
+  const tabular = (import.meta.env.VITE_TABULAR_ANALYSIS_ENABLED === "true" || Boolean(analysis.ai))
+    && report?.sources.some(source => /\.(csv|xlsx)$/i.test(source.name));
   const status = analysisDisplayStatus(analysis, statusNow).label;
 
   return <section aria-labelledby="report-title">

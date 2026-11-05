@@ -11,6 +11,7 @@ import { preparedAnalysis, type AiArtifact } from "./tabular-storage";
 import { computeTable, isAnalysisEmulator, WorkerError } from "./python-worker";
 import { analysisFingerprint, createTabularPacket, interpretTable } from "./tabular-result";
 import { AI_JOB_LIMITS, startAnalysisSchema, type AiJob, type AnalysisFailure } from "./tabular-contract";
+import { tabularRolloutEnabled } from "./tabular-rollout";
 
 // Atomik kabul hem tekrar çağrıyı tekilleştirir hem kullanıcı/proje maliyet sınırını sunucuda uygular.
 export async function reserveAnalysis(uid: string, input: ReturnType<typeof startAnalysisSchema.parse>, fingerprint: string, now = Date.now()) {
@@ -78,6 +79,7 @@ export const startAnalysis = onCall({ region: "europe-west1", timeoutSeconds: 18
   if (!parsed.success) throw new HttpsError("invalid-argument", "Analiz kapsamını kontrol edin.");
   const input = parsed.data, uid = request.auth?.uid;
   const { data, ref } = await preparedAnalysis(uid, input.id);
+  if (!tabularRolloutEnabled()) throw new HttpsError("failed-precondition", "Analiz servisi şu anda kullanılamıyor.", { analysisFailure: "configuration" });
   const source = data.report.sources.find(source => source.id === input.sourceId && /\.(csv|xlsx)$/i.test(source.name));
   if (!source || !data.objective?.trim()) throw new HttpsError("failed-precondition", "Analiz için CSV veya XLSX tablosu ve bir hedef seçin.");
   const fingerprint = analysisFingerprint(source.sha256, source.id, input.selection, input.locale);

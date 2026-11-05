@@ -28,13 +28,18 @@ describe("Gemini backend boundary", () => {
   it("sets supported low thinking explicitly and records actual usage without model content", async () => {
     sdk.generate.mockResolvedValue({ text: '{}', candidates: [{ finishReason: "STOP" }], usageMetadata: { promptTokenCount: 120, candidatesTokenCount: 40, thoughtsTokenCount: 20, totalTokenCount: 180 } });
     const usage = vi.fn();
-    await createGeminiGenerate("synthetic-key", usage)({ prompt: "test", system: "test", schema: {}, maxOutputTokens: 4096, thinkingLevel: "low" });
+    await createGeminiGenerate("synthetic-key", usage)({ prompt: "test", system: "test", schema: {}, maxOutputTokens: 4096, thinkingLevel: "low", timeoutMs: 90000 });
     expect(sdk.generate.mock.calls[0][0].config.thinkingConfig).toEqual({ thinkingLevel: "LOW" });
+    expect(sdk.generate.mock.calls[0][0].config.httpOptions).toEqual({ timeout: 90000, retryOptions: { attempts: 1 } });
     expect(usage).toHaveBeenCalledWith({ promptTokens: 120, outputTokens: 60, totalTokens: 180 });
   });
   it("sanitizes raw provider errors", async () => {
-    sdk.generate.mockRejectedValue(new Error("https://provider.test?key=private-key document-content"));
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
+    sdk.generate.mockRejectedValue(Object.assign(new Error("https://provider.test?key=private-key document-content"), { status: 429 }));
     await expect(checkGeminiConnection(createGeminiGenerate("synthetic-key"))).rejects.toThrow(/^Gemini: unavailable$/);
+    expect(warning).toHaveBeenCalledWith("gemini-request-failed", { status: 429, reason: "provider" });
+    expect(JSON.stringify(warning.mock.calls)).not.toMatch(/private-key|document-content/);
+    warning.mockRestore();
   });
   it.each([undefined, "MAX_TOKENS", "SAFETY"])("rejects incomplete finish reason %s", async reason => {
     sdk.generate.mockResolvedValue({ text: '{"status":"ok","service":"incagen"}', candidates: [{ finishReason: reason }] });
