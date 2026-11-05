@@ -103,3 +103,9 @@ node scripts/build-feedback-example.cjs --check
 - Google'ın normal tarayıcıdaki gerçek hesap kabulü ile otomasyon/hata ayıklama oturumu ayrı tutulur. Kullanıcının normal tarayıcıda doğruladığı kabul, otomatik uçtan uca kanıt olarak gösterilmez.
 
 2 Kasım 2026 üretim denetiminde kök paket ağacı 0 uyarı, Functions ağacı 9 orta önem kaydı verdi; yüksek/kritik kayıt yok. Orta kayıtlar Office arşivleme zincirindeki `glob`/`minimatch` ve bir `google-gax` alt zincirine aittir. CI eşiği değiştirilmedi; uyumsuz Office ana sürümü düşürme veya zorlanmış override uygulanmadı. Önceki 29 Ekim 0 uyarı kaydı kendi tarihindeki durumdur.
+
+### İlk gerçek tablo analizi kontrolleri
+
+`integration/tabular.test.mjs`, demo projesinde gerçek Python hesabını; CSV ondalık toplamı, seçili XLSX sayfasında satır ağırlıklı ortalamayı, tekrar çağrı/yeniden deneme, yetki/kota ve silme yarışını doğrular. Model yanıtı emülatörde sabit taklittir. `e2e/tabular-analysis.spec.ts` gerçek upload → rapor → kaynak/indirme → geçmiş/yenileme, hatalı ölçümden sayım ile devam, RTL/Glass ve iki örneğin klavye rehberini kontrol eder. Canlı Python/Gemini kalite kabulünün yerine geçmez. [Kapsam ve yayın kapısı](TABULAR-ANALYSIS.md).
+
+5 Kasım 2026 üretim bağımlılık denetimi: kökte 0, Functions'ta 4 orta kayıt (`google-gax` → `rimraf`/`glob`/`minimatch` zinciri); yüksek/kritik yok. Bu oturumda uyumsuz bağımlılık yükseltmesi veya zorlanmış override yapılmadı. Önceki tarihli sayımlar tarihsel kayıttır.

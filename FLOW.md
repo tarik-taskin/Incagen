@@ -102,7 +102,7 @@ TypeScript Cloud Functions kullanılır; bugünkü belge hazırlığında Cloud 
 
 Dosya türüne göre ayrıştırma ve gerektiğinde görsel okuma → kaynak konumlu ortak içerik → Python ile doğrulanabilir hesaplamalar → analiz hedefi ve kanıtlarla LLM yorumlama → sürümlü sonuç doğrulaması → React/ECharts ile etkileşimli sunum.
 
-Bu bölüm geliştirme hedefidir. Mevcut kod belge hazırlama hattını çalıştırır; AI sonuç v1 şeması ve güvenilir kaynak/metrik doğrulayıcısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içinde tanımlanan bağımsız modüldür. Bu kapı henüz model çağrısına veya Functions uçlarına bağlanmadı. Yerel Python extraction temeli ve Gemini backend adaptörü eklendi; üretim Python işçisi, OCR ve kullanıcı belgeleriyle gerçek model çağrıları sonraki aşamadadır. Analiz veri paketi ile `/ornek-rapor` 12 aylık CSV/PDF/Word şirket sunumu [AI sonuç rehberinde](docs/AI-RESULTS.md#analiz-veri-paketi--v1) tanımlıdır; mevcut hazırlık kayıtları veya bulut uçları bu rapora bağlanmaz.
+Bu bölüm geliştirme hedefidir. Mevcut kod belge hazırlama hattını çalıştırır; AI sonuç v1 şeması ve güvenilir kaynak/metrik doğrulayıcısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içinde tanımlanan bağımsız modüldür. CSV/XLSX için açık alan seçimiyle Python hesabı → kaynaklı Gemini yorumu → özel sonuç kaydı bağlantısı kodda eklendi. Üretim Python işçisi ve yeni callable dağıtımı henüz yapılmadı; yeni bulut kaynakları/IAM onayı ve gerçek canlı kalite kabulü bekleniyor. [İlk gerçek tablo analizi](docs/TABULAR-ANALYSIS.md) mevcut kod kapsamını, limitleri ve dağıtım planını tanımlar. OCR ve diğer belge türleriyle çok kaynaklı analiz sonraki aşamadadır. Analiz veri paketi ile `/ornek-rapor` 12 aylık CSV/PDF/Word şirket sunumu [AI sonuç rehberinde](docs/AI-RESULTS.md#analiz-veri-paketi--v1) tanımlıdır; mevcut hazırlık kayıtları veya bulut uçları bu rapora bağlanmaz.
 
 ```mermaid
 flowchart LR
@@ -146,7 +146,7 @@ Pandas, tablo temizleme, gruplama ve zaman serisi hesaplamaları için başlang�
 
 ### Hesaplama ve LLM sonuç sözleşmesi
 
-- Analiz girdisi başlık, kaynaklar ve kullanıcının analiz hedefini içerir. Zorunlu hedef, mevcut arayüz/backend sözleşmesinde kaydedilir; AI hattının bu hedefi kullanması sonraki geliştirme işidir. Ön uygunluk kontrolü kapsam dışı veya yetersiz girdiyi belirler.
+- Analiz girdisi başlık, kaynaklar ve kullanıcının analiz hedefini içerir. Zorunlu hedef, mevcut arayüz/backend sözleşmesinde kaydedilir; İlk tablo analizi bu hedefi kaynaklı yorum girdisi olarak kullanır; canlı açılış durumu [analiz rehberinde](docs/TABULAR-ANALYSIS.md) izlenir. Ön uygunluk kontrolü kapsam dışı veya yetersiz girdiyi belirler.
 - Toplamlar, oranlar, dönem karşılaştırmaları ve istatistikler test edilmiş kodla hesaplanır. Her metrik kullanılan kayıtları, kapsamı, birimi ve hesaplama yöntemini taşır; oranlarda pay/payda, değişimlerde karşılaştırılan dönemler bellidir.
 - LLM'ye ilgili kaynak parçaları, gerekli orijinal görseller, doğrulanmış metrikler, analiz hedefi ve veri sınırlamaları verilir. LLM özet, bulgu, gerekçeli öneri ve grafik önerisini bu kanıtlara bağlar. Belgelerdeki içerik sistem talimatı olarak yürütülmez.
 - Müşteri yorumlarında tema/duygu sınıflandırması model çıkarımı olarak etiketlenir; sınıflandırılmış kayıtların adet/oran hesabını kod yapar. Ölçülen olgu, yorum ve öneri birbirinden ayırt edilir; kanıtsız nedensellik veya uydurma güven yüzdesi sunulmaz.

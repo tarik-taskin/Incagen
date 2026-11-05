@@ -5,7 +5,18 @@
 Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 İşe başlamadan sahibi Tarık veya Furkan olarak atanır.
 
-## Aktif milestone: M0 — Temel düzen ve kalite altyapısı
+## Aktif milestone: M3 — İlk kaynaklı tablo analizi
+
+### 2026-11-05 — Furkan / Codex: ilk gerçek tablo analizi
+
+- [~] Sahip: Furkan — CSV/XLSX için kullanıcı tarafından seçilen tablo, ölçüm, toplama yöntemi ve sayı biçimiyle Python hesaplarını çalıştır; kaynakları doğrulanan Gemini yorumunu backend üzerinden üret.
+- [~] Sahip: Furkan — Doğrulanmış gerçek sonucu mevcut rapor bileşenleri, kaynak incelemesi ve kullanıcıya özel geçmiş kaydıyla birleştir; altı dil, sade görünüm ve eski hazırlık kayıtları korunsun.
+- [~] Sahip: Furkan — Analiz işi için atomik tekilleştirme, süre/maliyet sınırları, anlaşılır hata ve sınırlı kullanıcı tetiklemeli yeniden deneme ekle; kayıt/hesap silmeyle yarışan işlemler veri bırakmasın.
+- [!] Sahip: Furkan — Hesap/kaynak doğruluğunu, yetki ve hata senaryolarını bağımsız sentetik örneklerle doğrula; canlı kabul, GitHub kalite kapısı, main/furkan eşitlemesi ve Netlify yayınıyla teslim et. **Engel:** Otomatik onay denetimi yeni Cloud Run servisi, runtime hesabı, build kaynakları ve kaynak bazlı IAM değişikliğini mevcut genel yayın izninin dışında değerlendirdi; dağıtım komutu çalışmadı. Beklenen karar: [somut dağıtım kapsamına](docs/TABULAR-ANALYSIS.md#somut-dağıtım-kapsamı) kullanıcı onayı. Canlı kabul/yayın tamamlanmış sayılmaz.
+
+Kabul: Python işçisi yalnız IAM ile çağrılmalı; Gemini anahtarı yalnız backend Secret Manager'da kalmalı. Sayısal alan ve birim tahmin edilmemeli; eksik/bozuk sayı sessizce sıfır olmamalı, seçilen kapsam açık gösterilmeli. Modelin metrik uydurması ve bilinmeyen kaynak kullanımı reddedilmeli. Yenileme, tekrar çağrı, kullanıcı izolasyonu, başarısız deneme ve silme yarışı test edilmeli. Gerçek kullanıcı verisi test edilmez; ücretli sentetik kabul çağrıları sınırlı tutulur. İlk kapsam CSV/XLSX'tir; diğer belge türlerinin mevcut hazırlığı korunur. Analiz kalitesi, kaynak doğruluğu ve grafik/veri tablosu eşliği ayrı doğrulanır.
+
+Yerel doğrulama: lint, frontend/Functions derlemeleri, 106 arayüz + 131 Functions testi, 39 Python testi ve 8 demo entegrasyon kontrolü geçti. Tam tarayıcı paketindeki mevcut 69 senaryo ve yeni gerçek analiz senaryoları geçti; keşif rehberinin klavye testindeki yanlış metin hedefi düzeltildikten sonra yeni altı senaryo 6/6 geçti. Son ortak grafik/rapor kabulü 18/18 geçti; bu alt pakette mevcut 2 platform senaryosu atlandı (tam pakette mevcut 3 atlama). Gerçek Python hesapları demo ortamında kullanıldı; model taklidi gerçek Gemini kalite kabulü olarak gösterilmez. Python çocuk süreç/timeout/geçici dosya temizliği ve hassasiyet kaybı reddi ayrıca doğrulandı. İki örneğe altı dilde kapalı açılan tek satırlık keşif rehberi eklendi. İlk açılış 315.289 gzip bayt, 400 KiB bütçesinin altında. Üretim denetimi kökte 0, Functions'ta 4 orta; yüksek/kritik yok. Yeni üretim servisi/IAM, yeni callable dağıtımı, gerçek kullanıcı analizi, main push ve Netlify yayını henüz yapılmadı.
 
 ### 2026-11-02 — Furkan / Antigravity: kimlik geçiş ekranı etkileşim ve dış tıklama düzeltmesi
 
@@ -519,6 +530,8 @@ Kabul: Tarık'ın sekiz commit'i ve yeni doğrudan main çalışma düzeni korun
 
 Doğrulama: lint, frontend/backend build, 22 birim/bileşen testi, 2 emülatör entegrasyon senaryosu ve 6 masaüstü/mobil tarayıcı testi geçti.
 
+## M0 — Temel düzen ve kalite altyapısı
+
 ### 2026-09-11 — Tarık / Codex: ilk yerel rapor prototipi
 
 - [x] Sahip: Tarık — Uzantı güvenliği, kalıcı oturum içi dosya seçimi ve regresyon testleri.
@@ -574,10 +587,10 @@ Kalite kapısı: format fixture'ları, kota sınırları, yetkilendirme ve kısm
 
 ## M3 — AI analiz hattı
 
-- [ ] Sahip: Atanmadı — [FLOW.md hedef mimarisi](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) için Cloud Run üzerinde Python işçisi ve arka plan iş yönetimi.
+- [~] Sahip: Furkan — Cloud Run üzerinde özel Python tablo işçisi ve sınırlı istek/iş yönetimi. [İlk CSV/XLSX kapsamı](docs/TABULAR-ANALYSIS.md) kodda uygulandı; üretim kaynak/IAM onayı ve canlı kabul bekleniyor. Kalıcı kuyruk ayrı iştir.
 - [ ] Sahip: Atanmadı — Dosya türüne göre OCR/görsel okuma, kaynaklı normalizasyon ve Python ile deterministik metrikler; parser/OCR adaylarını örnek belge setiyle değerlendir.
-- [ ] Sahip: Atanmadı — Uygunluk kontrolü ve FLOW.md ana model yapılandırması.
-- [~] Sahip: Furkan — Sürümlü JSON Schema, kaynak ve sayısal metrik doğrulama. İlk bağımsız v1 kapısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içinde tamamlandı; model/hesaplayıcı ve sonuç kayıt hattına entegrasyon ile gerçek çıktı kabulü kaldı.
+- [~] Sahip: Furkan — İlk CSV/XLSX kapsam seçimi, uygunluk ve Gemini yapılandırması uygulandı; gerçek canlı kalite/süre/maliyet kabulü bekleniyor. OCR ve çok belgeli kapsam buna dahil değildir.
+- [~] Sahip: Furkan — Sürümlü JSON Schema, kaynak ve sayısal metrik doğrulama. İlk bağımsız v1 kapısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içinde tamamlandı; CSV/XLSX hesaplayıcı/model/kayıt bağlantısı yerelde doğrulandı; üretim açılışı ve gerçek çıktı kabulü kaldı.
 - [x] Sahip: Tarık — Hazırlama hattında idempotent kota, hata iadesi ve süre aşımı sonrası kullanıcı tetiklemeli retry.
 - [ ] Sahip: Atanmadı — AI için kalıcı kuyruk ve sınırlı otomatik retry.
 
@@ -586,8 +599,8 @@ Kalite kapısı: [FLOW.md uygulama sırası ve kalite kapısı](FLOW.md#uygulama
 ## M4 — Sonuçlar ve geçmiş
 
 - [x] Sahip: Furkan — Genel belgeler için doğrulanmış kaynak ve hazırlık özeti; AI bulgu ve grafikleri sonraki aşamaya bırakıldı.
-- [ ] Sahip: Atanmadı — AI bulgu ve öneri ekranları.
-- [~] Sahip: Furkan — [FLOW.md grafik ve hareket davranışı](FLOW.md#grafik-ve-hareket-davranışı) için React/ECharts sunumu, kaynak erişimi ve erişilebilir veri tablosu. Sentetik `/ornek-rapor` kesiti doğrulandı; gerçek doğrulanmış analiz kayıtlarına bağlama ve farklı belge/çıktı türlerinin kabulü kaldı.
+- [~] Sahip: Furkan — CSV/XLSX gerçek raporunda kaynaklı bulgu/öneri, yöntem ve geçmiş görünümü yerelde uygulandı; canlı kabul bekleniyor.
+- [~] Sahip: Furkan — [FLOW.md grafik ve hareket davranışı](FLOW.md#grafik-ve-hareket-davranışı) için React/ECharts sunumu, kaynak erişimi ve erişilebilir veri tablosu. Sentetik `/ornek-rapor` kesiti doğrulandı; gerçek CSV/XLSX kayıt bağlantısı yerelde doğrulandı; canlı kabul ve diğer belge/çıktı türleri kaldı.
 - [ ] Sahip: Atanmadı — Kaynak referansı, güven düzeyi ve çıkarım etiketleri.
 - [x] Sahip: Tarık — Kullanıcıya özel Firestore geçmişini listeleme ve kayıtlı raporu açma.
 - [x] Sahip: Furkan — Geçmiş arama ve filtreleme; [2026-10-18 teslimatında](#2026-10-18--furkan--codex-sade-yardım-yükleme-ve-hazırlık-deneyimi) hedef araması, açılır filtreler, URL korunumu ve görünür kayıt seçimiyle doğrulandı.

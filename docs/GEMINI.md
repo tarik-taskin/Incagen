@@ -48,3 +48,7 @@ Canlı `checkGemini` üzerinden tek sabit sentetik çağrı 200 ve `{status: "ok
 Yalnız bu test için oluşturulan hesaba geçici geliştirici claim'i verildi; kabulden sonra claim kaldırıldı, oturumlar iptal edildi, Auth hesabı ve kişisel teşhis kaydı silindi. Gerçek kullanıcıya geliştirici yetkisi verilmedi. Proje günlük sayacı maliyet sınırını korumak için sıfırlanmadı. Bu kabul, kullanıcı belgelerinden üretilecek analizlerin doğruluğu veya uçtan uca analiz hattının hazır olduğu anlamına gelmez.
 
 Resmî kaynaklar: [SDK ve başlangıç](https://ai.google.dev/gemini-api/docs/get-started), [model kataloğu](https://ai.google.dev/gemini-api/docs/models), [yapılandırılmış çıktı](https://ai.google.dev/gemini-api/docs/structured-output), [Secret Manager erişimi](https://docs.cloud.google.com/secret-manager/docs/access-secret-version).
+
+## Kullanıcı tablosuyla kaynaklı analiz
+
+5 Kasım geliştirmesi, `startAnalysis` üzerinden seçilen tek CSV/XLSX tablosunun doğrulanmış Python hesaplarını modelin kısa yorumuyla birleştirir. Metrik/grafik değerleri modelden alınmaz; anahtar mevcut sunucu secret okuyucusunda kalır. Bu iş akışının limitleri geliştiriciye özel `checkGemini` limitlerinden ayrıdır. Kod yerelde doğrulanıyor; yeni üretim worker/callable dağıtımı ve canlı kalite kabulü bekleniyor. Güncel kapsam ve onay planı [tablo analizi rehberindedir](TABULAR-ANALYSIS.md).

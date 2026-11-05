@@ -1,5 +1,7 @@
 # Incagen Proje Hafızası
 
+- 5 Kasım: İlk gerçek CSV/XLSX Python hesabı → Gemini yorumu → özel rapor/geçmiş bağlantısı yerelde doğrulandı. Yeni Cloud Run/build kaynakları ve kaynak IAM kapsamı otomatik onay denetiminde durdu; üretim dağıtımı/gerçek kalite kabulü ve main/Netlify yayını bekliyor. Devam noktası [GOAL](GOAL.md#2026-11-05--furkan--codex-ilk-gerçek-tablo-analizi) ve [dağıtım planı](docs/TABULAR-ANALYSIS.md#somut-dağıtım-kapsamı).
+
 Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretmeyi amaçlar.
 
 ## Kalıcı bağlam
@@ -13,7 +15,7 @@ Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretme
 - Kabul edilen sonraki AI mimarisi ve kalite kapısı [FLOW.md](FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) içindedir; Python işçisi ve kaynaklı LLM sonuçları geliştirme hedefidir; bağımsız sentetik rapor ECharts/Motion sunumunu gösterir.
 - Özetleme başlangıç referansları [fixtures/analysis-reference](fixtures/analysis-reference/README.md) içindedir; sentetik satış/yorum kaynakları, elle yazılmış cevaplar ve kalite protokolü mevcut parser üzerinden doğrulanır. LLM değerlendirmesi henüz çalıştırılmadı.
 - Belge seçimi gerçek bayt toplamını ve kalan kapasiteyi gösterir; hazırlık kontrolü ortak alan kurallarıyla çalışır ve eksik alana odak verir.
-- Bağımsız AI sonuç v1 şeması ve güvenilir kaynak/metrik kapısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içindedir; model çağrısı veya gerçek kayıt bağlantısı yapılmadı. Analiz veri paketi içerik/konum/uyarıları ve güvenilir hesap bağlamını ayrı tutar; 256 KiB aşımında sessiz kesmez.
+- Bağımsız AI sonuç v1 şeması ve güvenilir kaynak/metrik kapısı [docs/AI-RESULTS.md](docs/AI-RESULTS.md) içindedir; CSV/XLSX için kaynaklı Python/Gemini/kayıt bağlantısı kodda eklendi; üretim dağıtımı/onayı ve canlı kalite kabulü henüz tamamlanmadı ([kapsam ve plan](docs/TABULAR-ANALYSIS.md)). Analiz veri paketi içerik/konum/uyarıları ve güvenilir hesap bağlamını ayrı tutar; 256 KiB aşımında sessiz kesmez.
 
 - `/ornek-rapor`: 12 aylık 3.612 tablo kaydı, Atlas Teknoloji için CSV/XLSX, PDF/Word/PowerPoint, JSON/Markdown/metin kaynaklarından oluşan dokuz belgeli şirket dosyası; altı grafik/üç finansal tablo ve aramalı/sayfalı kaynak paneli içeren örnek rapor; AI üretimi değildir ve hesaba yazılmaz. Üretim/doğrulama ve korunan sürümler [kaynak rehberindedir](fixtures/company-example/README.md).
 
