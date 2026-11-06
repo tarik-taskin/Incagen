@@ -1,5 +1,7 @@
 # Incagen Proje Hafızası
 
+- 6 Kasım: Gemini bulut teşhisi kalıcı ve açık opt-in isteyen bir script oldu; anahtar indirilmez, geçici hesap/claim temizlenir. Son `LOW`/90 saniyelik deneme `busy` verdiği için gerçek analiz kapalı. Yoğunluk/zaman aşımında 30 saniyelik sunucu beklemesi, sessiz kabul hatası düzeltmesi ve belgeye özel indirme durumu eklendi. [Güncel görevler](GOAL.md#2026-11-06--furkan--codex-canlı-analiz-kabulü-ve-hata-dayanıklılığı).
+
 - 5 Kasım: CSV/XLSX Python hesabı → Gemini yorumu → özel rapor/geçmiş hattı ve örnek rapor keşif rehberi eklendi. Onaylı özel Cloud Run/Functions dağıtımı ve yerel/izole testler geçti. Gerçek Gemini `503 / capacity` nedeniyle kalite kabulü tamamlanamadı; `INCAGEN_TABULAR_ANALYSIS_ENABLED` ve `VITE_TABULAR_ANALYSIS_ENABLED` canlıda kapalı, hazırlık akışı korunur. Devam noktası [GOAL](GOAL.md#2026-11-05--furkan--codex-ilk-gerçek-tablo-analizi) ve [yayın kapısı](docs/TABULAR-ANALYSIS.md#yayın-kapısı-ve-canlı-kabul).
 
 Incagen işletme verilerinden grafikler, tablolar ve büyüme önerileri üretmeyi amaçlar.

@@ -42,6 +42,12 @@ Tarayıcı çevrimdışı bildirdiğinde çalışma alanında tek bir bağlantı
 
 Tamamlanan hazırlıkta belge adları, kategorileri, boyutları, sayfa/çalışma sayfası/slayt bilgileri ve okuma uyarıları görünürdür. MIME, parça ve karakter değerleri ortak “Teknik ayrıntılar” alanında korunur. Başarılı ayrıştırma OCR veya AI yorumu olarak sunulmaz; kısmi kapsam ve dışlanan belgeler ayrıca belirtilir.
 
+### Analiz denemesi ve özgün belge indirme
+
+Kaynaklı analizde sağlayıcının 429/503 yanıtları geçici yoğunluk/hız sınırı, 408/504 ve yerel deadline zaman aşımı olarak ayrılır. Bozuk çıktı doğrulama hatasıdır. Yoğunluk veya zaman aşımında sunucu 30 saniyelik manuel tekrar beklemesi uygular; bu süre dolmadan deneme/kota rezervasyonu oluşmaz. Düğmenin açılması otomatik analiz başlatmaz. İş kaydı oluşmadan reddedilen çağrılar da arayüzde güvenli açıklama gösterir; mevcut iş hatasıyla aynı mesaj iki kez gösterilmez.
+
+Oturumlu özgün belge indirmesi seçili belge kimliği/hash'ine bağlıdır. Aynı bekleyen indirme tekrar tıklanamaz; hata yalnız kısa, yerelleştirilmiş açıklamadır ve açıkça yeniden denenebilir. Belge değiştiğinde önceki isteğin geç gelen sonucu yeni belgenin bekleme/hata durumunu değiştirmez. Panel kapanınca eski yanıt state yazmaz. Bu davranış sistem indirme penceresinin dosyayı diske kaydettiğini iddia etmez; statik örnek dosyaların native indirme bağlantıları korunur.
+
 ## Free ve Premium
 
 Ürün limitlerinin belge kaynağı bu tablodur. Frontend plan bilgileri merkezi plan kurallarında, backend uygulanmış Free sınırları ortak analiz sözleşmesinde tutulur; değişiklikte üçü birlikte doğrulanır.

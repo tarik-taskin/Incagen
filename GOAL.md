@@ -7,6 +7,16 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M3 — İlk kaynaklı tablo analizi
 
+### 2026-11-06 — Furkan / Codex: canlı analiz kabulü ve hata dayanıklılığı
+
+- [!] Sahip: Furkan — Mevcut Secret Manager akışıyla sınırlı sentetik Gemini bağlantısını ve altı dilli CSV/XLSX kabulünü yeniden dene; kaynak/sayı ve insan kalite kapısı geçerse backend/arayüz analiz kapılarını aç. 6 Kasım kontrolleri `timeout` ve son LOW/90 saniyelik denemede `busy` verdi. Hesap/claim temizliği doğrulandı. Engel: sağlayıcının yanıt vermesi ve gerçek model kalite kabulünün geçmesi; açılış kapıları kapalı.
+- [x] Sahip: Furkan — Geçici sağlayıcı yoğunluğu ile zaman aşımını güvenli hata türlerine ayır; kısa manuel yeniden deneme beklemesini sunucuda uygula, otomatik ücretli tekrar yapma. Altı dil ve önceki kayıtlar korundu; 30 saniye dolmadan rezervasyon oluşmadığı ve süre dolunca otomatik model çağrısı yapılmadığı doğrulandı. İş oluşmadan reddedilen çağrının sessiz kalması da düzeltildi.
+- [x] Sahip: Furkan — Kaynak panelindeki oturumlu özgün belge indirmesinde bekleme, tekrar tıklama ve hata/yeniden deneme deneyimini tamamla; Kaynak değişiminde eski yanıt yalıtıldı; hızlı çift tıklama, güvenli hata, açık tekrar ve İngilizce eylem testleri geçti.
+
+Kabul: ham sağlayıcı hatası/anahtar/belge metni loglanmaz. Bekleme sırasında deneme ve kota rezervasyonu oluşmaz; sağlayıcı dışındaki kalıcı hatalar yoğunluk gibi sınıflanmaz. İndirme klavye, tema ve azaltılmış hareketle çalışır; başarısızlık sessiz kalmaz, kapatılmış panelde geç yanıt state yazmaz. Lint, birim, Functions/frontend derlemeleri, ilgili entegrasyon/tarayıcı ve canlı hazırlık kabulü geçer; main/furkan yerel/uzak eşitlenir, GitHub Quality ve Netlify son sürümü doğrulanır.
+
+Yerel doğrulama: 111 frontend + 141 Functions, 39 Python, 9 entegrasyon ve 75 tarayıcı kontrolü geçti; mevcut 3 platform atlaması korundu. Son hata gösterimi değişikliğinden sonra ilgili tablo/rapor paketi masaüstü/mobil 6/6 tekrar geçti. Kapalı canlı derlemede ilk açılış 324.010 gzip bayt; 409.600 bayt bütçesinin altında. Model değişimi, otomatik ücretli tekrar veya secret taşıma yapılmadı.
+
 ### 2026-11-05 — Furkan / Codex: ilk gerçek tablo analizi
 
 - [!] Sahip: Furkan — CSV/XLSX için kullanıcı tarafından seçilen tablo, ölçüm, toplama yöntemi ve sayı biçimiyle Python hesaplarını ve kaynaklı Gemini yorumunu bağla. Kod, Linux worker ve yerel hesap kabulü geçti; gerçek Gemini `503 / capacity` döndüğünden canlı yorum kalitesi doğrulanamadı. Beklenen: sağlayıcının yanıt vermesi, altı dilli sentetik kabul ve insan değerlendirmesi.

@@ -28,9 +28,9 @@ Cloud callable `checkGemini` için Firebase Auth kullanıcısının güvenilir y
 
 ## Sınırlar ve hata davranışı
 
-- Sabit kontrol prompt'u, 512 çıktı token'ı, 45 saniye model zaman aşımı ve bir istek; otomatik ücretli retry yok.
+- Sabit kontrol prompt'u, `LOW` thinking, en fazla 2.048 çıktı token'ı ve 90 saniye model sınırı; callable süresi 120 saniyedir. Tek istek yapılır, otomatik ücretli retry yok. Bu sınırlar 6 Kasım güncellemesidir; aşağıdaki 2 Kasım kabulü kendi tarihindeki ayarları anlatır.
 - UID başına 60 saniyede bir; proje genelinde UTC gününde en fazla 20 kontrol. Sayaçlar transaction ile tutulur; eksik anahtar sayaç tüketmez. Sağlayıcıya gönderilmiş başarısız deneme hak tüketir.
-- Anahtarın yokluğu/okunamaması `failed-precondition`; sağlayıcı, zaman aşımı veya geçersiz JSON `unavailable` olur. Ham hata ve yanıt loglanmaz. `maxInstances: 1` ve `concurrency: 1` kullanılır.
+- Anahtarın yokluğu/okunamaması `failed-precondition`; sağlayıcı, zaman aşımı veya geçersiz JSON `unavailable` olur. Geliştirici teşhisinin `geminiFailure` ayrıntısı yalnız sabit hata türüdür; 429/503 `busy`, 408/504 veya yerel deadline `timeout` olarak ayrılır, 400/403 yoğunluk sayılmaz. Ham hata ve yanıt loglanmaz. `maxInstances: 1` ve `concurrency: 1` kullanılır.
 - Runtime secret okuması 5 saniye ile sınırlıdır. Yerel emülatör bulut secret'ına düşmez. Bulutta düz ortam `GEMINI_API_KEY` okunmaz.
 
 ## İlk analiz adaptörü
@@ -51,4 +51,15 @@ Resmî kaynaklar: [SDK ve başlangıç](https://ai.google.dev/gemini-api/docs/ge
 
 ## Kullanıcı tablosuyla kaynaklı analiz
 
-5 Kasım geliştirmesi, `startAnalysis` üzerinden seçilen tek CSV/XLSX tablosunun doğrulanmış Python hesaplarını modelin kısa yorumuyla birleştirir. Metrik/grafik değerleri modelden alınmaz; anahtar mevcut sunucu secret okuyucusunda kalır. Bu iş akışının limitleri geliştiriciye özel `checkGemini` limitlerinden ayrıdır. Özel worker/callable uçları dağıtıldı. Analiz çağrısı 90 saniye, bağlantı kontrolü 45 saniye ile sınırlıdır; otomatik tekrar yoktur. Gerçek analiz denemeleri `503 / capacity` aldı; minimal bağlantı kontrolü de başarısızdı. Altı dilde canlı model kalite kabulü tamamlanmadığından backend ve arayüz yayın kapıları kapalıdır. Bu durum anahtarın eksik olduğu anlamına gelmez; anahtar değeri teşhis için yerel ortama alınmadı. Güncel kapsam ve onay planı [tablo analizi rehberindedir](TABULAR-ANALYSIS.md).
+5 Kasım geliştirmesi, `startAnalysis` üzerinden seçilen tek CSV/XLSX tablosunun doğrulanmış Python hesaplarını modelin kısa yorumuyla birleştirir. Metrik/grafik değerleri modelden alınmaz; anahtar mevcut sunucu secret okuyucusunda kalır. Bu iş akışının limitleri geliştiriciye özel `checkGemini` limitlerinden ayrıdır. Özel worker/callable uçları dağıtıldı. Analiz ve güncel bağlantı kontrolü 90 saniye ile sınırlıdır; otomatik tekrar yoktur. Gerçek analiz denemeleri `503 / capacity` aldı; minimal bağlantı kontrolü de başarısızdı. Altı dilde canlı model kalite kabulü tamamlanmadığından backend ve arayüz yayın kapıları kapalıdır. Bu durum anahtarın eksik olduğu anlamına gelmez; anahtar değeri teşhis için yerel ortama alınmadı. Güncel kapsam ve onay planı [tablo analizi rehberindedir](TABULAR-ANALYSIS.md).
+
+
+## Sır indirmeden bulut teşhisi
+
+```bash
+INCAGEN_CLOUD_DIAGNOSTIC=1 node scripts/check-gemini-cloud.mjs
+```
+
+Komut mevcut Firebase CLI oturumunu ve yalnız public Firebase web yapılandırmasını kullanır. `incagen-eeef4` dışında çalışmaz; sağlayıcı anahtarını okumaz. Yeni UUID içeren sentetik Auth hesabına yalnız test süresince geliştirici claim'i verir, tek sabit backend isteği gönderir, sonra claim'i kaldırır ve hesabı siler. Silindiği Auth metadata üzerinden doğrulanır. `/tmp/incagen-cloud-probe-resources.json` yalnız proje/UID/temizlik durumudur; e-posta, parola ve token içermez. Model veya temizleme hatasında başarılı çıkış verilmez; global maliyet sayacı korunur.
+
+6 Kasım devamında ilk iki 45 saniyelik kontrol doğrulanamadı; yeni güvenli sınıflama bunlardan ikincisini `timeout` olarak ayırdı. Analizle aynı `LOW`/90 saniye ayarıyla yapılan son kontrol `busy` yanıtı aldı. Hesaplar ve geçici yetkiler temizlendi. Gerçek analiz kalite kabulü hâlâ tamamlanmadı; açılış anahtarları kapalı kalır. [Resmî thinking seçenekleri](https://aistudio.google.com/docs/thinking?generate-content=true).

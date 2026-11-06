@@ -120,3 +120,12 @@ Gerçek Gemini analiz denemeleri `503 / capacity` ile durdu; en küçük sabit b
 Kapalı-yayın canlı kabulü geçti: normal kullanıcının geçerli CSV hazırlığında `startAnalysis` yapılandırma durumuyla reddedildi; `ai` işi oluşmadı, model çağrısı yapılmadı. Arayüz kaynaklı hazırlık görünümünü korudu. Sentetik hesap, Firestore kaydı ve Storage prefixleri bağımsız metadata okumalarıyla temizlenmiş doğrulandı. Son birim sayıları 106 frontend + 134 Functions; Python 39, demo entegrasyon 8.
 
 Son dondurulmuş tarayıcı paketi 75 geçti / mevcut 3 platform atlaması ile tamamlandı. Kapalı canlı derleme ilk açılışta 323.326 gzip bayt ile 409.600 bayt bütçesinin altında kaldı.
+
+
+### 6 Kasım — geçici hata ve indirme dayanıklılığı
+
+`gemini.test.ts`, 429/503 yoğunluk ve 408/504/yerel deadline zaman aşımını ayırır; kalıcı 400/403 veya hata metnindeki rastgele “capacity” kelimesi geçici yoğunluk sayılmaz. Sağlayıcı gövdesinin log/istemciye taşınmadığı ve tek SDK denemesi korunur. `integration/tabular.test.mjs` bekleme dolmadan deneme ve kullanıcı/proje kotası oluşmadığını, sonrasında yalnız açık çağrının kabul edildiğini sınar. `tabular-retry.test.tsx`, bekleme bitince yalnız düğmenin açıldığını ve yeni iş oluşmadan reddedilen çağrının sessiz kalmadığını doğrular.
+
+`source-download.test.tsx`, hızlı çift tıklama, güvenli hata/manuel tekrar, kaynak değişiminde eski isteğin geç gelen hatasının yalıtılması ve İngilizce eylem metnini sınar. Mevcut masaüstü/mobil rapor kabulü özgün dosya indirmesini, altı dil, tema, RTL ve erişilebilirliği korur.
+
+Yerel kabul: 111 frontend + 141 Functions testi, 39 Python, 9 entegrasyon ve 75 tarayıcı senaryosu geçti; mevcut 3 platform senaryosu atlandı. Son hata kabulü düzeltmesinden sonra ilgili tablo/rapor paketi masaüstü/mobil 6/6 tekrar geçti. Kapalı canlı derlemede ilk açılış 324.010 gzip bayttır (bütçe 409.600). Gerçek Gemini bağlantısı `timeout`/`busy` nedeniyle doğrulanamadı; model kalite puanı veya başarılı analiz çağrısı raporlanmaz. `INCAGEN_CLOUD_DIAGNOSTIC=1 node scripts/check-gemini-cloud.mjs` yalnız tek sentetik backend isteği yapar, anahtar okumaz; geçici hesabını ve claim'ini temizler.
