@@ -31,7 +31,7 @@ export async function reserveGeminiDiagnostic(uid: string, now = Date.now()) {
 }
 
 // Üretimde kapalı bir geliştirici smoke testi sunar; hazırlama kotasını ve kullanıcı raporlarını değiştirmez.
-export const checkGemini = onCall({ region: "europe-west1", timeoutSeconds: 60, memory: "256MiB", maxInstances: 1, concurrency: 1 }, async request => {
+export const checkGemini = onCall({ region: "europe-west1", timeoutSeconds: 120, memory: "256MiB", maxInstances: 1, concurrency: 1 }, async request => {
   const uid = requireGeminiDeveloper(request.auth, request.data);
   try {
     const key = await readGeminiKey();
@@ -40,6 +40,7 @@ export const checkGemini = onCall({ region: "europe-west1", timeoutSeconds: 60, 
   } catch (error) {
     if (error instanceof HttpsError) throw error;
     const missing = error instanceof GeminiError && error.code === "not-configured";
-    throw new HttpsError(missing ? "failed-precondition" : "unavailable", missing ? "Gemini anahtarı henüz yapılandırılmadı." : "Gemini bağlantısı doğrulanamadı.");
+    throw new HttpsError(missing ? "failed-precondition" : "unavailable", missing ? "Gemini anahtarı henüz yapılandırılmadı." : "Gemini bağlantısı doğrulanamadı.",
+      { geminiFailure: error instanceof GeminiError ? error.code : "unavailable" });
   }
 });

@@ -1095,5 +1095,8 @@
   "kayıt__two": "Datensätze",
   "kayıt__few": "Datensätze",
   "kayıt__many": "Datensätze",
-  "kayıt__other": "Datensätze"
+  "kayıt__other": "Datensätze",
+  "Özet servisi şu anda yoğun. Hazırlanan belgeleriniz korunuyor; biraz sonra yeniden deneyin.": "Der Zusammenfassungsdienst ist gerade ausgelastet. Ihre vorbereiteten Dokumente bleiben erhalten. Versuchen Sie es in Kürze erneut.",
+  "Yeniden deneme kısa bir süre sonra açılacak; işlem kendiliğinden başlamaz.": "Sie können es in Kürze erneut versuchen. Die Analyse startet erst, wenn Sie sie erneut auslösen.",
+  "Kısa bir süre bekleyin": "Bitte kurz warten"
 }

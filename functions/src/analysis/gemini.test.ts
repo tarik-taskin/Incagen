@@ -21,7 +21,8 @@ describe("Gemini backend boundary", () => {
     sdk.generate.mockResolvedValue({ text: '{"status":"ok","service":"incagen"}', candidates: [{ finishReason: "STOP" }] });
     expect(await checkGeminiConnection(createGeminiGenerate("synthetic-key"))).toEqual({ status: "ok", model: GEMINI_MODEL });
     expect(sdk.constructor).toHaveBeenCalledWith({ apiKey: "synthetic-key", httpOptions: { timeout: 45000, retryOptions: { attempts: 1 } } });
-    expect(sdk.generate.mock.calls[0][0]).toMatchObject({ model: GEMINI_MODEL, config: { maxOutputTokens: 512, responseMimeType: "application/json", temperature: 0 } });
+    expect(sdk.generate.mock.calls[0][0]).toMatchObject({ model: GEMINI_MODEL, config: { maxOutputTokens: 2048, responseMimeType: "application/json", temperature: 0,
+      thinkingConfig: { thinkingLevel: "LOW" }, httpOptions: { timeout: 90000, retryOptions: { attempts: 1 } } } });
     expect(sdk.generate.mock.calls[0][0].contents).not.toContain("Revenue");
     expect(sdk.generate.mock.calls[0][0].config.tools).toBeUndefined();
   });
@@ -36,10 +37,28 @@ describe("Gemini backend boundary", () => {
   it("sanitizes raw provider errors", async () => {
     const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
     sdk.generate.mockRejectedValue(Object.assign(new Error("https://provider.test?key=private-key document-content"), { status: 429 }));
-    await expect(checkGeminiConnection(createGeminiGenerate("synthetic-key"))).rejects.toThrow(/^Gemini: unavailable$/);
+    await expect(checkGeminiConnection(createGeminiGenerate("synthetic-key"))).rejects.toThrow(/^Gemini: busy$/);
     expect(warning).toHaveBeenCalledWith("gemini-request-failed", { status: 429, reason: "provider" });
     expect(JSON.stringify(warning.mock.calls)).not.toMatch(/private-key|document-content/);
     warning.mockRestore();
+  });
+  it.each([[429, "busy"], [503, "busy"], [408, "timeout"], [504, "timeout"], [400, "unavailable"], [403, "unavailable"]])("classifies HTTP %s without retrying or exposing provider bodies", async (status, code) => {
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
+    sdk.generate.mockRejectedValue(Object.assign(new Error("private provider body"), { status }));
+    try {
+      await expect(checkGeminiConnection(createGeminiGenerate("synthetic-key"))).rejects.toThrow(`Gemini: ${code}`);
+      expect(sdk.generate).toHaveBeenCalledTimes(1);
+      expect(JSON.stringify(warning.mock.calls)).not.toContain("private provider body");
+    } finally { warning.mockRestore(); }
+  });
+  it("recognizes the local deadline without treating arbitrary error messages as provider capacity", async () => {
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      sdk.generate.mockRejectedValue(new DOMException("deadline", "TimeoutError"));
+      await expect(checkGeminiConnection(createGeminiGenerate("synthetic-key"))).rejects.toThrow("Gemini: timeout");
+      sdk.generate.mockRejectedValue(new Error("capacity mentioned in untrusted provider text"));
+      await expect(checkGeminiConnection(createGeminiGenerate("synthetic-key"))).rejects.toThrow("Gemini: unavailable");
+    } finally { warning.mockRestore(); }
   });
   it.each([undefined, "MAX_TOKENS", "SAFETY"])("rejects incomplete finish reason %s", async reason => {
     sdk.generate.mockResolvedValue({ text: '{"status":"ok","service":"incagen"}', candidates: [{ finishReason: reason }] });

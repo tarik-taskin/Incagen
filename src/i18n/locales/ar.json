@@ -1095,5 +1095,8 @@
   "kayıt__two": "سجلان",
   "kayıt__few": "سجلات",
   "kayıt__many": "سجلًا",
-  "kayıt__other": "سجل"
+  "kayıt__other": "سجل",
+  "Özet servisi şu anda yoğun. Hazırlanan belgeleriniz korunuyor; biraz sonra yeniden deneyin.": "خدمة التلخيص مشغولة حاليًا. مستنداتك المُعَدّة محفوظة؛ حاول مجددًا بعد قليل.",
+  "Yeniden deneme kısa bir süre sonra açılacak; işlem kendiliğinden başlamaz.": "يمكنك إعادة المحاولة بعد قليل. لن يبدأ التحليل مجددًا إلا عندما تختار إعادة المحاولة.",
+  "Kısa bir süre bekleyin": "انتظر قليلًا"
 }

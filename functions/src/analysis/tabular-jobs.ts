@@ -31,6 +31,9 @@ export async function reserveAnalysis(uid: string, input: ReturnType<typeof star
       return { state: "running" as const, job: previous };
     }
     if ((previous?.attempts ?? 0) >= AI_JOB_LIMITS.attempts) throw new HttpsError("resource-exhausted", "Bu çalışma için analiz deneme sınırına ulaşıldı.");
+    if (previous?.status === "failed" && Number.isFinite(previous.retryAfter) && now < previous.retryAfter!) {
+      throw new HttpsError("resource-exhausted", "Yeniden denemeden önce kısa bir süre bekleyin.", { analysisFailure: previous.error, retryAfter: previous.retryAfter });
+    }
     const newDayAdmission = previous?.quotaDay !== day;
     if ((newDayAdmission && Number(own.data()?.count ?? 0) >= AI_JOB_LIMITS.dailyPerUser) || Number(global.data()?.count ?? 0) >= AI_JOB_LIMITS.dailyGlobal) throw new HttpsError("resource-exhausted", "Günlük analiz kapasitesine ulaşıldı. Daha sonra yeniden deneyin.");
     const job = { status: "running" as const, attemptId: randomUUID(), attempts: (previous?.attempts ?? 0) + 1, startedAt: now,
@@ -47,7 +50,13 @@ export async function reserveAnalysis(uid: string, input: ReturnType<typeof star
 function failureCode(error: unknown): AnalysisFailure {
   if (error instanceof WorkerError) return error.code;
   if (error instanceof AnalysisPacketBudgetError) return "scope-limit";
-  if (error instanceof GeminiError) return error.code === "not-configured" ? "configuration" : "provider";
+  if (error instanceof GeminiError) {
+    if (error.code === "not-configured") return "configuration";
+    if (error.code === "busy") return "provider-busy";
+    if (error.code === "timeout") return "timeout";
+    if (error.code === "invalid-response" || error.code === "invalid-input") return "validation";
+    return "provider";
+  }
   return "validation";
 }
 
@@ -118,12 +127,14 @@ export const startAnalysis = onCall({ region: "europe-west1", timeoutSeconds: 18
     if (!committed) throw new HttpsError("aborted", "Çalışma değişti veya silindi; sonuç kaydedilmedi.");
     return { id: input.id, status: "completed", reused: false };
   } catch (error) {
+    const failure = failureCode(error), finishedAt = Date.now();
     await getFirestore().runTransaction(async tx => {
       const current = await tx.get(ref);
-      if (current.exists && current.data()?.status === "completed" && current.data()?.ai?.attemptId === job.attemptId && current.data()?.ai?.status === "running") tx.update(ref, { ai: { ...job, status: "failed", finishedAt: Date.now(), error: failureCode(error), durationMs: Date.now() - startedAt }, updatedAt: Date.now() });
+      if (current.exists && current.data()?.status === "completed" && current.data()?.ai?.attemptId === job.attemptId && current.data()?.ai?.status === "running") tx.update(ref, { ai: { ...job, status: "failed", finishedAt, error: failure, durationMs: finishedAt - startedAt,
+        ...(["provider-busy", "timeout"].includes(failure) ? { retryAfter: finishedAt + AI_JOB_LIMITS.retryDelayMs } : {}) }, updatedAt: finishedAt });
     });
     if (error instanceof HttpsError) throw error;
-    throw new HttpsError("failed-precondition", "Analiz tamamlanamadı. Kaynakları ve analiz kapsamını kontrol edip yeniden deneyin.", { analysisFailure: failureCode(error) });
+    throw new HttpsError("failed-precondition", "Analiz tamamlanamadı. Kaynakları ve analiz kapsamını kontrol edip yeniden deneyin.", { analysisFailure: failure });
   } finally {
     if (saved && !committed) await bucket.file(artifactPath).delete({ ignoreNotFound: true });
   }

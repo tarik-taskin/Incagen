@@ -1095,5 +1095,8 @@
   "kayıt__two": "kayıt",
   "kayıt__few": "kayıt",
   "kayıt__many": "kayıt",
-  "kayıt__other": "kayıt"
+  "kayıt__other": "kayıt",
+  "Özet servisi şu anda yoğun. Hazırlanan belgeleriniz korunuyor; biraz sonra yeniden deneyin.": "Özet servisi şu anda yoğun. Hazırlanan belgeleriniz korunuyor; biraz sonra yeniden deneyin.",
+  "Yeniden deneme kısa bir süre sonra açılacak; işlem kendiliğinden başlamaz.": "Yeniden deneme kısa bir süre sonra açılacak; işlem kendiliğinden başlamaz.",
+  "Kısa bir süre bekleyin": "Kısa bir süre bekleyin"
 }

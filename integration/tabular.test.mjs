@@ -95,6 +95,26 @@ test("atomik iş kabulü, sınırlar ve geç gelen/silinen sonuçların reddi", 
   await record.delete();
 });
 
+test("sağlayıcı bekleme süresinde deneme/kota tüketmez; süre dolunca yalnız açık isteği kabul eder", async () => {
+  assert.match(process.env.FIRESTORE_EMULATOR_HOST ?? "", /^127\.0\.0\.1:/);
+  if (!getApps().length) initializeAdmin({ projectId: "demo-incagen", storageBucket: "demo-incagen.appspot.com" });
+  const { reserveAnalysis } = require("./lib/analysis/tabular-jobs");
+  const { getQuotaDay } = require("./lib/contracts");
+  const db = getFirestore(), uid = crypto.randomUUID(), id = crypto.randomUUID(), now = Date.UTC(2001, 0, 1, 12);
+  const record = db.doc(`users/${uid}/analyses/${id}`), day = getQuotaDay(new Date(now));
+  const quota = db.doc(`internalAnalysisQuotas/${day}`), own = db.doc(`users/${uid}/aiQuotas/${day}`);
+  const input = { id, sourceId: "file-0", locale: "en", selection: { sheet: null, valueColumn: 1, groupColumn: null, aggregation: "sum", numberFormat: "plain", unit: "USD" } };
+  try {
+    await record.set({ status: "completed", ai: { status: "failed", attempts: 1, error: "provider-busy", retryAfter: now + 30000 } });
+    await assert.rejects(reserveAnalysis(uid, input, "synthetic-fingerprint", now), { code: "resource-exhausted" });
+    assert.equal((await record.get()).data().ai.attempts, 1);
+    assert.equal((await quota.get()).exists, false); assert.equal((await own.get()).exists, false);
+    const next = await reserveAnalysis(uid, input, "synthetic-fingerprint", now + 30001);
+    assert.equal(next.state, "started"); assert.equal(next.job.attempts, 2);
+    assert.equal((await quota.get()).data().count, 1); assert.equal((await own.get()).data().count, 1);
+  } finally { await record.delete(); await quota.delete(); await own.delete(); }
+});
+
 test("XLSX çalışma sayfası seçimi ve satır ağırlıklı ortalama tam defterle eşleşir", { timeout: 90000 }, async () => {
   const ExcelJS = require("exceljs"), workbook = new ExcelJS.Workbook();
   workbook.addWorksheet("Out of scope").addRows([["Team", "Revenue"], ["Other", 999999]]);

@@ -4,7 +4,7 @@ import { aiResultJsonSchema, validateAiResult } from "./result-contract";
 
 export const GEMINI_MODEL = "gemini-3.8-flash";
 export const GEMINI_LIMITS = { timeoutMs: 45_000, analysisTimeoutMs: 90_000, inputBytes: 256 * 1024, outputBytes: 64 * 1024 } as const;
-export type GeminiFailureCode = "not-configured" | "unavailable" | "invalid-response" | "invalid-input";
+export type GeminiFailureCode = "not-configured" | "unavailable" | "busy" | "timeout" | "invalid-response" | "invalid-input";
 
 // Sağlayıcının ham hata/metinlerini ve anahtarı istemciye veya loglara taşımayan kontrollü hata.
 export class GeminiError extends Error {
@@ -43,9 +43,11 @@ export function createGeminiGenerate(apiKey: string, onUsage?: (usage: { promptT
       if (error instanceof GeminiError) throw error;
       const status = error && typeof error === "object" && "status" in error ? error.status : undefined;
       const message = error instanceof Error ? error.message : "";
+      const timedOut = status === 408 || status === 504 || (error instanceof Error && ["AbortError", "TimeoutError"].includes(error.name));
+      const busy = status === 429 || status === 503;
       console.warn("gemini-request-failed", { status: typeof status === "number" && Number.isInteger(status) && status >= 100 && status <= 599 ? status : "unknown",
         reason: /deadline|timeout|timed out/i.test(message) ? "timeout" : /overload|high demand|capacity/i.test(message) ? "capacity" : "provider" });
-      throw new GeminiError("unavailable");
+      throw new GeminiError(timedOut ? "timeout" : busy ? "busy" : "unavailable");
     }
   };
 }
@@ -53,7 +55,7 @@ export function createGeminiGenerate(apiKey: string, onUsage?: (usage: { promptT
 // Bağlantı testinde yalnız sabit sentetik veri gönderilir; serbest prompt ve müşteri belgesi kabul edilmez.
 export async function checkGeminiConnection(generate: GeminiGenerate) {
   const text = await generate({ prompt: 'Return exactly {"status":"ok","service":"incagen"}.',
-    system: "This is a connectivity test. Return only the requested JSON.", maxOutputTokens: 512,
+    system: "This is a connectivity test. Return only the requested JSON.", maxOutputTokens: 2048, thinkingLevel: "low", timeoutMs: GEMINI_LIMITS.analysisTimeoutMs,
     schema: { type: "object", properties: { status: { type: "string", enum: ["ok"] }, service: { type: "string", enum: ["incagen"] } }, required: ["status", "service"], additionalProperties: false } });
   try {
     const result = JSON.parse(text);
