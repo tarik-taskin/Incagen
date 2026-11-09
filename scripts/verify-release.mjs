@@ -238,7 +238,7 @@ export function normalizeHtmlForComparison(html) {
 /**
  * Canlı sitedeki index.html ve index varlıklarının SHA-256 özetlerini yerel dist manifesti ile karşılaştırır.
  */
-export async function verifyLiveAssets(baseUrl = DEFAULT_SITE_URL, manifest, { timeoutMs = 10000, fetchFn = globalThis.fetch } = {}) {
+export async function verifyLiveAssets(baseUrl = DEFAULT_SITE_URL, manifest, { timeoutMs = 10000, fetchFn = globalThis.fetch, distDir = "dist" } = {}) {
   assert.ok(manifest && typeof manifest === "object", "Yerel manifest nesnesi gerekli.");
   const indexUrl = new URL("/", baseUrl).toString();
 
@@ -251,12 +251,16 @@ export async function verifyLiveAssets(baseUrl = DEFAULT_SITE_URL, manifest, { t
   const localIndexHash = manifest["index.html"];
   assert.ok(localIndexHash, "Yerel manifestte index.html bulunamadı.");
 
-  // Netlify Edge enjeksiyonu olabileceğinden normalize edilmiş hash'i de doğrula
-  const localIndexRaw = readFileSync(join("dist", "index.html"), "utf8");
-  const normalizedLocalHash = createHash("sha256").update(normalizeHtmlForComparison(localIndexRaw)).digest("hex");
-  const normalizedLiveHash = createHash("sha256").update(normalizeHtmlForComparison(liveIndexText)).digest("hex");
+  // Netlify Edge enjeksiyonu olabileceğinden gerekiyorsa normalize edilmiş hash'i de doğrula
+  const indexPath = join(distDir, "index.html");
+  let htmlMatches = rawLiveHash === localIndexHash;
+  if (!htmlMatches && existsSync(indexPath)) {
+    const localIndexRaw = readFileSync(indexPath, "utf8");
+    const normalizedLocalHash = createHash("sha256").update(normalizeHtmlForComparison(localIndexRaw)).digest("hex");
+    const normalizedLiveHash = createHash("sha256").update(normalizeHtmlForComparison(liveIndexText)).digest("hex");
+    htmlMatches = normalizedLiveHash === normalizedLocalHash;
+  }
 
-  const htmlMatches = rawLiveHash === localIndexHash || normalizedLiveHash === normalizedLocalHash;
   assert.ok(
     htmlMatches,
     `Canlı index.html hash uyuşmazlığı! Yerel: ${localIndexHash}, Canlı: ${rawLiveHash}. Canlı site güncel derleme ile senkronize değil!`
