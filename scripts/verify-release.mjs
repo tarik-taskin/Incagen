@@ -1,374 +1,144 @@
 #!/usr/bin/env node
-
-/**
- * Incagen Yayın Doğrulama Aracı
- *
- * Bu betik:
- * 1. Git çalışma ağacının temizliğini ve güncel commit hash'ini doğrular; kirli ağaçta reddeder.
- * 2. Derleme çıktısı (dist) içinde public Firebase konfigürasyonunu tam olarak teyit eder.
- * 3. dist dosyalarında gizli anahtar / secret sızıntısı taraması yapar.
- * 4. Analiz kapısının (VITE_TABULAR_ANALYSIS_ENABLED) derlemede kapalı olduğunu doğrular.
- * 5. Yerel dist dosyalarının SHA-256 manifestini çıkarır.
- * 6. Canlı Netlify yayınında SPA rotalarını (/, /ornek-rapor, /ornek-rapor/musteri-deneyimi, /app/new-analysis, /app/history, /app/settings, /app/plan) HTTP 200/HTML olarak sınar.
- * 7. Canlı sitedeki index.html ve index varlıklarının (JS/CSS) SHA-256 hash'lerini yerel derleme manifesti ile karşılaştırır.
- */
-
 import assert from "node:assert/strict";
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
-import { fileURLToPath } from "node:url";
+import { lstatSync, readdirSync, readFileSync } from "node:fs";
+import { extname, join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
-export const EXPECTED_PROJECT = "incagen-eeef4";
-export const EXPECTED_AUTH_DOMAIN = "incagen-eeef4.firebaseapp.com";
-export const EXPECTED_STORAGE_BUCKET_PATTERNS = ["incagen-eeef4.firebasestorage.app", "incagen-eeef4.appspot.com"];
+export const MANIFEST_NAME = "release-manifest.json";
 export const DEFAULT_SITE_URL = "https://incagen.netlify.app";
+export const SPA_ROUTES = ["/", "/ornek-rapor", "/ornek-rapor/musteri-deneyimi", "/app/new-analysis", "/app/history", "/app/settings", "/app/plan"];
+const controlFiles = new Set(["_redirects", "_headers"]);
+const textExtensions = new Set([".js", ".css", ".html", ".json", ".map", ".svg", ".txt", ".md", ".xml", ".csv"]);
+const hashPattern = /^[a-f0-9]{64}$/;
+export const HOSTING_COMMENT = "<!-- This site is hosted on Netlify. Anyone can build and deploy a site\n     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=9a03e44c-44d8-4c0b-8443-91fba5b9abf9\n     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->\n";
+export const FORBIDDEN_SECRET_PATTERNS = [/-----BEGIN (?:[A-Z]+ )*PRIVATE KEY-----/, /GEMINI_API_KEY|SecretManagerServiceClient|@google\/genai|AI_GATEWAY_TOKEN/, /["']type["']\s*:\s*["']service_account["']/, /["'](?:private_key|client_secret)["']\s*:/, /ya29\.[A-Za-z0-9_-]{20,}/];
+export const digest = bytes => createHash("sha256").update(bytes).digest("hex");
 
-export const SPA_ROUTES = [
-  "/",
-  "/ornek-rapor",
-  "/ornek-rapor/musteri-deneyimi",
-  "/app/new-analysis",
-  "/app/history",
-  "/app/settings",
-  "/app/plan",
-];
-
-export const FORBIDDEN_SECRET_PATTERNS = [
-  /-----BEGIN [A-Z ]*PRIVATE KEY-----/,
-  /service_account/i,
-  /AI_GATEWAY_TOKEN/i,
-  /GEMINI_API_KEY/i,
-  /client_secret/i,
-  /ya29\.[0-9A-Za-z-_]{20,}/,
-];
-
-/**
- * Git çalışma ağacını kontrol eder; uncommitted dosya varsa reddeder, hash ve dal bilgisini döner.
- */
-export function verifyGitStatus(options = {}) {
-  const statusRaw = execSync("git status --porcelain", { encoding: "utf8" }).trim();
-  const branch = execSync("git rev-parse --abbrev-ref HEAD", { encoding: "utf8" }).trim();
-  const commit = execSync("git rev-parse HEAD", { encoding: "utf8" }).trim();
-  const dirtyFiles = statusRaw ? statusRaw.split("\n").map(s => s.trim()) : [];
-  const clean = dirtyFiles.length === 0;
-
-  if (!clean && !options.allowDirty) {
-    throw new Error(
-      `Git çalışma ağacı kirli (${dirtyFiles.length} değiştirilmiş/izlenmeyen dosya). Yayın doğrulaması reddedildi.\n` +
-      `Değişiklikleri commit edin veya yerel testler için --allow-dirty kullanın.\n` +
-      dirtyFiles.map(f => `  - ${f}`).join("\n")
-    );
-  }
-
-  return { clean, dirtyFiles, branch, commit };
+// Salt okunur Git kontrolü; kirli ağaç veya başka commit'ten paket tam kabulden geçemez.
+export function verifyGitStatus({ cwd = process.cwd() } = {}) {
+  const git = (...args) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
+  assert.equal(git("status", "--porcelain"), "", "Git çalışma ağacı kirli; yayın doğrulaması reddedildi.");
+  return { commit: git("rev-parse", "HEAD"), tree: git("rev-parse", "HEAD^{tree}"), branch: git("branch", "--show-current") };
 }
 
-/**
- * Verilen dizindeki tüm dosyaları özyinelemeli olarak toplar.
- */
-export function collectFiles(dir) {
-  const files = [];
-  for (const entry of readdirSync(dir)) {
-    const fullPath = join(dir, entry);
-    if (statSync(fullPath).isDirectory()) {
-      files.push(...collectFiles(fullPath));
-    } else {
-      files.push(fullPath);
+// Paket dışına çıkabilen symlink'leri reddeder; bütün dosyaların adı ve hash'i korunur.
+export function calculateDistManifest(directory = "dist") {
+  const files = {};
+  function visit(relative = "") {
+    for (const name of readdirSync(join(directory, relative)).sort()) {
+      const file = relative ? `${relative}/${name}` : name, stat = lstatSync(join(directory, file));
+      assert.ok(!stat.isSymbolicLink(), "Yayın paketinde sembolik bağlantı olamaz.");
+      if (stat.isDirectory()) visit(file);
+      else files[file] = digest(readFileSync(join(directory, file)));
     }
   }
-  return files;
+  visit(); return files;
 }
 
-/**
- * dist altındaki tüm dosyaların göreli yolunu ve SHA-256 hash'ini hesaplar.
- */
-export function calculateDistManifest(distDir = "dist") {
-  assert.ok(existsSync(distDir), `Derleme dizini bulunamadı: ${distDir}`);
-  const files = collectFiles(distDir);
-  const manifest = {};
-  for (const filePath of files) {
-    const relPath = relative(distDir, filePath).replace(/\\/g, "/");
-    const buffer = readFileSync(filePath);
-    const hash = createHash("sha256").update(buffer).digest("hex");
-    manifest[relPath] = hash;
+// Manifest build sırasında yazılır; şimdiki HEAD'i eski dist'e etiketlemek kabul değildir.
+export function verifyDistDirectory(directory = "dist", revision) {
+  const manifest = calculateDistManifest(directory);
+  assert.ok(manifest["index.html"], "Paket index.html içermiyor.");
+  assert.ok(manifest[MANIFEST_NAME], "Build provenance manifesti bulunamadı; yeniden derleyin.");
+  const info = JSON.parse(readFileSync(join(directory, MANIFEST_NAME), "utf8"));
+  assert.equal(info.version, 1, "Bilinmeyen manifest sürümü.");
+  assert.ok(revision?.commit && revision?.tree, "Beklenen kaynak revizyonu gerekli.");
+  assert.equal(info.revision?.commit, revision.commit, "Paket commit'i güncel kaynakla eşleşmiyor.");
+  assert.equal(info.revision?.tree, revision.tree, "Paket kaynak ağacı eşleşmiyor.");
+  assert.equal(info.revision?.dirty, false, "Paket kirli kaynak ağacından derlenmiş.");
+  assert.equal(info.mode, "cloud-preview", "Canlı paket cloud-preview modunda derlenmeli.");
+  assert.deepEqual(info.flags, { authOnlyPreview: false, tabularAnalysisEnabled: false }, "Yayın kapıları beklenen kapsamla eşleşmiyor.");
+  const config = info.firebase;
+  assert.equal(config?.mode, "cloud", "Firebase cloud modu gerekli.");
+  assert.equal(config.projectId, "incagen-eeef4", "Firebase proje kimliği eşleşmiyor.");
+  assert.equal(config.authDomain, "incagen-eeef4.firebaseapp.com", "Firebase authDomain eşleşmiyor.");
+  assert.ok(["incagen-eeef4.firebasestorage.app", "incagen-eeef4.appspot.com"].includes(config.storageBucket), "Firebase storageBucket eşleşmiyor.");
+  assert.match(config.messagingSenderId ?? "", /^\d+$/, "Firebase messagingSenderId eksik.");
+  assert.match(config.appId ?? "", /^1:\d+:web:[a-f0-9]+$/, "Firebase appId eksik.");
+  assert.match(config.apiKeySha256 ?? "", hashPattern, "Public Firebase anahtar fingerprint'i eksik.");
+  const expected = { ...manifest }; delete expected[MANIFEST_NAME];
+  assert.deepEqual(info.files, expected, "Paket dosyaları build manifestiyle eşleşmiyor.");
+  let publicKeyFound = false; const js = [];
+  for (const name of Object.keys(manifest)) {
+    if (!textExtensions.has(extname(name))) continue;
+    const content = readFileSync(join(directory, name), "utf8");
+    for (const pattern of FORBIDDEN_SECRET_PATTERNS) assert.ok(!pattern.test(content), `Backend secret/modül işareti bulundu: ${name}`);
+    if (name.endsWith(".js")) {
+      js.push(content);
+      for (const match of content.matchAll(/AIza[A-Za-z0-9_-]{35}/g)) if (digest(match[0]) === config.apiKeySha256) publicKeyFound = true;
+    }
   }
-  return manifest;
+  assert.ok(publicKeyFound, "Public Firebase anahtar fingerprint'i JS çıktısıyla eşleşmiyor.");
+  for (const key of ["projectId", "authDomain", "storageBucket", "messagingSenderId", "appId"]) assert.ok(js.some(content => content.includes(config[key])), `Firebase public alanı JS çıktısında doğrulanamadı: ${key}`);
+  return { manifest, info };
 }
 
-/**
- * dist klasöründeki dosyaları tarayarak public Firebase ayarlarını, secret sızıntısızlığını
- * ve analiz kapısı durumunu doğrular.
- */
-export function verifyDistDirectory(distDir = "dist") {
-  assert.ok(existsSync(distDir), `Derleme dizini bulunamadı: ${distDir}`);
-  const indexPath = join(distDir, "index.html");
-  assert.ok(existsSync(indexPath), `index.html bulunamadı: ${indexPath}`);
+// Yalnız birebir bilinen statik Netlify yorumu ayrılır; diğer HTML ve whitespace korunur.
+export function normalizeHtmlForComparison(html) { return html.replace(HOSTING_COMMENT, ""); }
 
-  const files = collectFiles(distDir);
-  const jsFiles = files.filter(f => f.endsWith(".js"));
-  assert.ok(jsFiles.length > 0, "dist içinde JavaScript dosyası bulunamadı.");
-
-  let foundProject = false;
-  let foundAuthDomain = false;
-  let foundStorageBucket = false;
-  let foundApiKey = false;
-  let leakedSecret = false;
-  let leakedDetails = "";
-  let tabularGateViolation = false;
-
-  for (const file of jsFiles) {
-    const content = readFileSync(file, "utf8");
-
-    if (content.includes(EXPECTED_PROJECT)) {
-      foundProject = true;
-    }
-    if (content.includes(EXPECTED_AUTH_DOMAIN)) {
-      foundAuthDomain = true;
-    }
-    if (EXPECTED_STORAGE_BUCKET_PATTERNS.some(b => content.includes(b))) {
-      foundStorageBucket = true;
-    }
-    if (/AIza[0-9A-Za-z-_]{35}/.test(content)) {
-      foundApiKey = true;
-    }
-
-    // Tabular analiz kapısının derlemede true olarak açılmadığını garanti et
-    if (/["']?VITE_TABULAR_ANALYSIS_ENABLED["']?\s*:\s*["']?true["']?/i.test(content)) {
-      tabularGateViolation = true;
-    }
-
-    // Secret / hassas bilgi sızıntı kontrolü
-    for (const pattern of FORBIDDEN_SECRET_PATTERNS) {
-      if (pattern.test(content)) {
-        leakedSecret = true;
-        leakedDetails = `Yasaklı kalıp eşleşti (${pattern}) dosyada: ${file}`;
-        break;
-      }
-    }
-    if (leakedSecret) break;
-  }
-
-  assert.ok(foundProject, `dist çıktısında beklenen Firebase proje kimliği (${EXPECTED_PROJECT}) bulunamadı.`);
-  assert.ok(foundAuthDomain, `dist çıktısında beklenen authDomain (${EXPECTED_AUTH_DOMAIN}) bulunamadı.`);
-  assert.ok(foundStorageBucket, `dist çıktısında beklenen storageBucket bulunamadı.`);
-  assert.ok(foundApiKey, `dist çıktısında geçerli Firebase API anahtarı formatı bulunamadı.`);
-  assert.ok(!tabularGateViolation, "dist çıktısında VITE_TABULAR_ANALYSIS_ENABLED=true tespit edildi! Analiz kapısı kapalı olmalıdır.");
-  assert.ok(!leakedSecret, `dist çıktısında gizli bilgi sızıntısı tespit edildi! ${leakedDetails}`);
-
-  return {
-    fileCount: files.length,
-    jsFileCount: jsFiles.length,
-    firebaseProject: EXPECTED_PROJECT,
-    authDomain: EXPECTED_AUTH_DOMAIN,
-    storageBucketValid: true,
-    apiKeyValid: true,
-    tabularGateClosed: true,
-    secretLeakClean: true,
-  };
-}
-
-/**
- * Belirtilen URL'ye zaman aşımlı GET isteği yapar; zamanlayıcıyı istek sonunda kesin olarak temizler.
- */
-export async function fetchWithTimeout(url, { timeoutMs = 10000, fetchFn = globalThis.fetch, signal: externalSignal, ...options } = {}) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => {
-    controller.abort(new Error("Zaman aşımı (The operation was aborted)"));
-  }, timeoutMs);
-  if (typeof timer.unref === "function") {
-    timer.unref();
-  }
-
-  if (externalSignal) {
-    if (externalSignal.aborted) {
-      clearTimeout(timer);
-      controller.abort(externalSignal.reason);
-    } else {
-      externalSignal.addEventListener(
-        "abort",
-        () => {
-          clearTimeout(timer);
-          controller.abort(externalSignal.reason);
-        },
-        { once: true }
-      );
-    }
-  }
-
+// Timeout başlıklarla bitmez: gövde okumasını da kapsar; redirect ve origin kayması reddedilir.
+export async function fetchWithTimeout(url, { timeoutMs = 15000, fetchFn = globalThis.fetch } = {}) {
+  const target = new URL(url);
+  assert.ok(target.protocol === "https:" || (target.protocol === "http:" && ["localhost", "127.0.0.1"].includes(target.hostname)), "Yalnız HTTPS veya yerel test adresi kullanılabilir.");
+  assert.ok(!target.username && !target.password, "URL kimlik bilgisi içeremez.");
+  const controller = new AbortController(), timer = setTimeout(() => controller.abort(), timeoutMs);
+  let reader;
   try {
-    return await fetchFn(url, { signal: controller.signal, ...options });
-  } finally {
-    clearTimeout(timer);
-  }
+    const response = await fetchFn(target.href, { signal: controller.signal, redirect: "error" });
+    assert.equal(response.status, 200, "Yayın dosyası HTTP 200 dönmedi.");
+    if (response.url) assert.equal(new URL(response.url).origin, target.origin, "Yayın yanıtı başka origin'e yönlendi.");
+    assert.ok(Number(response.headers.get("content-length") ?? 0) <= 64 * 1024 * 1024, "Yayın yanıtı boyut sınırını aşıyor.");
+    const parts = []; let size = 0;
+    reader = response.body?.getReader();
+    if (reader) while (true) {
+      const { done, value } = await reader.read(); if (done) break;
+      size += value.byteLength; assert.ok(size <= 64 * 1024 * 1024, "Yayın yanıtı boyut sınırını aşıyor."); parts.push(Buffer.from(value));
+    }
+    return { bytes: Buffer.concat(parts), contentType: response.headers.get("content-type") ?? "" };
+  } catch (error) { controller.abort(); throw error; }
+  finally { clearTimeout(timer); if (reader) { await reader.cancel().catch(() => {}); reader.releaseLock(); } }
 }
 
-/**
- * Canlı Netlify URL'sine HTTP istekleri yaparak SPA rotalarının (200 OK)
- * ve HTML içeriğinin döndüğünü doğrular.
- */
-export async function verifyLiveRoutes(baseUrl = DEFAULT_SITE_URL, { timeoutMs = 10000, fetchFn = globalThis.fetch } = {}) {
-  const results = [];
+// Lazy JS, fontlar, örnek belgeler ve manifest dahil bütün public dosyalar karşılaştırılır.
+export async function verifyLiveAssets(baseUrl, manifest, options = {}) {
+  const files = Object.keys(manifest).filter(name => !controlFiles.has(name));
+  for (let start = 0; start < files.length; start += 4) await Promise.all(files.slice(start, start + 4).map(async name => {
+    const url = new URL(`/${name.split("/").map(encodeURIComponent).join("/")}`, baseUrl);
+    const { bytes } = await fetchWithTimeout(url, options);
+    const actual = name === "index.html" ? digest(normalizeHtmlForComparison(bytes.toString("utf8"))) : digest(bytes);
+    assert.equal(actual, manifest[name], `Canlı dosya hash uyuşmazlığı: ${name}`);
+  }));
+  return { verifiedFiles: files.length };
+}
+
+// Her SPA rotası yalnız 200/HTML değil, doğrulanan aynı index.html içeriğini sunmalı.
+export async function verifyLiveRoutes(baseUrl, manifest, options = {}) {
+  assert.ok(manifest["index.html"], "Beklenen index.html hash'i gerekli.");
   for (const route of SPA_ROUTES) {
-    const targetUrl = new URL(route, baseUrl).toString();
-    try {
-      const response = await fetchWithTimeout(targetUrl, { timeoutMs, fetchFn, redirect: "follow" });
-      const status = response.status;
-      const contentType = response.headers.get("content-type") || "";
-      const isHtml = contentType.includes("text/html");
-      assert.equal(status, 200, `${targetUrl} HTTP 200 dönmedi: ${status}`);
-      assert.ok(isHtml, `${targetUrl} text/html dönmedi (${contentType}).`);
-      results.push({ route, status, ok: true });
-    } catch (err) {
-      results.push({ route, error: err.message, ok: false });
-      throw new Error(`Canlı SPA rota kontrolü başarısız (${route}): ${err.message}`);
-    }
+    const { bytes, contentType } = await fetchWithTimeout(new URL(route, baseUrl), options);
+    assert.ok(contentType.includes("text/html"), `SPA rotası HTML dönmedi: ${route}`);
+    assert.equal(digest(normalizeHtmlForComparison(bytes.toString("utf8"))), manifest["index.html"], `SPA rota içeriği eşleşmiyor: ${route}`);
   }
-  return results;
+  return { verifiedRoutes: SPA_ROUTES.length };
 }
 
-/**
- * Netlify Edge CDN tarafından otomatik olarak enjekte edilen tanıtım/barındırma yorumlarını temizler.
- */
-export function normalizeHtmlForComparison(html) {
-  return html.replace(/<!--[\s\S]*?hosted on Netlify[\s\S]*?-->\r?\n?/gi, "").trim();
+// Doğrulama salt okunurdur; yerel-only sonuç canlı yayın kabulü diye etiketlenmez.
+export async function runReleaseVerification(args = process.argv.slice(2), { cwd = process.cwd(), fetchFn = globalThis.fetch } = {}) {
+  assert.ok(args.every(arg => arg === "--skip-live" || /^--site-url=.+$/.test(arg)), "Bilinmeyen seçenek; dirty-tree bypass desteklenmez.");
+  const git = verifyGitStatus({ cwd }), directory = resolve(cwd, "dist");
+  const { manifest, info } = verifyDistDirectory(directory, git);
+  const site = args.find(arg => arg.startsWith("--site-url="))?.slice("--site-url=".length) ?? process.env.INCAGEN_SITE_URL ?? DEFAULT_SITE_URL;
+  const live = !args.includes("--skip-live");
+  const result = { commit: git.commit, files: Object.keys(manifest).length, mode: info.mode, liveVerified: false };
+  if (live) {
+    Object.assign(result, await verifyLiveAssets(site, manifest, { fetchFn }), await verifyLiveRoutes(site, manifest, { fetchFn }));
+    result.liveVerified = true;
+  }
+  console.log(JSON.stringify(result));
+  console.log(live ? "Yerel paket ve canlı yayın dosya eşliği doğrulandı." : "Yalnız yerel paket doğrulandı; canlı yayın kontrol edilmedi.");
+  return result;
 }
 
-/**
- * Canlı sitedeki index.html ve index varlıklarının SHA-256 özetlerini yerel dist manifesti ile karşılaştırır.
- */
-export async function verifyLiveAssets(baseUrl = DEFAULT_SITE_URL, manifest, { timeoutMs = 10000, fetchFn = globalThis.fetch, distDir = "dist" } = {}) {
-  assert.ok(manifest && typeof manifest === "object", "Yerel manifest nesnesi gerekli.");
-  const indexUrl = new URL("/", baseUrl).toString();
-
-  const response = await fetchWithTimeout(indexUrl, { timeoutMs, fetchFn, redirect: "follow" });
-  assert.equal(response.status, 200, `Canlı index.html alınamadı: HTTP ${response.status}`);
-  const liveIndexText = await response.text();
-  const rawLiveHash = createHash("sha256").update(Buffer.from(liveIndexText, "utf8")).digest("hex");
-  const liveIndexHash = rawLiveHash;
-
-  const localIndexHash = manifest["index.html"];
-  assert.ok(localIndexHash, "Yerel manifestte index.html bulunamadı.");
-
-  // Netlify Edge enjeksiyonu olabileceğinden gerekiyorsa normalize edilmiş hash'i de doğrula
-  const indexPath = join(distDir, "index.html");
-  let htmlMatches = rawLiveHash === localIndexHash;
-  if (!htmlMatches && existsSync(indexPath)) {
-    const localIndexRaw = readFileSync(indexPath, "utf8");
-    const normalizedLocalHash = createHash("sha256").update(normalizeHtmlForComparison(localIndexRaw)).digest("hex");
-    const normalizedLiveHash = createHash("sha256").update(normalizeHtmlForComparison(liveIndexText)).digest("hex");
-    htmlMatches = normalizedLiveHash === normalizedLocalHash;
-  }
-
-  assert.ok(
-    htmlMatches,
-    `Canlı index.html hash uyuşmazlığı! Yerel: ${localIndexHash}, Canlı: ${rawLiveHash}. Canlı site güncel derleme ile senkronize değil!`
-  );
-
-  // Canlı index.html içindeki JS ve CSS varlık yollarını bul
-  const scriptRegex = /<script\b[^>]*\bsrc="([^"]+)"[^>]*>/gi;
-  const linkRegex = /<link\b[^>]*\bhref="([^"]+)"[^>]*>/gi;
-  const assetPaths = new Set();
-
-  let match;
-  while ((match = scriptRegex.exec(liveIndexText)) !== null) {
-    const src = match[1];
-    if (src.startsWith("/assets/") || src.startsWith("assets/")) {
-      assetPaths.add(src.replace(/^\//, ""));
-    }
-  }
-  while ((match = linkRegex.exec(liveIndexText)) !== null) {
-    const href = match[1];
-    if (href.startsWith("/assets/") || href.startsWith("assets/")) {
-      assetPaths.add(href.replace(/^\//, ""));
-    }
-  }
-
-  assert.ok(assetPaths.size > 0, "Canlı index.html içinde /assets/ referansı bulunamadı.");
-
-  const verifiedAssets = [];
-  for (const assetPath of assetPaths) {
-    const assetUrl = new URL(assetPath, baseUrl).toString();
-    const assetRes = await fetchWithTimeout(assetUrl, { timeoutMs, fetchFn });
-    assert.equal(assetRes.status, 200, `Canlı varlık indirilemedi: ${assetUrl} (HTTP ${assetRes.status})`);
-    const arrayBuf = await assetRes.arrayBuffer();
-    const liveAssetHash = createHash("sha256").update(Buffer.from(arrayBuf)).digest("hex");
-    const localAssetHash = manifest[assetPath];
-
-    assert.ok(localAssetHash, `Canlı index.html'deki varlık yerel manifestte bulunamadı: ${assetPath}`);
-    assert.equal(
-      liveAssetHash,
-      localAssetHash,
-      `Varlık hash uyuşmazlığı (${assetPath})! Yerel: ${localAssetHash}, Canlı: ${liveAssetHash}`
-    );
-    verifiedAssets.push({ path: assetPath, hash: liveAssetHash });
-  }
-
-  return {
-    indexHash: liveIndexHash,
-    verifiedAssets,
-  };
-}
-
-/**
- * Ana doğrulama akışını yürütür.
- */
-export async function runReleaseVerification(args = process.argv.slice(2)) {
-  const isSkipLive = args.includes("--skip-live");
-  const allowDirty = args.includes("--allow-dirty");
-  const siteUrlArg = args.find(a => a.startsWith("--site-url="));
-  const siteUrl = siteUrlArg ? siteUrlArg.split("=")[1] : (process.env.INCAGEN_SITE_URL || DEFAULT_SITE_URL);
-
-  console.log("=== Incagen Yayın Doğrulama Başlıyor ===");
-
-  // 1. Git durumu
-  console.log("1. Git çalışma ağacı kontrol ediliyor...");
-  const git = verifyGitStatus({ allowDirty });
-  console.log(`   Branch: ${git.branch}, Commit: ${git.commit.slice(0, 8)}`);
-  if (!git.clean) {
-    console.warn(`   [!] UYARI: Çalışma ağacında ${git.dirtyFiles.length} commit edilmemiş dosya var (--allow-dirty ile devam edildi).`);
-  } else {
-    console.log("   [✓] Git çalışma ağacı temiz.");
-  }
-
-  // 2. dist ve manifest doğrulama
-  console.log("2. dist derleme çıktısı ve güvenlik taraması yapılıyor...");
-  const dist = verifyDistDirectory("dist");
-  const manifest = calculateDistManifest("dist");
-  console.log(`   [✓] ${dist.fileCount} dosya (${dist.jsFileCount} JS) tarandı.`);
-  console.log(`   [✓] Public Firebase projesi (${dist.firebaseProject}), authDomain ve apiKey doğrulandı.`);
-  console.log(`   [✓] Tablo analiz kapısı (VITE_TABULAR_ANALYSIS_ENABLED=false) doğrulandı.`);
-  console.log("   [✓] Sır / API anahtarı sızıntı taraması temiz.");
-  console.log(`   [✓] ${Object.keys(manifest).length} dosyalık yerel SHA-256 manifesti hesaplandı.`);
-
-  // 3. Canlı site doğrulaması
-  if (!isSkipLive) {
-    console.log(`3. Canlı site SPA rotaları doğrulanıyor: ${siteUrl}...`);
-    const routes = await verifyLiveRoutes(siteUrl);
-    for (const r of routes) {
-      console.log(`   [✓] ${r.route} -> HTTP ${r.status}`);
-    }
-
-    console.log("4. Canlı varlıklar ve SHA-256 manifest eşleşmesi doğrulanıyor...");
-    const liveAssetCheck = await verifyLiveAssets(siteUrl, manifest);
-    console.log(`   [✓] Canlı index.html hash eşleşmesi doğrulandı (${liveAssetCheck.indexHash.slice(0, 12)}).`);
-    for (const asset of liveAssetCheck.verifiedAssets) {
-      console.log(`   [✓] ${asset.path} -> SHA-256 eşleşti (${asset.hash.slice(0, 12)})`);
-    }
-  } else {
-    console.log("3. [UYARI] Canlı site kontrolleri (--skip-live bayrağı nedeniyle) atlandı. Yalnızca yerel paket doğrulandı!");
-  }
-
-  console.log("=== Yayın Doğrulama Başarıyla Tamamlandı [✓] ===");
-  return { git, dist, manifest };
-}
-
-// Betik doğrudan çağrıldığında çalıştır
-const isDirectRun = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
-if (isDirectRun) {
-  runReleaseVerification().catch((error) => {
-    console.error("\nYayın doğrulama hatası:", error.message || error);
-    process.exit(1);
-  });
-}
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) runReleaseVerification().catch(error => { console.error(`Yayın doğrulaması başarısız: ${error.message}`); process.exitCode = 1; });

@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M3 — İlk kaynaklı tablo analizi
 
+### 2026-11-09 — Furkan / Codex: bağımsız teslim incelemesi ve yayın kabulü
+
+- [x] Sahip: Furkan — Mailleri commit/saat sırasıyla gerçek CI sonucu ile eşleştir; testlerdeki gerçek public Firebase yapılandırmasını sentetik veriyle değiştir. Üç eski hata pending Promise, son eski hata olmayan dist fixture'ıydı; sonraki `1a708e9` Quality koşusu 22:37'de başarılı tamamlandı. GitHub alert API erişimi 404; uyarı değeri public web yapılandırmasıyla eşleşir. Salt okunur API kısıtlama metadata'sında doğrudan Gemini API izni yok; backend Gemini sırrı sızıntısı doğrulanmadı. Alert'in kapandığı iddia edilmez, geçmiş force-push ile değiştirilmez.
+- [x] Sahip: Furkan — Yayın paketine build sırasında commit/ağaç/etkin yapılandırma ve tüm dosya hash'lerini ekle; eski paket, açık kapı, eksik varlık, yanlış SPA içeriği ve geniş HTML normalizasyonunu reddeden salt okunur kabulü tamamla. 13 yerel yayın testi geçti; gerçek socket ile başlık/gövde timeout'u sınandı, manifest kendini hash'lemez ve provider sırrı içermez.
+- [x] Sahip: Furkan — Geçmiş saatinin yeni snapshot sonrasında lease'i geciktirmemesini düzelt; indirme/hash/iptal davranışını ve bugünkü tüm arayüz değişikliklerini incele. Hash beklerken hesap değişimi/panel kapanması indirme yan etkisi oluşturmaz; ağ veya crypto fiziksel iptali garanti edilmez. 134 frontend + 141 Functions, 39 Python, 75 tarayıcı kontrolü geçti; mevcut 3 platform atlaması korundu. Gemini'ye yeni çağrı yapılmadı, backend analiz kapısı salt okunur metadata ile kapalı doğrulandı.
+
+Kabul: final kaynakla yerel kalite kapıları, son commit'in GitHub Quality sonucu, yerel/uzak main/furkan eşitliği ve temiz ağaç doğrulanır; exact paket Netlify'da tüm sunulan dosyalar/yedi rota üzerinden karşılaştırılır. Secret değeri veya gerçek kullanıcı verisi kaydedilmez. Test temizliği metadata ile doğrulanır. Eski mailler son başarılı koşunun yerine değerlendirilmez.
+
 ### 2026-11-09 — Furkan / Antigravity: tablo analiz ayarları, kaynak indirme bütünlüğü, geçmiş tutarlılığı ve yayın doğrulaması
 
 - [!] Sahip: Furkan — Sınırlı Gemini bulut bağlantı kontrolü: scripts/check-gemini-cloud.mjs ile tek sentetik kontrol yapıldı (95.690 ms); sağlayıcı `timeout` (`functions/unavailable`) yanıtı verdi. Tekrar deneme yapılmadı, geçici hesap ve geliştirici claim'i temizlendi (`cleaned: true`). Engel: sağlayıcı zaman aşımı ve gerçek model kalite kabulü; analiz kapıları kapalı tutuldu.

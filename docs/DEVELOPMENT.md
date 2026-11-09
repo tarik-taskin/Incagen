@@ -60,6 +60,25 @@ Frontend için:
 npm run build -- --mode cloud-preview
 ```
 
+Canlı kabul için kaynak ağacı önce commit edilmiş ve temiz olmalıdır. Mevcut kapalı analiz yayını:
+
+```bash
+VITE_AUTH_ONLY_PREVIEW=false VITE_TABULAR_ANALYSIS_ENABLED=false npm run build -- --mode cloud-preview
+npm run verify:release -- --skip-live
+```
+
+Vite build'i `dist/release-manifest.json` içine o build'in commit/ağaç kimliğini, etkin yayın bayraklarını, public Firebase yapılandırmasını (API key yerine fingerprint) ve bütün çıktı dosyalarının SHA-256 değerlerini yazar. Manifest kendini hash'lemez. `--skip-live` yalnız yerel paketi doğrular; yayın kabulü değildir. Kirli ağaçtan build, eski commit, yanlış mod veya açık analiz bayrağı reddedilir. Bu, doğrulanan yerel build sürecinin kaydıdır; imzalı tedarik zinciri kanıtı veya kötü niyetli build operatörüne karşı güvenlik sınırı değildir.
+
+Son commit'in GitHub Quality koşusu başarılı olduktan sonra aynı `dist` mevcut Netlify sitesine yeniden build edilmeden yüklenir (`netlify deploy --prod --no-build --dir dist`). Ardından:
+
+```bash
+npm run verify:release
+```
+
+Tam kabul manifest dosyası dahil bütün sunulan dosyaları, lazy paketleri, fontları ve örnek belgeleri canlıdan indirerek karşılaştırır. Yedi SPA rotası aynı doğrulanmış `index.html` içeriğini sunmalıdır. Yalnız Incagen için birebir bilinen statik Netlify hosting yorumu ayrılır; geniş HTML/whitespace normalizasyonu yapılmaz. Redirect, farklı origin, başlık/gövde timeout'u ve hash farkı başarısızlıktır. `_headers`/`_redirects` hosting kontrol dosyaları public asset diye istenmez. Yeni commit veya yeniden build sonrasında eski paket kabulü kullanılamaz.
+
+Sır taraması sunulan metin dosyalarında belirli backend/özel anahtar işaretlerini arar; bütün sır türlerinin yokluğu garantisi değildir. Firebase web yapılandırması public istemci bilgisidir, Gemini anahtarı değildir. Test fixture'larına gerçek proje anahtarı kopyalanmaz. Tarama kapatılmaz; geçmişteki GitHub uyarısının kapanması dosyadan literal kaldırmakla otomatik kanıtlanmış sayılmaz.
+
 [netlify.toml](../netlify.toml) yalnız `dist` dizinini yayınlar; iç rotalar `index.html` üzerinden açılır. Derleme ortamı mevcut Firebase Web App yapılandırmasıyla eşleşmelidir. Düz `npm run build` derleme kontrolüdür; ortam yapılandırması olmadan hazırlanmış paket canlı yayın olarak kullanılmaz.
 
 Firebase backend'i ayrı dağıtılır:

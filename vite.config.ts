@@ -2,10 +2,11 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { startupBudget } from './scripts/startup-budget'
+import { releaseProvenance } from './scripts/release-provenance'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), startupBudget()],
+  plugins: [react(), startupBudget(), releaseProvenance()],
   // shadcn bileşenleri `@/` ile src köküne bağlanır; göreli importlar da geçerli kalır.
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   build: {
