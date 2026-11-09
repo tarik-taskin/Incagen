@@ -170,11 +170,38 @@ export function verifyDistDirectory(distDir = "dist") {
 }
 
 /**
- * Belirtilen URL'ye zaman aşımlı GET isteği yapar.
+ * Belirtilen URL'ye zaman aşımlı GET isteği yapar; zamanlayıcıyı istek sonunda kesin olarak temizler.
  */
-export async function fetchWithTimeout(url, { timeoutMs = 10000, fetchFn = globalThis.fetch, ...options } = {}) {
-  const signal = AbortSignal.timeout(timeoutMs);
-  return await fetchFn(url, { signal, ...options });
+export async function fetchWithTimeout(url, { timeoutMs = 10000, fetchFn = globalThis.fetch, signal: externalSignal, ...options } = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+    controller.abort(new Error("Zaman aşımı (The operation was aborted)"));
+  }, timeoutMs);
+  if (typeof timer.unref === "function") {
+    timer.unref();
+  }
+
+  if (externalSignal) {
+    if (externalSignal.aborted) {
+      clearTimeout(timer);
+      controller.abort(externalSignal.reason);
+    } else {
+      externalSignal.addEventListener(
+        "abort",
+        () => {
+          clearTimeout(timer);
+          controller.abort(externalSignal.reason);
+        },
+        { once: true }
+      );
+    }
+  }
+
+  try {
+    return await fetchFn(url, { signal: controller.signal, ...options });
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /**
