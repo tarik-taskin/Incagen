@@ -89,6 +89,13 @@ describe("TabularAnalysisPanel - Görev 2 kapsam ve düzen kontrolleri", () => {
     expect(screen.getByLabelText("Kapsam özeti")).toBeInTheDocument();
     expect(screen.getAllByText(/satislar\.xlsx/i).length).toBeGreaterThanOrEqual(2);
 
+    // Kapsam özeti etiketleri WCAG AA kontrastı için text-foreground/85 sınıfına sahiptir
+    const sourceLabel = screen.getByText("Kaynak:");
+    expect(sourceLabel).toHaveClass("text-foreground/85");
+    expect(screen.getByText("Hesap:")).toHaveClass("text-foreground/85");
+    expect(screen.getByText("Gruplama:")).toHaveClass("text-foreground/85");
+    expect(screen.getByText("Gösterim:")).toHaveClass("text-foreground/85");
+
     // Hesaplama yöntemini "Kayıt sayısı" olarak değiştirelim
     const aggTrigger = screen.getByRole("combobox", { name: "Hesaplama" });
     await user.click(aggTrigger);
@@ -96,10 +103,12 @@ describe("TabularAnalysisPanel - Görev 2 kapsam ve düzen kontrolleri", () => {
     await user.click(countOption);
 
     // Kayıt sayısı seçildiğinde açıklama görünür ve buton aktif olur
-    expect(screen.getByText(/Kayıt sayısı seçildiğinde tüm satırlar sayılır/i)).toBeInTheDocument();
+    expect(screen.getByText(/Kayıt sayısı seçildiğinde boş olmayan tüm satırlar sayılır/i)).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Ölçüm alanı" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Analizi oluştur" })).toBeEnabled();
     expect(screen.getByText("Analiz oluşturulmaya hazır.")).toBeInTheDocument();
+    // Kapsam özetinde "Dolu satırlar" yazar
+    expect(screen.getByText(/Dolu satırlar/i)).toBeInTheDocument();
   });
 
   it("ölçüm alanı eksik olduğunda uyarı mesajı verir ve butonu kilitler", async () => {

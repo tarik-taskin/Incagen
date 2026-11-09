@@ -1103,7 +1103,7 @@
   "1. İncelenecek veri kaynağı": "1. مصدر البيانات للتحليل",
   "2. Hesaplama yöntemi ve ölçüm": "2. طريقة الحساب والمقياس",
   "3. Gruplama ve gösterim biçimi": "3. التجميع وشكل العرض",
-  "Kayıt sayısı seçildiğinde tüm satırlar sayılır; ölçüm sütunu seçilmez.": "عند اختيار عدد السجلات، يتم احتساب كافة الصفوف دون تحديد عمود قياس.",
+  "Kayıt sayısı seçildiğinde boş olmayan tüm satırlar sayılır; ölçüm sütunu seçilmez.": "عند اختيار عدد السجلات، يتم حساب جميع الصفوف غير الفارغة؛ لا يلزم تحديد عمود قياس.",
   "Kapsam özeti": "ملخص النطاق",
   "Kaynak:": "المصدر:",
   "Hesap:": "الحساب:",
@@ -1115,6 +1115,8 @@
   "Ölçüm ve gruplama için farklı alanlar seçin.": "اختر عمودين مختلفين للقياس والتجميع.",
   "Analiz oluşturulmaya hazır.": "جاهز لإنشاء التحليل.",
   "Seçimlerinizi tamamlayın.": "أكمل اختياراتك.",
-  "Tüm kayıtlar": "كافة السجلات",
-  "Alan seçilmedi": "لم يُحدد عمود"
+  "Dolu satırlar": "الصفوف غير الفارغة",
+  "Dolu kayıtlar": "السجلات غير الفارغة",
+  "Alan seçilmedi": "لم يُحدد عمود",
+  "Analiz deneme sınırı aşıldı": "تم تجاوز الحد الأقصى لمحاولات التحليل"
 }

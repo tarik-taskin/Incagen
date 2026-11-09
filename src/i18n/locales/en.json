@@ -1103,7 +1103,7 @@
   "1. İncelenecek veri kaynağı": "1. Data source to analyze",
   "2. Hesaplama yöntemi ve ölçüm": "2. Calculation method and measure",
   "3. Gruplama ve gösterim biçimi": "3. Grouping and display format",
-  "Kayıt sayısı seçildiğinde tüm satırlar sayılır; ölçüm sütunu seçilmez.": "When row count is selected, all rows are counted; measure column is not selected.",
+  "Kayıt sayısı seçildiğinde boş olmayan tüm satırlar sayılır; ölçüm sütunu seçilmez.": "When row count is selected, all non-empty rows are counted; no measure column is needed.",
   "Kapsam özeti": "Scope summary",
   "Kaynak:": "Source:",
   "Hesap:": "Calculation:",
@@ -1115,6 +1115,8 @@
   "Ölçüm ve gruplama için farklı alanlar seçin.": "Select different columns for measure and grouping.",
   "Analiz oluşturulmaya hazır.": "Ready to generate analysis.",
   "Seçimlerinizi tamamlayın.": "Complete your selections.",
-  "Tüm kayıtlar": "All records",
-  "Alan seçilmedi": "No column selected"
+  "Dolu satırlar": "Non-empty rows",
+  "Dolu kayıtlar": "Non-empty records",
+  "Alan seçilmedi": "No column selected",
+  "Analiz deneme sınırı aşıldı": "Analysis attempt limit exceeded"
 }

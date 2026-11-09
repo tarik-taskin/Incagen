@@ -1103,7 +1103,7 @@
   "1. İncelenecek veri kaynağı": "1. 要分析的数据源",
   "2. Hesaplama yöntemi ve ölçüm": "2. 计算方法与指标",
   "3. Gruplama ve gösterim biçimi": "3. 分组与显示格式",
-  "Kayıt sayısı seçildiğinde tüm satırlar sayılır; ölçüm sütunu seçilmez.": "选择记录数时将统计所有行，无需选择指标列。",
+  "Kayıt sayısı seçildiğinde boş olmayan tüm satırlar sayılır; ölçüm sütunu seçilmez.": "选择记录数时，将统计所有非空行；无需选择度量列。",
   "Kapsam özeti": "范围摘要",
   "Kaynak:": "来源：",
   "Hesap:": "计算：",
@@ -1115,6 +1115,8 @@
   "Ölçüm ve gruplama için farklı alanlar seçin.": "指标列和分组列不能相同。",
   "Analiz oluşturulmaya hazır.": "准备生成分析。",
   "Seçimlerinizi tamamlayın.": "请完成您的选择。",
-  "Tüm kayıtlar": "全部记录",
-  "Alan seçilmedi": "未选择列"
+  "Dolu satırlar": "非空行",
+  "Dolu kayıtlar": "非空记录",
+  "Alan seçilmedi": "未选择列",
+  "Analiz deneme sınırı aşıldı": "超出分析重试次数限制"
 }

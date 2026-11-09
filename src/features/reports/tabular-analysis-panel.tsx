@@ -35,7 +35,7 @@ function getScopeSummary(selected: AnalysisTable | undefined, selection: TableSe
   if (!selected) return null;
   const aggLabel = selection.aggregation === "count" ? t("Kayıt sayısı") : selection.aggregation === "mean" ? t("Ortalama") : t("Toplam");
   const measureLabel = selection.aggregation === "count"
-    ? t("Tüm kayıtlar")
+    ? t("Dolu satırlar")
     : selection.valueColumn !== null ? (selected.columns[selection.valueColumn] ?? t("Alan seçilmedi")) : t("Alan seçilmedi");
   const groupLabel = selection.groupColumn !== null
     ? (selected.columns[selection.groupColumn] ?? t("Gruplama yok"))
@@ -149,9 +149,9 @@ export function TabularAnalysisPanel({ analysis }: { analysis: Analysis }) {
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field id="ai-aggregation" label="Hesaplama" value={selection.aggregation} disabled={!selected || exhausted} onChange={value => setSelection(current => ({ ...current, aggregation: value as TableSelection["aggregation"], valueColumn: value === "count" ? null : current.valueColumn, unit: value === "count" ? "count" : current.unit === "count" ? "number" : current.unit }))} options={[{ value: "sum", label: t("Toplam") }, { value: "mean", label: t("Ortalama") }, { value: "count", label: t("Kayıt sayısı") }]} />
-            <Field id="ai-measure" label="Ölçüm alanı" value={selection.valueColumn === null ? "" : String(selection.valueColumn)} placeholder={selection.aggregation === "count" ? "Tüm dolu kayıtlar" : "Alan seç"} disabled={!selected || exhausted || selection.aggregation === "count"} onChange={value => setSelection(current => ({ ...current, valueColumn: Number(value), groupColumn: current.groupColumn === Number(value) ? null : current.groupColumn }))} options={(selected?.columns ?? []).map((column, n) => ({ value: String(n), label: column }))} />
+            <Field id="ai-measure" label="Ölçüm alanı" value={selection.valueColumn === null ? "" : String(selection.valueColumn)} placeholder={selection.aggregation === "count" ? "Dolu kayıtlar" : "Alan seç"} disabled={!selected || exhausted || selection.aggregation === "count"} onChange={value => setSelection(current => ({ ...current, valueColumn: Number(value), groupColumn: current.groupColumn === Number(value) ? null : current.groupColumn }))} options={(selected?.columns ?? []).map((column, n) => ({ value: String(n), label: column }))} />
           </div>
-          {selection.aggregation === "count" && <p className="mt-2.5 text-xs text-muted-foreground">{t("Kayıt sayısı seçildiğinde tüm satırlar sayılır; ölçüm sütunu seçilmez.")}</p>}
+          {selection.aggregation === "count" && <p className="mt-2.5 text-xs text-muted-foreground">{t("Kayıt sayısı seçildiğinde boş olmayan tüm satırlar sayılır; ölçüm sütunu seçilmez.")}</p>}
         </div>
 
         {/* Bölüm 3: Kapsam ve biçim */}
@@ -172,11 +172,23 @@ export function TabularAnalysisPanel({ analysis }: { analysis: Analysis }) {
       {summary && (
         <div className="mt-5 rounded-2xl border border-primary/20 bg-primary/[0.03] p-4 text-xs dark:border-secondary/20 dark:bg-secondary/[0.03]" aria-label={t("Kapsam özeti")}>
           <p className="font-semibold text-primary dark:text-secondary">{t("Kapsam özeti")}</p>
-          <div className="mt-2 grid grid-cols-2 gap-2 text-muted-foreground sm:grid-cols-4">
-            <div><span className="block text-[11px] text-muted-foreground/80">{t("Kaynak:")}</span> <strong className="font-medium text-foreground">{summary.source}</strong></div>
-            <div><span className="block text-[11px] text-muted-foreground/80">{t("Hesap:")}</span> <strong className="font-medium text-foreground">{summary.operation}</strong></div>
-            <div><span className="block text-[11px] text-muted-foreground/80">{t("Gruplama:")}</span> <strong className="font-medium text-foreground">{summary.group}</strong></div>
-            <div><span className="block text-[11px] text-muted-foreground/80">{t("Gösterim:")}</span> <strong className="font-medium text-foreground">{summary.format}</strong></div>
+          <div className="mt-2 grid grid-cols-2 gap-3 text-muted-foreground sm:grid-cols-4">
+            <div className="min-w-0">
+              <span className="block text-[11px] font-medium text-foreground/85">{t("Kaynak:")}</span>
+              <strong className="block truncate font-medium text-foreground" title={summary.source}>{summary.source}</strong>
+            </div>
+            <div className="min-w-0">
+              <span className="block text-[11px] font-medium text-foreground/85">{t("Hesap:")}</span>
+              <strong className="block truncate font-medium text-foreground" title={summary.operation}>{summary.operation}</strong>
+            </div>
+            <div className="min-w-0">
+              <span className="block text-[11px] font-medium text-foreground/85">{t("Gruplama:")}</span>
+              <strong className="block truncate font-medium text-foreground" title={summary.group}>{summary.group}</strong>
+            </div>
+            <div className="min-w-0">
+              <span className="block text-[11px] font-medium text-foreground/85">{t("Gösterim:")}</span>
+              <strong className="block truncate font-medium text-foreground" title={summary.format}>{summary.format}</strong>
+            </div>
           </div>
         </div>
       )}

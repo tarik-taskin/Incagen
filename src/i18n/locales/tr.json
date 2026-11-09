@@ -1103,7 +1103,7 @@
   "1. İncelenecek veri kaynağı": "1. İncelenecek veri kaynağı",
   "2. Hesaplama yöntemi ve ölçüm": "2. Hesaplama yöntemi ve ölçüm",
   "3. Gruplama ve gösterim biçimi": "3. Gruplama ve gösterim biçimi",
-  "Kayıt sayısı seçildiğinde tüm satırlar sayılır; ölçüm sütunu seçilmez.": "Kayıt sayısı seçildiğinde tüm satırlar sayılır; ölçüm sütunu seçilmez.",
+  "Kayıt sayısı seçildiğinde boş olmayan tüm satırlar sayılır; ölçüm sütunu seçilmez.": "Kayıt sayısı seçildiğinde boş olmayan tüm satırlar sayılır; ölçüm sütunu seçilmez.",
   "Kapsam özeti": "Kapsam özeti",
   "Kaynak:": "Kaynak:",
   "Hesap:": "Hesap:",
@@ -1115,6 +1115,8 @@
   "Ölçüm ve gruplama için farklı alanlar seçin.": "Ölçüm ve gruplama için farklı alanlar seçin.",
   "Analiz oluşturulmaya hazır.": "Analiz oluşturulmaya hazır.",
   "Seçimlerinizi tamamlayın.": "Seçimlerinizi tamamlayın.",
-  "Tüm kayıtlar": "Tüm kayıtlar",
-  "Alan seçilmedi": "Alan seçilmedi"
+  "Dolu satırlar": "Dolu satırlar",
+  "Dolu kayıtlar": "Dolu kayıtlar",
+  "Alan seçilmedi": "Alan seçilmedi",
+  "Analiz deneme sınırı aşıldı": "Analiz deneme sınırı aşıldı"
 }

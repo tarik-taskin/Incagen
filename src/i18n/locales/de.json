@@ -1103,7 +1103,7 @@
   "1. İncelenecek veri kaynağı": "1. Zu analysierende Datenquelle",
   "2. Hesaplama yöntemi ve ölçüm": "2. Berechnungsmethode und Kennzahl",
   "3. Gruplama ve gösterim biçimi": "3. Gruppierung und Anzeigeformat",
-  "Kayıt sayısı seçildiğinde tüm satırlar sayılır; ölçüm sütunu seçilmez.": "Bei Zeilenanzahl werden alle Zeilen gezählt; keine Messspalte erforderlich.",
+  "Kayıt sayısı seçildiğinde boş olmayan tüm satırlar sayılır; ölçüm sütunu seçilmez.": "Wenn die Anzahl gewählt ist, werden alle nicht leeren Zeilen gezählt; keine Messspalte erforderlich.",
   "Kapsam özeti": "Umfangsübersicht",
   "Kaynak:": "Quelle:",
   "Hesap:": "Berechnung:",
@@ -1115,6 +1115,8 @@
   "Ölçüm ve gruplama için farklı alanlar seçin.": "Wählen Sie unterschiedliche Spalten für Messung und Gruppierung.",
   "Analiz oluşturulmaya hazır.": "Bereit zur Analyseerstellung.",
   "Seçimlerinizi tamamlayın.": "Vervollständigen Sie Ihre Auswahl.",
-  "Tüm kayıtlar": "Alle Datensätze",
-  "Alan seçilmedi": "Kein Feld ausgewählt"
+  "Dolu satırlar": "Nicht leere Zeilen",
+  "Dolu kayıtlar": "Nicht leere Datensätze",
+  "Alan seçilmedi": "Kein Feld ausgewählt",
+  "Analiz deneme sınırı aşıldı": "Limit für Analyseversuche überschritten"
 }
