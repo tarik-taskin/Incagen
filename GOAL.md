@@ -7,6 +7,16 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M3 — İlk kaynaklı tablo analizi
 
+### 2026-11-09 — Furkan / Antigravity: tablo analiz ayarları, kaynak indirme bütünlüğü, geçmiş tutarlılığı ve yayın doğrulaması
+
+- [!] Sahip: Furkan — Sınırlı Gemini bulut bağlantı kontrolü: scripts/check-gemini-cloud.mjs ile tek sentetik kontrol yapıldı (95.690 ms); sağlayıcı `timeout` (`functions/unavailable`) yanıtı verdi. Tekrar deneme yapılmadı, geçici hesap ve geliştirici claim'i temizlendi (`cleaned: true`). Engel: sağlayıcı zaman aşımı ve gerçek model kalite kabulü; analiz kapıları kapalı tutuldu.
+- [x] Sahip: Furkan — Analiz ayarlarını daha anlaşılır hale getir: tabular-analysis-panel.tsx içindeki seçimleri (dosya/sayfa, hesaplama konusu, ölçüm/kapsam) kısa dinamik kapsam özeti ve 3 mantıksal bölümle sun; wizard kurma, sayı biçimi/birimi gizleme, kullanıcı seçimini ezme, 6 dilde yerelleştir.
+- [x] Sahip: Furkan — Özgün dosya indirmesinde içerik bütünlüğü: indirme öncesi indirilen baytların SHA-256 değerini Web Crypto API ile hesaplayıp rapor kaynağı hash'i ile doğrula; eşleşmeyen dosyayı indirme, güvenli yerelleştirilmiş hata göster, oturum/kaynak değişiminde eski isteği izole et, regresyon testleri ekle.
+- [x] Sahip: Furkan — Geçmişte etiket, filtre ve sayaç tutarlılığı: analysisDisplayStatus ve history-view arasındaki uyumsuzluğu gider; etiket, renk, filtre ve sayaç için tek durum türetme mantığı (`resolveAnalysisState`) kur, süresi dolmuş lease ve başarısız işleri doğru sınıflandır, regresyon testleri ekle.
+- [x] Sahip: Furkan — Tekrarlanabilir yayın ve yayın doğrulama: doğrulanmış commit/dist ilişkisi, public Firebase ayarları, backend secret sızıntı taraması, kapalı analiz kapısı kontrolü ve SPA rotaları doğrulamasını scripts/verify-release.mjs betiğiyle standart, sır içermeyen bir akışa dönüştür.
+
+Kabul: Gemini bağlantısı tek sentetik çağrıyla denenmeli, ilk hatada durdurulup hata kategorisi belgelenmeli ve analiz kapıları kapalı kalmalı. Analiz ayarları wizard olmadan kapsam özeti sunmalı; sayı biçimi/birim görünür kalmalı, 6 dilde çalışmalı. İndirme işlemi SHA-256 bütünlüğü sağlamalı, oturum ve kaynak değişimine dayanıklı olmalı. Geçmişteki etiket, filtre ve sayaçlar tekil mantıkla eşleşmeli, süresi dolmuş lease ve başarısız işler doğru ayrılmalı. Yayın doğrulama akışı doğrulanmış commit ve dist eşliğini, secret sızıntısızlığını ve Netlify SPA rotalarını kanıtlamalı. Lint, birim, Functions, Python, entegrasyon ve yerel testler geçmeli; main/furkan eşitlenip Netlify yayını tamamlanmalı.
+
 ### 2026-11-06 — Furkan / Codex: canlı analiz kabulü ve hata dayanıklılığı
 
 - [!] Sahip: Furkan — Mevcut Secret Manager akışıyla sınırlı sentetik Gemini bağlantısını ve altı dilli CSV/XLSX kabulünü yeniden dene; kaynak/sayı ve insan kalite kapısı geçerse backend/arayüz analiz kapılarını aç. 6 Kasım kontrolleri `timeout` ve son LOW/90 saniyelik denemede `busy` verdi. Hesap/claim temizliği doğrulandı. Engel: sağlayıcının yanıt vermesi ve gerçek model kalite kabulünün geçmesi; açılış kapıları kapalı.
