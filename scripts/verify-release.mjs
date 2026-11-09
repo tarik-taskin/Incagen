@@ -229,6 +229,13 @@ export async function verifyLiveRoutes(baseUrl = DEFAULT_SITE_URL, { timeoutMs =
 }
 
 /**
+ * Netlify Edge CDN tarafından otomatik olarak enjekte edilen tanıtım/barındırma yorumlarını temizler.
+ */
+export function normalizeHtmlForComparison(html) {
+  return html.replace(/<!--[\s\S]*?hosted on Netlify[\s\S]*?-->\r?\n?/gi, "").trim();
+}
+
+/**
  * Canlı sitedeki index.html ve index varlıklarının SHA-256 özetlerini yerel dist manifesti ile karşılaştırır.
  */
 export async function verifyLiveAssets(baseUrl = DEFAULT_SITE_URL, manifest, { timeoutMs = 10000, fetchFn = globalThis.fetch } = {}) {
@@ -238,14 +245,21 @@ export async function verifyLiveAssets(baseUrl = DEFAULT_SITE_URL, manifest, { t
   const response = await fetchWithTimeout(indexUrl, { timeoutMs, fetchFn, redirect: "follow" });
   assert.equal(response.status, 200, `Canlı index.html alınamadı: HTTP ${response.status}`);
   const liveIndexText = await response.text();
-  const liveIndexHash = createHash("sha256").update(Buffer.from(liveIndexText, "utf8")).digest("hex");
+  const rawLiveHash = createHash("sha256").update(Buffer.from(liveIndexText, "utf8")).digest("hex");
+  const liveIndexHash = rawLiveHash;
 
   const localIndexHash = manifest["index.html"];
   assert.ok(localIndexHash, "Yerel manifestte index.html bulunamadı.");
-  assert.equal(
-    liveIndexHash,
-    localIndexHash,
-    `Canlı index.html hash uyuşmazlığı! Yerel: ${localIndexHash}, Canlı: ${liveIndexHash}. Canlı site güncel derleme ile senkronize değil!`
+
+  // Netlify Edge enjeksiyonu olabileceğinden normalize edilmiş hash'i de doğrula
+  const localIndexRaw = readFileSync(join("dist", "index.html"), "utf8");
+  const normalizedLocalHash = createHash("sha256").update(normalizeHtmlForComparison(localIndexRaw)).digest("hex");
+  const normalizedLiveHash = createHash("sha256").update(normalizeHtmlForComparison(liveIndexText)).digest("hex");
+
+  const htmlMatches = rawLiveHash === localIndexHash || normalizedLiveHash === normalizedLocalHash;
+  assert.ok(
+    htmlMatches,
+    `Canlı index.html hash uyuşmazlığı! Yerel: ${localIndexHash}, Canlı: ${rawLiveHash}. Canlı site güncel derleme ile senkronize değil!`
   );
 
   // Canlı index.html içindeki JS ve CSS varlık yollarını bul
