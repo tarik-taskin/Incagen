@@ -253,11 +253,30 @@ describe("LiveAnalysisReport - downloadSource oturum ve yaşam döngüsü koordi
 
     // İstek sürerken kullanıcı çıkış yaptı (currentUser = null)
     mocks.currentUser = null;
-    act(() => {
+    await act(async () => {
       resolveStorage(sampleBytes);
     });
 
     // İndirme tetiklenmemeli
+    expect(mocks.createObjectURLMock).not.toHaveBeenCalled();
+    expect(mocks.anchorClickMock).not.toHaveBeenCalled();
+  });
+
+  it.each(["session", "unmount"])("hash beklerken %s değişirse indirme yan etkisi oluşmaz", async mode => {
+    const hash = await computeSha256(sampleBytes);
+    let finish!: (value: ArrayBuffer) => void;
+    const digest = vi.spyOn(crypto.subtle, "digest").mockReturnValueOnce(new Promise<ArrayBuffer>(resolve => { finish = resolve; }));
+    mocks.getBytesMock.mockResolvedValue(sampleBytes);
+    const source: ReportSource = { sourceId: "src-1", fileName: "sales.csv", sha256: hash,
+      chunks: [{ id: "c1", locator: {}, table: { columns: ["Channel"], rows: [["A"]] } }] };
+    const view = render(<LiveAnalysisReport artifact={createTestArtifact(source)} job={createJob(source.sourceId)} analysisId="analysis-1" />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /Dayanağını incele/i }));
+    await user.click(await screen.findByRole("button", { name: "Özgün belgeyi indir" }));
+    expect(digest).toHaveBeenCalledTimes(1);
+    if (mode === "session") mocks.currentUser = { uid: "another-user" };
+    else view.unmount();
+    await act(async () => { finish(Uint8Array.from(hash.match(/../g)!, byte => parseInt(byte, 16)).buffer); });
     expect(mocks.createObjectURLMock).not.toHaveBeenCalled();
     expect(mocks.anchorClickMock).not.toHaveBeenCalled();
   });

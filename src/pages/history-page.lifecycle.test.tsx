@@ -126,4 +126,20 @@ describe("HistoryPage - reaktif zaman aşımı ve yaşam döngüsü kabulü", ()
 
     expect(screen.getAllByText("Analiz deneme sınırı aşıldı").length).toBeGreaterThanOrEqual(1);
   });
+
+  it("uzun boş beklemeden sonra gelen snapshot lease zamanlayıcısını geciktirmez", () => {
+    mocks.rows = [];
+    const view = render(<MemoryRouter initialEntries={["/app/history?status=active"]}><HistoryPage /></MemoryRouter>);
+    vi.setSystemTime(13_000);
+    mocks.rows = [{ id: "new", title: "Yeni iş", business: "Sentetik", status: "completed", createdAt: 1_000, updatedAt: 13_000,
+      ai: { status: "running", attempts: 1, maxAttempts: 3, leaseUntil: 14_000 } as AiJob }];
+    view.rerender(<MemoryRouter initialEntries={["/app/history?status=active"]}><HistoryPage /></MemoryRouter>);
+    expect(screen.getByText("Yeni iş")).toBeInTheDocument();
+    act(() => { vi.advanceTimersByTime(1_100); });
+    expect(screen.queryByText("Yeni iş")).not.toBeInTheDocument();
+    expect(screen.queryByText("Analiz hazırlanıyor")).not.toBeInTheDocument();
+    const summary = screen.getByRole("region", { name: "Arşiv özeti" });
+    expect(summary.children[2]).toHaveTextContent("Devam ediyor0");
+    expect(summary.children[3]).toHaveTextContent("Dikkat istiyor1");
+  });
 });

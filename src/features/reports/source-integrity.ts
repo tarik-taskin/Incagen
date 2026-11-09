@@ -30,7 +30,7 @@ export async function verifySourceIntegrity(
   data: ArrayBuffer | Uint8Array,
   expectedSha256: string
 ): Promise<boolean> {
-  if (!expectedSha256 || typeof expectedSha256 !== "string" || !data) {
+  if (typeof expectedSha256 !== "string" || !/^[a-f0-9]{64}$/i.test(expectedSha256.trim()) || !data) {
     return false;
   }
   try {

@@ -29,7 +29,7 @@ export function SourceDownload({
     mounted.current = true;
     return () => {
       mounted.current = false;
-      // Panel kapandığında veya kaynak değiştiğinde devam eden Storage/hash işlemini iptal et
+      // SDK/crypto devam edebilse de eski sonuç artık dosya indirmeyi veya UI güncellemesini tetikleyemez.
       activeController.current?.abort();
     };
   }, []);

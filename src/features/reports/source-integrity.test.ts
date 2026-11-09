@@ -59,7 +59,7 @@ describe("verifySourceIntegrity - Web Crypto SHA-256 doğrulama", () => {
     const originalDigest = crypto.subtle.digest;
     vi.spyOn(crypto.subtle, "digest").mockRejectedValueOnce(new Error("crypto failure"));
 
-    const result = await verifySourceIntegrity(data, "some-hash");
+    const result = await verifySourceIntegrity(data, "0".repeat(64));
     expect(result).toBe(false);
 
     vi.spyOn(crypto.subtle, "digest").mockImplementation(originalDigest);
