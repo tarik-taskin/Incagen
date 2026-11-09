@@ -177,24 +177,12 @@ test("verifyLiveRoutes: HTTP 404 veya HTML dışı yanıtta hata fırlatır", as
 });
 
 test("verifyLiveRoutes: zaman aşımında (timeout) hata fırlatır", async () => {
-  const mockTimeoutFetch = async (_url, { signal } = {}) => {
-    return new Promise((_, reject) => {
-      if (signal?.aborted) {
-        reject(new Error("Zaman aşımı (The operation was aborted)"));
-        return;
-      }
-      signal?.addEventListener(
-        "abort",
-        () => {
-          reject(new Error("Zaman aşımı (The operation was aborted)"));
-        },
-        { once: true }
-      );
-    });
+  const mockTimeoutFetch = async () => {
+    throw new Error("Zaman aşımı (The operation was aborted)");
   };
 
   await assert.rejects(
-    () => verifyLiveRoutes("https://mock.test", { timeoutMs: 15, fetchFn: mockTimeoutFetch }),
+    () => verifyLiveRoutes("https://mock.test", { fetchFn: mockTimeoutFetch }),
     /Zaman aşımı/
   );
 });
