@@ -71,4 +71,51 @@ describe("history view", () => {
 
     expect(parseHistoryView(params)).toEqual({ query: "test", status: "all", period: "all", sort: "newest" });
   });
+
+  it("süresi dolmuş lease ve AI durumlarını sayaç ve filtrelerde doğru sınıflandırır", () => {
+    const now = 10_000;
+    const expiredAi: Analysis = {
+      ...analysis("expired-lease", "completed"),
+      ai: { status: "running", leaseUntil: 5_000 } as Analysis["ai"],
+    };
+    const activeAi: Analysis = {
+      ...analysis("active-ai", "completed"),
+      ai: { status: "running", leaseUntil: 15_000 } as Analysis["ai"],
+    };
+    const completedAi: Analysis = {
+      ...analysis("done-ai", "completed"),
+      ai: { status: "completed" } as Analysis["ai"],
+    };
+    const failedAi: Analysis = {
+      ...analysis("failed-ai", "completed"),
+      ai: { status: "failed" } as Analysis["ai"],
+    };
+
+    const rows = [expiredAi, activeAi, completedAi, failedAi];
+
+    // Sayaç kontrolü:
+    // expiredAi -> failed
+    // activeAi -> active
+    // completedAi -> completed
+    // failedAi -> failed
+    expect(summarizeHistory(rows, now)).toEqual({
+      total: 4,
+      completed: 1,
+      active: 1,
+      failed: 2,
+    });
+
+    // Filtreleme kontrolü:
+    // "completed" filtresinde yalnızca done-ai çıkmalı (süresi dolan veya başarısız olan çıkmamalı!)
+    const completedRows = buildHistoryView(rows, { query: "", status: "completed", period: "all", sort: "newest" }, now);
+    expect(completedRows.map(r => r.id)).toEqual(["done-ai"]);
+
+    // "failed" (Dikkat istiyor) filtresinde expired-lease ve failed-ai çıkmalı
+    const failedRows = buildHistoryView(rows, { query: "", status: "failed", period: "all", sort: "newest" }, now);
+    expect(failedRows.map(r => r.id).sort()).toEqual(["expired-lease", "failed-ai"].sort());
+
+    // "active" filtresinde active-ai çıkmalı
+    const activeRows = buildHistoryView(rows, { query: "", status: "active", period: "all", sort: "newest" }, now);
+    expect(activeRows.map(r => r.id)).toEqual(["active-ai"]);
+  });
 });

@@ -1,4 +1,5 @@
 import type { Analysis } from "../../../functions/src/contracts";
+import { resolveAnalysisState } from "../reports/analysis-status";
 
 export interface HistorySummary {
   total: number;
@@ -23,7 +24,9 @@ const historyStatuses: HistoryStatusFilter[] = ["all", "completed", "active", "f
 const historyPeriods: HistoryPeriodFilter[] = ["all", "7d", "30d", "90d"];
 const historySorts: HistorySort[] = ["newest", "oldest", "title"];
 
-// Adresteki bilinmeyen veya eski değerleri güvenli varsayılanlara indirger.
+/**
+ * Adresteki bilinmeyen veya eski parametreleri güvenli varsayılanlara indirger.
+ */
 export function parseHistoryView(params: URLSearchParams): HistoryViewOptions {
   const status = params.get("status") as HistoryStatusFilter | null;
   const period = params.get("period") as HistoryPeriodFilter | null;
@@ -36,7 +39,9 @@ export function parseHistoryView(params: URLSearchParams): HistoryViewOptions {
   };
 }
 
-// Yalnız varsayılandan farklı seçimleri yazar; paylaşılabilir adresi kısa ve kararlı tutar.
+/**
+ * Yalnız varsayılandan farklı seçimleri yazar; URL'i kısa ve paylaşılabilir tutar.
+ */
 export function serializeHistoryView(options: HistoryViewOptions) {
   const params = new URLSearchParams();
   if (options.query.trim()) params.set("q", options.query.trim());
@@ -48,25 +53,31 @@ export function serializeHistoryView(options: HistoryViewOptions) {
 
 const collator = new Intl.Collator("tr-TR", { sensitivity: "base", numeric: true });
 
-// Türkçe karakter ve boşluk farklarını aramada kullanıcı için öngörülebilir hale getirir.
+/**
+ * Türkçe karakter ve boşluk farklarını aramada kullanıcı için öngörülebilir hale getirir.
+ */
 function normalizeSearch(value: string) {
   return value.toLocaleLowerCase("tr-TR").normalize("NFKD").replace(/\p{Diacritic}/gu, "").replace(/ı/g, "i").replace(/\s+/g, " ").trim();
 }
 
-function matchesStatus(analysis: Analysis, status: HistoryStatusFilter) {
+/**
+ * Bir analizin filtrelenen durum kategorisiyle eşleşip eşleşmediğini tekil durum çözümlemesiyle kontrol eder.
+ */
+function matchesStatus(analysis: Analysis, status: HistoryStatusFilter, now = Date.now()): boolean {
   if (status === "all") return true;
-  if (status === "active") return !["completed", "failed", "review"].includes(analysis.status);
-  if (status === "failed") return ["failed", "review"].includes(analysis.status);
-  return analysis.status === status;
+  const { category } = resolveAnalysisState(analysis, now);
+  return category === status;
 }
 
-// Başlık, hedef, işletme ve kaynak adını birlikte arar; boş hedefli eski kayıtları ve özgün metinleri korur.
+/**
+ * Başlık, hedef, işletme ve kaynak adını birlikte arar; durum ve tarih filtrelerini uygular.
+ */
 export function buildHistoryView(rows: Analysis[], options: HistoryViewOptions, now = Date.now()): Analysis[] {
   const query = normalizeSearch(options.query);
   const periodDays = options.period === "all" ? null : Number.parseInt(options.period, 10);
   const cutoff = periodDays === null ? null : now - periodDays * 24 * 60 * 60 * 1000;
   const filtered = rows.filter(analysis => {
-    if (!matchesStatus(analysis, options.status) || (cutoff !== null && analysis.createdAt < cutoff)) return false;
+    if (!matchesStatus(analysis, options.status, now) || (cutoff !== null && analysis.createdAt < cutoff)) return false;
     if (!query) return true;
     const sourceNames = analysis.report?.sources.map(source => source.name) ?? [];
     return normalizeSearch([analysis.title, analysis.objective ?? "", analysis.business, ...sourceNames].join(" ")).includes(query);
@@ -79,13 +90,15 @@ export function buildHistoryView(rows: Analysis[], options: HistoryViewOptions, 
   });
 }
 
-// Canlı kullanıcı listesini ek sorgu yapmadan arşivin dört temel durum sayacına dönüştürür.
-export function summarizeHistory(rows: Analysis[]): HistorySummary {
+/**
+ * Canlı analiz listesini tekil durum çözümlemesiyle arşivin dört temel durum sayacına dönüştürür.
+ * Kartların görünür etiketleri ile sayaçların tam örtüşmesini garanti eder.
+ */
+export function summarizeHistory(rows: Analysis[], now = Date.now()): HistorySummary {
   return rows.reduce<HistorySummary>((summary, analysis) => {
     summary.total++;
-    if (analysis.status === "completed") summary.completed++;
-    else if (["failed", "review"].includes(analysis.status)) summary.failed++;
-    else summary.active++;
+    const { category } = resolveAnalysisState(analysis, now);
+    summary[category]++;
     return summary;
   }, { total: 0, completed: 0, active: 0, failed: 0 });
 }
