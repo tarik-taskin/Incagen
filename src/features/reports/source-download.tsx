@@ -3,9 +3,11 @@ import { Download, LoaderCircle } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { t, useLocale } from "../../i18n/runtime";
 import type { ReportSource } from "./source-dialog";
+import { DownloadError } from "./source-integrity";
 
 /**
  * Kaynak indirme butonunu yönetir; kaynak kimliğiyle mount edilir,
+ * unmount ve kaynak değişiminde devam eden indirmeyi iptal eder,
  * hızlı ardışık tıklamaları tekilleştirir ve güvenli yerelleştirilmiş hata gösterir.
  */
 export function SourceDownload({
@@ -13,11 +15,12 @@ export function SourceDownload({
   onDownload,
 }: {
   source: ReportSource;
-  onDownload: (source: ReportSource) => Promise<void>;
+  onDownload: (source: ReportSource, signal?: AbortSignal) => Promise<void>;
 }) {
   useLocale();
   const mounted = useRef(true);
   const busy = useRef(false);
+  const activeController = useRef<AbortController | null>(null);
   const errorId = useId();
   const [pending, setPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -26,32 +29,55 @@ export function SourceDownload({
     mounted.current = true;
     return () => {
       mounted.current = false;
+      // Panel kapandığında veya kaynak değiştiğinde devam eden Storage/hash işlemini iptal et
+      activeController.current?.abort();
     };
   }, []);
 
   /**
-   * Aynı belgenin hızlı tekrar tıklamasını engeller, indirmeyi başlatır ve
-   * bütünlük hatası ile genel bağlantı hatasını kullanıcıya anlaşılır biçimde aktarır.
+   * Aynı belgenin hızlı tekrar tıklamasını engeller, iptal edilebilir sinyal ile
+   * indirmeyi başlatır ve bütünlük/bağlantı hatalarını kontrollü olarak sunar.
    */
   async function download() {
     if (busy.current) return;
     busy.current = true;
     setPending(true);
     setErrorMessage(null);
+
+    const controller = new AbortController();
+    activeController.current = controller;
+
     try {
-      await onDownload(source);
+      await onDownload(source, controller.signal);
     } catch (error: unknown) {
-      if (mounted.current) {
-        const isIntegrityError = error instanceof Error && error.message === "integrity_failed";
-        setErrorMessage(
-          isIntegrityError
-            ? "İndirilen dosya bütünlük kontrolünü geçemedi."
-            : "Belge indirilemedi. Bağlantınızı kontrol edip yeniden deneyin."
-        );
+      // İptal edilmiş işlem veya kapanmış panelde hata state'i yazma
+      if (controller.signal.aborted || !mounted.current) {
+        return;
       }
+      const isIntegrityError =
+        (error instanceof DownloadError && error.reason === "integrity_failed") ||
+        (error instanceof Error && error.message === "integrity_failed");
+      const isCancelled =
+        (error instanceof DownloadError && error.reason === "cancelled") ||
+        (error instanceof Error && error.name === "AbortError");
+
+      if (isCancelled) {
+        return;
+      }
+
+      setErrorMessage(
+        isIntegrityError
+          ? "İndirilen dosya bütünlük kontrolünü geçemedi."
+          : "Belge indirilemedi. Bağlantınızı kontrol edip yeniden deneyin."
+      );
     } finally {
       busy.current = false;
-      if (mounted.current) setPending(false);
+      if (activeController.current === controller) {
+        activeController.current = null;
+      }
+      if (mounted.current && !controller.signal.aborted) {
+        setPending(false);
+      }
     }
   }
 

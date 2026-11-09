@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, expect, it, vi } from "vitest";
 import { SourceDownload } from "./source-download";
 import type { ReportSource } from "./source-dialog";
+import { DownloadError } from "./source-integrity";
 import { setLocale } from "../../i18n/runtime";
 
 const source: ReportSource = {
@@ -55,8 +56,37 @@ it("does not carry an old source's pending state or late failure into a newly se
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 });
 
+it("passes an active AbortSignal and aborts it when unmounted while downloading", async () => {
+  let capturedSignal: AbortSignal | undefined;
+  const pending = new Promise<void>(() => {});
+  const download = vi.fn().mockImplementation((_src, signal) => {
+    capturedSignal = signal;
+    return pending;
+  });
+  const user = userEvent.setup();
+  const view = render(<SourceDownload source={source} onDownload={download} />);
+
+  await user.click(screen.getByRole("button", { name: "Özgün belgeyi indir" }));
+  expect(capturedSignal).toBeDefined();
+  expect(capturedSignal?.aborted).toBe(false);
+
+  // Panel kapandığında/unmount olduğunda sinyal iptal edilmeli
+  view.unmount();
+  expect(capturedSignal?.aborted).toBe(true);
+});
+
+it("silently ignores cancelled or aborted errors without rendering an alert", async () => {
+  const download = vi.fn().mockRejectedValue(new DownloadError("cancelled"));
+  const user = userEvent.setup();
+  render(<SourceDownload source={source} onDownload={download} />);
+
+  await user.click(screen.getByRole("button", { name: "Özgün belgeyi indir" }));
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Özgün belgeyi indir" })).toBeEnabled();
+});
+
 it("shows specialized integrity failure alert when hash mismatch occurs", async () => {
-  const download = vi.fn().mockRejectedValue(new Error("integrity_failed"));
+  const download = vi.fn().mockRejectedValue(new DownloadError("integrity_failed"));
   const user = userEvent.setup();
   render(<SourceDownload source={source} onDownload={download} />);
 
@@ -72,7 +102,7 @@ it("uses native localized action and failure text in English", async () => {
     <SourceDownload
       source={source}
       onDownload={async () => {
-        throw new Error("integrity_failed");
+        throw new DownloadError("integrity_failed");
       }}
     />
   );

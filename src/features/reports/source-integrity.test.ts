@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { verifySourceIntegrity } from "./source-integrity";
 
 describe("verifySourceIntegrity - Web Crypto SHA-256 doğrulama", () => {
@@ -39,5 +39,29 @@ describe("verifySourceIntegrity - Web Crypto SHA-256 doğrulama", () => {
 
     expect(await verifySourceIntegrity(uint8, expectedHex)).toBe(true);
     expect(await verifySourceIntegrity(uint8.buffer, expectedHex)).toBe(true);
+  });
+
+  it("Uint8Array diliminin (byteOffset ve byteLength) doğru hash'lenmesini sağlar", async () => {
+    // Büyük bir arabelleğin ortasında bir dilim oluşturalım:
+    // [prefix (4 byte)] [target (11 byte = "hello world")] [suffix (5 byte)]
+    const fullText = "AAAAhello worldBBBBB";
+    const fullEncoded = new TextEncoder().encode(fullText);
+    const targetSlice = fullEncoded.subarray(4, 15); // "hello world"
+
+    // "hello world" hash'i ile eşleşmeli (tüm fullText hash'i değil)
+    const expectedHelloHash = "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9";
+    const result = await verifySourceIntegrity(targetSlice, expectedHelloHash);
+    expect(result).toBe(true);
+  });
+
+  it("Web Crypto başarısızlığında veya istisnasında güvenle false döner", async () => {
+    const data = new TextEncoder().encode("hello");
+    const originalDigest = crypto.subtle.digest;
+    vi.spyOn(crypto.subtle, "digest").mockRejectedValueOnce(new Error("crypto failure"));
+
+    const result = await verifySourceIntegrity(data, "some-hash");
+    expect(result).toBe(false);
+
+    vi.spyOn(crypto.subtle, "digest").mockImplementation(originalDigest);
   });
 });

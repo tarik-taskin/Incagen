@@ -7,34 +7,80 @@ import { getServices } from "../../lib/firebase";
 import { useAuth } from "../../lib/auth-context";
 import { t, useLocale, languages, localeTag } from "../../i18n/runtime";
 import { AdaptiveReport, ReportDetails } from "./result-sections";
-import { verifySourceIntegrity } from "./source-integrity";
+import { DownloadError, verifySourceIntegrity } from "./source-integrity";
 
 // Gerçek raporun hesap kapsamını kısa tutar; yöntem ve performans ayrıntıları açılır bölümde kalır.
 export default function LiveAnalysisReport({ artifact, job, analysisId }: { artifact: AiArtifact; job: AiJob; analysisId: string }) {
   useLocale();
-  const { user } = useAuth();
+  useAuth();
   const scope = artifact.scope;
   const language = languages.find(item => item.code === artifact.locale)?.name ?? artifact.locale;
 
   // Kaynak özgün baytları oturumlu Storage SDK ile indirilir; Web Crypto ile SHA-256 bütünlüğü doğrulanır.
-  async function downloadSource(source: ReportSource) {
-    if (!user || source.sourceId !== job.sourceId) return;
-    const currentUid = user.uid;
-    const currentAnalysisId = analysisId;
-    const bytes = await getBytes(ref(getServices().storage, `users/${currentUid}/analyses/${currentAnalysisId}/${source.sourceId}`), 25 * 1024 * 1024);
-    
-    // Oturum veya analiz kimliği değiştiyse indirmeyi durdur ve eski yanıtı izole et
-    if (!user || user.uid !== currentUid) return;
+  // Gerçek güncel oturum (auth.currentUser) ve AbortSignal asenkron sınırlar boyunca kontrol edilir.
+  async function downloadSource(source: ReportSource, signal?: AbortSignal) {
+    const services = getServices();
+    const currentAuthUser = services.auth.currentUser;
+    const currentUid = currentAuthUser?.uid;
+
+    if (!currentUid) {
+      throw new DownloadError("invalid_session", "Kullanıcı oturumu bulunamadı.");
+    }
+    if (source.sourceId !== job.sourceId) {
+      throw new DownloadError("invalid_source", "Seçilen kaynak bu analize ait değil.");
+    }
+    if (signal?.aborted) {
+      throw new DownloadError("cancelled", "İndirme işlemi iptal edildi.");
+    }
+
+    let bytes: ArrayBuffer;
+    try {
+      bytes = await getBytes(ref(services.storage, `users/${currentUid}/analyses/${analysisId}/${source.sourceId}`), 25 * 1024 * 1024);
+    } catch {
+      if (signal?.aborted) {
+        throw new DownloadError("cancelled", "İndirme işlemi iptal edildi.");
+      }
+      throw new DownloadError("network_error", "Depolama alanından dosya indirilemedi.");
+    }
+
+    // Storage isteği beklerken çıkış, hesap değişimi veya panel kapanması kontrolü
+    const postFetchUid = services.auth.currentUser?.uid;
+    if (!postFetchUid || postFetchUid !== currentUid || signal?.aborted) {
+      throw new DownloadError("cancelled", "Oturum veya kaynak değiştiği için indirme durduruldu.");
+    }
 
     // İndirilen dosyanın SHA-256 özetini kaynak sözleşmesiyle doğrula
     const isIntegrityValid = await verifySourceIntegrity(bytes, source.sha256);
-    if (!isIntegrityValid) {
-      throw new Error("integrity_failed");
+
+    // Hash işlemi beklerken hesap veya kaynak değişimi ya da iptal kontrolü
+    const postVerifyUid = services.auth.currentUser?.uid;
+    if (!postVerifyUid || postVerifyUid !== currentUid || signal?.aborted) {
+      throw new DownloadError("cancelled", "Oturum veya kaynak değiştiği için indirme durduruldu.");
     }
 
-    const url = URL.createObjectURL(new Blob([bytes]));
-    const anchor = document.createElement("a"); anchor.href = url; anchor.download = source.fileName; anchor.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    if (!isIntegrityValid) {
+      throw new DownloadError("integrity_failed", "İndirilen dosya bütünlük kontrolünü geçemedi.");
+    }
+
+    let url: string | null = null;
+    try {
+      url = URL.createObjectURL(new Blob([bytes]));
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = source.fileName;
+      anchor.click();
+    } finally {
+      if (url) {
+        const objectUrl = url;
+        setTimeout(() => {
+          try {
+            URL.revokeObjectURL(objectUrl);
+          } catch {
+            // sessiz temizleme
+          }
+        }, 1000);
+      }
+    }
   }
 
   return <section aria-label={t("Analiz raporu")}><div className="mb-5 flex flex-wrap items-center justify-between gap-3 text-xs"><p className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-emerald-800 dark:text-emerald-300"><Check className="h-3.5 w-3.5" aria-hidden="true" />{t("Hesaplar ve kaynak bağlantıları doğrulandı")}</p><span className="text-muted-foreground">{t("Rapor dili: {0}", t(language))}</span></div>

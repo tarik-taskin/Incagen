@@ -36,7 +36,7 @@ function highlightText(text: string, query: string) {
 }
 
 // Büyük kaynaklarda sabit satır kimlikleriyle arama/sayfalama sunar; odak kilidi ve Escape yerel dialog'a aittir.
-export function SourceDialog({ selection, sources, onClose, translateContent = true, onDownloadSource }: { selection: SourceSelection; sources: ReportSource[]; onClose: () => void; translateContent?: boolean; onDownloadSource?: (source: ReportSource) => Promise<void> }) {
+export function SourceDialog({ selection, sources, onClose, translateContent = true, onDownloadSource }: { selection: SourceSelection; sources: ReportSource[]; onClose: () => void; translateContent?: boolean; onDownloadSource?: (source: ReportSource, signal?: AbortSignal) => Promise<void> }) {
   useLocale();
   const dialog = useRef<HTMLDialogElement>(null);
   useOutsideDismiss(dialog, onClose);
