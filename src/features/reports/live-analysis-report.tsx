@@ -7,6 +7,7 @@ import { getServices } from "../../lib/firebase";
 import { useAuth } from "../../lib/auth-context";
 import { t, useLocale, languages, localeTag } from "../../i18n/runtime";
 import { AdaptiveReport, ReportDetails } from "./result-sections";
+import { verifySourceIntegrity } from "./source-integrity";
 
 // Gerçek raporun hesap kapsamını kısa tutar; yöntem ve performans ayrıntıları açılır bölümde kalır.
 export default function LiveAnalysisReport({ artifact, job, analysisId }: { artifact: AiArtifact; job: AiJob; analysisId: string }) {
@@ -15,13 +16,25 @@ export default function LiveAnalysisReport({ artifact, job, analysisId }: { arti
   const scope = artifact.scope;
   const language = languages.find(item => item.code === artifact.locale)?.name ?? artifact.locale;
 
-  // Kaynak özgün baytları oturumlu Storage SDK ile indirilir; kalıcı paylaşım/token URL'si oluşturulmaz.
+  // Kaynak özgün baytları oturumlu Storage SDK ile indirilir; Web Crypto ile SHA-256 bütünlüğü doğrulanır.
   async function downloadSource(source: ReportSource) {
     if (!user || source.sourceId !== job.sourceId) return;
-      const bytes = await getBytes(ref(getServices().storage, `users/${user.uid}/analyses/${analysisId}/${source.sourceId}`), 25 * 1024 * 1024);
-      const url = URL.createObjectURL(new Blob([bytes]));
-      const anchor = document.createElement("a"); anchor.href = url; anchor.download = source.fileName; anchor.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    const currentUid = user.uid;
+    const currentAnalysisId = analysisId;
+    const bytes = await getBytes(ref(getServices().storage, `users/${currentUid}/analyses/${currentAnalysisId}/${source.sourceId}`), 25 * 1024 * 1024);
+    
+    // Oturum veya analiz kimliği değiştiyse indirmeyi durdur ve eski yanıtı izole et
+    if (!user || user.uid !== currentUid) return;
+
+    // İndirilen dosyanın SHA-256 özetini kaynak sözleşmesiyle doğrula
+    const isIntegrityValid = await verifySourceIntegrity(bytes, source.sha256);
+    if (!isIntegrityValid) {
+      throw new Error("integrity_failed");
+    }
+
+    const url = URL.createObjectURL(new Blob([bytes]));
+    const anchor = document.createElement("a"); anchor.href = url; anchor.download = source.fileName; anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   return <section aria-label={t("Analiz raporu")}><div className="mb-5 flex flex-wrap items-center justify-between gap-3 text-xs"><p className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-emerald-800 dark:text-emerald-300"><Check className="h-3.5 w-3.5" aria-hidden="true" />{t("Hesaplar ve kaynak bağlantıları doğrulandı")}</p><span className="text-muted-foreground">{t("Rapor dili: {0}", t(language))}</span></div>
