@@ -85,6 +85,7 @@ function HistoryActions({ analysis, disabled, onDelete }: { analysis: Analysis; 
 export function HistoryPage() {
   useLocale();
   const { rows, loading, error } = useAnalyses();
+  const [now, setNow] = useState(() => Date.now());
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [target, setTarget] = useState<DeleteTarget | null>(null);
@@ -96,10 +97,40 @@ export function HistoryPage() {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
   useOutsideDismiss(dialogRef, () => setTarget(null), target !== null && progress === null);
-  const visibleRows = buildHistoryView(rows, { query, status: statusFilter, period: periodFilter, sort });
+
+  // Açık ekranda çalışan işlerin lease dolumunu tek bir hedefli zamanlayıcıyla reaktif yeniler
+  useEffect(() => {
+    const activeLeases = rows
+      .filter(r => r.status === "completed" && r.ai?.status === "running" && r.ai.leaseUntil > now)
+      .map(r => r.ai!.leaseUntil);
+
+    if (activeLeases.length === 0) return;
+
+    const earliestExpiry = Math.min(...activeLeases);
+    const delay = Math.max(50, earliestExpiry - now + 50);
+
+    const timer = setTimeout(() => {
+      setNow(Date.now());
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [rows, now]);
+
+  // Arka plan sekmesinden geri dönüldüğünde geciken zamanlayıcıları telafi etmek için saati tazele
+  useEffect(() => {
+    function handleVisibility() {
+      if (document.visibilityState === "visible") {
+        setNow(Date.now());
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
+
+  const visibleRows = buildHistoryView(rows, { query, status: statusFilter, period: periodFilter, sort }, now);
   const selectedRows = visibleRows.filter(row => selectedIds.has(row.id));
   const allSelected = visibleRows.length > 0 && selectedRows.length === visibleRows.length;
-  const summary = summarizeHistory(rows);
+  const summary = summarizeHistory(rows, now);
   const hasFilters = query.trim() !== "" || statusFilter !== "all" || periodFilter !== "all" || sort !== "newest";
   const advancedCount = Number(statusFilter !== "all") + Number(periodFilter !== "all") + Number(sort !== "newest");
   const [filtersOpen, setFiltersOpen] = useState(advancedCount > 0);
@@ -268,15 +299,15 @@ export function HistoryPage() {
       {selectionMode ? <label className="flex min-h-24 cursor-pointer flex-wrap items-center gap-4 rounded-2xl p-4 transition-colors hover:bg-muted/40 sm:p-5">
         <Checkbox checked={selectedIds.has(analysis.id)} disabled={progress !== null} onCheckedChange={() => toggleSelected(analysis.id)} aria-label={t("{0} seç", analysis.title)} />
         <span className="min-w-0 flex-1"><span className="block break-words font-semibold">{analysis.title}</span><span className="mt-1 block text-xs text-muted-foreground">{analysis.business} · {new Date(analysis.createdAt).toLocaleString(localeTag())}</span></span>
-        <span className={"rounded-full border px-3 py-1 text-xs font-medium " + statusTone(analysisDisplayStatus(analysis).state)}>{t(analysisDisplayStatus(analysis).label)}</span>
+        <span className={"rounded-full border px-3 py-1 text-xs font-medium " + statusTone(analysisDisplayStatus(analysis, now).state)}>{t(analysisDisplayStatus(analysis, now).label)}</span>
       </label> : <div className="flex min-h-28 items-center gap-2 p-2 sm:gap-3">
         <Link className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl px-2 py-3 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:gap-5 sm:px-4" to={"/app/analyses/" + analysis.id}>
           <span className="hidden h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-primary/[0.07] text-primary dark:bg-secondary/[0.08] dark:text-secondary sm:flex"><span className="text-lg font-bold leading-none">{new Date(analysis.createdAt).toLocaleDateString(localeTag(), { day: "2-digit" })}</span><span className="mt-1 text-[10px] font-semibold uppercase">{new Date(analysis.createdAt).toLocaleDateString(localeTag(), { month: "short" })}</span></span>
-          <span className="min-w-0 flex-1"><span className="block break-words text-sm font-semibold tracking-tight sm:text-base">{analysis.title}</span><span className="mt-1.5 block break-words text-xs text-muted-foreground">{analysis.business} <span aria-hidden="true">·</span> {new Date(analysis.createdAt).toLocaleString(localeTag())}</span><span className={"mt-2 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium sm:hidden " + statusTone(analysisDisplayStatus(analysis).state)}>{t(analysisDisplayStatus(analysis).label)}</span></span>
+          <span className="min-w-0 flex-1"><span className="block break-words text-sm font-semibold tracking-tight sm:text-base">{analysis.title}</span><span className="mt-1.5 block break-words text-xs text-muted-foreground">{analysis.business} <span aria-hidden="true">·</span> {new Date(analysis.createdAt).toLocaleString(localeTag())}</span><span className={"mt-2 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium sm:hidden " + statusTone(analysisDisplayStatus(analysis, now).state)}>{t(analysisDisplayStatus(analysis, now).label)}</span></span>
           <ArrowUpRight className="hidden h-4 w-4 shrink-0 text-muted-foreground sm:block" aria-hidden="true" />
         </Link>
         <div className="flex shrink-0 items-center gap-1 pe-1 sm:gap-2 sm:pe-2">
-          <span className={"hidden rounded-full border px-3 py-1 text-xs font-medium sm:inline-flex " + statusTone(analysisDisplayStatus(analysis).state)}>{t(analysisDisplayStatus(analysis).label)}</span>
+          <span className={"hidden rounded-full border px-3 py-1 text-xs font-medium sm:inline-flex " + statusTone(analysisDisplayStatus(analysis, now).state)}>{t(analysisDisplayStatus(analysis, now).label)}</span>
           <HistoryActions analysis={analysis} disabled={progress !== null} onDelete={() => setTarget({ items: [{ id: analysis.id, title: analysis.title }] })} />
         </div>
       </div>}

@@ -72,15 +72,15 @@ describe("history view", () => {
     expect(parseHistoryView(params)).toEqual({ query: "test", status: "all", period: "all", sort: "newest" });
   });
 
-  it("süresi dolmuş lease ve AI durumlarını sayaç ve filtrelerde doğru sınıflandırır", () => {
+  it("süresi dolmuş lease, tükenmiş retry ve AI durumlarını sayaç ve filtrelerde doğru sınıflandırır", () => {
     const now = 10_000;
     const expiredAi: Analysis = {
       ...analysis("expired-lease", "completed"),
-      ai: { status: "running", leaseUntil: 5_000 } as Analysis["ai"],
+      ai: { status: "running", leaseUntil: 5_000, attempts: 1, maxAttempts: 3 } as Analysis["ai"],
     };
     const activeAi: Analysis = {
       ...analysis("active-ai", "completed"),
-      ai: { status: "running", leaseUntil: 15_000 } as Analysis["ai"],
+      ai: { status: "running", leaseUntil: 15_000, attempts: 1, maxAttempts: 3 } as Analysis["ai"],
     };
     const completedAi: Analysis = {
       ...analysis("done-ai", "completed"),
@@ -88,31 +88,36 @@ describe("history view", () => {
     };
     const failedAi: Analysis = {
       ...analysis("failed-ai", "completed"),
-      ai: { status: "failed" } as Analysis["ai"],
+      ai: { status: "failed", attempts: 1, maxAttempts: 3 } as Analysis["ai"],
+    };
+    const exhaustedAi: Analysis = {
+      ...analysis("exhausted-ai", "completed"),
+      ai: { status: "failed", attempts: 3, maxAttempts: 3 } as Analysis["ai"],
     };
 
-    const rows = [expiredAi, activeAi, completedAi, failedAi];
+    const rows = [expiredAi, activeAi, completedAi, failedAi, exhaustedAi];
 
     // Sayaç kontrolü:
-    // expiredAi -> failed
-    // activeAi -> active
-    // completedAi -> completed
-    // failedAi -> failed
+    // expiredAi -> failed (1)
+    // activeAi -> active (1)
+    // completedAi -> completed (1)
+    // failedAi -> failed (2)
+    // exhaustedAi -> failed (3)
     expect(summarizeHistory(rows, now)).toEqual({
-      total: 4,
+      total: 5,
       completed: 1,
       active: 1,
-      failed: 2,
+      failed: 3,
     });
 
     // Filtreleme kontrolü:
-    // "completed" filtresinde yalnızca done-ai çıkmalı (süresi dolan veya başarısız olan çıkmamalı!)
+    // "completed" filtresinde yalnızca done-ai çıkmalı
     const completedRows = buildHistoryView(rows, { query: "", status: "completed", period: "all", sort: "newest" }, now);
     expect(completedRows.map(r => r.id)).toEqual(["done-ai"]);
 
-    // "failed" (Dikkat istiyor) filtresinde expired-lease ve failed-ai çıkmalı
+    // "failed" (Dikkat istiyor) filtresinde expired-lease, failed-ai ve exhausted-ai çıkmalı
     const failedRows = buildHistoryView(rows, { query: "", status: "failed", period: "all", sort: "newest" }, now);
-    expect(failedRows.map(r => r.id).sort()).toEqual(["expired-lease", "failed-ai"].sort());
+    expect(failedRows.map(r => r.id).sort()).toEqual(["exhausted-ai", "expired-lease", "failed-ai"].sort());
 
     // "active" filtresinde active-ai çıkmalı
     const activeRows = buildHistoryView(rows, { query: "", status: "active", period: "all", sort: "newest" }, now);

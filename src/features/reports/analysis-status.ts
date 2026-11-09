@@ -11,7 +11,8 @@ export interface ResolvedAnalysisStatus {
 
 /**
  * Bir analizin görsel etiketini ve state değerini belirler.
- * Hazırlık/silme durumları önceliklidir; süresi dolan AI işi çalışıyor gibi gösterilmez.
+ * Hazırlık/silme durumları önceliklidir; geçerli çalışan iş erken başarısız gösterilmez;
+ * deneme hakkı tükenen iş doğru etiketle sınıflandırılır.
  */
 export function analysisDisplayStatus(
   analysis: Analysis,
@@ -23,9 +24,18 @@ export function analysisDisplayStatus(
   if (analysis.ai.status === "completed") {
     return { state: "completed", label: "Analiz hazır" };
   }
+  // Geçerli çalışan iş (lease süresi dolmamış) son denemesinde olsa bile hazırlanıyor gösterilir
   if (analysis.ai.status === "running" && now < analysis.ai.leaseUntil) {
     return { state: "processing", label: "Analiz hazırlanıyor" };
   }
+
+  // Başarısız veya lease süresi dolmuş işlerde deneme hakkı kontrolü
+  const maxAttempts = analysis.ai.maxAttempts ?? 3;
+  const attempts = analysis.ai.attempts ?? 0;
+  if (attempts >= maxAttempts) {
+    return { state: "failed", label: "Analiz deneme sınırı aşıldı" };
+  }
+
   return { state: "failed", label: "Analiz yeniden denenebilir" };
 }
 
