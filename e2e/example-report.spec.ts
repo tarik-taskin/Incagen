@@ -216,10 +216,26 @@ test("örnek raporda bağlantıyı kopyala mevcut görünümü korur ve tarayıc
   await page.goto("/");
   await page.getByRole("link", { name: "Örnek raporu incele" }).click();
   await expect(page).toHaveURL(/\/ornek-rapor$/);
+  await expect(page.getByRole("heading", { name: "Performansın büyük resmi.", exact: true })).toBeVisible();
 
-  // 2. Müşteri deneyimi örneğine geç
-  await page.getByRole("link", { name: "Müşteri deneyimi", exact: true }).click();
-  await expect(page).toHaveURL(/\/ornek-rapor\/musteri-deneyimi$/);
+  // URL, lazy rota tamamlanmadan değişebilir; gecikmeyi kontrollü tutarak sayfa hazırlığını sınar.
+  let releaseFeedback!: () => void;
+  let feedbackRequested = false;
+  const feedbackGate = new Promise<void>(resolve => { releaseFeedback = resolve; });
+  await page.route(/\/src\/pages\/feedback-report-page\.tsx(?:\?.*)?$/, async route => {
+    feedbackRequested = true;
+    await feedbackGate;
+    await route.continue();
+  });
+  const feedbackHeading = page.getByRole("heading", { name: "Müşterinin sesinden, net önceliklere.", exact: true });
+  try {
+    await page.getByRole("link", { name: "Müşteri deneyimi", exact: true }).click();
+    await expect(page).toHaveURL(/\/ornek-rapor\/musteri-deneyimi$/);
+    await expect.poll(() => feedbackRequested).toBe(true);
+    await expect(feedbackHeading).toHaveCount(0);
+  } finally { releaseFeedback(); }
+  await expect(feedbackHeading).toBeVisible();
+  await expect(page.getByRole("link", { name: "Müşteri deneyimi", exact: true })).toHaveAttribute("aria-current", "page");
 
   // Müşteri deneyiminde "Bağlantıyı kopyala" butonunu kontrol et ve tıkla
   const feedbackCopyBtn = page.getByRole("button", { name: "Bağlantıyı kopyala" });
@@ -234,10 +250,12 @@ test("örnek raporda bağlantıyı kopyala mevcut görünümü korur ve tarayıc
   // 4. İleri basınca müşteri deneyimine dönmeli
   await page.goForward();
   await expect(page).toHaveURL(/\/ornek-rapor\/musteri-deneyimi$/);
+  await expect(feedbackHeading).toBeVisible();
 
   // 5. Ticari örneğe dön, dönem seç ve açık bölümle bağlantıyı kopyala
   await page.getByRole("link", { name: "Ticari performans", exact: true }).click();
   await expect(page).toHaveURL(/\/ornek-rapor$/);
+  await expect(page.getByRole("heading", { name: "Performansın büyük resmi.", exact: true })).toBeVisible();
 
   const copyBtn = page.getByRole("button", { name: "Bağlantıyı kopyala" });
   await expect(copyBtn).toBeVisible();
