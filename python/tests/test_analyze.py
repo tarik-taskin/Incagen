@@ -91,3 +91,54 @@ def test_group_names_with_edge_spaces_are_not_silently_merged(tmp_path):
     data = document(tmp_path, "Channel,Revenue\nWeb,10\n Web,20\n")
     with pytest.raises(CalculationError, match="invalid-group"):
         analyze_table(data, selection(numberFormat="plain", unit="number"))
+
+
+@pytest.mark.parametrize("number_format", ["plain", "en", "tr"])
+@pytest.mark.parametrize("aggregation", ["sum", "mean"])
+def test_seeded_ledger_conserves_cents_groups_and_physical_evidence(tmp_path, number_format, aggregation):
+    """Independent integer ledger spans parser chunks, refunds, blanks and uneven groups."""
+    import random
+    from fractions import Fraction
+
+    rng = random.Random(20261110)
+    ledger, lines = [], ["Service;Amount"]
+    for group, count in [("Cloud", 273), ("Consulting", 119), ("Support", 37)]:
+        for index in range(count):
+            cents = 0 if index % 17 == 0 else rng.randrange(-250_000, 5_000_000)
+            sign = "-" if cents < 0 else ""
+            whole, fraction = divmod(abs(cents), 100)
+            grouped = f"{whole:,}" if number_format != "plain" else str(whole)
+            value = f"{sign}{grouped}.{fraction:02}"
+            if number_format == "tr":
+                value = value.translate(str.maketrans({",": ".", ".": ","}))
+            lines.append(f"{group};{value}")
+            ledger.append((group, cents, len(lines)))
+            if index % 41 == 0:
+                lines.append(";")
+    data = document(tmp_path, "\n".join(lines) + "\n")
+    assert len(data["chunks"]) > 1
+    result = analyze_table(data, selection(numberFormat=number_format, aggregation=aggregation))
+
+    # Fraction + integer cents is a separate oracle; round() uses ties-to-even.
+    def answer(entries):
+        """Round once at the final monetary boundary without floating-point arithmetic."""
+        cents = sum(entry[1] for entry in entries)
+        return Fraction(round(Fraction(cents, len(entries))) if aggregation == "mean" else cents, 100)
+
+    assert Fraction(str(result["metrics"][1]["value"])) == answer(ledger)
+    assert result["scope"]["rows"] == len(ledger)
+    assert result["scope"]["emptyRows"] == len(lines) - 1 - len(ledger)
+    groups = {group: [entry for entry in ledger if entry[0] == group] for group in {entry[0] for entry in ledger}}
+    for metric in result["metrics"][1:]:
+        expected = groups[metric["label"]] if "label" in metric else ledger
+        assert Fraction(str(metric["value"])) == answer(expected)
+        physical = []
+        for anchor in metric["evidence"]:
+            chunk = next(chunk for chunk in data["chunks"] if chunk["id"] == anchor["chunkId"])
+            locator = anchor["locator"]
+            assert anchor["sha256"] == data["sha256"] and anchor["sourceId"] == data["sourceId"]
+            assert chunk["locator"]["rowStart"] <= locator["rowStart"] <= locator["rowEnd"] <= chunk["locator"]["rowEnd"]
+            physical.extend(range(locator["rowStart"], locator["rowEnd"] + 1))
+        assert physical == [entry[2] for entry in expected]
+    if aggregation == "sum":
+        assert sum(Fraction(str(point["value"])) for point in result["points"]) == answer(ledger)
