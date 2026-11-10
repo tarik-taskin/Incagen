@@ -27,6 +27,7 @@ Bilgiyi tekrarlamak yerine asıl kaynağa bağlantı ver. Her geliştirme işi G
 - Tarık ve Furkan ayrı kod alanlarında paralel çalışmaya başladığında değişiklikler PR ile birleştirilir. Bunun dışında PR yalnız açıkça istendiğinde açılır.
 - `main`e push öncesinde en az `npm run lint`, `npm run test:run` ve `npm run build` çalıştırılır. Functions değiştiyse `npm run build:functions`; backend veya kullanıcı akışı değiştiyse ilgili `npm run test:integration` ve `npm run test:local` kontrolleri de çalıştırılır.
 - Her görev sonunda veya uzun işlerde anlamlı bir amaç tamamlanınca değişiklikleri inceleyip `git add .` ve commit yap.
+- Stage işleminden sonra, commit ve push öncesinde `npm run check:secrets` çalıştır; index'te veya takip edilen çalışma dosyalarında credential kalıbı varsa düzeltmeden devam etme. Gerçek public Firebase anahtarı da test fixture'ına kopyalanmaz; biçim örnekleri çalışma anında sentetik üretilir.
 - Mesaj örnekleri: `feat(frontend/employees): limit shift list`, `fix(frontend/bills): fix Turkish labels`.
 - Commit gövdesine büyüklüğüne göre 2–6 açıklama maddesi ekle. Commit'ler tek bir işlevi veya amacı karşılayacak kadar küçük olsun; büyük planlarda yaklaşık 8–9, küçük değişikliklerde 1–2 commit yeterlidir.
 - Genel akışı önemli ölçüde etkilemeyen mevcut küçük değişiklikleri inceleyerek uygun commit'e dahil et; ilgisiz veya anlamı belirsiz kullanıcı değişikliklerini koru.

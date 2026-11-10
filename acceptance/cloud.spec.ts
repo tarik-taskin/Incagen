@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { createAcceptanceJournal } from "../scripts/acceptance-resources.mjs";
 import { readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { randomUUID } from "node:crypto";
@@ -40,11 +41,10 @@ function configuration() {
 }
 
 test("canlı sitede PDF/Word/Excel hazırlama, geçmiş, izolasyon ve kaynak silme", async ({ page }) => {
-  const config = configuration();
+  const config = configuration(), journal = createAcceptanceJournal("preparation");
   const nonce = randomUUID(); const email = `acceptance-${nonce}@example.test`; const password = `Synthetic-${randomUUID()}!`;
   const own = initializeApp(config, `acceptance-own-${nonce}`); const other = initializeApp(config, `acceptance-other-${nonce}`);
   const accounts = [{ app: own, email, password }, { app: other, email: `acceptance-other-${nonce}@example.test`, password: `Synthetic-${randomUUID()}!` }];
-  let createdInBrowser = false;
   const cleanupErrors: string[] = [];
   try {
     await page.goto("/");
@@ -53,19 +53,33 @@ test("canlı sitede PDF/Word/Excel hazırlama, geçmiş, izolasyon ve kaynak sil
     await page.getByLabel("E-posta", { exact: true }).fill(email);
     await page.getByLabel("Parola", { exact: true }).fill(password);
     await page.getByLabel("Parola tekrarı", { exact: true }).fill(password);
-    await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
-    createdInBrowser = true;
+    const [registration] = await Promise.all([
+      page.waitForResponse(response => response.url().startsWith("https://identitytoolkit.googleapis.com/v1/accounts:signUp?") && response.request().postDataJSON()?.email === email),
+      page.getByRole("button", { name: "Hesap oluştur", exact: true }).click(),
+    ]);
+    expect(registration.ok()).toBe(true);
+    const registeredUid = (await registration.json()).localId;
+    journal.account(registeredUid);
     await expect(page).toHaveURL(/\/app\/new-analysis$/);
     const ownAuth = getAuth(own); await signInWithEmailAndPassword(ownAuth, email, password);
+    journal.account(ownAuth.currentUser!.uid);
     await expect(httpsCallable(getFunctions(own, "europe-west1"), "checkGemini")({})).rejects.toMatchObject({ code: "functions/permission-denied" });
     const otherAuth = getAuth(other); await createUserWithEmailAndPassword(otherAuth, accounts[1].email, accounts[1].password);
+    journal.account(otherAuth.currentUser!.uid);
     await page.getByLabel("İşletme adı", { exact: true }).fill("Synthetic acceptance");
     await page.getByLabel("Analiz başlığı", { exact: true }).fill("Cloud acceptance PDF Word Excel");
     await page.getByLabel("Analiz hedefi", { exact: true }).fill("Compare the revenue information across all three source documents.");
     await page.locator('input[type="file"]').setInputFiles(await fixtures());
-    await page.getByRole("button", { name: "Belgeleri ayrıştır", exact: true }).click();
+    const [creation] = await Promise.all([
+      page.waitForResponse(response => response.url() === "https://europe-west1-incagen-eeef4.cloudfunctions.net/createAnalysis" && response.request().method() === "POST"),
+      page.getByRole("button", { name: "Belgeleri ayrıştır", exact: true }).click(),
+    ]);
+    expect(creation.ok()).toBe(true);
+    const createdId = (await creation.json()).result.id;
+    journal.analysis(ownAuth.currentUser!.uid, createdId);
     await expect(page.getByText("Analize hazır", { exact: true })).toBeVisible({ timeout: 90_000 });
     const id = new URL(page.url()).pathname.split("/").at(-1)!;
+    expect(id).toBe(createdId);
     expect(id).toMatch(/^[a-f0-9-]{36}$/);
     const recordPath = `users/${ownAuth.currentUser!.uid}/analyses/${id}`;
     console.log("Cloud preparation completed for PDF, DOCX and XLSX.");
@@ -96,13 +110,14 @@ test("canlı sitede PDF/Word/Excel hazırlama, geçmiş, izolasyon ve kaynak sil
     // Yalnız bu testte oluşturulan UUID e-postalarına yeniden girilir; mevcut kullanıcı hesapları silinmez.
     for (const account of accounts) {
       try {
-        if (account.app === own && !createdInBrowser) continue;
-        await signInWithEmailAndPassword(getAuth(account.app), account.email, account.password);
-        await httpsCallable(getFunctions(account.app, "europe-west1"), "deleteAccount")({ confirmation: "HESABIMI SİL" });
+        const credential = await signInWithEmailAndPassword(getAuth(account.app), account.email, account.password);
+        try { journal.account(credential.user.uid); }
+        finally { await httpsCallable(getFunctions(account.app, "europe-west1"), "deleteAccount")({ confirmation: "HESABIMI SİL" }); }
       } catch (error) {
         if (!(error && typeof error === "object" && "code" in error && ["auth/invalid-credential", "auth/user-not-found"].includes(String(error.code)))) { cleanupErrors.push(String("code" in error ? error.code : "unknown")); console.error("Synthetic cleanup failed; inspect acceptance resources."); }
       } finally { await deleteApp(account.app); }
     }
   }
   expect(cleanupErrors).toEqual([]);
+  await journal.verifyClean(config);
 });

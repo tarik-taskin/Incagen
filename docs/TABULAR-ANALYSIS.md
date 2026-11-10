@@ -1,6 +1,6 @@
 # İlk gerçek tablo analizi
 
-**Durum (6 Kasım 2026):** Özel Python Cloud Run işçisi ve analiz Functions uçları kullanıcı onayıyla dağıtıldı. Linux container, IAM ve yerel hesap/rapor kontrolleri geçti. 5 Kasım gerçek Gemini denemeleri `503 / capacity` ile reddedildi. 6 Kasım devamında güvenli teşhis `timeout` ve `busy` yanıtlarını ayırdı; `LOW`/90 saniyelik son kontrol de doğrulanamadı. Gerçek modelin altı dilde kalite kabulü tamamlanmadı. Bu nedenle ücretli analiz hem backend hem arayüzde kapalıdır; canlı belge hazırlığı, geçmiş ve örnek raporlar çalışmaya devam eder. Kabul durumu [GOAL](../GOAL.md#2026-11-05--furkan--codex-ilk-gerçek-tablo-analizi) içinde tutulur.
+**Durum (10 Kasım 2026):** Özel Python Cloud Run işçisi ve analiz Functions uçları kullanıcı onayıyla dağıtıldı. Linux container, IAM ve yerel hesap/rapor kontrolleri geçti. 5 Kasım gerçek Gemini denemeleri `503 / capacity` ile reddedildi; sonraki sınırlı kontroller `timeout`/`busy` aldı. 10 Kasım tek sabit sentetik kontrol de 7.458 ms'de `busy` döndü; tekrar yapılmadı ve geçici hesap/claim temizlendi. Gerçek modelin altı dilde kalite kabulü tamamlanmadı. Bu nedenle ücretli analiz hem backend hem arayüzde kapalıdır; canlı belge hazırlığı, geçmiş ve örnek raporlar çalışmaya devam eder. Kabul durumu [GOAL](../GOAL.md#2026-11-10--furkan--codex-analiz-kabulü-ve-teslim-korumaları) içinde tutulur.
 
 ## Kullanıcı akışı ve kapsam
 

@@ -38,6 +38,9 @@ functions/lib/
 # Local Netlify folder
 .netlify
 
+# Private synthetic acceptance resource journals survive interrupted runs.
+.incagen-local/
+
 # Isolated Python tools, runtime and environments
 .tools/
 .python-runtime/

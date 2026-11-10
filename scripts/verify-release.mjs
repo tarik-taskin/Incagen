@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 import { lstatSync, readdirSync, readFileSync } from "node:fs";
 import { extname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { checkSourceCredentials } from "./check-source-credentials.mjs";
 
 export const MANIFEST_NAME = "release-manifest.json";
 export const DEFAULT_SITE_URL = "https://incagen.netlify.app";
@@ -128,6 +129,7 @@ export async function verifyLiveRoutes(baseUrl, manifest, options = {}) {
 export async function runReleaseVerification(args = process.argv.slice(2), { cwd = process.cwd(), fetchFn = globalThis.fetch } = {}) {
   assert.ok(args.every(arg => arg === "--skip-live" || /^--site-url=.+$/.test(arg)), "Bilinmeyen seçenek; dirty-tree bypass desteklenmez.");
   const git = verifyGitStatus({ cwd }), directory = resolve(cwd, "dist");
+  assert.equal(checkSourceCredentials({ cwd }).findings.length, 0, "Takip edilen kaynaklarda credential kalıbı bulundu; yayın reddedildi.");
   const { manifest, info } = verifyDistDirectory(directory, git);
   const site = args.find(arg => arg.startsWith("--site-url="))?.slice("--site-url=".length) ?? process.env.INCAGEN_SITE_URL ?? DEFAULT_SITE_URL;
   const live = !args.includes("--skip-live");

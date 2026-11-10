@@ -5,6 +5,7 @@ Testler sentetik verilerle çalışır. Gerçek Firebase projesi veya müşteri 
 ## Hızlı kontroller
 
 ```bash
+npm run check:secrets
 npm run lint
 npm run test:run
 npm run build
@@ -15,9 +16,19 @@ npm run build:functions
 
 ## Yayın paketi kabul testleri
 
+`node --test scripts/check-source-credentials.test.mjs`, izole Git index'lerinde stage/çalışma dosyası farkını, silinen dosyayı, Git dışı ortamı, tab/newline içeren isimleri, symlink sınırını ve CLI redaksiyonunu sınar. Gerçek anahtar kullanılmaz; Google/GitHub/AWS/OAuth/PEM biçimleri çalışma anında üretilir. Tek başına `npm run check:secrets`, gerçek repo index'ini ve takip edilen çalışma dosyalarını salt okunur tarar. Bu testler `test:run` içinde de çalışır.
+
 `npm run test:run`, arayüz/Functions testlerinden sonra `node scripts/verify-release.test.mjs` çalıştırır. Bu paket gerçek proje anahtarı veya canlı sağlayıcı kullanmaz; izole geçici Git ağacı ve sentetik dosyalarla kirli ağaç/eski revizyon, eksik build manifesti, yanlış Firebase alanı, açık analiz bayrağı, değiştirilmiş lazy JS/font/örnek belge, yanlış 200/HTML yanıtı ve sınırlı hosting yorumu davranışını sınar. Timeout testi gerçek loopback HTTP bağlantısında hem başlıkları hem yarım kalan yanıt gövdesini sınar; localhost socket izni gerekir. Test dizinleri ve socket'ler kapanır. [Canlı komutlar ve sınırlar](DEVELOPMENT.md#yayın).
 
 `live-analysis-download.test.tsx`, Storage cevabı ve hash hesaplaması beklerken oturum değişimi veya panel kapanmasının dosya indirme yan etkisini engellediğini doğrular. AbortSignal burada SDK ağ isteğini veya Web Crypto hesaplamasını fiziksel olarak durdurma garantisi değildir; eski sonuç artık Blob/anchor indirmesini tetiklemez. `history-page.lifecycle.test.tsx`, yeni snapshot gelmeyen lease sonunu ve uzun boş bekleme sonrası gelen yeni snapshot'ın aynı render zamanı ile filtre/sayaç/etiket güncellemesini sınar.
+
+`tabular-retry.test.tsx`, kesin son tarih sınırını, uzun bekleme sonrası yeni snapshot'ı, arka planda geciken zamanlayıcıyı ve panel kapanırken timer/listener temizliğini sınar. Son tarih sinyali `useSyncExternalStore` ile izlenir; saat render'da state'e kopyalanmaz. Süre bitince yalnız mevcut arayüz/katalog durumu değişir; yeni model çağrısı yapılmadığı ayrıca doğrulanır.
+
+`history-page.lifecycle.test.tsx` ayrıca 7/30/90 günlük filtre sınırını yeni snapshot olmadan aşar; satır görünümden çıkarken genel arşiv sayacı korunur. Destek servis testleri geçersiz/uzun adresi, boş/uzun mesajı ve iptal öncesi/sonrası geç yanıtı sınar; testler gerçek destek mesajı göndermez.
+
+Python kabulünde sabit tohumlu 429 kayıtlık hizmet defteri, üç sayı biçiminde toplam/ortalama, negatif ve sıfır tutarlar, eşit olmayan gruplar ve boş satırlar üzerinden sınanır. Beklenen cevaplar integer kuruş ve `Fraction` ile bağımsız hesaplanır; her kanıt aralığı özgün fiziksel satırlara ve doğru parser parçasına kadar karşılaştırılır. Model çağrısı yapılmaz.
+
+`node --test scripts/acceptance-resources.test.mjs` koşuya özel günlüklerin birbirini ezmediğini, dosya/dizin izinlerini, kimlik kapsamını ve başarısız metadata kontrolünde temiz işareti verilmediğini doğrular. Canlı testler `.incagen-local/` içinde 0600 dosya/0700 dizinle yalnız sentetik UID/analiz kimliklerini saklar; bu dizin Git dışındadır. Şifre, e-posta, token veya sağlayıcı sırrı kaydedilmez. Auth/Firestore/Storage metadata kabulü geçmeden `verified-clean` yazılmaz. Yarım bir koşunun günlüğünü silmek kaynakları temizlemez; operatör önce kaydedilmiş kapsamı doğrulamalıdır. Sürecin sunucu yanıtı henüz istemciye ulaşmadan kesilmesi gibi dağıtık sistem sınırları tamamen ortadan kalkmaz.
 
 ## İlk açılış bütçesi
 
@@ -56,6 +67,8 @@ Bu geliştirme araçları yayınlanan tarayıcı paketinin üretim bağımlılı
 29 Ekim yayın denetiminde Firestore Web SDK'sının `re2js` 2.8.6 alt bağımlılığı, mevcut `^2.8.3` aralığı içinde 2.9.1'e alındı. [Yeni denetim kaydı](https://github.com/advisories/GHSA-gg6h-894w-4m9c) 2.8.7 öncesindeki isteğe bağlı `LOOKBEHINDS` eşleştirmesini etkiler. Uygulama bu seçeneği doğrudan kullanmaz; güncelleme bir uygulama açığının kanıtlandığı iddiası değildir. Firebase SDK sürümü, ürün kodu ve CI eşiği değişmedi. İki üretim ağacı yeniden **0 uyarı** verdi. Tam kök denetimde geliştirme araçlarına ait **7 orta**, 0 yüksek/kritik kayıt vardır: Firebase CLI/telemetri zincirinde 3, Hono node-server, Express, qs ve PostCSS selector parser'da birer kayıt. Bunlar güncel duyuru ve uyumluluklarıyla ayrı bakımda değerlendirilir; 26 Ekim sayıları tarihsel kayıttır.
 
 Denetim zamanla değişir. Yeni uyarıda yalnız sayıya bakılmaz; etkilenen sürüm, gerçek çağrı yolu ve düzeltmenin uyumu yeniden kontrol edilir. Kontroller kapatılmaz veya uyarılar bastırılmaz.
+
+10 Kasım 2026 bakımında mevcut sürüm sınırları içinde `@hono/node-server` 2.1.6, `postcss-selector-parser` 6.1.6 ve `qs` 6.17.1 kilitlendi. `qs` 6 override'ı CLI'nin iç bağımlılıklarını da kapsar; runtime SDK veya Office ana sürümü değiştirilmedi. Uyumlu yamaların dayanakları: [Hono](https://github.com/advisories/GHSA-rmxm-3fg6-px4f), [CSS parser](https://github.com/advisories/GHSA-rj75-hqrm-r3gf), [qs](https://github.com/advisories/GHSA-6pq8-jhm2-2vcw). Temiz `npm ci --ignore-scripts` kurulumu geçti. Üretim kökü **0**, Functions **4 orta**; geliştirme dahil kök **26 → 22 orta** etkilenen paket, yüksek/kritik **0**. Kalan `glob`/`minimatch` ve CLI telemetri zincirlerinde uyumsuz ana sürüm/downgrade zorlanmadı; Functions kilit dosyası değişmedi. Bu sayılar bağımsız açık sayısı değildir ve önceki tarihli kayıtları geçersiz kılmaz.
 
 ## Entegrasyon ve tarayıcı
 

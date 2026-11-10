@@ -45,12 +45,15 @@ Gemini anahtar/bağlantı kurulumu [Gemini rehberinde](GEMINI.md), izole Python 
 ## Kalite kapısı
 
 ```bash
+npm run check:secrets
 npm run lint
 npm run test:run
 npm run build
 ```
 
 Functions değişikliğinde `npm run build:functions`; backend veya kullanıcı akışı değişikliğinde entegrasyon ve tarayıcı kontrolleri de çalıştırılır. Kurulum ve çalıştırma ayrıntıları [test rehberindedir](TESTING.md). [GitHub Actions](../.github/workflows/quality.yml) `main` push'ları ve `main` hedefli PR'larda kalite kapısını uygular.
+
+`check:secrets` hem Git index'indeki blob'ları hem takip edilen çalışma dosyalarını tarar; stage'de kalmış bir anahtar yalnız çalışma dosyasını temizleyerek atlatılamaz. Çıktı yalnız dosya/satır/türdür; dosya adına yazılmış credential da maskelenir. Git dışı `.env` dosyaları okunmaz, symlink hedefleri takip edilmez. Yeni dosyalar stage edildikten sonra kontrol tekrarlanır. CI bu kontrolü bağımlılık kurulmadan çalıştırır; yayın doğrulayıcısı da uygular. Bilinen Google/GitHub/AWS/OAuth ve PEM materyali biçimleri kapsanır; şifrelenmiş/obfuscate edilmiş sırları veya bütün secret türlerini bulduğu iddia edilmez. Firebase public web key'i de fixture'a literal olarak kopyalanmaz; biçim testleri sentetik değeri çalışma anında üretir.
 
 ## Yayın
 
@@ -77,7 +80,7 @@ npm run verify:release
 
 Tam kabul manifest dosyası dahil bütün sunulan dosyaları, lazy paketleri, fontları ve örnek belgeleri canlıdan indirerek karşılaştırır. Yedi SPA rotası aynı doğrulanmış `index.html` içeriğini sunmalıdır. Yalnız Incagen için birebir bilinen statik Netlify hosting yorumu ayrılır; geniş HTML/whitespace normalizasyonu yapılmaz. Redirect, farklı origin, başlık/gövde timeout'u ve hash farkı başarısızlıktır. `_headers`/`_redirects` hosting kontrol dosyaları public asset diye istenmez. Yeni commit veya yeniden build sonrasında eski paket kabulü kullanılamaz.
 
-Sır taraması sunulan metin dosyalarında belirli backend/özel anahtar işaretlerini arar; bütün sır türlerinin yokluğu garantisi değildir. Firebase web yapılandırması public istemci bilgisidir, Gemini anahtarı değildir. Test fixture'larına gerçek proje anahtarı kopyalanmaz. Tarama kapatılmaz; geçmişteki GitHub uyarısının kapanması dosyadan literal kaldırmakla otomatik kanıtlanmış sayılmaz.
+Paket taraması sunulan metin dosyalarında belirli backend/özel anahtar işaretlerini arar; kaynak credential kontrolünden ayrı katmandır ve bütün sır türlerinin yokluğu garantisi değildir. Firebase web yapılandırması public istemci bilgisidir, Gemini anahtarı değildir. Test fixture'larına gerçek proje anahtarı kopyalanmaz. Tarama kapatılmaz; geçmişteki GitHub uyarısının kapanması dosyadan literal kaldırmakla otomatik kanıtlanmış sayılmaz.
 
 [netlify.toml](../netlify.toml) yalnız `dist` dizinini yayınlar; iç rotalar `index.html` üzerinden açılır. Derleme ortamı mevcut Firebase Web App yapılandırmasıyla eşleşmelidir. Düz `npm run build` derleme kontrolüdür; ortam yapılandırması olmadan hazırlanmış paket canlı yayın olarak kullanılmaz.
 
@@ -94,3 +97,5 @@ Firebase CLI Node 20+ ister; PowerShell'de `--only` listesi tırnak içinde veri
 [AGENTS](../AGENTS.md)'deki görev/dal/commit akışını ve [RULES](../RULES.md)'deki kod/stil kurallarını izleyin. Belge ve testleri davranış değişikliğiyle birlikte güncelleyin; ürün limitleri ortak sözleşmeden gelir. Sırlar ve gerçek müşteri verileri Git'e eklenmez.
 
 Özetleme çalışmalarında [referans seti](../fixtures/analysis-reference/README.md) kullanılır. Cevap anahtarları değerlendirme içindir, model girdisine veya retrieval bağlamına verilmez. Hedef mimari ve servis kararları [FLOW](../FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) içinde tutulur.
+
+Canlı sentetik kabul betikleri her koşu için Git dışı `.incagen-local/` kaynak günlüğü oluşturur. Hesap/analiz kimliği yanıtı alınır alınmaz atomik yazılır; önceki yarım koşu korunur. Günlük sır veya yeniden giriş bilgisi içermez. `verified-clean`, üç serviste salt okunur kaynak yokluğu doğrulandığında yazılır; günlük dosyasını silmek kaynak temizliği yerine geçmez. Detaylar [test rehberinde](TESTING.md#yayın-paketi-kabul-testleri).

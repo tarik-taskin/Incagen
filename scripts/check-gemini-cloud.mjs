@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createAcceptanceJournal } from "./acceptance-resources.mjs";
 import { readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { randomUUID } from "node:crypto";
@@ -36,12 +37,13 @@ async function adminClient() {
 
 // Geçici geliştirici claim'iyle tek backend smoke testi yapar; sır ve sağlayıcı gövdesi yerel ortama gelmez.
 async function main() {
-  const config = configuration(), admin = await adminClient();
+  const config = configuration(), admin = await adminClient(), journal = createAcceptanceJournal("connectivity");
   const app = initializeApp(config, `cloud-probe-${randomUUID()}`), auth = getAuth(app);
   const email = `probe-${randomUUID()}@example.test`, password = `Synthetic-${randomUUID()}!`;
   let uid, failure;
   try {
     const created = await createUserWithEmailAndPassword(auth, email, password); uid = created.user.uid;
+    journal.account(uid);
     writeFileSync("/tmp/incagen-cloud-probe-resources.json", JSON.stringify({ project, uid, cleaned: false }), { mode: 0o600 });
     await admin("update", { localId: uid, customAttributes: JSON.stringify({ incagenDeveloper: true }) });
     await created.user.getIdToken(true);
@@ -64,6 +66,7 @@ async function main() {
         await httpsCallable(getFunctions(app, "europe-west1"), "deleteAccount")({ confirmation: "HESABIMI SİL" });
         assert.equal((await admin("lookup", { localId: [uid] })).users?.length ?? 0, 0);
         writeFileSync("/tmp/incagen-cloud-probe-resources.json", JSON.stringify({ project, uid, cleaned: true }), { mode: 0o600 });
+        await journal.verifyClean(config);
         console.log(JSON.stringify({ temporaryClaimRemoved: true, syntheticAccountDeleted: true }));
       }
     } finally { await deleteApp(app); }

@@ -6,9 +6,7 @@
     "gaxios": {
       "uuid": "^11.1.1"
     },
-    "express": {
-      "qs": "^6.16.0"
-    }
+    "qs": "^6.16.1"
   },
   "engines": {
     "node": "^22.19.0 || ^24.0.0"
@@ -23,7 +21,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
-    "test:run": "vitest run && npm run test:functions && node scripts/verify-release.test.mjs",
+    "test:run": "vitest run && npm run test:functions && node scripts/verify-release.test.mjs && node scripts/check-source-credentials.test.mjs && node --test scripts/acceptance-resources.test.mjs",
     "test:functions": "vitest run --config vitest.functions.config.ts",
     "test:release": "node scripts/verify-release.test.mjs",
     "test:e2e": "playwright test",
@@ -37,7 +35,8 @@
     "test:python": "python/.venv/bin/python -m pytest -q python",
     "gemini:check": "npm run build:functions && node --env-file-if-exists=functions/.secret.local scripts/check-gemini.cjs",
     "test:cloud": "playwright test -c playwright.cloud.config.ts",
-    "verify:release": "node scripts/verify-release.mjs"
+    "verify:release": "node scripts/verify-release.mjs",
+    "check:secrets": "node scripts/check-source-credentials.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",

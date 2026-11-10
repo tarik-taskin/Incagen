@@ -7,6 +7,21 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M3 — İlk kaynaklı tablo analizi
 
+### 2026-11-10 — Furkan / Codex: analiz kabulü ve teslim korumaları
+
+- [!] Sahip: Furkan — Gemini'yi mevcut backend/Secret Manager hattından tek sabit sentetik çağrıyla yeniden sına. 10 Kasım tek kontrol 7.458 ms'de `busy` (`functions/unavailable`) döndü; tekrar çağrı yapılmadı, geçici claim ve hesap temizlendi. Engel: sağlayıcının geçerli yanıtı ve altı dilli gerçek kalite kabulü. İki yayın kapısı kapalı kalır; anahtar değiştirmek, model/şema kontrolünü gevşetmek veya otomatik tekrar yapmak çözüm sayılmaz.
+- [x] Sahip: Furkan — Kökte ve Functions'ta bağımlılık uyarılarını uyumlu sürüm sınırları içinde azalt; zorlayıcı major/downgrade yapma, kalan uyarıların kapsamını açık kaydet ve temiz kurulumu/testleri doğrula.
+- [x] Sahip: Furkan — Takip edilen kaynaklarda gerçek anahtar/token ve private-key materyali kalıplarını değer göstermeden reddeden yerel/CI kontrolü ekle; sentetik negatif testler, Git dışı ortam dosyaları ve build kontrolünün ayrı sorumluluğunu koru. Eski GitHub alert'inin yönetici erişimi gerektiren durumunu kapandı sayma.
+- [x] Sahip: Furkan — Analiz ekranında lease/yeniden deneme süresini hedefli zamanlayıcıyla güncelle; yeni snapshot, sekmeye dönüş ve unmount davranışını doğrula. Süre dolunca otomatik model çağrısı yapılmasın veya gereksiz polling sürmesin.
+- [x] Sahip: Furkan — Arşivde açık tarih filtresinin kayıt sınırı geçildiğinde snapshot beklemeden yenilenmesini sağla; boş sonuç ve toplam sayaç kapsamını koru.
+- [x] Sahip: Furkan — Python için bağımsız, sabit tohumlu parasal/toplam/ortalama ve kaynak satırı regresyon setini genişlet; hesap doğrulamasını model çağrısından ayır.
+- [x] Sahip: Furkan — Destek gönderiminde e-posta/mesaj sınırlarını servis sınırında doğrula; iptal edilmiş/geç tamamlanan isteğin yanlış başarı üretmesini önle ve test et.
+- [~] Sahip: Furkan — Canlı kabul hesap/analiz kimliklerini her oluşturma adımından sonra Git dışı, özel izinli, atomik ve koşuya özel günlükte sakla; şifre/token kaydetme, eski yarım koşuyu yeni koşuyla ezme, temizliği yalnız doğrulanmış sonuçla işaretle.
+- [x] Sahip: Furkan — İlk paralel koşunun dört yeniden denemeyle geçtiği durumları ayır: sabit kaynaklarla seri/retry kapalı iki turda 14 kontrol geçti (iki mevcut mobil atlama); son tam koşuda 75 geçti, 0 hata, 0 retry ve üç mevcut platform atlaması vardı. Hiçbir eşik gevşetilmedi veya yeni atlama eklenmedi.
+- [~] Sahip: Furkan — Son kaynakla tam kalite kapısını, canlı hazırlık/kapalı analiz temizliğini, GitHub Quality, dört dal eşliğini ve Netlify paket/rota eşliğini tamamla.
+
+Kabul: lint, kaynak koruması, birim/Functions/Python, derlemeler, ilgili tarayıcı/entegrasyon ve canlı hazırlık/kapalı-yayın kabulü geçer. Son commit GitHub Quality kontrolünden geçer; local/remote main/furkan eşit ve ağaç temiz olur. Netlify'da aynı build manifesti ve bütün dosyalar/rotalar doğrulanır. Provider, yönetici yetkisi veya sürüm geçişi bekleyen işler tamamlandı sayılmaz.
+
 ### 2026-11-09 — Furkan / Codex: bağımsız teslim incelemesi ve yayın kabulü
 
 - [x] Sahip: Furkan — Mailleri commit/saat sırasıyla gerçek CI sonucu ile eşleştir; testlerdeki gerçek public Firebase yapılandırmasını sentetik veriyle değiştir. Üç eski hata pending Promise, son eski hata olmayan dist fixture'ıydı; sonraki `1a708e9` Quality koşusu 22:37'de başarılı tamamlandı. GitHub alert API erişimi 404; uyarı değeri public web yapılandırmasıyla eşleşir. Salt okunur API kısıtlama metadata'sında doğrudan Gemini API izni yok; backend Gemini sırrı sızıntısı doğrulanmadı. Alert'in kapandığı iddia edilmez, geçmiş force-push ile değiştirilmez.

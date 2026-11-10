@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createAcceptanceJournal } from "./acceptance-resources.mjs";
 import { readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { randomUUID, createHash } from "node:crypto";
@@ -8,8 +9,8 @@ import { getFirestore, getDoc, doc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes } from "firebase/storage";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { chromium } from "@playwright/test";
-const require = createRequire(import.meta.url), backend = createRequire(new URL("../functions/package.json", import.meta.url));
-const ExcelJS = backend("exceljs"), cliAuth = require("firebase-tools/lib/auth");
+const backend = createRequire(new URL("../functions/package.json", import.meta.url));
+const ExcelJS = backend("exceljs");
 const PROJECT = "incagen-eeef4", locales = ["tr", "en", "de", "es", "zh", "ar"], pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 // Canlı ücretli kabul yalnız açık opt-in ve bilinen proje/arayüz adresiyle çalışabilir; sağlayıcı anahtarı okunmaz.
@@ -60,25 +61,6 @@ function checkResult(artifact, record, expected, id, locale) {
   assert.ok(artifact.result.limitations.length >= 4);
 }
 
-// Gemini sırrını okumadan, CLI OAuth oturumuyla yalnız sentetik kaynakların silindiğini metadata üzerinden doğrular.
-async function assertCleanup(accounts, config) {
-  const account = cliAuth.getProjectDefaultAccount(process.cwd()); assert.ok(account);
-  const token = await cliAuth.getAccessToken(account.tokens.refresh_token, ["https://www.googleapis.com/auth/cloud-platform"]);
-  for (const test of accounts) {
-    const headers = { Authorization: `Bearer ${token.access_token}`, "Content-Type": "application/json" };
-    for (const id of test.ids) {
-      const response = await fetch(`https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents/users/${test.uid}/analyses/${id}`, { headers });
-      assert.equal(response.status, 404, "Synthetic record was not removed.");
-    }
-    for (const prefix of [`users/${test.uid}/`, `derived/${test.uid}/`]) {
-      const response = await fetch(`https://storage.googleapis.com/storage/v1/b/${config.firebase.storageBucket}/o?prefix=${encodeURIComponent(prefix)}&maxResults=1`, { headers });
-      assert.equal(response.status, 200); assert.equal((await response.json()).items?.length ?? 0, 0, "Synthetic storage remains.");
-    }
-    const response = await fetch(`https://identitytoolkit.googleapis.com/v1/projects/${PROJECT}/accounts:lookup`, { method: "POST", headers, body: JSON.stringify({ localId: [test.uid] }) });
-    assert.equal(response.status, 200); assert.equal((await response.json()).users?.length ?? 0, 0, "Synthetic auth user remains.");
-  }
-}
-
 // Yeni arayüz aynı gerçek kayıtla açılır; okuma/yenileme/kaynak inceleme yeni model çağrısı yapmaz.
 async function checkBrowser(account, id, baseURL, closed = false) {
   const browser = await chromium.launch();
@@ -120,7 +102,7 @@ async function checkBrowser(account, id, baseURL, closed = false) {
 
 // En fazla altı gerçek çağrı yapar; hata halinde durur ve yalnız kendi sentetik hesaplarını temizler.
 async function main() {
-  const config = configuration(), accounts = [], results = [], cleanupErrors = [];
+  const config = configuration(), accounts = [], results = [], cleanupErrors = [], journal = createAcceptanceJournal("tabular");
   const closed = process.argv.includes("--verify-closed");
   let failure;
   try {
@@ -128,12 +110,15 @@ async function main() {
       const app = initializeApp(config.firebase, `live-table-${randomUUID()}`), email = `table-acceptance-${randomUUID()}@example.test`, password = `Synthetic-${randomUUID()}!`;
       const account = { app, email, password, ids: [] }; accounts.push(account);
       const created = await createUserWithEmailAndPassword(getAuth(app), email, password); account.uid = created.user.uid;
+      journal.account(account.uid);
+      writeFileSync("/tmp/incagen-live-tabular-resources.json", JSON.stringify(accounts.filter(item => item.uid).map(({ uid, ids }) => ({ uid, ids }))), { mode: 0o600 });
     }
     writeFileSync("/tmp/incagen-live-tabular-resources.json", JSON.stringify(accounts.map(({ uid, ids }) => ({ uid, ids }))), { mode: 0o600 });
     for (let index = 0; index < (closed ? 1 : locales.length); index++) {
       const account = accounts[Math.floor(index / 2)], other = accounts[(Math.floor(index / 2) + 1) % 3], locale = locales[index], input = await fixture(index % 2 ? "xlsx" : "csv");
       const created = (await call(account, "createAnalysis", { requestId: randomUUID(), title: "Synthetic service analysis", business: "Synthetic acceptance", objective: input.objective, files: [{ name: input.name, size: input.bytes.length, contentType: input.type }] })).data;
       account.ids.push(created.id);
+      journal.analysis(account.uid, created.id);
       writeFileSync("/tmp/incagen-live-tabular-resources.json", JSON.stringify(accounts.map(({ uid, ids }) => ({ uid, ids }))), { mode: 0o600 });
       await uploadBytes(ref(getStorage(account.app), created.paths[0]), input.bytes, { contentType: input.type });
       await call(account, "prepareAnalysis", { id: created.id });
@@ -179,9 +164,9 @@ async function main() {
       } catch { cleanupErrors.push(account.uid); }
       await deleteApp(account.app);
     }
-    if (!cleanupErrors.length && accounts.every(account => account.uid)) await assertCleanup(accounts, config);
+    if (!cleanupErrors.length && accounts.some(account => account.uid)) await journal.verifyClean(config.firebase);
     assert.equal(cleanupErrors.length, 0, "Synthetic cleanup failed; inspect the resource manifest.");
-    console.log(JSON.stringify({ phase: "cleanup", status: "verified", accounts: accounts.filter(account => account.uid).length }));
+    console.log(JSON.stringify({ phase: "cleanup", status: accounts.some(account => account.uid) ? "verified" : "none-created", accounts: accounts.filter(account => account.uid).length }));
   }
   if (failure) throw failure;
   assert.equal(results.length, closed ? 0 : 6);
