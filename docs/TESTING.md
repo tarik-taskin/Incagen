@@ -1,6 +1,6 @@
 # Test ve doğrulama
 
-Testler sentetik verilerle çalışır. Gerçek Firebase projesi veya müşteri hesabı test hedefi değildir; izolasyon ayarları değiştirilmez.
+Varsayılan testler sentetik verilerle, yalıtılmış yerel servislerde çalışır; gerçek projeye geçiş yapmaz. Canlı kabul yalnız açık opt-in ve ayrı sentetik hesaplarla çalıştırılır; mevcut müşteri hesapları test hedefi değildir.
 
 ## Hızlı kontroller
 
@@ -29,6 +29,8 @@ npm run build:functions
 Python kabulünde sabit tohumlu 429 kayıtlık hizmet defteri, üç sayı biçiminde toplam/ortalama, negatif ve sıfır tutarlar, eşit olmayan gruplar ve boş satırlar üzerinden sınanır. Beklenen cevaplar integer kuruş ve `Fraction` ile bağımsız hesaplanır; her kanıt aralığı özgün fiziksel satırlara ve doğru parser parçasına kadar karşılaştırılır. Model çağrısı yapılmaz.
 
 `node --test scripts/acceptance-resources.test.mjs` koşuya özel günlüklerin birbirini ezmediğini, dosya/dizin izinlerini, kimlik kapsamını ve başarısız metadata kontrolünde temiz işareti verilmediğini doğrular. Canlı testler `.incagen-local/` içinde 0600 dosya/0700 dizinle yalnız sentetik UID/analiz kimliklerini saklar; bu dizin Git dışındadır. Şifre, e-posta, token veya sağlayıcı sırrı kaydedilmez. Auth/Firestore/Storage metadata kabulü geçmeden `verified-clean` yazılmaz. Yarım bir koşunun günlüğünü silmek kaynakları temizlemez; operatör önce kaydedilmiş kapsamı doğrulamalıdır. Sürecin sunucu yanıtı henüz istemciye ulaşmadan kesilmesi gibi dağıtık sistem sınırları tamamen ortadan kalkmaz.
+
+10 Kasım kabulü: lint, 149 arayüz + 141 Functions, 45 Python, 13 yayın, 9 kaynak koruması ve 5 günlük testi geçti. Son seri tarayıcı koşusu retry kapalı **75 geçti / 0 hata / 3 mevcut platform atlaması**; entegrasyon **9 geçti**. Canlı sentetik kabul PDF/DOCX/XLSX, geçmiş/yenileme, hesaplar arası erişim reddi ve kaynak silmeyi kapsadı. Kapalı analiz kabulü ücretli iş ayırmadı ve modele çağrı yapmadı; üç günlüğün dört hesabı için metadata temizliği doğrulandı. İlk Linux CI bir mobil kopyalama senaryosunda retry ile yeşil oldu; bu sonuç hatasız ilk geçiş sayılmadı. Kısa canlı bölgeyi tıklamadan önce tarayıcı içinde kaydeden test gözlemiyle iki görünümde üçer tekrar geçti; pano/URL ve mesajın kaybolması hâlâ sınanır, uygulama davranışı veya timeout sınırı değişmedi. Ayrı tek Gemini teşhisi `busy` verdi; bu sonuç gerçek analiz kalite kabulü değildir ve iki yayın kapısı kapalı kaldı.
 
 ## İlk açılış bütçesi
 

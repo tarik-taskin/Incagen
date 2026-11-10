@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page, type Locator } from "@playwright/test";
 import gold from "../fixtures/company-example/v3/expected.json" with { type: "json" };
 import { setTheme } from "./ui-helpers";
 
@@ -183,6 +183,32 @@ test("Excel, sunum ve yapılandırılmış metin kaynakları özgün formatları
   await accessibility(page);
 });
 
+type CopyStatusWindow = Window & { __incagenCopyStatus?: { messages: string[]; observer: MutationObserver } };
+
+// İki saniyelik canlı bölgeyi tıklamadan önce tarayıcı içinde kaydeder; yavaş test sürücüsü mesajı kaçırmaz.
+async function copyAndObserveStatus(page: Page, button: Locator) {
+  await page.evaluate(() => {
+    const messages: string[] = [];
+    const observer = new MutationObserver(() => {
+      for (const node of document.querySelectorAll('[role="status"]')) messages.push(node.textContent ?? "");
+    });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    (window as CopyStatusWindow).__incagenCopyStatus = { messages, observer };
+  });
+  try {
+    await button.click();
+    await expect.poll(() => page.evaluate(() => (window as CopyStatusWindow).__incagenCopyStatus?.messages ?? [])).toContain("Bağlantı kopyalandı");
+    // Sürücü başarı mesajı kaybolduktan sonra da gerçek pano içeriğini ve adresi doğrulamalı.
+    await expect(page.getByRole("status")).toHaveCount(0);
+    return await page.evaluate(() => navigator.clipboard.readText());
+  } finally {
+    await page.evaluate(() => {
+      (window as CopyStatusWindow).__incagenCopyStatus?.observer.disconnect();
+      delete (window as CopyStatusWindow).__incagenCopyStatus;
+    });
+  }
+}
+
 test("örnek raporda bağlantıyı kopyala mevcut görünümü korur ve tarayıcı geçmişini bozmaz", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
 
@@ -198,9 +224,7 @@ test("örnek raporda bağlantıyı kopyala mevcut görünümü korur ve tarayıc
   // Müşteri deneyiminde "Bağlantıyı kopyala" butonunu kontrol et ve tıkla
   const feedbackCopyBtn = page.getByRole("button", { name: "Bağlantıyı kopyala" });
   await expect(feedbackCopyBtn).toBeVisible();
-  await feedbackCopyBtn.click();
-  await expect(page.getByRole("status")).toHaveText("Bağlantı kopyalandı");
-  const feedbackClipboard = await page.evaluate(() => navigator.clipboard.readText());
+  const feedbackClipboard = await copyAndObserveStatus(page, feedbackCopyBtn);
   expect(feedbackClipboard).toContain("/ornek-rapor/musteri-deneyimi");
 
   // 3. Mevcut akışı doğrula: ana sayfa → ticari örnek → müşteri deneyimi → tarayıcı Geri → ana sayfa
@@ -227,9 +251,7 @@ test("örnek raporda bağlantıyı kopyala mevcut görünümü korur ve tarayıc
   await sectionLink.click();
   await expect(page).toHaveURL(/period=q4.*#finansal-detay/);
 
-  await copyBtn.click();
-  await expect(page.getByRole("status")).toHaveText("Bağlantı kopyalandı");
-  const commercialClipboard = await page.evaluate(() => navigator.clipboard.readText());
+  const commercialClipboard = await copyAndObserveStatus(page, copyBtn);
   expect(commercialClipboard).toContain("/ornek-rapor?period=q4#finansal-detay");
 
   // 6. Paylaşılan adresi doğrudan yeni sayfada açınca aynı görünüm oluşmalı
