@@ -100,24 +100,31 @@ export function HistoryPage() {
   const cancelRef = useRef<HTMLButtonElement>(null);
   useOutsideDismiss(dialogRef, () => setTarget(null), target !== null && progress === null);
 
-  // Açık ekranda çalışan işlerin lease dolumunu tek bir hedefli zamanlayıcıyla reaktif yeniler
+  // Lease ve seçili tarih aralığının bir sonraki sınırını tek hedefli zamanlayıcıyla yeniler.
   useEffect(() => {
     const scheduledAt = Date.now();
-    const activeLeases = rows
+    const deadlines = rows
       .filter(r => r.status === "completed" && r.ai?.status === "running" && r.ai.leaseUntil > scheduledAt)
       .map(r => r.ai!.leaseUntil);
 
-    if (activeLeases.length === 0) return;
+    if (periodFilter !== "all") {
+      const windowMs = Number.parseInt(periodFilter, 10) * 86_400_000;
+      for (const row of rows) {
+        const expiry = row.createdAt + windowMs;
+        if (expiry >= scheduledAt) deadlines.push(expiry);
+      }
+    }
+    if (deadlines.length === 0) return;
 
-    const earliestExpiry = Math.min(...activeLeases);
-    const delay = Math.max(50, earliestExpiry - scheduledAt + 50);
+    const earliestExpiry = Math.min(...deadlines);
+    const delay = Math.min(2_147_483_647, Math.max(50, earliestExpiry - scheduledAt + 50));
 
     const timer = setTimeout(() => {
       setNow(Date.now());
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [rows, now]);
+  }, [rows, now, periodFilter]);
 
   // Arka plan sekmesinden geri dönüldüğünde geciken zamanlayıcıları telafi etmek için saati tazele
   useEffect(() => {

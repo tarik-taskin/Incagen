@@ -40,7 +40,7 @@ export function SupportDialog({ open, onClose }: { open: boolean; onClose: () =>
     if (open && !dialog.current?.open) { dialog.current?.showModal(); closeButton.current?.focus(); }
     else if (!open && dialog.current?.open) dialog.current.close();
   }, [open]);
-  useEffect(() => () => controller.current?.abort(), []);
+  useEffect(() => () => { controller.current?.abort(); controller.current = null; lock.current = false; }, []);
 
   // Çift tıklamayı kilitler; servis hatasında yazılan alanları korur ve yeniden denemeyi kullanıcıya bırakır.
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -49,9 +49,12 @@ export function SupportDialog({ open, onClose }: { open: boolean; onClose: () =>
     lock.current = true; setState("sending");
     const abort = new AbortController(); controller.current = abort;
     const timeout = setTimeout(() => abort.abort(), 20_000);
-    try { await sendSupportMessage({ email, topic, message }, config.accessKey, abort.signal); setState("sent"); setMessage(""); }
-    catch { setState("error"); }
-    finally { clearTimeout(timeout); controller.current = null; lock.current = false; }
+    try {
+      await sendSupportMessage({ email, topic, message }, config.accessKey, abort.signal);
+      if (controller.current === abort && !abort.signal.aborted) { setState("sent"); setMessage(""); }
+    }
+    catch { if (controller.current === abort) setState("error"); }
+    finally { clearTimeout(timeout); if (controller.current === abort) { controller.current = null; lock.current = false; } }
   }
 
   return <dialog ref={dialogRef} aria-labelledby={`${id}-title`} aria-describedby={`${id}-description`} onCancel={event => { if (hasOpenPopover()) event.preventDefault(); else onClose(); }} onClose={onClose} className="surface w-[min(92vw,34rem)] overscroll-contain max-w-none overflow-y-auto rounded-[1.75rem] border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-slate-950/45 backdrop:backdrop-blur-sm">

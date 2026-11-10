@@ -46,6 +46,8 @@ Tamamlanan hazırlıkta belge adları, kategorileri, boyutları, sayfa/çalışm
 
 Kaynaklı analizde sağlayıcının 429/503 yanıtları geçici yoğunluk/hız sınırı, 408/504 ve yerel deadline zaman aşımı olarak ayrılır. Bozuk çıktı doğrulama hatasıdır. Yoğunluk veya zaman aşımında sunucu 30 saniyelik manuel tekrar beklemesi uygular; bu süre dolmadan deneme/kota rezervasyonu oluşmaz. Düğmenin açılması otomatik analiz başlatmaz. İş kaydı oluşmadan reddedilen çağrılar da arayüzde güvenli açıklama gösterir; mevcut iş hatasıyla aynı mesaj iki kez gösterilmez.
 
+Analiz ekranı iş kilidi veya yeniden deneme son tarihine tek bir zamanlayıcı kurar; yeni kayıt geldiğinde ve arka plandan dönüldüğünde güncel saati kullanır. Süre dolduğunda bekleme görünümü güncellenir, sürekli polling ve otomatik analiz çağrısı yapılmaz. Bu istemci saati güvenlik sınırı değildir; iş ve bekleme kabulü sunucuda doğrulanır.
+
 Oturumlu özgün belge indirmesi seçili belge kimliği/hash'ine bağlıdır. Aynı bekleyen indirme tekrar tıklanamaz; hata yalnız kısa, yerelleştirilmiş açıklamadır ve açıkça yeniden denenebilir. Belge değiştiğinde önceki isteğin geç gelen sonucu yeni belgenin bekleme/hata durumunu değiştirmez. Panel kapanınca eski yanıt state yazmaz. Bu davranış sistem indirme penceresinin dosyayı diske kaydettiğini iddia etmez; statik örnek dosyaların native indirme bağlantıları korunur.
 
 ## Free ve Premium
@@ -185,3 +187,5 @@ Extraction/OCR doğruluğu, sayısal sonuçlar, kaynak eşleşmesi, bulgu/öneri
 Proje planındaki ana model `gemini-3.8-flash`; 31 Aralık 2026 sonrası model ve fiyatlar yeniden değerlendirilecek. [Gemini backend adaptörü ve geliştirici bağlantı kontrolü](docs/GEMINI.md) eklendi. Kullanıcının doğrudan Secret Manager'a girdiği anahtarla 2 Kasım 2026'da tek sabit sentetik backend çağrısı başarılı oldu; kullanıcı hazırlama akışı model çağırmaz ve fiyat garantisi vermez. Düşünme/maliyet ayarları, kullanıcı belgeleriyle kaynaklı analiz ve kalite kabulü sonraki aşamadadır. OCR/görsel anlamlandırma, PDF raporu ve ödeme gelecekteki işlerdir.
 
 Mimari değerlendirmede kullanılan resmi kaynaklar: [Gemini belge işleme](https://ai.google.dev/gemini-api/docs/document-processing), [yapılandırılmış model çıktıları](https://ai.google.dev/gemini-api/docs/structured-output), [Pandas](https://pandas.pydata.org/docs/getting_started/overview.html), [Docling](https://docling-project.github.io/docling/), [Cloud Run Jobs](https://docs.cloud.google.com/run/docs/create-jobs) ve [ECharts veri geçişleri](https://echarts.apache.org/handbook/en/how-to/animation/transition/).
+
+Arşivin 7/30/90 günlük tarih filtresi açık ekranda süre sınırını geçen kaydı yeni veri snapshot'ı beklemeden görünümden çıkarır. Bu işlem kayıt silmez ve genel arşiv sayaçlarını filtrelenmiş listeye dönüştürmez. Destek gönderiminde iptal/zaman aşımı sonrası geç yanıt başarı sayılmaz; mesaj korunur, tekrar gönderim kullanıcıya bırakılır.

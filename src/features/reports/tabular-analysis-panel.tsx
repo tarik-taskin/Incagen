@@ -11,6 +11,7 @@ import { userError } from "../../lib/errors";
 import { Button } from "../../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { PageLoading } from "../../components/page-loading";
+import { useDeadlineReached } from "../../hooks/use-deadline-reached";
 
 const LiveAnalysisReport = lazy(() => import("./live-analysis-report"));
 const defaults: TableSelection = { sheet: null, valueColumn: null, groupColumn: null, aggregation: "sum", numberFormat: "plain", unit: "number" };
@@ -64,7 +65,6 @@ export function TabularAnalysisPanel({ analysis }: { analysis: Analysis }) {
   useLocale();
   const { user } = useAuth();
   const job = analysis.ai;
-  const [now, setNow] = useState(() => Date.now());
   const [selection, setSelection] = useState<TableSelection>(job?.selection ?? defaults);
   const [tableKey, setTableKey] = useState("");
   const [tables, setTables] = useState<AnalysisTable[] | null>(null);
@@ -73,10 +73,11 @@ export function TabularAnalysisPanel({ analysis }: { analysis: Analysis }) {
   const [pending, setPending] = useState(false);
   const [refresh, setRefresh] = useState(0);
   const [artifact, setArtifact] = useState<AiArtifact | null>(null);
-  const running = job?.status === "running" && now < job.leaseUntil;
-  const cooling = job?.status === "failed" && now < (job.retryAfter ?? 0);
+  const deadline = job?.status === "running" ? job.leaseUntil : job?.status === "failed" ? job.retryAfter : undefined;
+  const deadlineReached = useDeadlineReached(deadline);
+  const running = job?.status === "running" && !deadlineReached;
+  const cooling = job?.status === "failed" && !deadlineReached;
   const ready = job?.status === "completed";
-  useEffect(() => { if (job?.status !== "running" && !cooling) return; const timer = setInterval(() => setNow(Date.now()), cooling ? 1000 : 5000); return () => clearInterval(timer); }, [job?.status, cooling]);
   useEffect(() => {
     if (!user || ready || running) return;
     let active = true;

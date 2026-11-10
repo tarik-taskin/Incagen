@@ -142,4 +142,19 @@ describe("HistoryPage - reaktif zaman aşımı ve yaşam döngüsü kabulü", ()
     expect(summary.children[2]).toHaveTextContent("Devam ediyor0");
     expect(summary.children[3]).toHaveTextContent("Dikkat istiyor1");
   });
+  it.each([7, 30, 90])("%i günlük filtre açıkken sınırı geçen satır snapshot olmadan görünümden çıkar", days => {
+    const windowMs = days * 86_400_000;
+    vi.setSystemTime(windowMs + 1_000);
+    mocks.rows = [{ id: "expiring", title: "Süreli kayıt", business: "Sentetik", status: "completed", createdAt: 2_000, updatedAt: 2_000 }];
+    const view = render(<MemoryRouter initialEntries={[`/app/history?period=${days}d`]}><HistoryPage /></MemoryRouter>);
+    expect(screen.getByText("Süreli kayıt")).toBeInTheDocument();
+    act(() => { vi.advanceTimersByTime(1_000); });
+    expect(screen.getByText("Süreli kayıt")).toBeInTheDocument();
+    act(() => { vi.advanceTimersByTime(51); });
+    expect(screen.queryByText("Süreli kayıt")).not.toBeInTheDocument();
+    // Tarih filtresi kaydı silmez; genel arşiv sayacı aynı kalır.
+    expect(screen.getByRole("region", { name: "Arşiv özeti" }).children[0]).toHaveTextContent("1");
+    view.unmount();
+  });
+
 });

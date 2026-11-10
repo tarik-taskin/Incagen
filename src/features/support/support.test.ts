@@ -34,3 +34,30 @@ describe("destek teslimatı", () => {
     expect(new URL(href).searchParams.get("body")).toBe("A & B? #Kaynak\nİkinci satır\n\nperson@example.test");
   });
 });
+
+
+describe("destek sınır ve iptal denetimleri", () => {
+  it.each(["invalid", "a@example.test\r\nBcc:other@example.test", "a\u0000@example.test", `${"a".repeat(250)}@example.test`])("geçersiz adresi ağ isteğinden önce reddeder", async email => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    await expect(sendSupportMessage({ ...message, email }, "public-form-id", new AbortController().signal)).rejects.toThrow("invalid");
+    expect(fetch).not.toHaveBeenCalled();
+  });
+  it("boş veya uzun mesaj için gönderim denemez", async () => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    for (const text of ["   ", "a".repeat(2_001)]) await expect(sendSupportMessage({ ...message, message: text }, "public-form-id", new AbortController().signal)).rejects.toThrow("invalid");
+    expect(fetch).not.toHaveBeenCalled();
+  });
+  it("önceden iptal edilen isteği başlatmaz", async () => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    const abort = new AbortController(); abort.abort();
+    await expect(sendSupportMessage(message, "public-form-id", abort.signal)).rejects.toMatchObject({ name: "AbortError" });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+  it("iptali yok sayan geç servis yanıtını başarı saymaz ve yeniden denemez", async () => {
+    const abort = new AbortController();
+    const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => { abort.abort(); return { success: true }; } });
+    vi.stubGlobal("fetch", fetch);
+    await expect(sendSupportMessage(message, "public-form-id", abort.signal)).rejects.toMatchObject({ name: "AbortError" });
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+});
