@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -90,4 +90,17 @@ test("yalnız dosya adına yazılan credential da maskelenerek reddedilir", t =>
   const result = checkSourceCredentials({ cwd: repo.cwd });
   assert.deepEqual(result.findings, [{ path: "[google-api-key-redacted].txt", location: "path", line: 1, kind: "google-api-key" }]);
   assert.ok(!JSON.stringify(result).includes(googleKey));
+});
+
+test("okunamayan dosya hatası üst çağrıya veya CLI günlüğüne credential taşımaz", t => {
+  const repo = repository(t), name = `${googleKey}.txt`, file = join(repo.cwd, name);
+  repo.write(name, "synthetic"); repo.stage(); chmodSync(file, 0);
+  try {
+    assert.throws(() => checkSourceCredentials({ cwd: repo.cwd }), error => {
+      assert.ok(!String(error).includes(googleKey)); assert.equal(error.cause, undefined);
+      return /taraması tamamlanamadı/.test(error.message);
+    });
+    const result = spawnSync(process.execPath, [fileURLToPath(new URL("./check-source-credentials.mjs", import.meta.url))], { cwd: repo.cwd, encoding: "utf8" });
+    assert.equal(result.status, 1); assert.ok(!(result.stdout + result.stderr).includes(googleKey));
+  } finally { chmodSync(file, 0o600); }
 });

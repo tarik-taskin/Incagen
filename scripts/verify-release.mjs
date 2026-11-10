@@ -19,9 +19,14 @@ export const digest = bytes => createHash("sha256").update(bytes).digest("hex");
 
 // Salt okunur Git kontrolü; kirli ağaç veya başka commit'ten paket tam kabulden geçemez.
 export function verifyGitStatus({ cwd = process.cwd() } = {}) {
-  const git = (...args) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
-  assert.equal(git("status", "--porcelain"), "", "Git çalışma ağacı kirli; yayın doğrulaması reddedildi.");
-  return { commit: git("rev-parse", "HEAD"), tree: git("rev-parse", "HEAD^{tree}"), branch: git("branch", "--show-current") };
+  try {
+    const git = (...args) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
+    assert.ok(git("status", "--porcelain") === "");
+    return { commit: git("rev-parse", "HEAD"), tree: git("rev-parse", "HEAD^{tree}"), branch: git("branch", "--show-current") };
+  } catch {
+    // Porcelain veya Git stderr'i dosya adındaki credential'ı hata mesajına ekleyemez.
+    throw new Error("Git çalışma ağacı kirli veya metadata okunamadı; yayın doğrulaması reddedildi.");
+  }
 }
 
 // Paket dışına çıkabilen symlink'leri reddeder; bütün dosyaların adı ve hash'i korunur.

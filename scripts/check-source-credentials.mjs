@@ -48,7 +48,7 @@ function readIndex(cwd) {
 }
 
 // Hem stage edilmiş içeriği hem takip edilen çalışma dosyasını sınar; .env gibi Git dışı dosyalar okunmaz.
-export function checkSourceCredentials({ cwd = process.cwd() } = {}) {
+function scanTrackedSources({ cwd = process.cwd() } = {}) {
   const root = execFileSync("git", ["rev-parse", "--show-toplevel"], { cwd, encoding: "utf8" }).trim();
   const entries = readIndex(root), findings = [];
   for (const entry of entries) {
@@ -62,6 +62,12 @@ export function checkSourceCredentials({ cwd = process.cwd() } = {}) {
     if (!bytes.equals(entry.bytes)) findings.push(...scanCredentialPatterns(bytes, entry.path, "worktree"));
   }
   return { checkedFiles: entries.length, findings };
+}
+
+// Dosya sistemi/Git hataları dosya adındaki credential'ı üst çağrıların günlüklerine taşıyamaz.
+export function checkSourceCredentials(options = {}) {
+  try { return scanTrackedSources(options); }
+  catch { throw new Error("Kaynak credential taraması tamamlanamadı; Git index'ini ve dosya erişimini kontrol edin."); }
 }
 
 // Başarısızlıkta yalnız dosya/satır/tür döner; credential değeri veya içerik alıntısı gösterilmez.

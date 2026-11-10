@@ -87,6 +87,16 @@ test("git check uses an isolated repo and deterministically rejects dirty trees"
   assert.throws(() => verifyGitStatus({ cwd }), /kirli/);
 });
 
+test("dirty credential-shaped paths never enter release errors", t => {
+  const cwd = mkdtempSync(join(tmpdir(), "incagen-release-redaction-"));
+  t.after(() => rmSync(cwd, { recursive: true, force: true }));
+  const git = (...args) => execFileSync("git", args, { cwd, stdio: "pipe" });
+  git("init", "-q"); writeFileSync(join(cwd, "safe.txt"), "synthetic"); git("add", ".");
+  git("-c", "user.name=Synthetic", "-c", "user.email=test@example.test", "commit", "-qm", "fixture");
+  writeFileSync(join(cwd, `${publicKey}.txt`), "synthetic");
+  assert.throws(() => verifyGitStatus({ cwd }), error => /kirli/.test(error.message) && !String(error).includes(publicKey));
+});
+
 test("local-only CLI cannot accept a dirty bypass option", async () => {
   await assert.rejects(runReleaseVerification(["--allow-dirty", "--skip-live"]), /bypass/);
 });
