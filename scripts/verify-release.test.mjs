@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { createServer } from "node:http";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import { calculateDistManifest, digest, fetchWithTimeout, HOSTING_COMMENT, MANIFEST_NAME, normalizeHtmlForComparison, runReleaseVerification, SPA_ROUTES, verifyDistDirectory, verifyGitStatus, verifyLiveAssets, verifyLiveRoutes } from "./verify-release.mjs";
 
 const revision = { commit: "a".repeat(40), tree: "b".repeat(40) };
@@ -144,4 +145,13 @@ test("real transport timeout covers both connection headers and stalled response
   t.after(() => { server.closeAllConnections(); server.close(); });
   const base = `http://127.0.0.1:${server.address().port}`;
   for (const path of ["/headers", "/body"]) await assert.rejects(fetchWithTimeout(base + path, { timeoutMs: 50 }), /abort/i);
+});
+
+
+test("release CLI captures Git stderr without printing credential-shaped paths", t => {
+  const cwd = mkdtempSync(join(tmpdir(), "incagen-release-git-stderr-"));
+  t.after(() => rmSync(cwd, { recursive: true, force: true }));
+  writeFileSync(join(cwd, ".git"), `gitdir: ${join(cwd, publicKey)}\n`);
+  const result = spawnSync(process.execPath, [fileURLToPath(new URL("./verify-release.mjs", import.meta.url)), "--skip-live"], { cwd, encoding: "utf8" });
+  assert.equal(result.status, 1); assert.ok(!(result.stdout + result.stderr).includes(publicKey));
 });

@@ -26,7 +26,7 @@ export function scanCredentialPatterns(bytes, path, location) {
 
 // Index blob'larını tek Git çağrısıyla okur; isimler shell'e girmez, symlink hedefi takip edilmez.
 function readIndex(cwd) {
-  const entries = execFileSync("git", ["ls-files", "--stage", "-z"], { cwd, encoding: "utf8" }).split("\0").filter(Boolean).map(entry => {
+  const entries = execFileSync("git", ["ls-files", "--stage", "-z"], { cwd, encoding: "utf8", stdio: "pipe" }).split("\0").filter(Boolean).map(entry => {
     const tab = entry.indexOf("\t"), metadata = entry.slice(0, tab).split(" ");
     assert.ok(tab > 0 && metadata.length === 3 && metadata[2] === "0", "Çakışan Git index'i taranamaz.");
     assert.match(metadata[1], /^[a-f0-9]{40,64}$/);
@@ -34,7 +34,7 @@ function readIndex(cwd) {
     return { path: entry.slice(tab + 1), object: metadata[1] };
   });
   if (!entries.length) return [];
-  const output = execFileSync("git", ["cat-file", "--batch"], { cwd, input: entries.map(entry => entry.object).join("\n") + "\n", maxBuffer: 128 * 1024 * 1024 });
+  const output = execFileSync("git", ["cat-file", "--batch"], { cwd, stdio: "pipe", input: entries.map(entry => entry.object).join("\n") + "\n", maxBuffer: 128 * 1024 * 1024 });
   let offset = 0;
   return entries.map(entry => {
     const end = output.indexOf(10, offset), header = output.subarray(offset, end).toString("ascii");
@@ -49,7 +49,7 @@ function readIndex(cwd) {
 
 // Hem stage edilmiş içeriği hem takip edilen çalışma dosyasını sınar; .env gibi Git dışı dosyalar okunmaz.
 function scanTrackedSources({ cwd = process.cwd() } = {}) {
-  const root = execFileSync("git", ["rev-parse", "--show-toplevel"], { cwd, encoding: "utf8" }).trim();
+  const root = execFileSync("git", ["rev-parse", "--show-toplevel"], { cwd, encoding: "utf8", stdio: "pipe" }).trim();
   const entries = readIndex(root), findings = [];
   for (const entry of entries) {
     findings.push(...scanCredentialPatterns(Buffer.from(entry.path), entry.path, "path"));

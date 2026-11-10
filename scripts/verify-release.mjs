@@ -20,7 +20,7 @@ export const digest = bytes => createHash("sha256").update(bytes).digest("hex");
 // Salt okunur Git kontrolü; kirli ağaç veya başka commit'ten paket tam kabulden geçemez.
 export function verifyGitStatus({ cwd = process.cwd() } = {}) {
   try {
-    const git = (...args) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
+    const git = (...args) => execFileSync("git", args, { cwd, encoding: "utf8", stdio: "pipe" }).trim();
     assert.ok(git("status", "--porcelain") === "");
     return { commit: git("rev-parse", "HEAD"), tree: git("rev-parse", "HEAD^{tree}"), branch: git("branch", "--show-current") };
   } catch {

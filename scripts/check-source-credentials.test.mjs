@@ -104,3 +104,12 @@ test("okunamayan dosya hatası üst çağrıya veya CLI günlüğüne credential
     assert.equal(result.status, 1); assert.ok(!(result.stdout + result.stderr).includes(googleKey));
   } finally { chmodSync(file, 0o600); }
 });
+
+
+test("Git alt sürecinin stderr'i credential biçimli yolu CLI dışına taşımaz", t => {
+  const repo = repository(t);
+  rmSync(join(repo.cwd, ".git"), { recursive: true, force: true });
+  repo.write(".git", `gitdir: ${join(repo.cwd, googleKey)}\n`);
+  const result = spawnSync(process.execPath, [fileURLToPath(new URL("./check-source-credentials.mjs", import.meta.url))], { cwd: repo.cwd, encoding: "utf8" });
+  assert.equal(result.status, 1); assert.ok(!(result.stdout + result.stderr).includes(googleKey));
+});
