@@ -1118,5 +1118,6 @@
   "Dolu satırlar": "非空行",
   "Dolu kayıtlar": "非空记录",
   "Alan seçilmedi": "未选择列",
-  "Analiz deneme sınırı aşıldı": "超出分析重试次数限制"
+  "Analiz deneme sınırı aşıldı": "超出分析重试次数限制",
+  "Gruplama alanını yeniden seçin.": "请重新选择分组列。"
 }

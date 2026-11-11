@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { ArrowRight, Check, Database, Layers, LoaderCircle, PieChart, RotateCcw, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
 import type { Analysis } from "../../../functions/src/contracts";
@@ -55,13 +55,23 @@ function getScopeSummary(selected: AnalysisTable | undefined, selection: TableSe
 function getValidationReason(selected: AnalysisTable | undefined, selection: TableSelection, limits: { rows: number }) {
   if (!selected) return t("Devam etmek için bir tablo seçin.");
   if (selected.rows > limits.rows) return t("Bu tablo kayıt sınırını aşıyor ({0}/{1}).", selected.rows, limits.rows);
-  if (selection.aggregation !== "count" && selection.valueColumn === null) return t("Hesaplanacak ölçüm alanını seçin.");
+  if (selection.aggregation !== "count" && (selection.valueColumn === null || !Number.isInteger(selection.valueColumn) || selection.valueColumn < 0 || selection.valueColumn >= selected.columns.length)) return t("Hesaplanacak ölçüm alanını seçin.");
+  if (selection.groupColumn !== null && (!Number.isInteger(selection.groupColumn) || selection.groupColumn < 0 || selection.groupColumn >= selected.columns.length)) return t("Gruplama alanını yeniden seçin.");
   if (selection.valueColumn !== null && selection.valueColumn === selection.groupColumn) return t("Ölçüm ve gruplama için farklı alanlar seçin.");
   return null;
 }
 
-// Raporu UID/deneme kimliğine bağlar; geç gelen başka rota/hesap yanıtını göstermez.
+// Dosya/sayfa ikilisinin kimliği liste sırası değişse de sabittir; ayırıcı çakışması oluşturmaz.
+function tableIdentity(table: AnalysisTable) { return JSON.stringify([table.sourceId, table.sheet]); }
+
+// Form, bekleyen istek ve sonuç yalnız aynı kullanıcı/kayıt/denemede paylaşılır.
 export function TabularAnalysisPanel({ analysis }: { analysis: Analysis }) {
+  const { user } = useAuth();
+  return <AnalysisSession key={JSON.stringify([user?.uid, analysis.id, analysis.ai?.attemptId])} analysis={analysis} />;
+}
+
+// Geç gelen kaynak/sonuç ve manuel başlatma yanıtları kapanan oturuma state yazamaz.
+function AnalysisSession({ analysis }: { analysis: Analysis }) {
   useLocale();
   const { user } = useAuth();
   const job = analysis.ai;
@@ -73,6 +83,12 @@ export function TabularAnalysisPanel({ analysis }: { analysis: Analysis }) {
   const [pending, setPending] = useState(false);
   const [refresh, setRefresh] = useState(0);
   const [artifact, setArtifact] = useState<AiArtifact | null>(null);
+  const lifetime = useRef({ active: true, starting: false });
+  useEffect(() => {
+    const current = lifetime.current;
+    current.active = true;
+    return () => { current.active = false; };
+  }, []);
   const deadline = job?.status === "running" ? job.leaseUntil : job?.status === "failed" ? job.retryAfter : undefined;
   const deadlineReached = useDeadlineReached(deadline);
   const running = job?.status === "running" && !deadlineReached;
@@ -95,25 +111,25 @@ export function TabularAnalysisPanel({ analysis }: { analysis: Analysis }) {
     return () => { active = false; };
   }, [analysis.id, user, ready, job?.attemptId, refresh]);
   const savedTable = tables?.find(table => table.sourceId === job?.sourceId && table.sheet === job.selection.sheet);
-  const selected = tableKey ? tables?.[Number(tableKey)] : savedTable ?? (tables?.length === 1 ? tables[0] : undefined);
-  const index = selected ? tables?.indexOf(selected) : undefined;
-  const valid = !!selected && (selection.aggregation === "count" || selection.valueColumn !== null)
-    && (selection.valueColumn === null || selection.valueColumn !== selection.groupColumn) && selected.rows <= limits.rows;
+  const selected = tableKey ? tables?.find(table => tableIdentity(table) === tableKey) : job ? savedTable : tables?.length === 1 ? tables[0] : undefined;
   const validationReason = getValidationReason(selected, selection, limits);
+  const valid = validationReason === null;
   const summary = getScopeSummary(selected, selection);
   const exhausted = (job?.attempts ?? 0) >= (job?.maxAttempts ?? limits.attempts);
 
   // Kullanıcının açık seçimi gönderilir; başlık, kaynak yolu, metrik veya prompt istemciden üretilmez.
   async function start() {
-    if (!selected || !valid || pending || exhausted || cooling) return;
+    if (!selected || !valid || lifetime.current.starting || exhausted || cooling) return;
+    lifetime.current.starting = true;
     setPending(true); setError("");
     try { await httpsCallable(getServices().functions, "startAnalysis", { timeout: 190_000 })({ id: analysis.id, sourceId: selected.sourceId, selection: { ...selection, sheet: selected.sheet }, locale: job?.status === "running" ? job.locale : getLocale() }); }
     catch (failure) {
+      if (!lifetime.current.active) return;
       const details = (failure as { details?: { analysisFailure?: string } })?.details;
       const reason = details?.analysisFailure;
       setError(reason && Object.prototype.hasOwnProperty.call(errors, reason) ? errors[reason as keyof typeof errors] : userError(failure));
     }
-    finally { setPending(false); }
+    finally { lifetime.current.starting = false; if (lifetime.current.active) setPending(false); }
   }
 
   if (ready) return <div className="mt-7">{error ? <section className={panel}><p role="alert" className="text-sm text-destructive">{t(error)}</p><Button className="mt-4" variant="outline" onClick={() => setRefresh(value => value + 1)}>{t("Yeniden yükle")}</Button></section> : artifact ? <Suspense fallback={<PageLoading label="Analiz yükleniyor…" />}><LiveAnalysisReport artifact={artifact} job={job!} analysisId={analysis.id} /></Suspense> : <PageLoading label="Analiz yükleniyor…" />}</div>;
@@ -134,7 +150,7 @@ export function TabularAnalysisPanel({ analysis }: { analysis: Analysis }) {
             <span>{t("1. İncelenecek veri kaynağı")}</span>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field id="ai-table" label="Analiz tablosu" value={index === undefined ? "" : String(index)} placeholder="Tablo seç" disabled={exhausted} onChange={value => { setTableKey(value); setSelection(defaults); setError(""); }} options={tables.map((table, n) => ({ value: String(n), label: `${table.fileName}${table.sheet ? ` · ${table.sheet}` : ""}` }))} />
+            <Field id="ai-table" label="Analiz tablosu" value={selected ? tableIdentity(selected) : ""} placeholder="Tablo seç" disabled={exhausted} onChange={value => { setTableKey(value); setSelection(defaults); setError(""); }} options={tables.map(table => ({ value: tableIdentity(table), label: `${table.fileName}${table.sheet ? ` · ${table.sheet}` : ""}` }))} />
             <div className="flex flex-col justify-end text-xs leading-5 text-muted-foreground">
               <p className="font-medium text-foreground">{selected ? t("{0} kayıt · {1} alan", selected.rows, selected.columns.length) : t("İncelemek istediğiniz tabloyu seçin.")}</p>
               <p className="mt-0.5 text-[11px]">{t("En fazla {0} kayıt ve {1} grup.", limits.rows, limits.groups)}</p>
