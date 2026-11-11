@@ -7,6 +7,19 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M3 — İlk kaynaklı tablo analizi
 
+Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
+
+### 2026-11-12 — Furkan / Codex: kaynak inceleme doğruluğu ve tekrarlanabilir kabul
+
+- [x] Sahip: Furkan — Kaynak penceresini sonuç/dayanak kimliğine bağla; eksik veya hash/konum eşleşmesi bozuk kaynakta çökmek ya da başka belgeyi dayanak göstermek yerine açıklayıcı durum sun. Kaynak değişiminde arama/sayfa/indirme işlemlerini izole et.
+- [x] Sahip: Furkan — Çok sayfalı Excel kaynaklarını çalışma sayfası ve tablo şemasına göre ayır; farklı başlıklar altındaki satırları birleştirme. Dayanak sayfası varsayılan olsun; diğer tablolar açık seçimle, özgün satır kimlikleri ve altı dil/RTL ile incelenebilsin.
+- [x] Sahip: Furkan — Yerel/CI Firebase test başlatıcısını kısa, koşuya özel geçici dizinle standartlaştır; alt süreç kodu/sinyali korunsun, temizlik yalnız sahip olunan dizine uygulansın. Başarı, hata ve kesilme testleriyle doğrula.
+- [!] Sahip: Furkan — 12 Kasım tek sentetik backend kontrolü 93.359 ms içinde `timeout` (`functions/unavailable`) verdi; tekrar çağrı yapılmadı, geçici claim/hesap temizlendi. Engel: geçerli sağlayıcı yanıtı ve gerçek altı dilli kalite kabulü. Mevcut backend/Secret Manager hattını koru; ilk hatada dur, geçici kaynakları temizle. Sonuca göre gerçek kalite kabulünü açık tut ve ödeme/domain dışındaki ilk beta ile sonraki kapsamın kabul planını ayrı belgele; kapılar otomatik açılmasın.
+
+Kabul: ilgili davranış regresyonları, lint/birim/Functions/Python/derleme, entegrasyon ve retry kapalı tarayıcı paketi; stage sonrası credential kontrolü, son commit CI, dört dal eşitliği/temiz ağaç ve canlı Netlify dosya/manifest/rota eşliği. Önceki günün son commit CI'ı 75 ilk geçiş ve üç mevcut platform atlamasıyla doğrulandı; bekleyen üretim yayını da dosya/rota eşliğiyle tamamlandı.
+
+Yerel kabul: lint; 191 arayüz + 141 Functions, 45 Python, 15 yayın + 11 kaynak koruması + 5 günlük + 6 süreç testi; 9 entegrasyon ve tek worker/sıfır retry ile 75 tarayıcı testi geçti. Üç mevcut platform atlaması korundu. Canlı backend analiz kapısı salt okunur metadata ile `false` doğrulandı; yeni backend dağıtımı veya kapı değişikliği yapılmadı. Son commit CI ve aynı paketin canlı dosya/rota eşliği teslimde ayrıca doğrulanır. Üretim denetimi kökte 0, Functions tarafında 4 orta + 1 düşük; yüksek/kritik yok. Gerçek model kalite kabulü açık engeldir.
+
 ### 2026-11-11 — Furkan / Codex: rapor yaşam döngüsü ve gösterim doğruluğu
 
 - [x] Sahip: Furkan — Tekil rapor ekranını kullanıcı/kayıt kimliğine bağla; silme/hazırlama yanıtı sayfa veya oturum değişince yeni ekranı yönlendirmesin, taslağı temizlemesin veya eski hata göstermesin. Aynı bağlamda çift işlem engellensin; sunucuda başlayan işin fiziksel iptali vaat edilmesin.
