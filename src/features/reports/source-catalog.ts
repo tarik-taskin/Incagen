@@ -32,6 +32,7 @@ export function sourceExtent(source: ReportSource) {
   if (pages.size) return t("{0} sayfa · metin ve tablolar", pages.size);
   const slides = new Set(source.chunks.map(chunk => chunk.locator.slide).filter(Boolean));
   if (slides.size) return t("{0} slayt · yönetim özeti", slides.size);
-  const words = source.chunks.map(chunk => chunk.text ?? "").join(" ").trim().split(/\s+/).length;
+  const text = source.chunks.map(chunk => chunk.text ?? "").join(" ").trim();
+  const words = text ? text.split(/\s+/).length : 0;
   return t("{0} sözcük · kaynak metni", new Intl.NumberFormat(localeTag()).format(words));
 }

@@ -1119,5 +1119,7 @@
   "Dolu kayıtlar": "非空记录",
   "Alan seçilmedi": "未选择列",
   "Analiz deneme sınırı aşıldı": "超出分析重试次数限制",
-  "Gruplama alanını yeniden seçin.": "请重新选择分组列。"
+  "Gruplama alanını yeniden seçin.": "请重新选择分组列。",
+  "Hesaplama süresi": "计算耗时",
+  "Özet süresi": "摘要生成耗时"
 }

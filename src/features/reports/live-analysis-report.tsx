@@ -7,6 +7,7 @@ import { getServices } from "../../lib/firebase";
 import { useAuth } from "../../lib/auth-context";
 import { t, useLocale, languages, localeTag } from "../../i18n/runtime";
 import { AdaptiveReport, ReportDetails } from "./result-sections";
+import { reportDuration } from "./report-format";
 import { DownloadError, verifySourceIntegrity } from "./source-integrity";
 
 // Gerçek raporun hesap kapsamını kısa tutar; yöntem ve performans ayrıntıları açılır bölümde kalır.
@@ -91,7 +92,9 @@ export default function LiveAnalysisReport({ artifact, job, analysisId }: { arti
         [t("Hesaplama"), t(scope.selection.aggregation === "sum" ? "Toplam" : scope.selection.aggregation === "mean" ? "Ortalama" : "Kayıt sayısı")],
         [t("Sayı biçimi"), scope.selection.numberFormat === "tr" ? "1.234,56" : scope.selection.numberFormat === "en" ? "1,234.56" : "1234.56"],
         [t("Boş satır"), new Intl.NumberFormat(localeTag()).format(scope.emptyRows)],
-        [t("İşlem süresi"), t("{0} saniye", Number(((job.durationMs ?? 0) / 1000).toFixed(1)))],
+        [t("İşlem süresi"), reportDuration(job.durationMs)],
+        ...(job.pythonMs !== undefined ? [[t("Hesaplama süresi"), reportDuration(job.pythonMs)]] : []),
+        ...(job.modelMs !== undefined ? [[t("Özet süresi"), reportDuration(job.modelMs)]] : []),
         ...(job.usage ? [[t("Model kullanımı"), t("{0} token", job.usage.totalTokens)]] : []),
       ].map(([label, value]) => <div key={label}><dt className="text-muted-foreground">{label}</dt><dd className="mt-2 break-words font-medium">{value}</dd></div>)}</dl><p className="mt-5 border-t border-border pt-4 text-xs leading-6 text-muted-foreground">{t("Hesaplar kaynak veriden üretilir. Yapay zekâ yorumları ve önerileri karar desteğidir; değerlendirme sorumluluğu sizdedir.")}</p></ReportDetails>
     </AdaptiveReport>

@@ -1,5 +1,27 @@
 import { getLocale, localeTag, t } from "../../i18n/runtime";
 
+// İki ondalıklı metni sayı dönüşümü yapmadan karşılaştırır; işaret ve kuruş kaybını yakalar.
+function moneyText(text: string) {
+  const [integer, fraction = ""] = text.replace(/^[+-]/, "").split(".");
+  return `${text.startsWith("-") ? "-" : ""}${integer.replace(/^0+(?=\d)/, "")}.${fraction.padEnd(2, "0")}`;
+}
+
+// Yalnız kesin ve güvenle temsil edilen örnek para hücrelerini biçimler; boşu sıfıra, metni sayıya zorlamaz.
+export function sourceCell(value: string | number | boolean | null, column: string, localize: boolean) {
+  if (value === null || typeof value === "string" && !value.trim()) return "—";
+  if (!localize || !column.endsWith("_try")) return String(value);
+  const numeric = typeof value === "number" ? value : typeof value === "string" && /^[+-]?\d+(?:\.\d{1,2})?$/.test(value) ? Number(value) : NaN;
+  if (!Number.isFinite(numeric) || Math.abs(numeric) > Number.MAX_SAFE_INTEGER / 100 || Number(numeric.toFixed(2)) !== numeric) return String(value);
+  if (typeof value === "string" && moneyText(value) !== moneyText(String(numeric))) return value;
+  return new Intl.NumberFormat(localeTag(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(numeric);
+}
+
+// Eski kayıtta ölçüm yoksa süre uydurmaz; mevcut sıfır ve alt-saniye ölçümleri seçili dilde kalır.
+export function reportDuration(milliseconds: number | undefined) {
+  if (milliseconds === undefined || !Number.isFinite(milliseconds) || milliseconds < 0) return "—";
+  return t("{0} saniye", Number((milliseconds / 1000).toFixed(1)));
+}
+
 // Kaynak birimini ve altı haneye kadar doğrulanmış hassasiyeti korur; yalnız büyük örnek değerleri kısaltır.
 export function reportNumber(value: number | null, unit = "TRY", compact = false) {
   if (value === null) return "—";

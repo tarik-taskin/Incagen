@@ -174,6 +174,17 @@ function createJob(sourceId: string): AiJob {
 }
 
 describe("LiveAnalysisReport - downloadSource oturum ve yaşam döngüsü koordinasyonu", () => {
+  it("only displays recorded processing measurements and does not invent zero duration", () => {
+    const source: ReportSource = { sourceId: "file-0", fileName: "synthetic.csv", sha256: "a".repeat(64), chunks: [{ id: "c1", locator: {}, table: { columns: ["Team", "Amount"], rows: [["A", 10]] } }] };
+    const artifact = createTestArtifact(source), job = { ...createJob(source.sourceId), pythonMs: 1250, modelMs: 3000 };
+    const view = render(<LiveAnalysisReport artifact={artifact} job={job} analysisId="analysis-1" />);
+    expect(screen.getByText("İşlem süresi").nextElementSibling).toHaveTextContent("—");
+    expect(screen.getByText("Hesaplama süresi").nextElementSibling).toHaveTextContent("1,3 saniye");
+    expect(screen.getByText("Özet süresi").nextElementSibling).toHaveTextContent("3 saniye");
+    view.rerender(<LiveAnalysisReport artifact={artifact} job={{ ...job, durationMs: 0 }} analysisId="analysis-1" />);
+    expect(screen.getByText("İşlem süresi").nextElementSibling).toHaveTextContent("0 saniye");
+  });
+
   it("geçerli oturum ve doğru hash ile dosyayı indirir (anchor.click çağrılır)", async () => {
     const validHash = await computeSha256(sampleBytes);
     mocks.getBytesMock.mockResolvedValue(sampleBytes);

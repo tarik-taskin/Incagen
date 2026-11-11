@@ -1119,5 +1119,7 @@
   "Dolu kayıtlar": "Registros no vacíos",
   "Alan seçilmedi": "Ningún campo seleccionado",
   "Analiz deneme sınırı aşıldı": "Límite de intentos de análisis superado",
-  "Gruplama alanını yeniden seçin.": "Vuelve a seleccionar la columna de agrupación."
+  "Gruplama alanını yeniden seçin.": "Vuelve a seleccionar la columna de agrupación.",
+  "Hesaplama süresi": "Tiempo de cálculo",
+  "Özet süresi": "Tiempo de generación del resumen"
 }

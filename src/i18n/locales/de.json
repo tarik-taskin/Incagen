@@ -1119,5 +1119,7 @@
   "Dolu kayıtlar": "Nicht leere Datensätze",
   "Alan seçilmedi": "Kein Feld ausgewählt",
   "Analiz deneme sınırı aşıldı": "Limit für Analyseversuche überschritten",
-  "Gruplama alanını yeniden seçin.": "Wähle die Gruppierungsspalte erneut aus."
+  "Gruplama alanını yeniden seçin.": "Wähle die Gruppierungsspalte erneut aus.",
+  "Hesaplama süresi": "Berechnungsdauer",
+  "Özet süresi": "Dauer der Zusammenfassung"
 }

@@ -1119,5 +1119,7 @@
   "Dolu kayıtlar": "Non-empty records",
   "Alan seçilmedi": "No column selected",
   "Analiz deneme sınırı aşıldı": "Analysis attempt limit exceeded",
-  "Gruplama alanını yeniden seçin.": "Select the grouping column again."
+  "Gruplama alanını yeniden seçin.": "Select the grouping column again.",
+  "Hesaplama süresi": "Calculation time",
+  "Özet süresi": "Summary generation time"
 }
