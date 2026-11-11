@@ -1121,5 +1121,10 @@
   "Analiz deneme sınırı aşıldı": "超出分析重试次数限制",
   "Gruplama alanını yeniden seçin.": "请重新选择分组列。",
   "Hesaplama süresi": "计算耗时",
-  "Özet süresi": "摘要生成耗时"
+  "Özet süresi": "摘要生成耗时",
+  "Bu dayanağa ait kaynak artık görüntülenemiyor. Raporu yeniden açın veya başka bir dayanak seçin.": "此依据对应的源文件已无法查看。请重新打开报告或选择其他依据。",
+  "Seçilen tablo artık bu kaynakta bulunmuyor. Başka bir tablo seçin.": "源文件中已没有此表格，请选择其他表格。",
+  "Tablo {0}": "表格 {0}",
+  "İncelenecek tablo": "查看表格",
+  "İncelenecek tabloyu seçin.": "请选择表格。"
 }

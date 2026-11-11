@@ -1,6 +1,6 @@
 import { afterEach } from "vitest";
 import { setLocale, t } from "../../i18n/runtime";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { AiResult } from "../../../functions/src/analysis/result-contract";
 import example from "./feedback-example.json";
@@ -45,6 +45,16 @@ describe("uyarlanabilir sonuç sunumu", () => {
     fireEvent.click(detail.querySelector("summary")!);
     expect(detail.open).toBe(true);
     expect(screen.getByRole("button", { name: "Özetleri ve önerileri netleştirin" })).toBeVisible();
+  });
+  it("closes an old evidence dialog when a different report replaces the result", async () => {
+    HTMLDialogElement.prototype.showModal = function () { this.setAttribute("open", ""); };
+    HTMLDialogElement.prototype.close = function () { this.removeAttribute("open"); };
+    const { rerender } = render(<AdaptiveReport result={example.result as AiResult} sources={example.sources} />);
+    fireEvent.click(screen.getByRole("button", { name: /İncelenen yorum/ }));
+    await waitFor(() => expect(screen.getByRole("dialog")).toBeVisible());
+    rerender(<AdaptiveReport result={{ ...example.result, analysisId: "another-report" } as AiResult} sources={example.sources} />);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    vi.restoreAllMocks();
   });
   it("ayrıntı içeriğini DOM'da koruyan yerel disclosure kullanır", () => {
     const { container } = render(<ReportDetails title="Ayrıntılar" description="Hesap ve kanıt"><p>Korunmuş bilgi</p></ReportDetails>);

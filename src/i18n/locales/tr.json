@@ -1121,5 +1121,10 @@
   "Analiz deneme sınırı aşıldı": "Analiz deneme sınırı aşıldı",
   "Gruplama alanını yeniden seçin.": "Gruplama alanını yeniden seçin.",
   "Hesaplama süresi": "Hesaplama süresi",
-  "Özet süresi": "Özet süresi"
+  "Özet süresi": "Özet süresi",
+  "Bu dayanağa ait kaynak artık görüntülenemiyor. Raporu yeniden açın veya başka bir dayanak seçin.": "Bu dayanağa ait kaynak artık görüntülenemiyor. Raporu yeniden açın veya başka bir dayanak seçin.",
+  "Seçilen tablo artık bu kaynakta bulunmuyor. Başka bir tablo seçin.": "Seçilen tablo artık bu kaynakta bulunmuyor. Başka bir tablo seçin.",
+  "Tablo {0}": "Tablo {0}",
+  "İncelenecek tablo": "İncelenecek tablo",
+  "İncelenecek tabloyu seçin.": "İncelenecek tabloyu seçin."
 }

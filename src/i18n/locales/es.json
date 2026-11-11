@@ -1121,5 +1121,10 @@
   "Analiz deneme sınırı aşıldı": "Límite de intentos de análisis superado",
   "Gruplama alanını yeniden seçin.": "Vuelve a seleccionar la columna de agrupación.",
   "Hesaplama süresi": "Tiempo de cálculo",
-  "Özet süresi": "Tiempo de generación del resumen"
+  "Özet süresi": "Tiempo de generación del resumen",
+  "Bu dayanağa ait kaynak artık görüntülenemiyor. Raporu yeniden açın veya başka bir dayanak seçin.": "La fuente de esta referencia ya no está disponible. Vuelve a abrir el informe o selecciona otra referencia.",
+  "Seçilen tablo artık bu kaynakta bulunmuyor. Başka bir tablo seçin.": "Esta tabla ya no está en el archivo de origen. Selecciona otra.",
+  "Tablo {0}": "Tabla {0}",
+  "İncelenecek tablo": "Tabla que quieres consultar",
+  "İncelenecek tabloyu seçin.": "Selecciona una tabla."
 }

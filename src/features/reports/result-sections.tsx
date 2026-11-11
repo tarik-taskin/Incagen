@@ -41,7 +41,15 @@ function ReportMetricValue({ value, unit, compact = true }: { value: number | nu
 }
 
 // Yapılandırılmış metrik ve grafiklerden görünüm üretir; eksik değeri sıfıra dönüştürmez, metin raporuna grafik dayatmaz.
-export function AdaptiveReport({ result, sources, featuredMetricIds, children, translateContent = true, compactMetrics = true, onDownloadSource }: { result: AiResult; sources: ReportSource[]; featuredMetricIds?: string[]; children?: ReactNode; translateContent?: boolean; compactMetrics?: boolean; onDownloadSource?: (source: ReportSource) => Promise<void> }) {
+type AdaptiveReportProps = { result: AiResult; sources: ReportSource[]; featuredMetricIds?: string[]; children?: ReactNode; translateContent?: boolean; compactMetrics?: boolean; onDownloadSource?: (source: ReportSource) => Promise<void> };
+
+// Başka bir rapora geçildiğinde açık dayanak ve yerel inceleme durumu taşınmaz.
+export function AdaptiveReport(props: AdaptiveReportProps) {
+  return <ReportSession key={props.result.analysisId} {...props} />;
+}
+
+// Aynı rapordaki metrik, grafik ve bulgular tek bir kaynak seçimini paylaşır.
+function ReportSession({ result, sources, featuredMetricIds, children, translateContent = true, compactMetrics = true, onDownloadSource }: AdaptiveReportProps) {
   useLocale();
   const { theme } = useTheme();
   const colors = reportColors(theme);

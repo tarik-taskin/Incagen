@@ -1121,5 +1121,10 @@
   "Analiz deneme sınırı aşıldı": "تم تجاوز الحد الأقصى لمحاولات التحليل",
   "Gruplama alanını yeniden seçin.": "أعد اختيار عمود التجميع.",
   "Hesaplama süresi": "مدة الحساب",
-  "Özet süresi": "مدة إنشاء الملخص"
+  "Özet süresi": "مدة إنشاء الملخص",
+  "Bu dayanağa ait kaynak artık görüntülenemiyor. Raporu yeniden açın veya başka bir dayanak seçin.": "لم يعد مصدر هذا الدليل متاحًا للعرض. أعد فتح التقرير أو اختر دليلًا آخر.",
+  "Seçilen tablo artık bu kaynakta bulunmuyor. Başka bir tablo seçin.": "لم يعد هذا الجدول موجودًا في المصدر. اختر جدولًا آخر.",
+  "Tablo {0}": "الجدول {0}",
+  "İncelenecek tablo": "الجدول المراد فحصه",
+  "İncelenecek tabloyu seçin.": "اختر جدولًا."
 }

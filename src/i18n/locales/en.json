@@ -1121,5 +1121,10 @@
   "Analiz deneme sınırı aşıldı": "Analysis attempt limit exceeded",
   "Gruplama alanını yeniden seçin.": "Select the grouping column again.",
   "Hesaplama süresi": "Calculation time",
-  "Özet süresi": "Summary generation time"
+  "Özet süresi": "Summary generation time",
+  "Bu dayanağa ait kaynak artık görüntülenemiyor. Raporu yeniden açın veya başka bir dayanak seçin.": "The source for this evidence is no longer available. Reopen the report or select another reference.",
+  "Seçilen tablo artık bu kaynakta bulunmuyor. Başka bir tablo seçin.": "This table is no longer in the source. Select another table.",
+  "Tablo {0}": "Table {0}",
+  "İncelenecek tablo": "Table to inspect",
+  "İncelenecek tabloyu seçin.": "Select a table."
 }
