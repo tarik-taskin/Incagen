@@ -7,6 +7,15 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M3 — İlk kaynaklı tablo analizi
 
+### 2026-11-11 — Furkan / Codex: rapor yaşam döngüsü ve gösterim doğruluğu
+
+- [~] Sahip: Furkan — Tekil rapor ekranını kullanıcı/kayıt kimliğine bağla; silme/hazırlama yanıtı sayfa veya oturum değişince yeni ekranı yönlendirmesin, taslağı temizlemesin veya eski hata göstermesin. Aynı bağlamda çift işlem engellensin; sunucuda başlayan işin fiziksel iptali vaat edilmesin.
+- [~] Sahip: Furkan — Rapor başlığının AI lease durumunu ortak hedefli saatle güncelle; süresi geçmiş yeni snapshot, sekmeye dönüş, yeni lease ve unmount senaryolarını sınayıp otomatik çağrı oluşmadığını doğrula.
+- [~] Sahip: Furkan — Analiz tablosu seçimini kaynak/sayfa kimliğine bağla; yenilenen liste sırası seçimi değiştirmesin, kaldırılmış kaynak veya artık bulunmayan sütun gönderilmesin. Kullanıcı/kayıt ve deneme değişiminde eski form/sonuç korunmasın; başarısız işte izin verilen kapsam değişimi devam etsin.
+- [~] Sahip: Furkan — Kaynak tablosunda eksik/geçersiz tutarı sıfır veya NaN'a çevirmeden göster; ölçülmemiş işlem süresini sıfır sayma, mevcut sayfa/satır sayaçlarını seçili dilde sun. Özgün kaynak değerleri ve hash/indirme yolu değişmesin.
+
+Kabul: davranışa yönelik negatif/pozitif regresyonlar, altı dil/RTL/tema ve ilgili tarayıcı akışları; lint, birim/Functions, derleme ve kullanıcı akışı için entegrasyon/tam yerel paket geçer. Stage sonrası kaynak credential kontrolü, son commit CI'ı, dört dal eşitliği/temiz ağaç ve Netlify manifest/dosya/rota eşliği doğrulanır. Backend/model veya yayın kapıları bu kapsamda değiştirilmez; mevcut Gemini sağlayıcı engeli açık kalır.
+
 ### 2026-11-10 — Furkan / Codex: analiz kabulü ve teslim korumaları
 
 - [!] Sahip: Furkan — Gemini'yi mevcut backend/Secret Manager hattından tek sabit sentetik çağrıyla yeniden sına. 10 Kasım tek kontrol 7.458 ms'de `busy` (`functions/unavailable`) döndü; tekrar çağrı yapılmadı, geçici claim ve hesap temizlendi. Engel: sağlayıcının geçerli yanıtı ve altı dilli gerçek kalite kabulü. İki yayın kapısı kapalı kalır; anahtar değiştirmek, model/şema kontrolünü gevşetmek veya otomatik tekrar yapmak çözüm sayılmaz.

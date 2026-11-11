@@ -2,7 +2,7 @@ import { analysisDisplayStatus } from "../features/reports/analysis-status";
 import { useOutsideDismiss } from "../hooks/use-outside-dismiss";
 import { PageLoading } from "../components/page-loading";
 import { t, useLocale } from "../i18n/runtime";
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Check, FilePlus2, TriangleAlert } from "lucide-react";
 import { useWorkspace } from "../lib/workspace-context";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -10,21 +10,36 @@ import { httpsCallable } from "firebase/functions";
 import { Button } from "../components/ui/button";
 import { PreparedDocuments } from "../components/prepared-documents";
 import { useAnalysis } from "../hooks/use-analyses";
+import { useDeadlineReached } from "../hooks/use-deadline-reached";
 import { getServices } from "../lib/firebase";
+import { useAuth } from "../lib/auth-context";
 import { userError } from "../lib/errors";
 import { tr } from "../i18n/tr";
 
 const TabularAnalysisPanel = lazy(() => import("../features/reports/tabular-analysis-panel").then(module => ({ default: module.TabularAnalysisPanel })));
 
-// İş durumunu ve doğrulanmış belge hazırlığını canlı izler; silme öncesi açık kullanıcı onayı ister.
+// Yerel işlem ve dialog durumunu hem oturum hem kayıt değişiminde yeni bir ekrana ayırır.
 export function AnalysisPage() {
-  useLocale();
   const { id = "" } = useParams();
+  const { user } = useAuth();
+  return <AnalysisScreen key={JSON.stringify([user?.uid, id])} id={id} />;
+}
+
+// İş durumunu ve doğrulanmış belge hazırlığını canlı izler; silme öncesi açık kullanıcı onayı ister.
+function AnalysisScreen({ id }: { id: string }) {
+  useLocale();
   const { analysis, loading, error } = useAnalysis(id);
   const workspace = useWorkspace();
+  const context = useRef<typeof workspace | null>(workspace);
+  const actionPending = useRef(false);
+  useLayoutEffect(() => {
+    context.current = workspace;
+    return () => { context.current = null; };
+  }, [workspace]);
   const [actionError, setActionError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [statusNow, setStatusNow] = useState(Date.now);
+  // Ortak lease sinyali snapshot/sekme dönüşünde günceller; saat kopyası veya polling tutmaz.
+  useDeadlineReached(analysis?.ai?.status === "running" ? analysis.ai.leaseUntil : undefined);
   const navigate = useNavigate();
   const [deleteOpen, setDeleteOpen] = useState(false);
   const deleteDialog = useRef<HTMLDialogElement>(null);
@@ -35,27 +50,24 @@ export function AnalysisPage() {
     else if (!deleteOpen && dialog?.open) dialog.close();
   }, [deleteOpen]);
 
-  // Aktif işin kilidi dolduğunda başlık da yeniden deneme durumuna geçer.
-  useEffect(() => {
-    if (analysis?.ai?.status !== "running") return;
-    const timer = setTimeout(() => setStatusNow(Date.now()), Math.max(0, analysis.ai.leaseUntil - Date.now()) + 100);
-    return () => clearTimeout(timer);
-  }, [analysis?.ai?.status, analysis?.ai?.leaseUntil]);
-
   // Başarısız hazırlığı yeniden çalıştırır veya kullanıcı onayıyla analiz kaynaklarını siler.
   async function action(name: "prepareAnalysis" | "deleteAnalysis", reviewToken?: string) {
-    if (busy) return;
+    if (actionPending.current) return;
+    actionPending.current = true;
     setBusy(true);
     setActionError("");
     try {
       const response = await httpsCallable<unknown, { needsReview?: boolean; ready?: boolean }>(getServices().functions, name, { timeout: 310_000 })({ id, ...(reviewToken ? { reviewToken } : {}) });
-      if (name === "prepareAnalysis" && reviewToken && response.data.ready === true && workspace.activeId === id) workspace.completeDraft();
+      if (!context.current) return;
+      if (name === "prepareAnalysis" && reviewToken && response.data.ready === true && context.current.activeId === id) context.current.completeDraft();
       if (name === "deleteAnalysis") navigate("/app/history", { replace: true });
     } catch (actionFailure) {
+      if (!context.current) return;
       setDeleteOpen(false);
       setActionError(userError(actionFailure));
     } finally {
-      setBusy(false);
+      actionPending.current = false;
+      if (context.current) setBusy(false);
     }
   }
 
@@ -64,7 +76,7 @@ export function AnalysisPage() {
   const report = analysis.report;
   const tabular = (import.meta.env.VITE_TABULAR_ANALYSIS_ENABLED === "true" || Boolean(analysis.ai))
     && report?.sources.some(source => /\.(csv|xlsx)$/i.test(source.name));
-  const status = analysisDisplayStatus(analysis, statusNow).label;
+  const status = analysisDisplayStatus(analysis).label;
 
   return <section aria-labelledby="report-title">
     <Link to="/app/history" className="text-sm text-primary underline dark:text-secondary">{t("← Geçmiş analizler")}</Link>
