@@ -34,6 +34,12 @@ Python kabulünde sabit tohumlu 429 kayıtlık hizmet defteri, üç sayı biçim
 
 İlk iki Linux CI kopyalama senaryosunda birer retry ile yeşil oldu; bunlar hatasız ilk geçiş sayılmadı. Kısa canlı bölge tarayıcı içinde tıklamadan önce kaydedilir; gerçek pano/URL ve mesajın kaybolması da sınanır. İkinci koşunun boş duyuru kaydı üzerine lazy rota kontrollü tutuldu: URL yeni rotadayken eski raporun ortak düğmesi hâlâ görünürdü. Test artık yeni rapora özgü başlığı/aktif sekmeyi bekler ve aynı modül gecikmesini içerir. İki görünümde üçer tekrar retry kapalı geçti (6/6); düzeltmenin tam Linux kabulü 75 ilk geçiş ve üç mevcut platform atlamasıyla, retry olmadan tamamlandı. Uygulama davranışı veya timeout sınırı değişmedi. Ayrı tek Gemini teşhisi `busy` verdi; bu sonuç gerçek analiz kalite kabulü değildir ve iki yayın kapısı kapalı kaldı.
 
+## Rapor bağlamı ve özgün değerler
+
+`analysis-page.lifecycle.test.tsx`, gerçek React Router geçişinde eski silme yanıtının yeni rapordan çıkarmamasını, eski hata/dialog/bekleme durumunun taşınmamasını ve farklı taslağın korunmasını sınar. Aynı hesap/kayıtta normal silme ve hata sonrası tekrar çalışır. Başlığın lease bitişi, yeni/yenilenmiş snapshot, arka plandan dönüş ve unmount kabulü otomatik servis çağrısı olmadan yapılır.
+
+`tabular-session.test.tsx`, kaynak/sayfa seçimini katalog sıralamasından bağımsız denetler; kaldırılmış kaynak, olmayan sütun, yeni deneme/hesap/kayıt ve eski özel sonuç geçişlerini sınar. `source-dialog.test.tsx`, boş/metin/mantıksal tutarla gerçek sıfır ayrımını, Arapça sayfalama ve özgün fiziksel satır kimliğini, boş belge sözcük sayımını doğrular. `report-format.test.ts` büyük parasal metnin sayı dönüşümünde kuruş kaybını reddeder; altı dilde ölçülen süre ve kaynak biçimi sınanır. Kaynak indirme testi ayrıca rapora yalnız kaydedilen sürelerin bağlandığını doğrular. Kaynak dosyalar ve backend/model çağrı sözleşmesi bu çalışmada değiştirilmez.
+
 ## İlk açılış bütçesi
 
 [`startupBudget`](../scripts/startup-budget.ts) her üretim derlemesinde başlangıç girişini ve bütün statik JS importlarını izler. Korumalı ekranlar veya Firestore/Storage/Functions kodu bu grafiğe girerse derleme durur. Parçalar ayrı ayrı gzip ile ölçülür; toplam sınır 400 KiB'dir. Bu ölçü ağ ve cihazdan bağımsız paket boyutudur; gerçek açılış süresi veya Core Web Vitals sonucu değildir.
@@ -88,6 +94,18 @@ Aşağıdaki komutlar kendi izole Firebase test servislerini başlatır. Port ç
 npm run test:integration
 npm run test:local
 ```
+
+macOS'ta eşzamanlı veya yarım kalmış farklı emülatör koşuları ortak geçici Storage dizinine karışabilir. Yerel kabulü kısa, koşuya özel bir dizinde çalıştırmak için:
+
+```bash
+(
+  incagen_test_tmp=$(mktemp -d /private/tmp/inctest-XXXXXX)
+  trap 'rm -rf -- "$incagen_test_tmp"' EXIT
+  TMPDIR="$incagen_test_tmp" npm run test:local
+)
+```
+
+Uzun macOS `/var/folders/...` yoluna yeni alt dizin eklemek Functions Unix socket yol sınırını aşabilir; bu yüzden kısa `/private/tmp` tabanı kullanılır. Önceki servisler kapanmış olmalıdır; dizin izolasyonu aynı TCP portunda iki servisi çalıştırmaz. Test kesilirse kendi Vite/Java süreçlerinin kapandığını doğrulayın; başka proje süreçlerini veya ortak geçici dizini silmeyin.
 
 Functions kodunun ilk yüklemesi yavaş disklerde (örneğin OneDrive klasörü) 10 saniyeyi aşarsa emülatör "Timeout after 10000" ile fonksiyonları yüklemez. Bu durumda aynı komutlardan önce yalnız yerel kabukta `FUNCTIONS_DISCOVERY_TIMEOUT=60` tanımlayın; repo ayarı değişmez.
 

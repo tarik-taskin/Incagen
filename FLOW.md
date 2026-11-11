@@ -48,6 +48,10 @@ Kaynaklı analizde sağlayıcının 429/503 yanıtları geçici yoğunluk/hız s
 
 Analiz ekranı iş kilidi veya yeniden deneme son tarihine tek bir zamanlayıcı kurar; yeni kayıt geldiğinde ve arka plandan dönüldüğünde güncel saati kullanır. Süre dolduğunda bekleme görünümü güncellenir, sürekli polling ve otomatik analiz çağrısı yapılmaz. Bu istemci saati güvenlik sınırı değildir; iş ve bekleme kabulü sunucuda doğrulanır.
 
+Tekil raporun başlığı da aynı son tarih sinyalini kullanır. Rapor işlemleri kullanıcı ve kayıt kimliğine; analiz ayarları ve sonuç ise ayrıca deneme kimliğine bağlıdır. Gezinme veya oturum değişimi eski isteğin yeni ekrana hata/yönlendirme taşımasını engeller; sunucuda kabul edilmiş işi fiziksel olarak iptal etmez. Hazırlama yanıtı yalnız hâlâ aynı çalışmaya ait taslağı temizleyebilir.
+
+Tablo seçimi kaynak ve çalışma sayfası kimliğini korur; katalog sırası değişince başka tabloya geçmez. Seçilmiş kaynak veya sütun artık yoksa kullanıcı tekrar seçmeden analiz başlatılmaz. Başarısız işin izin verilen kapsam değişikliği korunur. Kaynak görünümünde boş tutar sıfır, metin/mantıksal değer para yapılmaz; hassasiyeti korunamayan değer özgün metniyle kalır. Fiziksel satır numarası yerel rakamlarla ama binlik ayırıcı olmadan gösterilir. İşlem ayrıntıları yalnız kaydedilmiş süreleri sunar; eksik ölçüm sıfır sayılmaz.
+
 Oturumlu özgün belge indirmesi seçili belge kimliği/hash'ine bağlıdır. Aynı bekleyen indirme tekrar tıklanamaz; hata yalnız kısa, yerelleştirilmiş açıklamadır ve açıkça yeniden denenebilir. Belge değiştiğinde önceki isteğin geç gelen sonucu yeni belgenin bekleme/hata durumunu değiştirmez. Panel kapanınca eski yanıt state yazmaz. Bu davranış sistem indirme penceresinin dosyayı diske kaydettiğini iddia etmez; statik örnek dosyaların native indirme bağlantıları korunur.
 
 ## Free ve Premium

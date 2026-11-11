@@ -9,12 +9,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ### 2026-11-11 — Furkan / Codex: rapor yaşam döngüsü ve gösterim doğruluğu
 
-- [~] Sahip: Furkan — Tekil rapor ekranını kullanıcı/kayıt kimliğine bağla; silme/hazırlama yanıtı sayfa veya oturum değişince yeni ekranı yönlendirmesin, taslağı temizlemesin veya eski hata göstermesin. Aynı bağlamda çift işlem engellensin; sunucuda başlayan işin fiziksel iptali vaat edilmesin.
-- [~] Sahip: Furkan — Rapor başlığının AI lease durumunu ortak hedefli saatle güncelle; süresi geçmiş yeni snapshot, sekmeye dönüş, yeni lease ve unmount senaryolarını sınayıp otomatik çağrı oluşmadığını doğrula.
-- [~] Sahip: Furkan — Analiz tablosu seçimini kaynak/sayfa kimliğine bağla; yenilenen liste sırası seçimi değiştirmesin, kaldırılmış kaynak veya artık bulunmayan sütun gönderilmesin. Kullanıcı/kayıt ve deneme değişiminde eski form/sonuç korunmasın; başarısız işte izin verilen kapsam değişimi devam etsin.
-- [~] Sahip: Furkan — Kaynak tablosunda eksik/geçersiz tutarı sıfır veya NaN'a çevirmeden göster; ölçülmemiş işlem süresini sıfır sayma, mevcut sayfa/satır sayaçlarını seçili dilde sun. Özgün kaynak değerleri ve hash/indirme yolu değişmesin.
+- [x] Sahip: Furkan — Tekil rapor ekranını kullanıcı/kayıt kimliğine bağla; silme/hazırlama yanıtı sayfa veya oturum değişince yeni ekranı yönlendirmesin, taslağı temizlemesin veya eski hata göstermesin. Aynı bağlamda çift işlem engellensin; sunucuda başlayan işin fiziksel iptali vaat edilmesin.
+- [x] Sahip: Furkan — Rapor başlığının AI lease durumunu ortak hedefli saatle güncelle; süresi geçmiş yeni snapshot, sekmeye dönüş, yeni lease ve unmount senaryolarını sınayıp otomatik çağrı oluşmadığını doğrula.
+- [x] Sahip: Furkan — Analiz tablosu seçimini kaynak/sayfa kimliğine bağla; yenilenen liste sırası seçimi değiştirmesin, kaldırılmış kaynak veya artık bulunmayan sütun gönderilmesin. Kullanıcı/kayıt ve deneme değişiminde eski form/sonuç korunmasın; başarısız işte izin verilen kapsam değişimi devam etsin.
+- [x] Sahip: Furkan — Kaynak tablosunda eksik/geçersiz tutarı sıfır veya NaN'a çevirmeden göster; ölçülmemiş işlem süresini sıfır sayma, mevcut sayfa/satır sayaçlarını seçili dilde sun. Özgün kaynak değerleri ve hash/indirme yolu değişmesin.
 
 Kabul: davranışa yönelik negatif/pozitif regresyonlar, altı dil/RTL/tema ve ilgili tarayıcı akışları; lint, birim/Functions, derleme ve kullanıcı akışı için entegrasyon/tam yerel paket geçer. Stage sonrası kaynak credential kontrolü, son commit CI'ı, dört dal eşitliği/temiz ağaç ve Netlify manifest/dosya/rota eşliği doğrulanır. Backend/model veya yayın kapıları bu kapsamda değiştirilmez; mevcut Gemini sağlayıcı engeli açık kalır.
+
+Yerel kabul: lint, 181 arayüz + 141 Functions, 45 Python, 15 yayın + 11 kaynak koruması + 5 günlük ve 9 entegrasyon testi geçti; normal derleme başarılı. Son sabit tarayıcı koşusu tek worker/sıfır retry ile 75 geçti, 0 hata ve üç mevcut platform atlaması verdi. İlk koşunun satır kimliği binlik gruplaması uygulamada düzeltildi; test beklentisi gevşetilmedi. Storage geçici dizin kaybı ve uzun macOS Unix socket yolu yüzünden kesilen koşular kabul sayılmadı; son koşu kısa, özel geçici dizinde tamamlandı ve dizin temizlendi. Gemini/model çağrısı, backend dağıtımı ve yayın kapısı değişikliği yapılmadı. Son commit CI ve Netlify dosya/manifest/rota eşliği teslim aşamasında ayrıca doğrulanır.
 
 ### 2026-11-10 — Furkan / Codex: analiz kabulü ve teslim korumaları
 

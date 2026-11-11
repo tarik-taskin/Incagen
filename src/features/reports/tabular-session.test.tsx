@@ -34,16 +34,17 @@ async function choose(label: string, option: string) {
   await userEvent.click(await screen.findByRole("option", { name: option }));
 }
 
-it("keeps the selected source and sheet when a refreshed table list changes order", async () => {
+it.each([sourceB, { ...sourceA, sheet: "Q2" }])("keeps $fileName / $sheet when a refreshed table list changes order", async table => {
+  mocks.tables.mockResolvedValue({ data: { tables: [sourceA, table], limits } });
   const view = render(<TabularAnalysisPanel analysis={{ ...analysis, ai: failed }} />);
-  await choose("Analiz tablosu", "costs.xlsx · Q1");
+  await choose("Analiz tablosu", `${table.fileName} · ${table.sheet}`);
   await choose("Hesaplama", "Kayıt sayısı");
   view.rerender(<TabularAnalysisPanel analysis={{ ...analysis, ai: { ...failed, status: "running", leaseUntil: Date.now() + 10000 } }} />);
-  mocks.tables.mockResolvedValue({ data: { tables: [sourceB, sourceA], limits } });
+  mocks.tables.mockResolvedValue({ data: { tables: [table, sourceA], limits } });
   view.rerender(<TabularAnalysisPanel analysis={{ ...analysis, ai: failed }} />);
   await waitFor(() => expect(mocks.tables).toHaveBeenCalledTimes(2));
   await userEvent.click(await screen.findByRole("button", { name: "Yeniden dene" }));
-  expect(mocks.start).toHaveBeenCalledWith(expect.objectContaining({ sourceId: "file-1", selection: expect.objectContaining({ sheet: "Q1", aggregation: "count" }) }));
+  expect(mocks.start).toHaveBeenCalledWith(expect.objectContaining({ sourceId: table.sourceId, selection: expect.objectContaining({ sheet: table.sheet, aggregation: "count" }) }));
 });
 
 it("does not silently select a different source when the selected source disappears", async () => {
