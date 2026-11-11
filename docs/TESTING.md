@@ -95,17 +95,9 @@ npm run test:integration
 npm run test:local
 ```
 
-macOS'ta eşzamanlı veya yarım kalmış farklı emülatör koşuları ortak geçici Storage dizinine karışabilir. Yerel kabulü kısa, koşuya özel bir dizinde çalıştırmak için:
+Tarayıcı kabulü tek worker ve sıfır retry ile çalışır; ilk hatanın tekrar denemeyle gizlenmesine izin verilmez. Her iki komut `scripts/run-emulator-tests.mjs` üzerinden koşuya özel, `0700` izinli kısa bir geçici dizin kullanır. macOS'ta `/private/tmp/inctest-*`, Linux'ta `/tmp/inctest-*` seçilir; üst kabuğun `TMPDIR` değeri değişmez. Böylece farklı koşular ortak Storage geçici alanını paylaşmaz ve macOS Functions Unix socket yolu gereksiz uzamaz.
 
-```bash
-(
-  incagen_test_tmp=$(mktemp -d /private/tmp/inctest-XXXXXX)
-  trap 'rm -rf -- "$incagen_test_tmp"' EXIT
-  TMPDIR="$incagen_test_tmp" npm run test:local
-)
-```
-
-Uzun macOS `/var/folders/...` yoluna yeni alt dizin eklemek Functions Unix socket yol sınırını aşabilir; bu yüzden kısa `/private/tmp` tabanı kullanılır. Önceki servisler kapanmış olmalıdır; dizin izolasyonu aynı TCP portunda iki servisi çalıştırmaz. Test kesilirse kendi Vite/Java süreçlerinin kapandığını doğrulayın; başka proje süreçlerini veya ortak geçici dizini silmeyin.
+Başlatıcı alt sürecin hata kodunu korur. SIGINT/SIGTERM önce Firebase CLI'a iletilir; normal kapanış beklenir, asılı kapanışta 30 saniye sonra yalnız bu koşunun süreç grubu sonlandırılır. Temizlik yalnız oluşturulan dizini kapsar; farklı projenin süreçleri/dosyaları silinmez. Altı süreç testi başarı, hata, spawn hatası, iki koşunun dizin izolasyonu ve iki kapanış sinyalini doğrular. TCP portları yine ortaktır: entegrasyon ve tarayıcı komutlarını aynı anda çalıştırmayın.
 
 Functions kodunun ilk yüklemesi yavaş disklerde (örneğin OneDrive klasörü) 10 saniyeyi aşarsa emülatör "Timeout after 10000" ile fonksiyonları yüklemez. Bu durumda aynı komutlardan önce yalnız yerel kabukta `FUNCTIONS_DISCOVERY_TIMEOUT=60` tanımlayın; repo ayarı değişmez.
 
