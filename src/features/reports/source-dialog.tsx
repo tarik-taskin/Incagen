@@ -1,6 +1,6 @@
 import { useOutsideDismiss } from "../../hooks/use-outside-dismiss";
 import { t, useLocale, localeTag } from "../../i18n/runtime";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowLeft, ArrowRight, Check, Download, FileText, Search, X } from "lucide-react";
 import { sourceCatalog, sourceExtent } from "./source-catalog";
@@ -9,6 +9,7 @@ import { Checkbox } from "../../components/ui/checkbox";
 import { SourceDownload } from "./source-download";
 import { sourceCell } from "./report-format";
 import { matchesEvidence, sourceTables } from "./source-view";
+import { createSourceSearch, type SourceMatchRange } from "./source-search";
 import type { AiResult } from "../../../functions/src/analysis/result-contract";
 
 export type Evidence = AiResult["metrics"][number]["evidence"];
@@ -22,16 +23,13 @@ const names = Object.fromEntries(Object.entries(sourceCatalog).map(([id, item]) 
 const PAGE_SIZE = 25;
 
 // Metin aramasını kaynak içeriğini HTML olarak yorumlamadan işaretler.
-function highlightText(text: string, query: string) {
-  const needle = query.trim().toLocaleLowerCase("tr-TR");
-  if (!needle) return text;
-  const haystack = text.toLocaleLowerCase("tr-TR");
+function highlightText(text: string, ranges: SourceMatchRange[]) {
+  if (!ranges.length) return text;
   const parts: React.ReactNode[] = [];
-  let start = 0, index = haystack.indexOf(needle);
-  while (index >= 0) {
-    parts.push(text.slice(start, index), <mark key={index} className="rounded bg-primary/15 px-0.5 text-foreground dark:bg-secondary/20">{text.slice(index, index + needle.length)}</mark>);
-    start = index + needle.length;
-    index = haystack.indexOf(needle, start);
+  let start = 0;
+  for (const range of ranges) {
+    parts.push(text.slice(start, range.start), <mark key={range.start} className="rounded bg-primary/15 px-0.5 text-foreground dark:bg-secondary/20">{text.slice(range.start, range.end)}</mark>);
+    start = range.end;
   }
   parts.push(text.slice(start));
   return parts;
@@ -52,6 +50,8 @@ function SourceSession({ selection, sources, onClose, translateContent = true, o
   const available = sources.filter(source => selection.evidence.some(item => matchesEvidence(source, item)));
   const [sourceId, setSourceId] = useState(available[0]?.sourceId ?? "");
   const [query, setQuery] = useState("");
+  const locale = localeTag();
+  const search = useMemo(() => createSourceSearch(query, locale), [query, locale]);
   const [allRows, setAllRows] = useState(false);
   const [page, setPage] = useState(1);
   const [tableSelection, setTableSelection] = useState<{ sourceId: string; key: string } | null>(null);
@@ -80,10 +80,9 @@ function SourceSession({ selection, sources, onClose, translateContent = true, o
     const evidence = anchors.some(item => item.chunkId === chunk.id && (item.locator.rowStart === undefined || row >= item.locator.rowStart && row <= item.locator.rowEnd!));
     return { cells, row, evidence, chunk };
   }));
-  const needle = query.trim().toLocaleLowerCase("tr-TR");
-  const filtered = records.filter(record => (allRows || record.evidence) && (!needle || [String(record.row), ...record.cells.map(String)].some(value => value.toLocaleLowerCase("tr-TR").includes(needle))));
+  const filtered = records.filter(record => (allRows || record.evidence) && [String(record.row), rowNumber.format(record.row), ...record.cells.map(String)].some(search.includes));
   const textual = !source?.chunks.some(chunk => chunk.table);
-  const textChunks = (source?.chunks ?? []).filter(chunk => (allRows || hasEvidence(chunk.id)) && (!needle || chunk.text?.toLocaleLowerCase("tr-TR").includes(needle)));
+  const textChunks = (source?.chunks ?? []).filter(chunk => (allRows || hasEvidence(chunk.id)) && search.includes(chunk.text ?? ""));
   const original = sourceCatalog[sourceId];
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const current = Math.min(page, pages);
@@ -109,7 +108,7 @@ function SourceSession({ selection, sources, onClose, translateContent = true, o
             {tables.map((item, index) => <option key={item.key} value={item.key}>{item.label ? `${item.label} · ${t("Tablo {0}", index + 1)}` : t("Tablo {0}", index + 1)}</option>)}
           </select></label>}
           {tables.length > 0 && !table && <p role="status" className="mb-4 rounded-xl border border-border bg-muted/40 p-4 text-sm leading-6">{t("Seçilen tablo artık bu kaynakta bulunmuyor. Başka bir tablo seçin.")}</p>}
-          {textual ? <div><div className="mb-4"><h3 className="text-base font-semibold">{sourceName(source)}</h3><p className="mt-1 break-all text-[10px] text-muted-foreground">{source.fileName}</p></div><div className="relative mb-4"><Search className="pointer-events-none absolute start-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden="true" /><input aria-label={t("Belge metninde ara")} value={query} onChange={event => setQuery(event.target.value)} placeholder={t("Belgede bir kavram veya ifade arayın…")} className="h-10 w-full rounded-xl border border-border bg-background ps-10 pe-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-primary sm:text-xs" /></div><p role="status" className="mb-4 text-[10px] text-muted-foreground">{t("{0} kaynak bölümü gösteriliyor", textChunks.length)}{query ? ` · “${query}”` : ""}</p><div className="space-y-5">{textChunks.map((chunk, index) => <article key={chunk.id} className="mx-auto max-w-3xl rounded-2xl border border-border bg-background/50 p-5 shadow-sm sm:p-8"><div className="mb-5 flex items-center justify-between gap-3 border-b border-border pb-4 text-[10px]"><span className="font-semibold uppercase tracking-[0.12em] text-primary dark:text-secondary">{chunk.locator.page ? t("Sayfa {0}", chunk.locator.page) : chunk.locator.slide ? t("Slayt {0}", chunk.locator.slide) : t("Metin bölümü {0}", source.chunks.indexOf(chunk) + 1)}</span><span className="text-muted-foreground">{sourceName(source)}</span></div><div className="space-y-4">{chunk.text?.split(/\n\s*\n/).filter(Boolean).map((paragraph, n) => <p key={n} lang={translateContent ? "tr" : undefined} dir="auto" className="whitespace-pre-line break-words text-xs leading-7 text-muted-foreground sm:text-sm sm:leading-8">{highlightText(paragraph, query)}</p>)}</div><p className="mt-6 border-t border-border pt-3 text-end text-[9px] text-muted-foreground">{number.format(index + 1)}  {t("/ {0} görünür bölüm", textChunks.length)}</p></article>)}{!textChunks.length && <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">{t("Belgede aramanızla eşleşen bölüm yok.")}</p>}</div></div> : <>          <div className="mb-4 flex flex-wrap items-end justify-between gap-3"><div><h3 className="text-sm font-semibold">{sourceName(source)}</h3><p className="mt-1 text-[10px] text-muted-foreground">{t("{0} · {1} kayıt · {2} dayanak", source.fileName, records.length, records.filter(record => record.evidence).length)}</p></div><label className="flex items-center gap-2 text-xs"><Checkbox checked={allRows} onCheckedChange={value => { setAllRows(value === true); setPage(1); }} className="h-4 w-4" />{t("Tüm kaynak satırları")}</label></div>
+          {textual ? <div><div className="mb-4"><h3 className="text-base font-semibold">{sourceName(source)}</h3><p className="mt-1 break-all text-[10px] text-muted-foreground">{source.fileName}</p></div><div className="relative mb-4"><Search className="pointer-events-none absolute start-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden="true" /><input aria-label={t("Belge metninde ara")} value={query} onChange={event => setQuery(event.target.value)} placeholder={t("Belgede bir kavram veya ifade arayın…")} className="h-10 w-full rounded-xl border border-border bg-background ps-10 pe-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-primary sm:text-xs" /></div><p role="status" className="mb-4 text-[10px] text-muted-foreground">{t("{0} kaynak bölümü gösteriliyor", textChunks.length)}{query ? ` · “${query}”` : ""}</p><div className="space-y-5">{textChunks.map((chunk, index) => <article key={chunk.id} className="mx-auto max-w-3xl rounded-2xl border border-border bg-background/50 p-5 shadow-sm sm:p-8"><div className="mb-5 flex items-center justify-between gap-3 border-b border-border pb-4 text-[10px]"><span className="font-semibold uppercase tracking-[0.12em] text-primary dark:text-secondary">{chunk.locator.page ? t("Sayfa {0}", chunk.locator.page) : chunk.locator.slide ? t("Slayt {0}", chunk.locator.slide) : t("Metin bölümü {0}", source.chunks.indexOf(chunk) + 1)}</span><span className="text-muted-foreground">{sourceName(source)}</span></div><div className="space-y-4">{chunk.text?.split(/\n\s*\n/).filter(Boolean).map((paragraph, n) => <p key={n} lang={translateContent ? "tr" : undefined} dir="auto" className="whitespace-pre-line break-words text-xs leading-7 text-muted-foreground sm:text-sm sm:leading-8">{highlightText(paragraph, search.ranges(paragraph))}</p>)}</div><p className="mt-6 border-t border-border pt-3 text-end text-[9px] text-muted-foreground">{number.format(index + 1)}  {t("/ {0} görünür bölüm", textChunks.length)}</p></article>)}{!textChunks.length && <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">{t("Belgede aramanızla eşleşen bölüm yok.")}</p>}</div></div> : <>          <div className="mb-4 flex flex-wrap items-end justify-between gap-3"><div><h3 className="text-sm font-semibold">{sourceName(source)}</h3><p className="mt-1 text-[10px] text-muted-foreground">{t("{0} · {1} kayıt · {2} dayanak", source.fileName, records.length, records.filter(record => record.evidence).length)}</p></div><label className="flex items-center gap-2 text-xs"><Checkbox checked={allRows} onCheckedChange={value => { setAllRows(value === true); setPage(1); }} className="h-4 w-4" />{t("Tüm kaynak satırları")}</label></div>
           <div className="relative mb-4"><Search className="pointer-events-none absolute start-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden="true" /><input aria-label={t("Kaynak satırlarında ara")} value={query} onChange={event => { setQuery(event.target.value); setPage(1); }} placeholder={!translateContent ? t("Kaynak satırlarında ara") : columns.includes("feedback_id") ? t("Yorum kimliği, tarih veya yorum metni ara…") : t("Kayıt kimliği, dönem, kanal veya kategori ara…")} className="h-10 w-full rounded-xl border border-border bg-background ps-10 pe-10 text-base outline-none sm:text-xs focus-visible:ring-2 focus-visible:ring-primary" />{query && <button aria-label={t("Kaynak aramasını temizle")} onClick={() => { setQuery(""); setPage(1); }} className="absolute end-2 top-2 rounded p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><X className="h-4 w-4" aria-hidden="true" /></button>}</div>
           <div role="region" aria-label={t("{0} kaynak satırları", source.fileName)} tabIndex={0} className="max-h-[43dvh] overflow-auto overscroll-contain rounded-xl border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:max-h-[48dvh]"><table className="w-full whitespace-nowrap text-start text-xs"><caption className="sr-only">{t("{0} için kaynak satırları", selection.title)}</caption><thead className="sticky top-0 z-10 bg-muted"><tr><th scope="col" className="px-4 py-3 font-medium">{t("Satır")}</th>{columns.map((column, index) => <th scope="col" key={index} title={column} className="px-4 py-3 font-medium">{translateContent ? t(column === "category" && columns.includes("service_orders") ? "Hizmet alanı" : columnLabels[column]) ?? column : column}</th>)}</tr></thead><tbody>{shown.map(({ cells, row, evidence, chunk }) => <tr key={`${chunk.id}:${row}`} className="border-t border-border/60 transition-colors hover:bg-muted/50"><th scope="row" className="bg-card px-4 py-3 font-medium"><span className="inline-flex items-center gap-2">{evidence && <span className="h-1.5 w-1.5 rounded-full bg-primary dark:bg-secondary" aria-hidden="true" />}{rowNumber.format(row)}{evidence && <span className="sr-only">{t(", dayanak")}</span>}</span></th>{cells.map((cell, index) => <td key={index} className="px-4 py-3 text-muted-foreground" title={String(cell ?? "")}>{sourceCell(cell, columns[index] ?? "", translateContent)}</td>)}</tr>)}</tbody></table>{!shown.length && <p className="p-8 text-center text-sm text-muted-foreground">{t("Aramanızla eşleşen kaynak satırı yok.")}</p>}</div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><p role="status" className="text-xs text-muted-foreground">{number.format(filtered.length ? (current - 1) * PAGE_SIZE + 1 : 0)}–{number.format(Math.min(current * PAGE_SIZE, filtered.length))}  {t("/ {0} kayıt", filtered.length)}</p><div className="flex items-center gap-2"><Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" disabled={current === 1} onClick={() => setPage(current - 1)} aria-label={t("Önceki kaynak sayfası")}><ArrowLeft className="h-3.5 w-3.5 rtl:-scale-x-100" aria-hidden="true" /></Button><span className="min-w-16 text-center text-xs tabular-nums">{number.format(current)} / {number.format(pages)}</span><Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" disabled={current >= pages} onClick={() => setPage(current + 1)} aria-label={t("Sonraki kaynak sayfası")}><ArrowRight className="h-3.5 w-3.5 rtl:-scale-x-100" aria-hidden="true" /></Button></div></div>

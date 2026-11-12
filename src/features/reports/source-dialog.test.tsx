@@ -137,3 +137,31 @@ it("preserves raw worksheet names while localizing table controls in all six lan
     await waitFor(() => expect(screen.getByText("SALE-ONLY")).toBeVisible());
   }
 });
+
+it("searches English uppercase cells and Arabic displayed row identifiers in their selected locales", () => {
+  setLocale("en");
+  const row = { ...source, chunks: [{ ...source.chunks[0], locator: { rowStart: 3456, rowEnd: 3456 }, table: { columns: ["Record"], rows: [["INVOICE"]] } }] };
+  const anchor = { ...selection, evidence: [{ ...selection.evidence[0], locator: { rowStart: 3456, rowEnd: 3456 } }] };
+  const { rerender } = render(<SourceDialog selection={anchor} sources={[row]} translateContent={false} onClose={() => {}} />);
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "invoice" } });
+  expect(screen.getByRole("rowheader")).toHaveTextContent("3456");
+  setLocale("ar");
+  rerender(<SourceDialog selection={anchor} sources={[row]} translateContent={false} onClose={() => {}} />);
+  const digits = new Intl.NumberFormat("ar-SA", { useGrouping: false }).format(3456);
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: digits } });
+  expect(screen.getByRole("rowheader")).toHaveTextContent(digits);
+});
+
+it("highlights original text after Unicode normalization and never interprets source markup", () => {
+  setLocale("en");
+  const text = { ...source, chunks: [{ id: "page", locator: { page: 1 }, text: "İ X Cafe\u0301 <script>literal</script>" }] };
+  const anchor = { title: "Text", evidence: [{ sourceId: text.sourceId, sha256: text.sha256, chunkId: "page", locator: { page: 1 } }] };
+  const { container } = render(<SourceDialog selection={anchor} sources={[text]} translateContent={false} onClose={() => {}} />);
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "x" } });
+  expect(container.querySelector("mark")).toHaveTextContent("X");
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "café" } });
+  expect(container.querySelector("mark")?.textContent).toBe("Cafe\u0301");
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "<script>" } });
+  expect(container.querySelector("mark")?.textContent).toBe("<script>");
+  expect(container.querySelector("script")).toBeNull();
+});
