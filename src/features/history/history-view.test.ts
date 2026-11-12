@@ -124,3 +124,25 @@ describe("history view", () => {
     expect(activeRows.map(r => r.id)).toEqual(["active-ai"]);
   });
 });
+
+it("sorts titles by the selected language and keeps equal-title source order", () => {
+  const rows = ["I", "H", "ı", "İ"].map((title, id) => ({ ...analysis(String(id), "completed"), title }));
+  const options = { query: "", status: "all" as const, period: "all" as const, sort: "title" as const };
+  expect(buildHistoryView(rows, options, 1, "tr-TR").map(row => row.title)).toEqual(["H", "I", "ı", "İ"]);
+  expect(buildHistoryView(rows, options, 1, "en-US").map(row => row.title)).toEqual(["H", "I", "İ", "ı"]);
+  expect(rows.map(row => row.id)).toEqual(["0", "1", "2", "3"]);
+});
+
+it("finds source names from preparation review, failures and excluded sources without changing status filters", () => {
+  const rows: Analysis[] = [
+    { ...analysis("review", "review"), preparationReview: { token: "synthetic", ready: [{ id: "a", name: "Hazır belge.xlsx" }], rejected: [{ id: "b", name: "Bozuk kaynak.docx", reason: "synthetic" }] } },
+    { ...analysis("failed", "failed"), preparationFailures: [{ id: "c", name: "Faaliyet.pdf", reason: "synthetic" }] },
+    { ...analysis("completed", "completed"), report: { version: 3, fileCount: 0, totalBytes: 0, totalChunks: 0, totalCharacters: 0, sources: [], excludedSources: [{ id: "d", name: "Kapsam dışı.csv", reason: "synthetic" }] } },
+  ];
+  const options = { query: "", status: "all" as const, period: "all" as const, sort: "newest" as const };
+  for (const [query, id] of [["hazir belge", "review"], ["bozuk kaynak", "review"], ["faaliyet.pdf", "failed"], ["kapsam disi", "completed"]]) {
+    expect(buildHistoryView(rows, { ...options, query }).map(row => row.id)).toEqual([id]);
+  }
+  expect(buildHistoryView(rows, { ...options, query: "bozuk kaynak", status: "completed" })).toEqual([]);
+  expect(summarizeHistory(rows)).toEqual({ total: 3, completed: 1, active: 0, failed: 2 });
+});

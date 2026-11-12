@@ -137,7 +137,7 @@ export function HistoryPage() {
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
 
-  const visibleRows = buildHistoryView(rows, { query, status: statusFilter, period: periodFilter, sort }, displayNow);
+  const visibleRows = buildHistoryView(rows, { query, status: statusFilter, period: periodFilter, sort }, displayNow, localeTag());
   const selectedRows = visibleRows.filter(row => selectedIds.has(row.id));
   const allSelected = visibleRows.length > 0 && selectedRows.length === visibleRows.length;
   const summary = summarizeHistory(rows, displayNow);

@@ -51,8 +51,6 @@ export function serializeHistoryView(options: HistoryViewOptions) {
   return params;
 }
 
-const collator = new Intl.Collator("tr-TR", { sensitivity: "base", numeric: true });
-
 /**
  * Türkçe karakter ve boşluk farklarını aramada kullanıcı için öngörülebilir hale getirir.
  */
@@ -72,14 +70,19 @@ function matchesStatus(analysis: Analysis, status: HistoryStatusFilter, now = Da
 /**
  * Başlık, hedef, işletme ve kaynak adını birlikte arar; durum ve tarih filtrelerini uygular.
  */
-export function buildHistoryView(rows: Analysis[], options: HistoryViewOptions, now = Date.now()): Analysis[] {
+export function buildHistoryView(rows: Analysis[], options: HistoryViewOptions, now = Date.now(), locale = "tr-TR"): Analysis[] {
   const query = normalizeSearch(options.query);
+  const collator = new Intl.Collator(locale, { sensitivity: "base", numeric: true });
   const periodDays = options.period === "all" ? null : Number.parseInt(options.period, 10);
   const cutoff = periodDays === null ? null : now - periodDays * 24 * 60 * 60 * 1000;
   const filtered = rows.filter(analysis => {
     if (!matchesStatus(analysis, options.status, now) || (cutoff !== null && analysis.createdAt < cutoff)) return false;
     if (!query) return true;
-    const sourceNames = analysis.report?.sources.map(source => source.name) ?? [];
+    const sourceNames = [
+      ...(analysis.report?.sources ?? []), ...(analysis.report?.excludedSources ?? []),
+      ...(analysis.preparationFailures ?? []), ...(analysis.preparationReview?.ready ?? []),
+      ...(analysis.preparationReview?.rejected ?? []),
+    ].map(source => source.name);
     return normalizeSearch([analysis.title, analysis.objective ?? "", analysis.business, ...sourceNames].join(" ")).includes(query);
   });
 

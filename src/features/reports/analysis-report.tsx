@@ -39,7 +39,7 @@ function monthlyValue(row: MonthlyRow, key: MonthlyKey) {
 }
 
 function channelValue(row: ChannelRow, key: ChannelKey) {
-  if (key === "channel") return row.name;
+  if (key === "channel") return t(row.name);
   if (key === "unit") return row.contribution / row.orders;
   return row[key];
 }
