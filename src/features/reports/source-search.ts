@@ -10,13 +10,12 @@ export function createSourceSearch(query: string, locale: string) {
     includes: (text: string) => !needle || fold(text).includes(needle),
     // Dönüşüm uzunluğu değişse bile vurgu özgün UTF-16/grapheme sınırlarına döner; HTML yorumlanmaz.
     ranges(text: string): SourceMatchRange[] {
-      if (!needle) return [];
+      if (!needle || !segmenter) return [];
       const folded = fold(text), result: SourceMatchRange[] = [];
       if (!folded.includes(needle)) return result;
       const positions: SourceMatchRange[] = [];
-      // Eski tarayıcıda da kod noktası ve birleşen işaretleri birlikte tutar; yeni bağımlılık gerekmez.
-      const segments = segmenter?.segment(text) ?? Array.from(text.matchAll(/\P{Mark}\p{Mark}*|\p{Mark}+/gu), match => ({ segment: match[0], index: match.index }));
-      for (const { segment, index } of segments) {
+      // Grapheme API'si yokken filtre çalışır; eksik bir Unicode parçalama taklidiyle yanlış vurgu yapılmaz.
+      for (const { segment, index } of segmenter.segment(text)) {
         const range = { start: index, end: index + segment.length };
         for (let n = 0; n < fold(segment).length; n++) positions.push(range);
       }

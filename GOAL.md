@@ -11,13 +11,13 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ### 2026-11-12 — Furkan / Codex: dil uyumlu arama ve sıralama
 
-- [x] Sahip: Furkan — Kaynak aramasında seçili dilin harf kurallarını kullan; Unicode birleşik karakter/case dönüşümünde özgün metni değiştirmeden doğru bölümü vurgula. Literal arama ve güvenli React metin gösterimi korunsun.
+- [x] Sahip: Furkan — Kaynak aramasında seçili dilin harf kurallarını kullan; Unicode birleşik karakter/case dönüşümünde özgün metni değiştirmeden doğru bölümü vurgula. Literal arama ve güvenli React metin gösterimi korunsun. Grapheme API’si olmayan eski tarayıcıda arama sürer; birleşik karakterde yanlış vurgu üretmek yerine metin özgün ve vurgusuz gösterilir.
 - [x] Sahip: Furkan — Rapor ve arşiv başlık sıralamasını seçili dilin karşılaştırıcısına bağla; sayısal değerler ham sayıyla, eşit değerler kararlı ve kaynak sırası geri alınabilir kalsın.
 - [x] Sahip: Furkan — Arşiv aramasına hazırlık incelemesi, hata veren ve kapsam dışında bırakılan belge adlarını ekle; mevcut başlık/hedef/işletme/kaynak araması ile tarih/durum filtreleri bozulmasın.
 
 Kabul: ilgili negatif/pozitif regresyonlar ve dil değişimi; lint, birim/Functions/Python, derleme, entegrasyon ve retry kapalı tarayıcı kabulü. Son commit CI, secret kontrolü, dört dal eşitliği/temiz ağaç ve Netlify manifest/dosya/rota eşliği doğrulanır. Backend, veri saklama sözleşmesi, model ve analiz yayın kapıları değiştirilmez.
 
-Yerel kabul: lint, 202 arayüz + 141 Functions, 45 Python, 15 yayın + 11 kaynak koruması + 5 günlük + 6 süreç ve 9 entegrasyon testi geçti. Tam tarayıcı paketi tek worker/sıfır retry ile 75 geçti; mevcut üç platform atlaması korundu. Önceki `cca6247` GitHub Quality koşusu 75 ilk geçişle başarılı ve bekleyen Netlify paketi 73 dosya/yedi rota üzerinden doğrulandı. Son yeni commit CI ve yeni paketin canlı eşliği teslimde ayrıca doğrulanır. Gerçek model kalite kabulü önceki sağlayıcı engeli nedeniyle kapalı kalır.
+Yerel kabul: lint, 203 arayüz + 141 Functions, 45 Python, 15 yayın + 11 kaynak koruması + 5 günlük + 6 süreç ve 9 entegrasyon testi geçti. Tam tarayıcı paketi tek worker/sıfır retry ile 75 geçti; mevcut üç platform atlaması korundu. Önceki `cca6247` GitHub Quality koşusu 75 ilk geçişle başarılı ve bekleyen Netlify paketi 73 dosya/yedi rota üzerinden doğrulandı. Son yeni commit CI ve yeni paketin canlı eşliği teslimde ayrıca doğrulanır. Gerçek model kalite kabulü önceki sağlayıcı engeli nedeniyle kapalı kalır.
 
 ### 2026-11-12 — Furkan / Codex: kaynak inceleme doğruluğu ve tekrarlanabilir kabul
 

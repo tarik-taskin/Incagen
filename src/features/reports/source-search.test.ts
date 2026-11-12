@@ -29,10 +29,18 @@ it("keeps emoji, RTL and non-Latin source text intact and treats query syntax li
   expect(createSourceSearch("[a]+", "en-US").ranges("<script>[a]+</script>")).toEqual([{ start: 8, end: 12 }]);
   expect(createSourceSearch(" ", "en-US").ranges("unchanged")).toEqual([]);
 });
-it("preserves combining characters even if Segmenter is unavailable", () => {
+it("keeps search working but leaves text unmarked when grapheme segmentation is unavailable", () => {
   const original = Object.getOwnPropertyDescriptor(Intl, "Segmenter")!;
   try {
     Object.defineProperty(Intl, "Segmenter", { configurable: true, value: undefined });
-    expect(createSourceSearch("café", "en-US").ranges("Cafe\u0301")).toEqual([{ start: 0, end: 5 }]);
+    const search = createSourceSearch("café", "en-US");
+    expect(search.includes("Cafe\u0301")).toBe(true);
+    expect(search.ranges("Cafe\u0301")).toEqual([]);
+    expect(createSourceSearch("가", "zh-CN").includes("가")).toBe(true);
+    expect(createSourceSearch("가", "zh-CN").ranges("가")).toEqual([]);
   } finally { Object.defineProperty(Intl, "Segmenter", original); }
+});
+
+it("keeps a canonically composed Hangul match on its complete original grapheme", () => {
+  expect(createSourceSearch("가", "zh-CN").ranges("가")).toEqual([{ start: 0, end: 2 }]);
 });
