@@ -1,5 +1,8 @@
 # Incagen Proje Hafızası
 
+- 12 Kasım devamı: Kaynak araması yerel harf kuralları/Unicode karakter konumlarıyla çalışır; görünen Arapça satır numaraları aranabilir. Rapor/arşiv sıralaması seçili dili kullanır; arşiv hazırlık incelemesi, hata ve dışlanan dosya adlarını da arar. Veri/yetki/model kapıları değişmez.
+
+
 - 12 Kasım: Kaynak incelemesi hash/konum ve rapor kimliğiyle ayrılır; Excel çalışma sayfaları/farklı sütun şemaları karışmaz. Test komutları kısa, koşuya özel geçici dizinde çalışır. Tek Gemini kontrolü zaman aşımı verdi; gerçek analiz kapalıdır. İlk CSV/XLSX beta ile sonraki kapsamın kabulü [beta planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
 - 11 Kasım: tekil raporun işlem/dialog durumu kullanıcı ve kayıtla ayrılır; geç yanıt başka ekranı yönlendirmez veya yeni taslağı temizlemez. Rapor başlığı ortak lease saatini kullanır. Tablo seçimi kaynak/sayfa kimliğine, form/sonuç ayrıca denemeye bağlıdır. Kaynak tutarlarında eksik/geçersiz değer sıfıra çevrilmez, fiziksel satır numaraları binlik gruplama kullanmaz; ölçülmemiş süre gösterilmez. [Davranış](FLOW.md#analiz-denemesi-ve-özgün-belge-indirme), [görevler](GOAL.md#2026-11-11--furkan--codex-rapor-yaşam-döngüsü-ve-gösterim-doğruluğu).
