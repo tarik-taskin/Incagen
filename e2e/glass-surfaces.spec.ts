@@ -21,7 +21,7 @@ test("landing, giriş ve yardım dört görünümde okunur; azaltılmış saydam
       await page.keyboard.press("Escape");
       await page.getByRole("button", { name: "Destek ve yardım", exact: true }).click();
       const help = page.getByRole("dialog", { name: "Destek ve yardım", exact: true });
-      const question = help.locator("details").filter({ hasText: "Kaynakları ve okuma uyarılarını nerede bulurum?" });
+      const question = help.locator("details").filter({ hasText: "Sonuçların dayanaklarını nasıl doğrularım?" });
       if (await question.getAttribute("open") === null) await question.locator("summary").click();
       await expect(question).toHaveAttribute("open");
       await expectReadable(page);

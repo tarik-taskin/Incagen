@@ -9,6 +9,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
+### 2026-11-14 — Furkan / Codex: plan açıklığı ve profesyonel yardım metinleri
+
+- [x] Sahip: Furkan — Plan sınırlarını kullanıcıyla netleştir: Free plan günde 2 çalışma, çalışma başına en fazla 5 dosya ve toplam 25 MB. Kullanıcı mevcut değerlerin doğru olduğunu onayladı; limitler ve backend kuralları değiştirilmedi.
+- [x] Sahip: Furkan — Beş yardım sorusunu belge hazırlığı, analiz hedefi, rapor inceleme, çalışma yönetimi ve kaynak doğrulama etrafında yeniden yaz; kullanıcıya teknik uygulama ayrıntısı yüklemeden gerçek davranışı açıkla ve altı dilde doğal ifadeleri koru.
+- [x] Sahip: Furkan — İlgili ekranları mobil/masaüstü, tema/Glass, RTL, klavye, yardım formu ve kapasite tutarlılığı açısından tara. İlgili kabul senaryolarında yeni hata bulunmadı; plan ve iş akışı değişikliği yapılmadı.
+
+Yerel kabul: lint, 203 arayüz + 141 Functions ve yayın/kaynak koruması/süreç testleri, üretim derlemesi ve tek worker/sıfır retry ile 75 tarayıcı testi geçti. Üç mevcut platform atlaması korundu; yardımın mobil/masaüstü ekran görüntüleri incelendi. Yayın kabulü ayrıca son commit CI, stage sonrası secret kontrolü, dört dal eşitliği/temiz ağaç ve aynı commit Netlify dosya/rota eşliği gerektirir.
+
 ### 2026-11-12 — Furkan / Codex: dil uyumlu arama ve sıralama
 
 - [x] Sahip: Furkan — Kaynak aramasında seçili dilin harf kurallarını kullan; Unicode birleşik karakter/case dönüşümünde özgün metni değiştirmeden doğru bölümü vurgula. Literal arama ve güvenli React metin gösterimi korunsun. Grapheme API’si olmayan eski tarayıcıda arama sürer; birleşik karakterde yanlış vurgu üretmek yerine metin özgün ve vurgusuz gösterilir.

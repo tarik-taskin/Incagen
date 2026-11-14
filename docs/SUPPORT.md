@@ -4,7 +4,7 @@
 
 Çalışma alanının altındaki ve ana sayfa sonundaki **Destek ve yardım**, kısa yanıtları ve iletişim formunu açar. Mobil çalışma alanında aynı giriş içerik sonundadır; üst çubuktaki doğrudan ana sayfa bağlantısı korunur. Yanıtlar tek tek açılır; form ayrı bir adımdır. Pencere dışarı dokunma/Escape ile kapanır, odak geri döner ve gönderilmemiş metin korunur.
 
-Yardım beş odaklı sorudan oluşur; tek yanıt açılır. Belge kapsamı, analiz hedefi ve örnek kaynaklara ek olarak sekme içi dosya korunumu ile kaynak/okuma uyarıları açıklanır. İletişim konuları soru, sorun, öneri, hesap/giriş ve veri/gizlilik olarak beş seçenekle sınırlıdır; konu hem form gönderiminde hem e-posta taslağında korunur. Altı dil kullanıcının yazdığı metni değiştirmez.
+Yardım beş odaklı sorudan oluşur; tek yanıt açılır. Birlikte kullanılabilecek belgeler, odaklı analiz hedefi, örnek raporların incelenmesi, geçmişte çalışma ve kaynak yönetimi ile sonuçların dayanaklarını doğrulama açıklanır. Çalışma yönetimi yanıtı, henüz hazırlanmamış yerel dosyaların yenileme veya çıkış sonrasında yeniden seçilmesi gerektiğini de belirtir. İletişim konuları soru, sorun, öneri, hesap/giriş ve veri/gizlilik olarak beş seçenekle sınırlıdır; konu hem form gönderiminde hem e-posta taslağında korunur. Altı dil kullanıcının yazdığı metni değiştirmez.
 
 Web3Forms formu yalnız e-posta, konu ve kullanıcının yazdığı mesajı gönderir. Analiz kaydı, belgeler, hesap parolası veya kimlik token'ı eklenmez. Başarı için HTTP yanıtı ve `success: true` birlikte gerekir; zaman aşımı, ağ hatası, geçersiz yanıt ve servis reddi metni korur. Otomatik yeniden gönderim yapılmaz. Başarı mesajı servis kabulünü ifade eder; Gmail gelen kutusu teslimatı ayrıca doğrulanır.
 

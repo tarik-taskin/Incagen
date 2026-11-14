@@ -10,11 +10,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { getSupportConfig, sendSupportMessage, supportMailto, supportTopics, supportTopicLabels, type SupportTopic } from "../features/support/support";
 
 const questions = [
-  ["Hangi belgeleri ekleyebilirim?", "PDF, Word, Excel, CSV, metin, sunum ve desteklenen görsellerinizi aynı çalışmada bir araya getirebilirsiniz. Belgeleri tek bir konu etrafında seçin; örneğin aynı döneme ait satış tablolarını ilgili faaliyet raporuyla birlikte ekleyin. Dosya seçimi sırasında kalan kapasitenizi görebilir, hazırlığa başlamadan önce seçiminizi düzenleyebilirsiniz."],
-  ["Analiz hedefini nasıl yazmalıyım?", "Belgelerinizden ne öğrenmek istediğinizi açık bir soruyla anlatın. Yalnızca ‘özetle’ yazmak yerine hangi dönemi, karşılaştırmayı veya karar konusunu merak ettiğinizi belirtin. Örneğin ‘İki dönem arasında satışlar nasıl değişti ve hangi kategoriler öne çıktı?’ diyebilirsiniz. Hedefiniz bu çalışmayla birlikte saklanır."],
-  ["Örnek raporlar hangi verileri kullanıyor?", "Bu raporlar, analiz ve kaynak inceleme deneyimini göstermek için hazırlanan örnek dosyaları kullanır. Dosyaları indirip raporla birlikte inceleyebilir; bir bulgunun, grafiğin veya tablonun hangi kayıtlara dayandığını kaynak bağlantılarından görebilirsiniz. Müşteri deneyimi örneği de analiz sonrasında paylaşılan geri bildirimlerin nasıl değerlendirilebileceğini gösterir."],
-  ["Sayfa değiştirince dosyalarım kaybolur mu?", "Uygulama içindeki Geçmiş, Ayarlar ve Plan sayfaları arasında dolaşırken aynı sekmedeki dosya seçiminiz ve çalışma ayrıntılarınız korunur. Sayfayı yenilemek veya sekmeyi kapatmak yerel dosya seçimini silebilir. Tarayıcı ayrılma uyarısı gösterirse devam etmeden önce çalışmanızı kontrol edin; dosyalarınız cihazınızda kalır."],
-  ["Kaynakları ve okuma uyarılarını nerede bulurum?", "Hazırlık özeti, belge kapsamını ve okuma uyarılarını birlikte gösterir. MIME, parça ve karakter sayıları gibi bilgiler Teknik ayrıntılar bölümündedir. Örnek raporlarda bir metrik, grafik değeri veya Kaynakları incele bağlantısı üzerinden ilgili belgeye ulaşabilirsiniz; özgün dosyayı indirip bulgunun dayanağını karşılaştırabilirsiniz."],
+  [
+    "Hangi belge türlerini birlikte kullanabilirim?",
+    "PDF, Word, Excel, CSV, PowerPoint, metin, JSON ve desteklenen görselleri aynı çalışmada bir araya getirebilirsiniz. Aynı dönem, konu veya iş sorusuyla ilişkili dosyaları birlikte seçin. Kalan belge ve boyut kapasitesi yükleme alanında gösterilir; hazırlığa başlamadan önce seçiminizi düzenleyebilirsiniz."
+  ],
+  [
+    "Analiz hedefini nasıl netleştirebilirim?",
+    "Yanıt aradığınız soruyu; dönem, karşılaştırma ve karar bağlamıyla belirtin. Örneğin “Son iki dönemde gelir ve maliyetler nasıl değişti, hangi hizmet alanları öne çıktı?” gibi bir hedef, incelemenin odağını belirler. Birbiriyle ilişkili belgeleri seçin ve tek bir ana soruya odaklanın; hedefiniz çalışmanızla birlikte saklanır."
+  ],
+  [
+    "Örnek raporları nasıl değerlendirebilirim?",
+    "Önce yönetici özetini ve temel göstergeleri inceleyin; ardından ilgili grafik, tablo ve bulguların dayanaklarını açın. Örnek dosyaları indirerek rapordaki verilerle karşılaştırabilirsiniz. Ticari performans örneği finansal görünümü, müşteri deneyimi örneği ise analiz sonrası geri bildirimlerin değerlendirilmesini gösterir."
+  ],
+  [
+    "Çalışmalarımı ve kaynak belgelerimi nasıl yönetirim?",
+    "Geçmiş bölümünde çalışmalarınızı başlık, analiz hedefi veya dosya adıyla bulun; tarih ve durum filtreleriyle listeyi daraltın. Hazırlanan çalışmayı yeniden açabilir, kaynak belgelerine ulaşabilir ve ihtiyacınız olmayan kayıtları kaynaklarıyla birlikte silebilirsiniz. Henüz hazırlamadığınız yerel dosyalar için sayfayı yenileme veya çıkış sonrasında yeniden seçim gerekir."
+  ],
+  [
+    "Sonuçların dayanaklarını nasıl doğrularım?",
+    "Örnek raporda bir metrik, grafik değeri veya Kaynakları incele bağlantısı üzerinden ilgili belgeyi açın. Kaynak görünümü, dosya türüne göre özgün satır, sayfa ya da metin bölümünü korur; indirdiğiniz belgeyle karşılaştırabilirsiniz. Kendi çalışmalarınızda belge kapsamını ve okuma notlarını hazırlık özetinden kontrol edin."
+  ]
 ];
 
 // Yardımı kısa yanıtlarla açar; mesajı ayrı bir adımda toplar ve yalnız doğrulanan gönderimi başarılı gösterir.
