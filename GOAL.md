@@ -9,6 +9,15 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
+### 2026-11-16 — Furkan / Codex: kaynak inceleme ve etkileşim dayanıklılığı
+
+- [!] Sahip: Furkan — 16 Kasım tek sabit sentetik Gemini bağlantı kontrolü 95.680 ms içinde `functions/unavailable / timeout` verdi. Tekrar çağrı yapılmadı; geçici claim, sentetik hesap ve kaynak günlüğü temizliği doğrulandı. Engel: sağlayıcıdan geçerli yanıt ve ardından gerçek analiz kalite kabulü. Yayın kapıları kapalı kalır; anahtar/model/şema değiştirilmedi.
+- [~] Sahip: Furkan — Rapor bağlantısı kopyalamada çift tıklama, görünüm değişimi, geç sonuç ve unmount yaşam döngüsünü yönet; eski işlem fallback/prompt veya yeni görünümde başarı üretmesin, geçici DOM ve odak temizlensin.
+- [~] Sahip: Furkan — Uzun metin kaynaklarını sınırlı bölümlerle sayfala; arama tüm ilgili kaynak bölümlerini tarasın, arama/kaynak değişimi sayfayı sıfırlasın, özgün sayfa/slayt/bölüm kimlikleri ve altı dil/RTL korunsun.
+- [~] Sahip: Furkan — Dosya alanında yalnız dosya sürüklemelerini vurgula; dışarıda bırakma veya sürükleme iptalinde vurguyu temizle. Gerçek dosya seçimi, tekrar seçim ve disabled davranışı korunsun.
+
+Kabul: davranışa yönelik regresyonlar, lint, birim/Functions ve üretim derlemesi; ilgili kullanıcı akışı için entegrasyon ve retry kapalı tam tarayıcı paketi. Stage sonrası secret kontrolü, son commit Quality, dört dal eşitliği/temiz ağaç ve Netlify dosya/rota eşliğiyle teslim. Plan limitleri, tema ve analiz açılış kararı bu kapsamda değiştirilmez.
+
 ### 2026-11-14 — Furkan / Codex: plan açıklığı ve profesyonel yardım metinleri
 
 - [x] Sahip: Furkan — Plan sınırlarını kullanıcıyla netleştir: Free plan günde 2 çalışma, çalışma başına en fazla 5 dosya ve toplam 25 MB. Kullanıcı mevcut değerlerin doğru olduğunu onayladı; limitler ve backend kuralları değiştirilmedi.

@@ -80,4 +80,63 @@ describe("ShareLinkButton", () => {
     expect(promptMock).toHaveBeenCalledTimes(1);
     expect(promptMock.mock.calls[0][0]).toBe("Bağlantıyı kopyalayın:");
   });
+
+  it("bekleyen kopyalamayı tekilleştirir ve unmount sonrası reddi fallback'e taşımaz", async () => {
+    let reject!: (reason: Error) => void;
+    const write = vi.fn(() => new Promise<void>((_, no) => { reject = no; }));
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: write } });
+    const prompt = vi.spyOn(window, "prompt").mockImplementation(() => null);
+    const { unmount } = render(<ShareLinkButton />);
+    const button = screen.getByRole("button", { name: "Bağlantıyı kopyala" });
+    fireEvent.click(button); fireEvent.click(button);
+    expect(button).toBeDisabled();
+    expect(write).toHaveBeenCalledTimes(1);
+    unmount();
+    await act(async () => reject(new Error("denied")));
+    expect(prompt).not.toHaveBeenCalled();
+  });
+
+  it("adres değiştiğinde eski isteğin başarı veya fallback durumunu göstermez", async () => {
+    let reject!: (reason: Error) => void;
+    const before = window.location.href;
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: () => new Promise<void>((_, no) => { reject = no; }) } });
+    const prompt = vi.spyOn(window, "prompt").mockImplementation(() => null);
+    render(<ShareLinkButton />);
+    fireEvent.click(screen.getByRole("button"));
+    window.history.replaceState(null, "", "?period=new");
+    try {
+      await act(async () => reject(new Error("denied")));
+      expect(prompt).not.toHaveBeenCalled();
+      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+      expect(screen.getByRole("button")).toBeEnabled();
+    } finally { window.history.replaceState(null, "", before); }
+  });
+
+  it("fallback hata verse bile geçici alanı kaldırır ve klavye odağını geri verir", async () => {
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined });
+    const original = document.execCommand;
+    document.execCommand = vi.fn(() => { throw new Error("denied"); });
+    const prompt = vi.spyOn(window, "prompt").mockImplementation(() => null);
+    const { container } = render(<ShareLinkButton />);
+    const button = screen.getByRole("button"); button.focus();
+    try {
+      await act(async () => fireEvent.click(button));
+      expect(document.querySelector("textarea")).toBeNull();
+      expect(button).toHaveFocus();
+      expect(prompt).toHaveBeenCalledOnce();
+      expect(container.querySelector('[role="status"]')).toBeNull();
+    } finally { document.execCommand = original; }
+  });
+
+  it("başarılı kopyalamanın zamanlayıcısını unmount sırasında temizler", async () => {
+    vi.useFakeTimers();
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: vi.fn().mockResolvedValue(undefined) } });
+    const { unmount } = render(<ShareLinkButton />);
+    await act(async () => fireEvent.click(screen.getByRole("button")));
+    expect(vi.getTimerCount()).toBe(1);
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
+    vi.useRealTimers();
+  });
+
 });

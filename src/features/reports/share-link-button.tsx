@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Check, Copy } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { t, useLocale } from "../../i18n/runtime";
@@ -17,58 +17,58 @@ export function ShareLinkButton({
 }) {
   useLocale();
   const [copied, setCopied] = useState(false);
+  const [pending, setPending] = useState(false);
+  const operation = useRef<symbol | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    operation.current = null;
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  }, []);
 
-  // Mevcut rapor görünümünün adreslenebilir tam bağlantısını panoya yazar.
-  function copyCurrentLink() {
-    if (typeof window === "undefined") return;
-
-    const url = new URL(window.location.href);
-    if (!url.hash && activeSection && activeSection !== "genel-bakis") {
-      url.hash = `#${activeSection}`;
-    }
-    const shareableUrl = url.toString();
-
-    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
-      navigator.clipboard.writeText(shareableUrl).then(() => {
-        handleSuccess();
-      }).catch(() => {
-        fallbackCopy(shareableUrl);
-      });
-    } else {
-      fallbackCopy(shareableUrl);
+  // Tek bir pano isteği yürütür; eski görünümün geç yanıtı başarı veya fallback başlatamaz.
+  async function copyCurrentLink() {
+    if (operation.current) return;
+    const request = Symbol();
+    operation.current = request;
+    setPending(true);
+    setCopied(false);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    const startedAt = window.location.href;
+    const current = () => operation.current === request && window.location.href === startedAt;
+    const url = new URL(startedAt);
+    if (!url.hash && activeSection && activeSection !== "genel-bakis") url.hash = `#${activeSection}`;
+    const text = url.toString();
+    try {
+      try {
+        if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
+        await navigator.clipboard.writeText(text);
+      } catch {
+        if (!current()) return;
+        if (!fallbackCopy(text)) { if (current()) window.prompt(t("Bağlantıyı kopyalayın:"), text); return; }
+      }
+      if (!current()) return;
+      setCopied(true);
+      timeoutRef.current = setTimeout(() => setCopied(false), 2000);
+    } finally {
+      if (operation.current === request) { operation.current = null; setPending(false); }
     }
   }
 
-  // Clipboard API desteklenmediğinde veya izin verilmediğinde bağlantıya erişim sağlar.
+  // Geçici alan her hata yolunda kaldırılır; kopyalama sonrasında önceki klavye odağı geri gelir.
   function fallbackCopy(text: string) {
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const textarea = document.createElement("textarea");
     try {
-      const textarea = document.createElement("textarea");
       textarea.value = text;
       textarea.style.position = "fixed";
       textarea.style.opacity = "0";
+      textarea.setAttribute("aria-hidden", "true");
       document.body.appendChild(textarea);
       textarea.focus();
       textarea.select();
-      const successful = document.execCommand("copy");
-      document.body.removeChild(textarea);
-      if (successful) {
-        handleSuccess();
-        return;
-      }
-    } catch {
-      // Fallback başarısız olursa istemciye gösterilir.
-    }
-    window.prompt(t("Bağlantıyı kopyalayın:"), text);
-  }
-
-  // Kısa süreli erişilebilir başarı durumunu tetikler.
-  function handleSuccess() {
-    setCopied(true);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      setCopied(false);
-    }, 2000);
+      return document.execCommand("copy");
+    } catch { return false; }
+    finally { textarea.remove(); previousFocus?.focus({ preventScroll: true }); }
   }
 
   return (
@@ -78,6 +78,8 @@ export function ShareLinkButton({
       size="sm"
       className={`h-9 rounded-xl border-border/80 px-3 text-xs font-medium transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary ${className}`}
       onClick={copyCurrentLink}
+      disabled={pending}
+      aria-busy={pending}
       aria-label={copied ? t("Bağlantı kopyalandı") : t("Bağlantıyı kopyala")}
     >
       {copied ? (

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { AnimatedLogo } from "../../components/animated-logo";
 import { LanguageSelector } from "../../components/language-selector";
@@ -13,6 +13,7 @@ export const reportContainer = "mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px
 // Her iki örneğin başlığını, kontrollerini, sekmelerini ve görünüm paylaşımını aynı içerik ekseninde tutar.
 export function ExampleReportHeader({ active, activeSection }: { active: "commercial" | "feedback"; activeSection?: string }) {
   useLocale();
+  const location = useLocation();
   return <>
     <header className="popover-surface border-b border-border/60 bg-card/70">
       <nav aria-label={t("Örnek rapor navigasyonu")} className={`${reportContainer} flex flex-wrap items-center justify-between gap-3 py-4`}>
@@ -25,7 +26,7 @@ export function ExampleReportHeader({ active, activeSection }: { active: "commer
     </header>
     <div className={`${reportContainer} flex flex-wrap items-center justify-between gap-3 pt-5`}>
       <ExampleSwitch active={active} />
-      <ShareLinkButton activeSection={activeSection} />
+      <ShareLinkButton key={`${location.pathname}${location.search}${location.hash}:${activeSection ?? ""}`} activeSection={activeSection} />
     </div>
   </>;
 }
