@@ -341,3 +341,25 @@ test("aynı adreste kaydırma gözlemcisi değişince bekleyen kopyalama tamamla
   expect(await page.evaluate(() => (window as unknown as { copiedUrl: string }).copiedUrl)).toContain("?period=q4#finansal-detay");
   await expect(page).toHaveURL(/period=q4#finansal-detay$/);
 });
+
+// Yavaş renderer'da adres, React görünümünden önce değişebilir; gerçek pano tamamlanması kaybolamaz.
+test("yavaş görünüm güncellemesinde yeni adresin gerçek pano bildirimi korunur", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  const session = await context.newCDPSession(page);
+  try {
+    await session.send("Emulation.setCPUThrottlingRate", { rate: 6 });
+    await page.goto("/ornek-rapor");
+    await expect(page.getByRole("heading", { name: "Performansın büyük resmi.", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Son çeyrek", exact: true }).click();
+    await expect(page).toHaveURL(/period=q4/);
+    const section = page.getByRole("link", { name: "Finansal detay", exact: true });
+    await expect(section).toHaveAttribute("href", /period=q4/);
+    await section.click();
+    await expect(page).toHaveURL(/period=q4.*#finansal-detay/);
+    const copied = await copyAndObserveStatus(page, page.getByRole("button", { name: "Bağlantıyı kopyala", exact: true }));
+    expect(copied).toContain("/ornek-rapor?period=q4#finansal-detay");
+  } finally {
+    await session.send("Emulation.setCPUThrottlingRate", { rate: 1 });
+    await session.detach();
+  }
+});

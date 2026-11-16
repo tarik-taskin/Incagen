@@ -139,4 +139,44 @@ describe("ShareLinkButton", () => {
     vi.useRealTimers();
   });
 
+  it("tarayıcı adresi React görünümünden önce değişince yeni adresin başarı durumunu korur", async () => {
+    const before = window.location.href;
+    const oldPath = window.location.pathname + window.location.search + window.location.hash;
+    let finish!: () => void;
+    writeTextMock.mockImplementation(() => new Promise<void>(resolve => { finish = resolve; }));
+    const view = render(<ShareLinkButton viewPath={oldPath} />);
+    window.history.replaceState(null, "", "?period=q4#finansal-detay");
+    try {
+      fireEvent.click(screen.getByRole("button"));
+      await act(async () => finish());
+      // Eski React görünümü yeni adresin bildirimini henüz gösteremez.
+      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+      view.rerender(<ShareLinkButton viewPath="/?period=q4#finansal-detay" />);
+      expect(screen.getByRole("status")).toHaveTextContent("Bağlantı kopyalandı");
+      expect(writeTextMock).toHaveBeenCalledWith(window.location.href);
+    } finally { window.history.replaceState(null, "", before); }
+  });
+
+  it("yeni adreste eski pano isteğini beklemeden kopyalar ve geç sonuçları ayırır", async () => {
+    const before = window.location.href;
+    const oldPath = window.location.pathname + window.location.search + window.location.hash;
+    const finishes: (() => void)[] = [];
+    writeTextMock.mockImplementation(() => new Promise<void>(resolve => finishes.push(resolve)));
+    const view = render(<ShareLinkButton viewPath={oldPath} />);
+    fireEvent.click(screen.getByRole("button"));
+    window.history.replaceState(null, "", "?period=next");
+    try {
+      view.rerender(<ShareLinkButton viewPath="/?period=next" />);
+      expect(screen.getByRole("button")).toBeEnabled();
+      fireEvent.click(screen.getByRole("button"));
+      expect(writeTextMock).toHaveBeenCalledTimes(2);
+      await act(async () => finishes[0]());
+      expect(screen.getByRole("button")).toBeDisabled();
+      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+      await act(async () => finishes[1]());
+      expect(screen.getByRole("status")).toHaveTextContent("Bağlantı kopyalandı");
+      expect(screen.getByRole("button")).toBeEnabled();
+    } finally { window.history.replaceState(null, "", before); }
+  });
+
 });

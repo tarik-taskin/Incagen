@@ -10,31 +10,37 @@ import { t, useLocale } from "../../i18n/runtime";
  */
 export function ShareLinkButton({
   activeSection,
+  viewPath,
   className = "",
 }: {
   activeSection?: string;
+  viewPath?: string;
   className?: string;
 }) {
   useLocale();
-  const [copied, setCopied] = useState(false);
-  const [pending, setPending] = useState(false);
-  const operation = useRef<symbol | null>(null);
+  // Görünen rota ile tıklama anındaki tarayıcı adresi kısa süre ayrışabilir; geri bildirim kendi adresine aittir.
+  const visibleUrl = typeof window === "undefined" ? "" : new URL(viewPath ?? window.location.href, window.location.origin).href;
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const [pendingUrl, setPendingUrl] = useState<string | null>(null);
+  const copied = copiedUrl === visibleUrl;
+  const pending = pendingUrl === visibleUrl;
+  const operation = useRef<{ id: symbol; url: string } | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => {
     operation.current = null;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   }, []);
 
-  // Tek bir pano isteği yürütür; eski görünümün geç yanıtı başarı veya fallback başlatamaz.
+  // Aynı adresin isteğini tekilleştirir; eski isteğin geç sonucu yeni adresin durumunu değiştiremez.
   async function copyCurrentLink() {
-    if (operation.current) return;
-    const request = Symbol();
-    operation.current = request;
-    setPending(true);
-    setCopied(false);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     const startedAt = window.location.href;
-    const current = () => operation.current === request && window.location.href === startedAt;
+    if (operation.current?.url === startedAt) return;
+    const request = Symbol();
+    operation.current = { id: request, url: startedAt };
+    setPendingUrl(startedAt);
+    setCopiedUrl(null);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    const current = () => operation.current?.id === request && window.location.href === startedAt;
     const url = new URL(startedAt);
     if (!url.hash && activeSection && activeSection !== "genel-bakis") url.hash = `#${activeSection}`;
     const text = url.toString();
@@ -47,10 +53,10 @@ export function ShareLinkButton({
         if (!fallbackCopy(text)) { if (current()) window.prompt(t("Bağlantıyı kopyalayın:"), text); return; }
       }
       if (!current()) return;
-      setCopied(true);
-      timeoutRef.current = setTimeout(() => setCopied(false), 2000);
+      setCopiedUrl(startedAt);
+      timeoutRef.current = setTimeout(() => setCopiedUrl(null), 2000);
     } finally {
-      if (operation.current === request) { operation.current = null; setPending(false); }
+      if (operation.current?.id === request) { operation.current = null; setPendingUrl(null); }
     }
   }
 
