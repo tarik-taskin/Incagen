@@ -26,7 +26,7 @@ export function ExampleReportHeader({ active, activeSection }: { active: "commer
     </header>
     <div className={`${reportContainer} flex flex-wrap items-center justify-between gap-3 pt-5`}>
       <ExampleSwitch active={active} />
-      <ShareLinkButton key={`${location.pathname}${location.search}${location.hash}:${activeSection ?? ""}`} activeSection={activeSection} />
+      <ShareLinkButton key={`${location.pathname}${location.search}${location.hash}`} activeSection={activeSection} />
     </div>
   </>;
 }

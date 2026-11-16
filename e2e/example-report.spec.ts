@@ -308,3 +308,36 @@ test("bekleyen pano işlemi rapor değişiminde yeni görünümü etkilemez", as
   await expect(page.getByRole("status").filter({ hasText: "Bağlantı kopyalandı" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Bağlantıyı kopyala", exact: true })).toBeEnabled();
 });
+
+// Görsel bölüm gözlemcisinin geç bildirimi adresi değiştirmez; bekleyen pano oturumu sürmelidir.
+test("aynı adreste kaydırma gözlemcisi değişince bekleyen kopyalama tamamlanır", async ({ page }) => {
+  await page.addInitScript(() => {
+    const NativeObserver = window.IntersectionObserver;
+    const state = window as unknown as { showOverview?: () => void; showFinance?: () => void; finishCopy?: () => void; copiedUrl?: string };
+    window.IntersectionObserver = class extends NativeObserver {
+      constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
+        // Bu gözlemcinin bildirimlerini test yönetir; doğal kaydırma yarışı kanıtı tesadüfi hale getiremez.
+        super(options?.rootMargin === "-12% 0px -65% 0px" ? () => {} : callback, options);
+        if (options?.rootMargin === "-12% 0px -65% 0px") {
+          state.showOverview = () => callback([{ target: document.getElementById("genel-bakis")!, isIntersecting: true } as IntersectionObserverEntry], this);
+          state.showFinance = () => callback([{ target: document.getElementById("finansal-detay")!, isIntersecting: true } as IntersectionObserverEntry], this);
+        }
+      }
+    };
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: (url: string) => new Promise<void>(resolve => { state.copiedUrl = url; state.finishCopy = resolve; }) } });
+  });
+  await page.goto("/ornek-rapor?period=q4#finansal-detay");
+  await expect(page.getByRole("table", { name: "Kanal performansı", exact: true })).toBeVisible();
+  const copy = page.getByRole("button", { name: "Bağlantıyı kopyala", exact: true });
+  await copy.scrollIntoViewIfNeeded();
+  await page.evaluate(() => (window as unknown as { showFinance: () => void }).showFinance());
+  await expect(page.getByRole("link", { name: "Finansal detay", exact: true })).toHaveAttribute("aria-current", "location");
+  await copy.click();
+  await expect(copy).toBeDisabled();
+  await page.evaluate(() => (window as unknown as { showOverview: () => void }).showOverview());
+  await expect(page.getByRole("link", { name: "Genel bakış", exact: true })).toHaveAttribute("aria-current", "location");
+  await page.evaluate(() => (window as unknown as { finishCopy: () => void }).finishCopy());
+  await expect(page.getByRole("status").filter({ hasText: "Bağlantı kopyalandı" })).toBeVisible();
+  expect(await page.evaluate(() => (window as unknown as { copiedUrl: string }).copiedUrl)).toContain("?period=q4#finansal-detay");
+  await expect(page).toHaveURL(/period=q4#finansal-detay$/);
+});
