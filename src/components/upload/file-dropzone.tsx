@@ -1,5 +1,5 @@
 import { t, useLocale } from "../../i18n/runtime";
-import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { FilePlus2, UploadCloud } from "lucide-react";
 import { Button } from "../ui/button";
 import { SUPPORTED_FILE_ACCEPT } from "../../features/files/file-rules";
@@ -17,16 +17,25 @@ export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzone
   const [isDragging, setIsDragging] = useState(false);
   const dragDepth = useRef(0);
 
+  // Alan dışında bırakılan veya iptal edilen sürüklemeler de yerel vurguyu kapatır.
+  useEffect(() => {
+    const reset = () => { dragDepth.current = 0; setIsDragging(false); };
+    window.addEventListener("drop", reset);
+    window.addEventListener("dragend", reset);
+    return () => { window.removeEventListener("drop", reset); window.removeEventListener("dragend", reset); };
+  }, []);
+
   // Seçilen dosyaları üst bileşene iletir ve aynı dosyanın yeniden seçilebilmesi için input değerini sıfırlar.
   function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
-    onFilesSelected(Array.from(event.target.files ?? []));
+    const files = Array.from(event.target.files ?? []);
+    if (!disabled && files.length) onFilesSelected(files);
     event.target.value = "";
   }
 
   // Dosya çalışma alanına girildiğinde sürükleme vurgusunu etkinleştirir.
   function handleDragEnter(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
-    if (disabled) return;
+    if (disabled || !Array.from(event.dataTransfer.types).includes("Files")) return;
     dragDepth.current += 1;
     setIsDragging(true);
   }
@@ -34,7 +43,6 @@ export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzone
   // İç içe eleman geçişlerinde vurgunun erken kapanmasını engelleyerek sürükleme durumunu temizler.
   function handleDragLeave(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
-    if (disabled) return;
     dragDepth.current -= 1;
     if (dragDepth.current <= 0) {
       dragDepth.current = 0;
@@ -47,7 +55,8 @@ export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzone
     event.preventDefault();
     dragDepth.current = 0;
     setIsDragging(false);
-    if (!disabled) onFilesSelected(Array.from(event.dataTransfer.files));
+    const files = Array.from(event.dataTransfer.files);
+    if (!disabled && files.length) onFilesSelected(files);
   }
 
   // Fare veya dokunmayla alanın herhangi bir noktasından sistem dosya seçicisini açar.
@@ -59,7 +68,7 @@ export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzone
     <div
       className={cn(
         "group relative flex min-h-72 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border border-dashed p-6 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-background sm:p-10",
-        isDragging
+        isDragging && !disabled
           ? "border-primary bg-primary/[0.08] dark:border-secondary dark:bg-secondary/[0.08]"
           : "border-primary/30 bg-card/75 hover:border-primary/60 hover:bg-card dark:border-secondary/25 dark:hover:border-secondary/55",
         // Açıklamalar pasif alanda da okunur kalır; yalnız gerçek kontroller disabled görünür.
@@ -77,10 +86,10 @@ export function FileDropzone({ disabled = false, onFilesSelected }: FileDropzone
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.08),transparent_58%)] opacity-0 transition-opacity group-hover:opacity-100 dark:bg-[radial-gradient(circle_at_center,hsl(var(--secondary)/0.08),transparent_58%)]" aria-hidden="true" />
       <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:bg-secondary/10 dark:text-secondary">
-        {isDragging ? <FilePlus2 className="h-7 w-7" aria-hidden="true" /> : <UploadCloud className="h-7 w-7" aria-hidden="true" />}
+        {isDragging && !disabled ? <FilePlus2 className="h-7 w-7" aria-hidden="true" /> : <UploadCloud className="h-7 w-7" aria-hidden="true" />}
       </div>
       <h2 className="relative mt-5 text-xl font-semibold tracking-[-0.03em]">
-        {isDragging ? t("Belgelerinizi buraya bırakın") : t("Belgelerinizi ekleyin")}
+        {isDragging && !disabled ? t("Belgelerinizi buraya bırakın") : t("Belgelerinizi ekleyin")}
       </h2>
       <p className="relative mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
          {t("İşletme verilerinizi içeren modern tabloları, belgeleri, sunumları, yapılandırılmış verileri veya görselleri birlikte ekleyebilirsiniz.")} </p>
