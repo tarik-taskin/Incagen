@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AiJob, TableSelection } from "../../../functions/src/analysis/tabular-contract";
@@ -187,6 +187,14 @@ describe("LiveAnalysisReport - downloadSource oturum ve yaşam döngüsü koordi
 
   it("geçerli oturum ve doğru hash ile dosyayı indirir (anchor.click çağrılır)", async () => {
     const validHash = await computeSha256(sampleBytes);
+    const nativeDigest = crypto.subtle.digest.bind(crypto.subtle);
+    let releaseHash!: () => void;
+    const hashGate = new Promise<void>(resolve => { releaseHash = resolve; });
+    // Gerçek Web Crypto işlemini kontrollü bekletir; tıklamanın hash tamamlanması olmadığını sınar.
+    const digest = vi.spyOn(crypto.subtle, "digest").mockImplementationOnce(async (algorithm, data) => {
+      await hashGate;
+      return nativeDigest(algorithm, data);
+    });
     mocks.getBytesMock.mockResolvedValue(sampleBytes);
 
     const source: ReportSource = {
@@ -208,9 +216,18 @@ describe("LiveAnalysisReport - downloadSource oturum ve yaşam döngüsü koordi
     const downloadBtn = await screen.findByRole("button", { name: "Özgün belgeyi indir" });
     await user.click(downloadBtn);
 
-    // İndirme tetiklenmeli
-    expect(mocks.createObjectURLMock).toHaveBeenCalledTimes(1);
-    expect(mocks.anchorClickMock).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(digest).toHaveBeenCalledTimes(1));
+    expect(downloadBtn).toBeDisabled();
+    expect(mocks.createObjectURLMock).not.toHaveBeenCalled();
+    expect(mocks.anchorClickMock).not.toHaveBeenCalled();
+    await act(async () => { releaseHash(); });
+
+    // Native hash tamamlanmadan test sonlanamaz; gerçek indirme yan etkileri birlikte doğrulanır.
+    await waitFor(() => {
+      expect(mocks.createObjectURLMock).toHaveBeenCalledTimes(1);
+      expect(mocks.anchorClickMock).toHaveBeenCalledTimes(1);
+      expect(screen.getByRole("button", { name: "Özgün belgeyi indir" })).toBeEnabled();
+    });
   });
 
   it("hash uyuşmazlığında dosyayı indirmez ve bütünlük hatası gösterir", async () => {
@@ -284,7 +301,7 @@ describe("LiveAnalysisReport - downloadSource oturum ve yaşam döngüsü koordi
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: /Dayanağını incele/i }));
     await user.click(await screen.findByRole("button", { name: "Özgün belgeyi indir" }));
-    expect(digest).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(digest).toHaveBeenCalledTimes(1));
     if (mode === "session") mocks.currentUser = { uid: "another-user" };
     else view.unmount();
     await act(async () => { finish(Uint8Array.from(hash.match(/../g)!, byte => parseInt(byte, 16)).buffer); });
