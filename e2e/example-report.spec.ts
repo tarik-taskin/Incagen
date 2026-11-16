@@ -92,7 +92,14 @@ test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı 
     await card.getByRole("button", { name: "Belgeyi incele", exact: true }).click();
     const reader = page.getByRole("dialog", { name: title, exact: true });
     await expect(reader.getByRole("article").first()).toBeVisible();
-    if (format === "PDF") await expect(reader.getByRole("article")).toHaveCount(7);
+    if (format === "PDF") {
+      await expect(reader.getByRole("article")).toHaveCount(5);
+      await reader.getByRole("button", { name: "Sonraki kaynak sayfası" }).click();
+      await expect(reader.getByRole("article")).toHaveCount(2);
+      await expect(reader.getByText("Sayfa 6", { exact: true })).toBeVisible();
+      await expect(reader.getByText("Sayfa 7", { exact: true })).toBeVisible();
+      await expect(reader.getByRole("button", { name: "Sonraki kaynak sayfası" })).toBeDisabled();
+    }
     await reader.getByRole("textbox", { name: "Belge metninde ara" }).fill(query);
     await expect(reader.locator("mark").first()).toBeVisible();
     await reader.getByRole("textbox", { name: "Belge metninde ara" }).fill("olmayan-kayit");
@@ -276,4 +283,28 @@ test("örnek raporda bağlantıyı kopyala mevcut görünümü korur ve tarayıc
   await page.goto(commercialClipboard);
   await expect(page.getByRole("button", { name: "Son çeyrek", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByRole("table", { name: "Kanal performansı", exact: true })).toBeVisible();
+});
+
+// Pano izninin geciken reddi yeni raporda bir pencere veya yanlış başarı üretemez.
+test("bekleyen pano işlemi rapor değişiminde yeni görünümü etkilemez", async ({ page }) => {
+  await page.goto("/ornek-rapor");
+  await expect(page.getByRole("heading", { name: "Performansın büyük resmi.", exact: true })).toBeVisible();
+  await page.evaluate(() => {
+    const state = window as unknown as { rejectCopy?: () => void; promptCount: number };
+    state.promptCount = 0;
+    window.prompt = () => { state.promptCount++; return null; };
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: () => new Promise<void>((_, reject) => { state.rejectCopy = () => reject(new Error("denied")); }) } });
+  });
+  await page.getByRole("button", { name: "Bağlantıyı kopyala", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Bağlantıyı kopyala", exact: true })).toBeDisabled();
+  await page.getByRole("link", { name: "Müşteri deneyimi", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Müşterinin sesinden, net önceliklere.", exact: true })).toBeVisible();
+  await page.evaluate(async () => {
+    const state = window as unknown as { rejectCopy: () => void };
+    state.rejectCopy();
+    await Promise.resolve();
+  });
+  expect(await page.evaluate(() => (window as unknown as { promptCount: number }).promptCount)).toBe(0);
+  await expect(page.getByRole("status").filter({ hasText: "Bağlantı kopyalandı" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Bağlantıyı kopyala", exact: true })).toBeEnabled();
 });

@@ -12,11 +12,13 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 ### 2026-11-16 — Furkan / Codex: kaynak inceleme ve etkileşim dayanıklılığı
 
 - [!] Sahip: Furkan — 16 Kasım tek sabit sentetik Gemini bağlantı kontrolü 95.680 ms içinde `functions/unavailable / timeout` verdi. Tekrar çağrı yapılmadı; geçici claim, sentetik hesap ve kaynak günlüğü temizliği doğrulandı. Engel: sağlayıcıdan geçerli yanıt ve ardından gerçek analiz kalite kabulü. Yayın kapıları kapalı kalır; anahtar/model/şema değiştirilmedi.
-- [~] Sahip: Furkan — Rapor bağlantısı kopyalamada çift tıklama, görünüm değişimi, geç sonuç ve unmount yaşam döngüsünü yönet; eski işlem fallback/prompt veya yeni görünümde başarı üretmesin, geçici DOM ve odak temizlensin.
-- [~] Sahip: Furkan — Uzun metin kaynaklarını sınırlı bölümlerle sayfala; arama tüm ilgili kaynak bölümlerini tarasın, arama/kaynak değişimi sayfayı sıfırlasın, özgün sayfa/slayt/bölüm kimlikleri ve altı dil/RTL korunsun.
-- [~] Sahip: Furkan — Dosya alanında yalnız dosya sürüklemelerini vurgula; dışarıda bırakma veya sürükleme iptalinde vurguyu temizle. Gerçek dosya seçimi, tekrar seçim ve disabled davranışı korunsun.
+- [x] Sahip: Furkan — Rapor bağlantısı kopyalamada çift tıklama, görünüm değişimi, geç sonuç ve unmount yaşam döngüsünü yönet; eski işlem fallback/prompt veya yeni görünümde başarı üretmesin, geçici DOM ve odak temizlensin.
+- [x] Sahip: Furkan — Uzun metin kaynaklarını sınırlı bölümlerle sayfala; arama tüm ilgili kaynak bölümlerini tarasın, arama/kaynak değişimi sayfayı sıfırlasın, özgün sayfa/slayt/bölüm kimlikleri ve altı dil/RTL korunsun.
+- [x] Sahip: Furkan — Dosya alanında yalnız dosya sürüklemelerini vurgula; dışarıda bırakma veya sürükleme iptalinde vurguyu temizle. Gerçek dosya seçimi, tekrar seçim ve disabled davranışı korunsun.
 
 Kabul: davranışa yönelik regresyonlar, lint, birim/Functions ve üretim derlemesi; ilgili kullanıcı akışı için entegrasyon ve retry kapalı tam tarayıcı paketi. Stage sonrası secret kontrolü, son commit Quality, dört dal eşitliği/temiz ağaç ve Netlify dosya/rota eşliğiyle teslim. Plan limitleri, tema ve analiz açılış kararı bu kapsamda değiştirilmez.
+
+Yerel kabul: lint, 210 arayüz + 141 Functions ve yayın/kaynak koruması/süreç testleri, derleme ve 9 entegrasyon testi geçti. Tam tarayıcı paketi tek worker/sıfır retry ile 77 geçti; mevcut üç platform atlaması korundu. PDF kaynak ve pano yaşam döngüsü mobil/masaüstü senaryolarıyla, kaynak görünümü ekran görüntüleriyle doğrulandı. Üretim audit kökte 0, Functions tarafında dört orta/bir düşük; yüksek/kritik yok. Gerçek Gemini bağlantısı başarısızdır; sağlayıcı/kalite engeli açık, kapılar kapalı kalır. Son commit CI ve aynı commit canlı paket kabulü ayrıca tamamlanır.
 
 ### 2026-11-14 — Furkan / Codex: plan açıklığı ve profesyonel yardım metinleri
 

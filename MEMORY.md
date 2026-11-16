@@ -1,5 +1,7 @@
 # Incagen Proje Hafızası
 
+- 16 Kasım: Metin kaynakları beş bölümle sayfalanır; arama tüm ilgili bölümleri tarar, özgün konumlar korunur. Rapor bağlantısı kopyalama eski görünüm/geç sonuçlardan ayrılır; dosya sürükleme vurgusu iptal ve dış bırakmada temizlenir. Tek Gemini denemesi 95.680 ms’de `timeout` verdi; sentetik hesap/claim ve kaynak günlüğü temizliği doğrulandı, analiz kapalıdır. [Güncel görevler](GOAL.md#2026-11-16--furkan--codex-kaynak-inceleme-ve-etkileşim-dayanıklılığı).
+
 - 12 Kasım devamı: Kaynak araması yerel harf kuralları/Unicode karakter konumlarıyla çalışır; görünen Arapça satır numaraları aranabilir. Rapor/arşiv sıralaması seçili dili kullanır; arşiv hazırlık incelemesi, hata ve dışlanan dosya adlarını da arar. Veri/yetki/model kapıları değişmez.
 
 

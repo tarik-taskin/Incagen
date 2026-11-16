@@ -6,9 +6,9 @@ Bu plan ödeme altyapısını ve domain işlerini kapsamaz. Aktif işlerin durum
 
 Belge yükleme/hazırlama, kaynak konumları, geçmiş, indirme ve silme çalışır. Özel Python CSV/XLSX hesap işçisi ve backend Gemini adaptörü dağıtılmıştır. Bunları yeniden kurmak sonraki iş değildir. Genel analiz yayını iki kapıda da kapalıdır; örnek raporlar gerçek model kalite kabulü yerine geçmez.
 
-12 Kasım 2026 tek bağlantı kontrolü `functions/unavailable / timeout` ile sonuçlandı (93.359 ms). Otomatik tekrar yapılmadı; sentetik hesap ve geçici geliştirici claim'i temizlendi. Geçerli yanıt alınmadan kalite/maliyet kabulü tamamlandı sayılmaz. Anahtar değiştirmek, sonucu taklit etmek veya şemayı gevşetmek bu engeli çözmez.
+16 Kasım 2026 tek bağlantı kontrolü `functions/unavailable / timeout` ile sonuçlandı (95.680 ms). Otomatik tekrar yapılmadı; sentetik hesap ve geçici geliştirici claim'i temizlendi. Geçerli yanıt alınmadan kalite/maliyet kabulü tamamlandı sayılmaz. Anahtar değiştirmek, sonucu taklit etmek veya şemayı gevşetmek bu engeli çözmez.
 
-12 Kasım üretim bağımlılığı denetiminde kök ağaçta uyarı yok; Functions ağacında dört orta ve bir düşük kayıt var, yüksek/kritik yok. Yeni düşük `fast-xml-parser` kaydı ve kalan zincirler sonraki kontrollü backend paketinde değerlendirilmeli; bu çalışma bunları giderilmiş saymaz.
+16 Kasım üretim bağımlılığı denetiminde kök ağaçta uyarı yok; Functions ağacında dört orta ve bir düşük kayıt var, yüksek/kritik yok. Yeni düşük `fast-xml-parser` kaydı ve kalan zincirler sonraki kontrollü backend paketinde değerlendirilmeli; bu çalışma bunları giderilmiş saymaz.
 
 ## İlk beta için kalan kabul
 
