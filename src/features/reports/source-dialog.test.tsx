@@ -165,3 +165,28 @@ it("highlights original text after Unicode normalization and never interprets so
   expect(container.querySelector("mark")?.textContent).toBe("<script>");
   expect(container.querySelector("script")).toBeNull();
 });
+
+it("bounds text rendering while searching every evidence section and preserves original page numbers", async () => {
+  const text: ReportSource = { ...source, fileName: "long.pdf", chunks: Array.from({ length: 12 }, (_, index) => ({ id: `page-${index}`, locator: { page: index + 1 }, text: `Content-${index + 1}. ${index === 10 ? "needle" : "other"}` })) };
+  const anchor = { title: "Long text", evidence: text.chunks.map(chunk => ({ sourceId: text.sourceId, sha256: text.sha256, chunkId: chunk.id, locator: chunk.locator })) };
+  const { container } = render(<SourceDialog selection={anchor} sources={[text]} translateContent={false} onClose={() => {}} />);
+  await waitFor(() => expect(screen.getByText("Sayfa 1")).toBeVisible());
+  expect(container.querySelectorAll("article")).toHaveLength(5);
+  expect(screen.queryByText(/Content-11/)).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Sonraki kaynak sayfası" }));
+  expect(screen.getByText("Sayfa 6")).toBeVisible();
+  expect(screen.queryByText("Sayfa 1")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Sonraki kaynak sayfası" }));
+  expect(container.querySelectorAll("article")).toHaveLength(2);
+  expect(screen.getByRole("button", { name: "Sonraki kaynak sayfası" })).toBeDisabled();
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "needle" } });
+  expect(container.querySelectorAll("article")).toHaveLength(1);
+  expect(screen.getByText("Sayfa 11")).toBeVisible();
+  expect(screen.queryByRole("button", { name: "Sonraki kaynak sayfası" })).toBeNull();
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "" } });
+  expect(screen.getByText("Sayfa 1")).toBeVisible();
+  expect(container.querySelectorAll("article")).toHaveLength(5);
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "not-found" } });
+  expect(screen.getByText("Belgede aramanızla eşleşen bölüm yok.")).toBeVisible();
+  expect(container.querySelectorAll("article")).toHaveLength(0);
+});
