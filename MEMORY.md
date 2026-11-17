@@ -1,5 +1,7 @@
 # Incagen Proje Hafızası
 
+- 17 Kasım: Gemini bulut teşhisi aşama/süre/çağrı ayrımını izler (`configuration` ve `clientAuth` geçti, `callable` 6.631 ms'de `busy` döndü, `cleanup` `verified-clean`; analiz kapalıdır). `evaluate-analysis-offline.mjs` çevrimdışı sonuç/kapı değerlendiricisi (`needs-review` sınırı korunur), Python bağımsız XLSX/CSV referans testleri (49 test), tek kusurlu negatif sonuç kapısı ve talimat-veri ayrımı testleri, AI iş yaşam döngüsü/lease/silme yarışı matrisi, sıfır/eksik ayrımlı `summarize-usage-acceptance.mjs` süre/kullanım özeti ve CI başarısızlıklarında allowlist'li/sansürlü `quality-failure-evidence` (7 gün saklama) tamamlandı. [Güncel görevler](GOAL.md#2026-11-17--furkan--antigravity-gemini-kanıt-daraltma-çevrimdışı-değerlendirici-doğrulama-kabulü-ve-ci-kanıt-paketi).
+
 - 16 Kasım: Metin kaynakları beş bölümle sayfalanır; arama tüm ilgili bölümleri tarar, özgün konumlar korunur. Rapor bağlantısı kopyalama eski görünüm/geç sonuçlardan ayrılır; dosya sürükleme vurgusu iptal ve dış bırakmada temizlenir. Tek Gemini denemesi 95.680 ms’de `timeout` verdi; sentetik hesap/claim ve kaynak günlüğü temizliği doğrulandı, analiz kapalıdır. [Güncel görevler](GOAL.md#2026-11-16--furkan--codex-kaynak-inceleme-ve-etkileşim-dayanıklılığı).
 
 - 12 Kasım devamı: Kaynak araması yerel harf kuralları/Unicode karakter konumlarıyla çalışır; görünen Arapça satır numaraları aranabilir. Rapor/arşiv sıralaması seçili dili kullanır; arşiv hazırlık incelemesi, hata ve dışlanan dosya adlarını da arar. Veri/yetki/model kapıları değişmez.
