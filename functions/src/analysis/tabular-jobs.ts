@@ -47,7 +47,7 @@ export async function reserveAnalysis(uid: string, input: ReturnType<typeof star
 }
 
 // Teknik istisnaları sınırlı kullanıcı durumlarına çevirir; ham model/parser/anahtar hatası kaydedilmez.
-function failureCode(error: unknown): AnalysisFailure {
+export function failureCode(error: unknown): AnalysisFailure {
   if (error instanceof WorkerError) return error.code;
   if (error instanceof AnalysisPacketBudgetError) return "scope-limit";
   if (error instanceof GeminiError) {

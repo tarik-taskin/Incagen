@@ -142,3 +142,115 @@ test("XLSX çalışma sayfası seçimi ve satır ağırlıklı ortalama tam deft
     await deleteApp(own.app);
   }
 });
+
+test("lease dolumu, eski denemenin yeni denemeyi ezmemesi ve aynı gün kota kuralı", { timeout: 30000 }, async () => {
+  assert.match(process.env.FIRESTORE_EMULATOR_HOST ?? "", /^127\.0\.0\.1:/);
+  if (!getApps().length) initializeAdmin({ projectId: "demo-incagen", storageBucket: "demo-incagen.appspot.com" });
+  const { reserveAnalysis, completeAnalysis } = require("./lib/analysis/tabular-jobs");
+  const { AI_JOB_LIMITS } = require("./lib/analysis/tabular-contract");
+  const { getQuotaDay } = require("./lib/contracts");
+
+  const db = getFirestore();
+  const uid = crypto.randomUUID(), id = crypto.randomUUID();
+  const t0 = Date.UTC(2002, 4, 15, 12, 0, 0);
+  const day = getQuotaDay(new Date(t0));
+  const record = db.doc(`users/${uid}/analyses/${id}`);
+  const ownQuota = db.doc(`users/${uid}/aiQuotas/${day}`);
+  const globalQuota = db.doc(`internalAnalysisQuotas/${day}`);
+  const input = {
+    id,
+    sourceId: "file-0",
+    locale: "tr",
+    selection: { sheet: null, valueColumn: 1, groupColumn: null, aggregation: "sum", numberFormat: "plain", unit: "TRY" },
+  };
+
+  try {
+    await record.set({ status: "completed" });
+    // 1. İlk deneme başlar
+    const first = await reserveAnalysis(uid, input, "fp-1", t0);
+    assert.equal(first.state, "started");
+    assert.equal(first.job.attempts, 1);
+
+    // 2. Lease henüz dolmamışken aynı fingerprint ile tekrar başlatma çalışan işi yeniden kullanır
+    const duplicateWhileActive = await reserveAnalysis(uid, input, "fp-1", t0 + 10_000);
+    assert.equal(duplicateWhileActive.state, "running");
+    assert.equal(duplicateWhileActive.job.attemptId, first.job.attemptId);
+
+    // 3. Lease süresi dolunca kullanıcı yeni kontrollü denemeyi başlatabilir (same day -> ownQuota artmaz)
+    const afterLease = t0 + AI_JOB_LIMITS.leaseMs + 1;
+    const second = await reserveAnalysis(uid, input, "fp-1", afterLease);
+    assert.equal(second.state, "started");
+    assert.equal(second.job.attempts, 2);
+    assert.notEqual(second.job.attemptId, first.job.attemptId);
+    assert.equal((await ownQuota.get()).data().count, 1);
+    assert.equal((await globalQuota.get()).data().count, 2);
+
+    // 4. Eski denemenin geç kalan completeAnalysis yanıtı reddedilir; yeni deneme running kalır
+    const staleCommitted = await completeAnalysis(uid, id, first.job.attemptId, {
+      ...first.job,
+      status: "completed",
+      finishedAt: afterLease + 50,
+    });
+    assert.equal(staleCommitted, false);
+    assert.equal((await record.get()).data().ai.attemptId, second.job.attemptId);
+    assert.equal((await record.get()).data().ai.status, "running");
+  } finally {
+    await record.delete();
+    await ownQuota.delete();
+    await globalQuota.delete();
+  }
+});
+
+test("aktif AI işi sürerken silme/hesap silme engeli ve Storage derived izolasyonu", { timeout: 60000 }, async () => {
+  assert.match(process.env.FIRESTORE_EMULATOR_HOST ?? "", /^127\.0\.0\.1:/);
+  if (!getApps().length) initializeAdmin({ projectId: "demo-incagen", storageBucket: "demo-incagen.appspot.com" });
+  const { getDownloadURL } = await import("firebase/storage");
+  const own = await client(), other = await client(), db = getFirestore();
+  const body = Buffer.from("Channel,Revenue\nWeb,10\n");
+  const created = await own.call("createAnalysis", {
+    requestId: crypto.randomUUID(),
+    title: "Active lock test",
+    business: "Synthetic",
+    objective: "Check deletion locks",
+    files: [{ name: "sales.csv", size: body.length, contentType: "text/csv" }],
+  });
+  const id = created.data.id;
+  await uploadBytes(ref(own.storage, created.data.paths[0]), body, { contentType: "text/csv" });
+  await own.call("prepareAnalysis", { id });
+  const record = db.doc(`users/${own.auth.currentUser.uid}/analyses/${id}`);
+
+  try {
+    // Çalışan aktif AI işi simüle et (henüz lease dolmamış)
+    const now = Date.now();
+    await record.update({
+      ai: {
+        status: "running",
+        attemptId: crypto.randomUUID(),
+        attempts: 1,
+        startedAt: now,
+        leaseUntil: now + 240_000,
+        maxAttempts: 3,
+        stage: "interpreting",
+        locale: "tr",
+        sourceId: "file-0",
+        selection: { sheet: null, valueColumn: 1, groupColumn: null, aggregation: "sum", numberFormat: "plain", unit: "TRY" },
+      },
+    });
+
+    // Aktif iş sürerken tekil analiz silme ve hesap silme reddedilir
+    await assert.rejects(own.call("deleteAnalysis", { id }), { code: "functions/failed-precondition" });
+    await assert.rejects(own.call("deleteAccount", { confirmation: "HESABIMI SİL" }), { code: "functions/failed-precondition" });
+
+    // Derived storage alanı istemci SDK okuma/yazma erişimine kapalıdır (hem sahip hem başka kullanıcı için)
+    await assert.rejects(getDownloadURL(ref(other.storage, `derived/${own.auth.currentUser.uid}/analyses/${id}/ai/test.json.gz`)));
+    await assert.rejects(getDownloadURL(ref(own.storage, `derived/${own.auth.currentUser.uid}/analyses/${id}/ai/test.json.gz`)));
+
+    // İş bittikten sonra normal silme çalışır
+    await record.update({ "ai.status": "failed" });
+    await own.call("deleteAnalysis", { id });
+    assert.equal((await record.get()).exists, false);
+  } finally {
+    await deleteApp(own.app);
+    await deleteApp(other.app);
+  }
+});
