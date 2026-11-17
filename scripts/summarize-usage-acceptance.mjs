@@ -68,8 +68,8 @@ export function summarizeSingleRun(run, pricingInput) {
     const totalTokens = readValidTokenCount(run.usage.totalTokens);
     if (promptTokens === null || outputTokens === null || totalTokens === null) {
       measurementErrors.push("Token alanları geçerli negatif olmayan tam sayı değil.");
-    } else if (promptTokens + outputTokens > totalTokens) {
-      measurementErrors.push("Token tutarsızlığı: promptTokens + outputTokens > totalTokens.");
+    } else if (promptTokens + outputTokens !== totalTokens) {
+      measurementErrors.push("Token tutarsızlığı: promptTokens + outputTokens !== totalTokens.");
     } else {
       usage = { promptTokens, outputTokens, totalTokens };
     }
@@ -136,20 +136,23 @@ export function summarizeUsageAcceptance(runs, options = {}) {
   }
   const pricing = validatePricingInput(options.pricing);
   const items = runs.map(run => summarizeSingleRun(run, pricing));
+  const invalidRuns = items.filter(i => i.measurementStatus === "invalid-measurement");
+  const validRuns = items.filter(i => i.measurementStatus !== "invalid-measurement");
 
-  const validCalc = items.map(i => i.calculationMs).filter(v => v !== null);
-  const validModel = items.map(i => i.modelMs).filter(v => v !== null);
-  const validTotal = items.map(i => i.totalDurationMs).filter(v => v !== null);
-  const validUsage = items.map(i => i.usage).filter(v => v !== null);
+  const validCalc = validRuns.map(i => i.calculationMs).filter(v => v !== null);
+  const validModel = validRuns.map(i => i.modelMs).filter(v => v !== null);
+  const validTotal = validRuns.map(i => i.totalDurationMs).filter(v => v !== null);
+  const validUsage = validRuns.map(i => i.usage).filter(v => v !== null);
 
   const avg = list => (list.length > 0 ? Number((list.reduce((a, b) => a + b, 0) / list.length).toFixed(2)) : null);
-  const invalidCount = items.filter(i => i.measurementStatus === "invalid-measurement").length;
+  const invalidCount = invalidRuns.length;
 
   return {
     reportSchemaVersion: 1,
     generatedAt: new Date().toISOString(),
     runCount: items.length,
     invalidMeasurementCount: invalidCount,
+    excludedInvalidRunIds: invalidRuns.map(i => i.runId),
     measuredCounts: {
       calculationMs: validCalc.length,
       modelMs: validModel.length,

@@ -110,7 +110,9 @@ test("evaluates valid sales and feedback candidates without auto-passing human s
   assert.equal(salesRecord.hashes.sourceCsvSha256, salesExpected.source.sha256);
   assert.ok(salesRecord.hashes.candidateOutputSha256);
   assert.equal(salesRecord.gates.schema.status, "pass");
-  assert.equal(salesRecord.gates["source-grounding"].status, "pass");
+  assert.equal(salesRecord.gates["source-grounding"].structuralStatus, "pass");
+  assert.equal(salesRecord.gates["source-grounding"].semanticStatus, "needs-review");
+  assert.equal(salesRecord.gates["source-grounding"].status, "needs-review");
   assert.equal(salesRecord.gates["numeric-integrity"].status, "pass");
   assert.equal(salesRecord.gates["chart-integrity"].status, "pass");
   assert.equal(salesRecord.gates["minimum-content"].status, "needs-review");
@@ -181,4 +183,51 @@ test("CLI returns non-zero exit code on invalid JSON and zero on structurally va
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test("rejects unverified extra metric/chart, sub-cent rounding drift (2550.004), and wrong unit (%) at exact gates", () => {
+  // Bulgu 1A: Kaynakta doğrulanmamış 999999 ek metrik + dataset + grafik + özet referansı reddedilmeli
+  const extraCandidate = validSalesCandidate();
+  const anchor = extraCandidate.summary[0].evidence[0];
+  extraCandidate.metrics.push({
+    id: "inventedMetric",
+    label: "Uydurma metrik",
+    unit: "TRY",
+    method: "Tahmini ek hesap.",
+    status: "available",
+    value: 999999,
+    evidence: [anchor],
+  });
+  extraCandidate.datasets.push({
+    id: "invented-ds",
+    label: "Uydurma seri",
+    unit: "TRY",
+    points: [{ label: "Ek", metricId: "inventedMetric", value: 999999 }],
+  });
+  extraCandidate.charts.push({
+    id: "chart-invented",
+    title: "Uydurma grafik",
+    type: "bar",
+    datasetId: "invented-ds",
+  });
+  extraCandidate.summary[0].metricIds.push("inventedMetric");
+
+  const extraRecord = evaluateAnalysisOffline({ caseId: "sales-net-revenue-v1", candidateData: extraCandidate });
+  assert.equal(extraRecord.gates["numeric-integrity"].status, "fail");
+  assert.equal(extraRecord.gates["chart-integrity"].status, "fail");
+  assert.equal(extraRecord.overallDecision, "fail");
+
+  // Bulgu 1B: 2550 TRY yerine 2550.004 verilince kuruş altı sapma Math.round ile gizlenmemeli
+  const subCentCandidate = validSalesCandidate();
+  subCentCandidate.metrics[0].value = 2550.004;
+  const subCentRecord = evaluateAnalysisOffline({ caseId: "sales-net-revenue-v1", candidateData: subCentCandidate });
+  assert.equal(subCentRecord.gates["numeric-integrity"].status, "fail");
+  assert.equal(subCentRecord.overallDecision, "fail");
+
+  // Bulgu 1C: Geri bildirim örneğinde problemMentionPercent.delivery birimi % yerine USD olursa reddedilmeli
+  const badUnitCandidate = validFeedbackCandidate();
+  badUnitCandidate.metrics[2].unit = "USD";
+  const badUnitRecord = evaluateAnalysisOffline({ caseId: "feedback-themes-v1", candidateData: badUnitCandidate });
+  assert.equal(badUnitRecord.gates["numeric-integrity"].status, "fail");
+  assert.equal(badUnitRecord.overallDecision, "fail");
 });

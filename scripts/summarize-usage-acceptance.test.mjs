@@ -118,3 +118,55 @@ test("marks inconsistent or negative measurements as invalid and fails CLI exit 
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("rejects unexplained token mismatch (prompt+output !== totalTokens) and excludes invalid runs from acceptance averages", () => {
+  const pricing = {
+    model: "gemini-3.8-flash",
+    effectiveDate: "2026-11-17",
+    currency: "USD",
+    inputPer1MTokens: 0.1,
+    outputPer1MTokens: 0.4,
+  };
+
+  // Bulgu 3A: promptTokens=0, outputTokens=0, totalTokens=1000 açıklanamayan farkı 0 maliyetle geçirmemeli
+  const unexplainedRun = {
+    runId: "unexplained-tokens",
+    status: "completed",
+    model: "gemini-3.8-flash",
+    pythonMs: 5,
+    modelMs: 5,
+    durationMs: 10,
+    usage: { promptTokens: 0, outputTokens: 0, totalTokens: 1000 },
+  };
+  const single = summarizeSingleRun(unexplainedRun, pricing);
+  assert.equal(single.measurementStatus, "invalid-measurement");
+  assert.equal(single.estimatedCost.status, "hesaplanamadı");
+  assert.notEqual(single.estimatedCost.amount, 0);
+
+  // Bulgu 3B: Geçerli koşu (5ms) + geçersiz koşu (1000ms) bir aradayken geçersiz koşu ortalamaya karışmamalı
+  const validRun = {
+    runId: "valid-run",
+    status: "completed",
+    model: "gemini-3.8-flash",
+    pythonMs: 5,
+    modelMs: 5,
+    durationMs: 10,
+    usage: { promptTokens: 100, outputTokens: 200, totalTokens: 300 },
+  };
+  const invalidRun = {
+    runId: "invalid-run",
+    status: "completed",
+    model: "gemini-3.8-flash",
+    pythonMs: 1000,
+    modelMs: 1000,
+    durationMs: 1,
+    usage: { promptTokens: 10, outputTokens: 10, totalTokens: 20 },
+  };
+  const report = summarizeUsageAcceptance([validRun, invalidRun], { pricing });
+  assert.equal(report.overallStatus, "invalid");
+  assert.equal(report.measuredCounts.calculationMs, 1);
+  assert.equal(report.averages.calculationMs, 5);
+  assert.equal(report.averages.modelMs, 5);
+  assert.equal(report.averages.totalDurationMs, 10);
+  assert.deepEqual(report.excludedInvalidRunIds, ["invalid-run"]);
+});
