@@ -1,39 +1,88 @@
-import { copyFileSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { basename, extname, join, resolve } from "node:path";
+import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { basename, extname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Yalnız kullanıcı oturumu, gerçek/sentetik yüklenmiş belge veya kimlik bilgisi taşımayan public örnek/tema specleri.
-export const PUBLIC_SCREENSHOT_SPECS = new Set([
-  "example-report.spec.ts",
-  "glass-surfaces.spec.ts",
-  "layout-and-entry.spec.ts",
-  "report-responsive.spec.ts",
-  "report-tables.spec.ts",
-  "report.spec.ts",
-  "startup-and-report-links.spec.ts",
-  "theme.spec.ts",
+// Yalnız kullanıcı oturumu, belge yükleme veya kimlik bilgisi içermediği tek tek doğrulanmış (dosya, test başlığı) çiftleri.
+export const PUBLIC_SCREENSHOT_ALLOWLIST = new Map([
+  ["example-report.spec.ts", new Set([
+    "şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı kapsamda tutar",
+    "hareketli raporda filtre, kaynak sekmeleri ve indirme kullanılabilir kalır",
+    "Excel, sunum ve yapılandırılmış metin kaynakları özgün formatlarında açılır",
+    "örnek raporda bağlantıyı kopyala mevcut görünümü korur ve tarayıcı geçmişini bozmaz",
+    "bekleyen pano işlemi rapor değişiminde yeni görünümü etkilemez",
+    "aynı adreste kaydırma gözlemcisi değişince bekleyen kopyalama tamamlanır",
+    "yavaş görünüm güncellemesinde yeni adresin gerçek pano bildirimi korunur",
+  ])],
+  ["glass-surfaces.spec.ts", new Set([
+    "landing, giriş ve yardım dört görünümde okunur; azaltılmış saydamlık cam efektini kapatır",
+  ])],
+  ["layout-and-entry.spec.ts", new Set([
+    "iki örnek aynı başlık, sekme ve içerik eksenini kullanır; landing görsel önizleme yüklemez",
+    "örnek rapor sekmelerinden geri doğrudan ana sayfaya, ileri son örneğe döner",
+  ])],
+  ["report-responsive.spec.ts", new Set([
+    "rapor mobil çevirileri sans-serif fontuyla taşmaz",
+    "rapor mobil çevirileri monospace fontuyla taşmaz",
+  ])],
+  ["report-tables.spec.ts", new Set([
+    "finansal tablolar sütuna göre sıralanır, sırayı duyurur ve kaynak sırasına döner",
+  ])],
+  ["startup-and-report-links.spec.ts", new Set([
+    "ana sayfa çalışma alanı kodu olmadan açılır; ilk açılan yardım gönderilmemiş metni korur",
+    "rapor bölüm adresleri doğrudan açılır; dönem, yeniden açma ve geri/ileri doğru bölümü korur",
+  ])],
+  ["tabular-analysis.spec.ts", new Set([
+    "iki örnek raporda kısa keşif rehberi isteğe bağlı ve klavyeyle erişilebilirdir",
+  ])],
+  ["theme.spec.ts", new Set([
+    "tema menüsü dört mod/görünüm kombinasyonunda erişilebilir ve seçim kalıcıdır",
+    "tema ve dil menüleri klavyeyle kullanılır; Arapçada liste sağdan hizalanır",
+  ])],
 ]);
+
+export const PUBLIC_SCREENSHOT_SPECS = new Set(PUBLIC_SCREENSHOT_ALLOWLIST.keys());
 
 const FORBIDDEN_FILE_PATTERNS = /(\.env|storageState|firebase-debug|trace\.zip|secret|token|credential|auth-state|\.json$|\.log$|\.txt$|\.har$)/i;
 const ALLOWED_IMAGE_EXTENSIONS = new Set([".png", ".webp"]);
+const SAFE_ERROR_CLASSES = /^(Error:\s*)?(Timed out|TimeoutError|Test timeout|Expect(?:ed)?\b|page\.|locator\.|net::ERR_)/i;
 const MAX_PUBLIC_SCREENSHOTS = 10;
 const MAX_ERROR_LENGTH = 400;
 
-// Ham hata veya yığın metnindeki token, anahtar, Authorization başlığı ve e-posta gibi hassas kalıpları sansürler.
-export function sanitizeErrorSummary(message) {
-  if (typeof message !== "string" || !message.trim()) return "Ayrıntısız test hatası.";
-  const cleaned = message
+// Metindeki JSON quoted, key=value, çok satırlı gizli değer, token, anahtar ve e-posta kalıplarını sansürler.
+function redactSecrets(text, fallback = "") {
+  if (typeof text !== "string" || !text.trim()) return fallback;
+  return text
     .replace(/\u001b\[[0-9;]*m/g, "")
+    .replace(/"(Authorization|apiKey|token|password|secret|credential|cookie|session)"\s*:\s*"(?:\\.|[^"])*"/gi, '"$1":"[REDACTED]"')
     .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, "Bearer [REDACTED]")
-    .replace(/(Authorization|apiKey|token|password|secret)\s*[:=]\s*[^\s,;]+/gi, "$1=[REDACTED]")
+    .replace(/\b(Authorization|apiKey|token|password|secret|credential)\s*[:=]\s*("[^"]*"|'[^']*'|[^\s,;]+)/gi, "$1=[REDACTED]")
     .replace(/AIza[0-9A-Za-z_-]{20,}/g, "[REDACTED_KEY]")
     .replace(/ya29\.[0-9A-Za-z_-]{15,}/g, "[REDACTED_TOKEN]")
     .replace(/ghp_[0-9A-Za-z]{20,}/g, "[REDACTED_GH_TOKEN]")
     .replace(/-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----/g, "[REDACTED_PEM]")
     .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, "[REDACTED_EMAIL]")
+    .replace(/[\r\n\t]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+// Ham hata veya yığın metnindeki tüm gizli kalıpları sansürler ve uzunluğu sınırlar.
+export function sanitizeErrorSummary(message) {
+  const cleaned = redactSecrets(message, "Ayrıntısız test hatası.");
   return cleaned.length > MAX_ERROR_LENGTH ? `${cleaned.slice(0, MAX_ERROR_LENGTH - 3)}...` : cleaned;
+}
+
+// Tanınmayan veya gövde taşıyabilecek ham hata metinlerini genel güvenli sınıfa indirger.
+function formatSafeFailureError(rawError) {
+  const sanitized = sanitizeErrorSummary(rawError);
+  if (!rawError || typeof rawError !== "string" || !rawError.trim()) {
+    return "Ayrıntısız test hatası.";
+  }
+  const firstLine = redactSecrets(rawError.split(/\r?\n/)[0] ?? "");
+  if (!SAFE_ERROR_CLASSES.test(firstLine) || /Response body|\{"/i.test(sanitized)) {
+    return "Test başarısız (ayrıntılı ham hata yükü güvenlik nedeniyle özetlenmedi).";
+  }
+  return sanitized;
 }
 
 // Playwright JSON rapor ağacından başarısız veya beklenmeyen testleri özyinelemeli toplar.
@@ -56,11 +105,13 @@ function extractFailedTests(suites, inheritedFile = "", results = []) {
             path: typeof att.path === "string" ? att.path : "",
           }));
           results.push({
-            title: String(spec.title ?? "Adsız test"),
-            file: basename(specFile || "unknown"),
-            projectName: String(testEntry.projectName ?? "unknown"),
-            status: String(lastResult?.status ?? testEntry.status ?? "failed"),
-            safeError: sanitizeErrorSummary(rawError),
+            rawTitle: String(spec.title ?? "Adsız test"),
+            rawFile: basename(specFile || "unknown"),
+            title: redactSecrets(String(spec.title ?? "Adsız test"), "Adsız test"),
+            file: redactSecrets(basename(specFile || "unknown"), "unknown"),
+            projectName: redactSecrets(String(testEntry.projectName ?? "unknown"), "unknown"),
+            status: redactSecrets(String(lastResult?.status ?? testEntry.status ?? "failed"), "failed"),
+            safeError: formatSafeFailureError(rawError),
             attachments,
           });
         }
@@ -73,9 +124,13 @@ function extractFailedTests(suites, inheritedFile = "", results = []) {
   return results;
 }
 
-// Dosya adının yalnız public örnek allowlist'ine ait düzenli bir görsel olup olmadığını doğrular.
-export function isAllowedPublicScreenshot(filePath, specFile) {
+// Dosyanın symlink/traversal olmadan sonuç kökü içinde ve birebir izinli public (dosya, test başlığı) çiftine ait olduğunu doğrular.
+export function isAllowedPublicScreenshot(filePath, specFile, specTitle, resultsRoot) {
   if (!filePath || !existsSync(filePath)) return false;
+  const allowedTitles = PUBLIC_SCREENSHOT_ALLOWLIST.get(basename(specFile || ""));
+  if (!allowedTitles || typeof specTitle !== "string" || !allowedTitles.has(specTitle)) {
+    return false;
+  }
   let stat;
   try {
     stat = lstatSync(filePath);
@@ -83,19 +138,29 @@ export function isAllowedPublicScreenshot(filePath, specFile) {
     return false;
   }
   if (!stat.isFile() || stat.isSymbolicLink()) return false;
+  if (resultsRoot) {
+    try {
+      const realRoot = realpathSync(resultsRoot);
+      const realFile = realpathSync(filePath);
+      if (!realFile.startsWith(`${realRoot}${sep}`)) return false;
+    } catch {
+      return false;
+    }
+  }
   const ext = extname(filePath).toLowerCase();
   if (!ALLOWED_IMAGE_EXTENSIONS.has(ext)) return false;
-  if (FORBIDDEN_FILE_PATTERNS.test(filePath)) return false;
-  return PUBLIC_SCREENSHOT_SPECS.has(basename(specFile || ""));
+  return !FORBIDDEN_FILE_PATTERNS.test(filePath);
 }
 
-// Başarısız CI koşularında yalnız güvenli metin özetini ve allowlist'teki public örnek görsellerini toplar.
+// Başarısız CI koşularında önce eski çıktıları siler, yalnız güvenli özet ve allowlist'teki public görselleri yazar.
 export function collectCiEvidence(options = {}) {
-  const failedStep = String(options.failedStep || "unknown");
+  const failedStep = redactSecrets(String(options.failedStep || "unknown"), "unknown");
   const outDir = resolve(options.outDir || "ci-evidence");
   const playwrightJsonPath = options.playwrightJsonPath ? resolve(options.playwrightJsonPath) : null;
+  const resultsRoot = options.resultsDir ? resolve(options.resultsDir) : null;
   const screenshotsOutDir = join(outDir, "public-screenshots");
 
+  rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true, mode: 0o755 });
 
   let failures = [];
@@ -116,11 +181,12 @@ export function collectCiEvidence(options = {}) {
     let copiedScreenshot = null;
     if (copiedCount < MAX_PUBLIC_SCREENSHOTS) {
       const imageAttachment = failure.attachments.find(att =>
-        att.contentType.startsWith("image/") && isAllowedPublicScreenshot(att.path, failure.file)
+        att.contentType.startsWith("image/")
+        && isAllowedPublicScreenshot(att.path, failure.rawFile, failure.rawTitle, resultsRoot)
       );
       if (imageAttachment) {
         mkdirSync(screenshotsOutDir, { recursive: true, mode: 0o755 });
-        const safeName = `${copiedCount + 1}-${failure.projectName}-${failure.file.replace(/[^a-zA-Z0-9._-]/g, "_")}${extname(imageAttachment.path).toLowerCase()}`;
+        const safeName = `public-${copiedCount + 1}${extname(imageAttachment.path).toLowerCase()}`;
         const dest = join(screenshotsOutDir, safeName);
         copyFileSync(imageAttachment.path, dest);
         copiedCount += 1;
@@ -139,29 +205,6 @@ export function collectCiEvidence(options = {}) {
     };
   });
 
-  // Ek olarak resultsDir içinde sahipsiz bırakılmış public spec görselleri varsa yalnız allowlist sınırıyla kontrol et.
-  if (options.resultsDir && existsSync(options.resultsDir) && copiedCount === 0 && !reportParsed) {
-    const entries = readdirSync(options.resultsDir, { withFileTypes: true });
-    for (const entry of entries) {
-      if (copiedCount >= MAX_PUBLIC_SCREENSHOTS) break;
-      if (!entry.isDirectory()) continue;
-      const matchedSpec = [...PUBLIC_SCREENSHOT_SPECS].find(spec => entry.name.includes(spec.replace(".spec.ts", "")));
-      if (!matchedSpec) continue;
-      const subDir = join(options.resultsDir, entry.name);
-      for (const file of readdirSync(subDir)) {
-        if (copiedCount >= MAX_PUBLIC_SCREENSHOTS) break;
-        const candidatePath = join(subDir, file);
-        if (isAllowedPublicScreenshot(candidatePath, matchedSpec)) {
-          mkdirSync(screenshotsOutDir, { recursive: true, mode: 0o755 });
-          const safeName = `${copiedCount + 1}-${entry.name.replace(/[^a-zA-Z0-9._-]/g, "_")}-${basename(file)}`;
-          copyFileSync(candidatePath, join(screenshotsOutDir, safeName));
-          copiedCount += 1;
-          copiedFiles.push(`public-screenshots/${safeName}`);
-        }
-      }
-    }
-  }
-
   const summary = {
     schemaVersion: 1,
     generatedAt: new Date().toISOString(),
@@ -169,7 +212,9 @@ export function collectCiEvidence(options = {}) {
     reportParsed,
     failureCount: enrichedFailures.length,
     publicScreenshotCount: copiedFiles.length,
-    publicScreenshotSpecsAllowlist: [...PUBLIC_SCREENSHOT_SPECS],
+    publicScreenshotAllowlist: Object.fromEntries(
+      [...PUBLIC_SCREENSHOT_ALLOWLIST.entries()].map(([file, titles]) => [file, [...titles]])
+    ),
     copiedFiles,
     failures: enrichedFailures,
   };

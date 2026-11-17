@@ -43,19 +43,21 @@ test("collectCiEvidence enforces strict public allowlist and never copies auth/t
     writeFileSync(debugLog, "debug");
     symlinkSync(publicPng, symlinkPng);
 
-    assert.equal(isAllowedPublicScreenshot(publicPng, "e2e/example-report.spec.ts"), true);
-    assert.equal(isAllowedPublicScreenshot(privatePng, "e2e/tabular-analysis.spec.ts"), false);
-    assert.equal(isAllowedPublicScreenshot(traceZip, "e2e/example-report.spec.ts"), false);
-    assert.equal(isAllowedPublicScreenshot(envFile, "e2e/example-report.spec.ts"), false);
-    assert.equal(isAllowedPublicScreenshot(storageState, "e2e/example-report.spec.ts"), false);
-    assert.equal(isAllowedPublicScreenshot(debugLog, "e2e/example-report.spec.ts"), false);
-    assert.equal(isAllowedPublicScreenshot(symlinkPng, "e2e/example-report.spec.ts"), false);
+    const exampleTitle = "hareketli raporda filtre, kaynak sekmeleri ve indirme kullanılabilir kalır";
+    assert.equal(isAllowedPublicScreenshot(publicPng, "e2e/example-report.spec.ts", exampleTitle, rawResults), true);
+    assert.equal(isAllowedPublicScreenshot(publicPng, "e2e/example-report.spec.ts"), false);
+    assert.equal(isAllowedPublicScreenshot(privatePng, "e2e/tabular-analysis.spec.ts", "kullanıcı belgesi testi", rawResults), false);
+    assert.equal(isAllowedPublicScreenshot(traceZip, "e2e/example-report.spec.ts", exampleTitle, rawResults), false);
+    assert.equal(isAllowedPublicScreenshot(envFile, "e2e/example-report.spec.ts", exampleTitle, rawResults), false);
+    assert.equal(isAllowedPublicScreenshot(storageState, "e2e/example-report.spec.ts", exampleTitle, rawResults), false);
+    assert.equal(isAllowedPublicScreenshot(debugLog, "e2e/example-report.spec.ts", exampleTitle, rawResults), false);
+    assert.equal(isAllowedPublicScreenshot(symlinkPng, "e2e/example-report.spec.ts", exampleTitle, rawResults), false);
 
     const playwrightReport = {
       suites: [{
         file: "e2e/example-report.spec.ts",
         specs: [{
-          title: "örnek rapor dönemi değişir",
+          title: exampleTitle,
           tests: [{
             projectName: "desktop-chromium",
             status: "unexpected",
@@ -105,7 +107,7 @@ test("collectCiEvidence enforces strict public allowlist and never copies auth/t
     const copiedDir = join(outDir, "public-screenshots");
     const copiedNames = readdirSync(copiedDir);
     assert.equal(copiedNames.length, 1);
-    assert.match(copiedNames[0], /example-report\.spec\.ts\.png$/);
+    assert.match(copiedNames[0], /^public-\d+\.png$/);
 
     // Gizli veya izin dışı hiçbir dosya çıktı dizinine girmemeli
     assert.equal(existsSync(join(outDir, "trace.zip")), false);
@@ -116,6 +118,120 @@ test("collectCiEvidence enforces strict public allowlist and never copies auth/t
     assert.match(summaryMdText, /desktop-chromium/);
     assert.match(summaryMdText, /mobile-chromium/);
     assert.match(summaryMdText, /kapsam dışı \/ yok/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("collectCiEvidence blocks mixed auth specs/report.spec.ts, traversal/parent symlinks, stale files, and redacts JSON/multiline secrets across all fields", () => {
+  const dir = mkdtempSync(join(tmpdir(), "incagen-ci-evidence-neg-"));
+  try {
+    const rawResults = join(dir, "test-results");
+    const outDir = join(dir, "ci-evidence");
+    const outsideDir = join(dir, "outside-secrets");
+    mkdirSync(rawResults, { recursive: true });
+    mkdirSync(join(outDir, "public-screenshots"), { recursive: true });
+    mkdirSync(outsideDir, { recursive: true });
+
+    // Önceki koşudan kalmış eski dosya temizlenmeli
+    writeFileSync(join(outDir, "stale-leak.txt"), "old-secret-leak");
+    writeFileSync(join(outDir, "public-screenshots", "stale.png"), "old-png");
+
+    // Parent dizin symlink / path traversal tuzağı
+    const secretOutsidePng = join(outsideDir, "secret-outside.png");
+    writeFileSync(secretOutsidePng, "outside-secret-bytes");
+    const linkedSubdir = join(rawResults, "linked-subdir");
+    symlinkSync(outsideDir, linkedSubdir);
+    const traversedPng = join(linkedSubdir, "secret-outside.png");
+
+    // Karışık dosyadaki (layout-and-entry.spec.ts) auth senaryosu reddedilmeli, public senaryo kabul edilmeli
+    const authScenarioPng = join(rawResults, "auth-scenario.png");
+    const publicLayoutPng = join(rawResults, "public-layout.png");
+    const reportSpecPng = join(rawResults, "report-spec.png");
+    writeFileSync(authScenarioPng, "auth-bytes");
+    writeFileSync(publicLayoutPng, "public-layout-bytes");
+    writeFileSync(reportSpecPng, "report-spec-bytes");
+
+    assert.equal(
+      isAllowedPublicScreenshot(traversedPng, "e2e/example-report.spec.ts", "hareketli raporda filtre, kaynak sekmeleri ve indirme kullanılabilir kalır", rawResults),
+      false
+    );
+    assert.equal(isAllowedPublicScreenshot(reportSpecPng, "e2e/report.spec.ts", "kayıt, belge hazırlığı, geçmiş, silme ve çıkış", rawResults), false);
+    assert.equal(
+      isAllowedPublicScreenshot(authScenarioPng, "e2e/layout-and-entry.spec.ts", "ana sayfa alt çağrısı, üst çağrı, plan, rapor ve aktif navigasyon analizi baştan açar", rawResults),
+      false
+    );
+    assert.equal(
+      isAllowedPublicScreenshot(publicLayoutPng, "e2e/layout-and-entry.spec.ts", "iki örnek aynı başlık, sekme ve içerik eksenini kullanır; landing görsel önizleme yüklemez", rawResults),
+      true
+    );
+
+    const playwrightReport = {
+      suites: [{
+        file: "e2e/layout-and-entry.spec.ts",
+        specs: [{
+          title: "iki örnek aynı başlık, sekme ve içerik eksenini kullanır; landing görsel önizleme yüklemez",
+          tests: [{
+            projectName: "desktop-chromium",
+            status: "unexpected",
+            results: [{
+              status: "failed",
+              error: { message: 'Response body {"password":"JsonPassword999","token":"Multi\nLineSecret888"}' },
+              attachments: [{ name: "screenshot", contentType: "image/png", path: publicLayoutPng }],
+            }],
+          }],
+        }, {
+          title: "ana sayfa alt çağrısı, üst çağrı, plan, rapor ve aktif navigasyon analizi baştan açar",
+          tests: [{
+            projectName: "project secret=LeakProj777",
+            status: "unexpected",
+            results: [{
+              status: "failed",
+              error: { message: "Unexpected opaque payload without standard prefix" },
+              attachments: [{ name: "screenshot", contentType: "image/png", path: authScenarioPng }],
+            }],
+          }],
+        }],
+      }, {
+        file: "e2e/report.spec.ts",
+        specs: [{
+          title: "rapor yükleme token=LeakTitle555",
+          tests: [{
+            projectName: "chromium",
+            status: "unexpected",
+            results: [{
+              status: "failed",
+              error: { message: "Expect timed out waiting for selector" },
+              attachments: [
+                { name: "screenshot", contentType: "image/png", path: reportSpecPng },
+                { name: "screenshot", contentType: "image/png", path: traversedPng },
+              ],
+            }],
+          }],
+        }],
+      }],
+    };
+
+    const reportPath = join(dir, "playwright-report.json");
+    writeFileSync(reportPath, JSON.stringify(playwrightReport), "utf8");
+
+    const summary = collectCiEvidence({
+      failedStep: 'browser {"secret":"StepSecret444"}',
+      playwrightJsonPath: reportPath,
+      resultsDir: rawResults,
+      outDir,
+    });
+
+    assert.equal(existsSync(join(outDir, "stale-leak.txt")), false);
+    assert.equal(existsSync(join(outDir, "public-screenshots", "stale.png")), false);
+    assert.equal(summary.publicScreenshotCount, 1);
+    const copiedNames = readdirSync(join(outDir, "public-screenshots"));
+    assert.deepEqual(copiedNames, ["public-1.png"]);
+
+    const summaryJsonText = readFileSync(join(outDir, "summary.json"), "utf8");
+    const summaryMdText = readFileSync(join(outDir, "summary.md"), "utf8");
+    const combined = `${summaryJsonText}\n${summaryMdText}`;
+    assert.doesNotMatch(combined, /JsonPassword999|Multi\nLineSecret888|LineSecret888|LeakProj777|LeakTitle555|StepSecret444|Unexpected opaque payload/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

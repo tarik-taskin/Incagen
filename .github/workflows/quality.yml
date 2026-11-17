@@ -95,6 +95,7 @@ jobs:
               break
             fi
           done
+          rm -rf ci-evidence
           node scripts/collect-ci-evidence.mjs \
             --failed-step "$FAILED_STEP" \
             --playwright-json test-results/playwright-report.json \

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createAcceptanceJournal } from "./acceptance-resources.mjs";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
@@ -88,19 +88,38 @@ async function defaultAdminClient() {
   };
 }
 
-// Önceki yarım kalmış (cleaned: false) test kaynağı kaydını ezmemek için koşuya özel yedek dosya seçer.
+// Önceki dosya tam temiz ve journalVerifiedClean: true değilse üzerine yazmaz; yeni koşu için benzersiz yol üretir.
 export function resolveProbeResourcePath(defaultPath = DEFAULT_PROBE_STATE_FILE, runId = randomUUID()) {
   if (existsSync(defaultPath)) {
     try {
-      const existing = JSON.parse(readFileSync(defaultPath, "utf8"));
-      if (existing && existing.cleaned === false) {
+      const stat = lstatSync(defaultPath);
+      if (stat.isSymbolicLink()) {
         return `/tmp/incagen-cloud-probe-resources-${runId}.json`;
+      }
+      const existing = JSON.parse(readFileSync(defaultPath, "utf8"));
+      if (existing && existing.cleaned === true && existing.journalVerifiedClean === true) {
+        return defaultPath;
       }
     } catch {
       return `/tmp/incagen-cloud-probe-resources-${runId}.json`;
     }
+    return `/tmp/incagen-cloud-probe-resources-${runId}.json`;
   }
   return defaultPath;
+}
+
+// Durum dosyasını sembolik bağlantı izlemeden 0600 izinli geçici dosya + atomik rename ile yazar.
+function writeAtomicProbeFile(filePath, data) {
+  if (existsSync(filePath) && lstatSync(filePath).isSymbolicLink()) {
+    throw Object.assign(new Error("Probe state target cannot be a symlink."), { code: "cleanup-failed" });
+  }
+  const tempPath = `${filePath}.tmp-${process.pid}-${randomUUID()}`;
+  try {
+    writeFileSync(tempPath, data, { mode: 0o600, flag: "wx" });
+    renameSync(tempPath, filePath);
+  } finally {
+    rmSync(tempPath, { force: true });
+  }
 }
 
 // Aşamalı, sabit izinli çıktıyla tek sentetik bağlantı teşhisini çalıştırır ve temizlik kanıtını döner.
@@ -166,7 +185,7 @@ export async function runCloudProbe(deps = {}) {
 
   const runTag = randomUUID();
   probeStatePath = (deps.resolveResourcePath ?? resolveProbeResourcePath)(DEFAULT_PROBE_STATE_FILE, runTag);
-  const writeProbeState = deps.writeFile ?? ((file, data) => writeFileSync(file, data, { mode: 0o600 }));
+  const writeProbeState = deps.writeFile ?? writeAtomicProbeFile;
 
   app = sdk.initializeApp(config, `cloud-probe-${runTag}`);
   auth = sdk.getAuth(app);
@@ -182,7 +201,13 @@ export async function runCloudProbe(deps = {}) {
       created = await sdk.createUserWithEmailAndPassword(auth, email, password);
       uid = created.user.uid;
       journal.account(uid);
-      writeProbeState(probeStatePath, JSON.stringify({ project: PROJECT, uid, cleaned: false }));
+      writeProbeState(probeStatePath, JSON.stringify({
+        project: PROJECT,
+        uid,
+        runId: journal.runId ?? runTag,
+        cleaned: false,
+        journalVerifiedClean: false,
+      }));
       await admin("update", { localId: uid, customAttributes: JSON.stringify({ incagenDeveloper: true }) });
       await created.user.getIdToken(true);
       stages.clientAuth = { status: "passed", durationMs: now() - authStarted };
@@ -230,9 +255,17 @@ export async function runCloudProbe(deps = {}) {
         const lookedUp = await admin("lookup", { localId: [uid] });
         assert.equal(lookedUp.users?.length ?? 0, 0);
         cleanup.syntheticAccountDeleted = true;
-        writeProbeState(probeStatePath, JSON.stringify({ project: PROJECT, uid, cleaned: true }));
         await journal.verifyClean(config);
         cleanup.journalVerifiedClean = true;
+        writeProbeState(probeStatePath, JSON.stringify({
+          project: PROJECT,
+          uid,
+          runId: journal.runId ?? runTag,
+          temporaryClaimRemoved: true,
+          syntheticAccountDeleted: true,
+          journalVerifiedClean: true,
+          cleaned: true,
+        }));
         cleanup.status = "passed";
         stages.cleanup = { status: "passed", durationMs: now() - cleanupStarted, cleaned: true };
       }
@@ -244,6 +277,21 @@ export async function runCloudProbe(deps = {}) {
         cleaned: false,
         code: safeCode(cleanupError?.code, "cleanup-failed"),
       };
+      if (uid) {
+        try {
+          writeProbeState(probeStatePath, JSON.stringify({
+            project: PROJECT,
+            uid,
+            runId: journal.runId ?? runTag,
+            temporaryClaimRemoved: cleanup.temporaryClaimRemoved,
+            syntheticAccountDeleted: cleanup.syntheticAccountDeleted,
+            journalVerifiedClean: cleanup.journalVerifiedClean,
+            cleaned: false,
+          }));
+        } catch {
+          // İkincil yazma hatası durumunda cleanup durumu zaten failed/cleaned:false olarak kalır.
+        }
+      }
       if (!failureCode) {
         failedStage = "cleanup";
         failureCode = safeCode(cleanupError?.code, "cleanup-failed");

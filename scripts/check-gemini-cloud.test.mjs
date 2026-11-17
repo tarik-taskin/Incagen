@@ -82,7 +82,7 @@ test("loadCloudDiagnosticConfig requires explicit opt-in and rejects emulator va
   ));
 });
 
-test("resolveProbeResourcePath preserves unfinished (cleaned: false) previous resource logs", () => {
+test("resolveProbeResourcePath preserves unfinished, unverified, or unreadable resource logs", () => {
   const dir = mkdtempSync(join(tmpdir(), "incagen-probe-path-"));
   try {
     const base = join(dir, "probe.json");
@@ -92,7 +92,18 @@ test("resolveProbeResourcePath preserves unfinished (cleaned: false) previous re
     assert.match(resolved, /new-run-123\.json$/);
     assert.equal(JSON.parse(readFileSync(base, "utf8")).uid, "old-uid");
 
+    // cleaned: true olsa bile journalVerifiedClean: true yoksa eski kayıt korunmalı
     writeFileSync(base, JSON.stringify({ project: "incagen-eeef4", uid: "old-uid", cleaned: true }));
+    const unverifiedResolved = resolveProbeResourcePath(base, "new-run-234");
+    assert.notEqual(unverifiedResolved, base);
+    assert.match(unverifiedResolved, /new-run-234\.json$/);
+
+    // Bozuk JSON da üzerine yazılmamalı
+    writeFileSync(base, "{corrupt-json");
+    const corruptResolved = resolveProbeResourcePath(base, "new-run-345");
+    assert.notEqual(corruptResolved, base);
+
+    writeFileSync(base, JSON.stringify({ project: "incagen-eeef4", uid: "old-uid", cleaned: true, journalVerifiedClean: true }));
     assert.equal(resolveProbeResourcePath(base, "new-run-456"), base);
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -184,5 +195,56 @@ test("runCloudProbe reports cleanup failure explicitly when account deletion fai
   assert.equal(summary.stage, "cleanup");
   assert.equal(summary.cleanup.status, "failed");
   assert.equal(summary.cleanup.syntheticAccountDeleted, false);
+  assert.equal(summary.stages.cleanup.cleaned, false);
+});
+
+test("runCloudProbe writes cleaned: true only AFTER journal.verifyClean succeeds and preserves cleaned: false on failure", async () => {
+  const events = [];
+  const localWritten = new Map();
+  const base = mockDeps({
+    createJournal: () => ({
+      path: "/tmp/mock-journal.json",
+      runId: "probe-run-verify-fail",
+      account() {},
+      analysis() {},
+      async verifyClean() {
+        events.push("verifyClean");
+        throw new Error("leftover synthetic doc");
+      },
+    }),
+    writeFile: (path, data) => {
+      events.push(`write:${JSON.parse(data).cleaned}:${JSON.parse(data).journalVerifiedClean}`);
+      localWritten.set(path, data);
+    },
+  });
+
+  const summary = await runCloudProbe(base.deps);
+  assert.equal(summary.status, "failed");
+  assert.equal(summary.stage, "cleanup");
+  assert.equal(summary.cleanup.status, "failed");
+  assert.equal(summary.cleanup.journalVerifiedClean, false);
+  assert.equal(summary.stages.cleanup.cleaned, false);
+
+  const persisted = JSON.parse(localWritten.get("/tmp/mock-probe.json"));
+  assert.equal(persisted.cleaned, false);
+  assert.equal(persisted.journalVerifiedClean, false);
+  assert.equal(persisted.syntheticAccountDeleted, true);
+  assert.equal(events.includes("write:true:undefined"), false);
+  assert.equal(events.includes("write:true:true"), false);
+});
+
+test("runCloudProbe fails cleanup stage when final probe state persistence throws", async () => {
+  const base = mockDeps({
+    writeFile: (_path, data) => {
+      if (JSON.parse(data).cleaned === true) {
+        throw new Error("EACCES: read-only filesystem");
+      }
+    },
+  });
+
+  const summary = await runCloudProbe(base.deps);
+  assert.equal(summary.status, "failed");
+  assert.equal(summary.stage, "cleanup");
+  assert.equal(summary.cleanup.status, "failed");
   assert.equal(summary.stages.cleanup.cleaned, false);
 });
