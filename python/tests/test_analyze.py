@@ -142,3 +142,108 @@ def test_seeded_ledger_conserves_cents_groups_and_physical_evidence(tmp_path, nu
         assert physical == [entry[2] for entry in expected]
     if aggregation == "sum":
         assert sum(Fraction(str(point["value"])) for point in result["points"]) == answer(ledger)
+
+
+def test_equal_group_values_sort_deterministically_by_label(tmp_path):
+    """Kanıt: Aynı toplama sahip gruplar azalan değer + artan etiket sırasıyla kararlı sıralanır."""
+    data = document(tmp_path, "Team,Revenue\nGamma,50.00\nAlpha,25.00\nBeta,50.00\nAlpha,25.00\n")
+    result = analyze_table(data, selection(numberFormat="en", unit="USD"))
+    assert [(point["label"], point["value"]) for point in result["points"]] == [
+        ("Alpha", 50.0),
+        ("Beta", 50.0),
+        ("Gamma", 50.0),
+    ]
+    assert result["metrics"][1]["value"] == 150.0
+
+
+def test_monetary_half_even_rounding_and_subcent_rejection(tmp_path):
+    """Kanıt: Parasal ortalamada yarı-çift (ROUND_HALF_EVEN) yuvarlama uygulanır; 3 ondalıklı para girdisi reddedilir."""
+    # (10.00 + 10.01) / 2 = 10.005 -> 10.00 (çift); (10.01 + 10.02) / 2 = 10.015 -> 10.02 (çift)
+    even_down = analyze_table(
+        document(tmp_path, "Group;Amount\nA;10,00\nA;10,01\n"),
+        selection(aggregation="mean", numberFormat="tr", unit="TRY"),
+    )
+    assert even_down["metrics"][1]["value"] == 10.0
+
+    even_up = analyze_table(
+        document(tmp_path, "Group;Amount\nB;10,01\nB;10,02\n"),
+        selection(aggregation="mean", numberFormat="tr", unit="TRY"),
+    )
+    assert even_up["metrics"][1]["value"] == 10.02
+
+    # Para biriminde kuruş altı hassasiyet sessizce yuvarlanmaz; currency-precision ile reddedilir.
+    with pytest.raises(CalculationError, match="currency-precision"):
+        analyze_table(document(tmp_path, "Group;Amount\nA;10,125\n"), selection(numberFormat="tr", unit="TRY"))
+
+
+def test_real_zero_and_negative_values_preserve_denominator_while_blanks_fail(tmp_path):
+    """Kanıt: Gerçek sıfır ve negatif değerler ortalamada paydada tutulur; boş veya boolean hücre sıfır yapılmaz."""
+    # Toplam ortalama: (-30 + 0 + 60) / 3 = 10.0; Web ortalaması (-30 + 0) / 2 = -15.0 (0 paydada kalır)
+    zero_mean = analyze_table(
+        document(tmp_path, "Channel,Delta\nWeb,-30.00\nWeb,0.00\nStore,60.00\n"),
+        selection(aggregation="mean", numberFormat="en", unit="USD"),
+    )
+    assert zero_mean["metrics"][1]["value"] == 10.0
+    assert [(p["label"], p["value"]) for p in zero_mean["points"]] == [("Store", 60.0), ("Web", -15.0)]
+
+    # Boş hücre veya mantıksal metin değeri sıfır sayılmaz.
+    for bad_csv in ["Channel,Delta\nWeb,\nStore,10\n", "Channel,Delta\nWeb,true\nStore,10\n"]:
+        with pytest.raises(CalculationError):
+            analyze_table(document(tmp_path, bad_csv), selection(aggregation="mean", numberFormat="en", unit="number"))
+
+
+def test_xlsx_sum_count_mean_with_unselected_invalid_sheet_and_exact_locators(tmp_path):
+    """Kanıt: XLSX seçili sayfa dışındaki bozuk/formüllü sayfayı yoksayar; sum/count/mean, negatif/sıfır ve sheet bağını korur."""
+    from openpyxl import Workbook
+
+    book = Workbook()
+    selected = book.active
+    selected.title = "Q4-Sales"
+    selected.append(["Region", "Net"])
+    selected.append(["North", 100.5])
+    selected.append([None, None])  # Tamamen boş satır count ve sum dışında sayılır (emptyRows=1)
+    selected.append(["South", -20.5])
+    selected.append(["North", 0])
+    selected.append(["South", True])  # Seçili sayfada değil başka sütun veya yalnız count için değil: bu satırı ayrı sayfada bozuk test edelim
+
+    # Düzeltme: Q4-Sales geçerli sayısal değerler taşısın; Ignored-Sheet geçersiz formül ve dev tutar taşısın.
+    selected.delete_rows(6)
+    ignored = book.create_sheet("Ignored-Broken")
+    ignored.append(["Region", "Net"])
+    ignored.append(["North", "=SUM(A1:A2)"])
+    ignored.append(["North", "invalid-text"])
+    ignored.append(["North", 999999])
+
+    path = tmp_path / "multi-sheet.xlsx"
+    book.save(path)
+    extracted = extract_document(path)
+
+    # 1. XLSX SUM: (100.50 - 20.50 + 0) = 80.00; North=100.50, South=-20.50
+    sum_res = analyze_table(extracted, selection(sheet="Q4-Sales", aggregation="sum", numberFormat="plain", unit="EUR"))
+    assert sum_res["metrics"][1]["value"] == 80.0
+    assert sum_res["scope"]["emptyRows"] == 1
+    assert [(p["label"], p["value"]) for p in sum_res["points"]] == [("North", 100.5), ("South", -20.5)]
+    assert [a["locator"] for a in sum_res["metrics"][2]["evidence"]] == [
+        {"sheet": "Q4-Sales", "rowStart": 2, "rowEnd": 2},
+        {"sheet": "Q4-Sales", "rowStart": 5, "rowEnd": 5},
+    ]
+
+    # 2. XLSX MEAN: (100.50 + (-20.50) + 0) / 3 = 80 / 3 = 26.666667 (6 ondalık)
+    mean_res = analyze_table(extracted, selection(sheet="Q4-Sales", aggregation="mean", numberFormat="plain", unit="number"))
+    assert mean_res["metrics"][1]["value"] == 26.666667
+
+    # 3. XLSX COUNT: 3 dolu satır, boş satır (row 3) atlanır ve sheet locator korunur
+    count_res = analyze_table(extracted, selection(sheet="Q4-Sales", valueColumn=None, groupColumn=None, aggregation="count", numberFormat="plain", unit="count"))
+    assert count_res["metrics"][0]["value"] == 3
+    assert count_res["metrics"][1]["value"] == 3
+    assert count_res["scope"]["emptyRows"] == 1
+    assert [a["locator"] for a in count_res["metrics"][1]["evidence"]] == [
+        {"sheet": "Q4-Sales", "rowStart": 2, "rowEnd": 2},
+        {"sheet": "Q4-Sales", "rowStart": 4, "rowEnd": 5},
+    ]
+
+    # 4. Seçilen sayfada boolean değer varsa asla 1 veya 0 sayılamaz
+    selected.append(["South", False])
+    book.save(path)
+    with pytest.raises(CalculationError, match="invalid-measure"):
+        analyze_table(extract_document(path), selection(sheet="Q4-Sales", aggregation="sum", numberFormat="plain", unit="number"))
