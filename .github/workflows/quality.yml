@@ -45,12 +45,15 @@ jobs:
           java-version: 21
 
       - name: Run lint
+        id: lint
         run: npm run lint
 
       - name: Run unit and component tests
+        id: unit_tests
         run: npm run test:run
 
       - name: Validate Python extraction and source contract
+        id: python_tests
         run: |
           python3 -m venv python/.venv
           python/.venv/bin/python -m pip install --require-hashes -r python/requirements.lock
@@ -58,13 +61,52 @@ jobs:
           npm run test:python
 
       - name: Build production bundle
+        id: build
         run: npm run build
 
       - name: Install Chromium
+        id: chromium
         run: npx playwright install --with-deps chromium
 
       - name: Run browser and accessibility tests
+        id: browser_tests
         run: npm run test:local
 
       - name: Run Firebase security and lifecycle tests
+        id: integration_tests
         run: npm run test:integration
+
+      - name: Collect sanitized failure evidence
+        if: ${{ !cancelled() && failure() }}
+        run: |
+          FAILED_STEP="unknown"
+          for name_pair in \
+            "lint:${{ steps.lint.outcome }}" \
+            "unit_tests:${{ steps.unit_tests.outcome }}" \
+            "python_tests:${{ steps.python_tests.outcome }}" \
+            "build:${{ steps.build.outcome }}" \
+            "chromium:${{ steps.chromium.outcome }}" \
+            "browser_tests:${{ steps.browser_tests.outcome }}" \
+            "integration_tests:${{ steps.integration_tests.outcome }}"; do
+            step_key="${name_pair%%:*}"
+            step_outcome="${name_pair#*:}"
+            if [ "$step_outcome" = "failure" ]; then
+              FAILED_STEP="$step_key"
+              break
+            fi
+          done
+          node scripts/collect-ci-evidence.mjs \
+            --failed-step "$FAILED_STEP" \
+            --playwright-json test-results/playwright-report.json \
+            --results-dir test-results \
+            --out-dir ci-evidence
+          cat ci-evidence/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload sanitized failure summary and allowlisted public screenshots
+        if: ${{ !cancelled() && failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-failure-evidence
+          path: ci-evidence/
+          retention-days: 7
+          if-no-files-found: ignore

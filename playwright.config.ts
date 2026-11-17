@@ -10,7 +10,9 @@ export default defineConfig({
   // Kayıt sonrası 3 sn'lik tasarım gereği geçiş ve dev sunucusunun lazy rotaları ilk kez derlemesi yük altında 5 sn'yi aşabilir.
   expect: { timeout: 10000 },
   retries: 1,
-  reporter: [["list"], ["html", { open: "never" }]],
+  reporter: process.env.CI
+    ? [["list"], ["html", { open: "never" }], ["json", { outputFile: "test-results/playwright-report.json" }]]
+    : [["list"], ["html", { open: "never" }]],
   use: {
     baseURL: "http://127.0.0.1:4173",
     trace: "on-first-retry",
