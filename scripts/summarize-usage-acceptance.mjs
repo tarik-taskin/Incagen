@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 // Değerin geçerli, negatif olmayan sonlu bir süre ölçümü (gerçek 0 dahil) olup olmadığını kontrol eder.
@@ -107,7 +107,7 @@ export function summarizeSingleRun(run, pricingInput) {
     measurementStatus = "invalid-measurement";
   } else if (run?.status === "failed") {
     measurementStatus = "failed";
-  } else if (unmeasuredFields.length === 0) {
+  } else if (run?.status === "completed" && unmeasuredFields.length === 0) {
     measurementStatus = "measured";
   } else {
     measurementStatus = "partial";
@@ -116,6 +116,8 @@ export function summarizeSingleRun(run, pricingInput) {
   return {
     runId: String(run?.runId ?? run?.attemptId ?? "unknown"),
     status: String(run?.status ?? "unknown"),
+    ...(["tr", "en", "de", "es", "zh", "ar"].includes(run?.locale) ? { locale: run.locale } : {}),
+    ...(["csv", "xlsx"].includes(run?.format) ? { format: run.format } : {}),
     model: typeof run?.model === "string" ? run.model : null,
     calculationMs,
     modelMs,
@@ -137,12 +139,12 @@ export function summarizeUsageAcceptance(runs, options = {}) {
   const pricing = validatePricingInput(options.pricing);
   const items = runs.map(run => summarizeSingleRun(run, pricing));
   const invalidRuns = items.filter(i => i.measurementStatus === "invalid-measurement");
-  const validRuns = items.filter(i => i.measurementStatus !== "invalid-measurement");
+  const completedRuns = items.filter(i => i.status === "completed" && i.measurementStatus !== "invalid-measurement");
 
-  const validCalc = validRuns.map(i => i.calculationMs).filter(v => v !== null);
-  const validModel = validRuns.map(i => i.modelMs).filter(v => v !== null);
-  const validTotal = validRuns.map(i => i.totalDurationMs).filter(v => v !== null);
-  const validUsage = validRuns.map(i => i.usage).filter(v => v !== null);
+  const validCalc = completedRuns.map(i => i.calculationMs).filter(v => v !== null);
+  const validModel = completedRuns.map(i => i.modelMs).filter(v => v !== null);
+  const validTotal = completedRuns.map(i => i.totalDurationMs).filter(v => v !== null);
+  const validUsage = completedRuns.map(i => i.usage).filter(v => v !== null);
 
   const avg = list => (list.length > 0 ? Number((list.reduce((a, b) => a + b, 0) / list.length).toFixed(2)) : null);
   const invalidCount = invalidRuns.length;
@@ -151,6 +153,8 @@ export function summarizeUsageAcceptance(runs, options = {}) {
     reportSchemaVersion: 1,
     generatedAt: new Date().toISOString(),
     runCount: items.length,
+    completedCount: items.filter(i => i.status === "completed").length,
+    failedCount: items.filter(i => i.status === "failed").length,
     invalidMeasurementCount: invalidCount,
     excludedInvalidRunIds: invalidRuns.map(i => i.runId),
     measuredCounts: {
@@ -185,15 +189,17 @@ function parseArgs(argv) {
 const isDirectRun = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 if (isDirectRun) {
   const args = parseArgs(process.argv.slice(2));
-  if (!args.input || !existsSync(args.input)) {
-    console.error(JSON.stringify({ error: "Kayıtlı koşu dosyası (--input) bulunamadı." }));
-    process.exit(1);
+  try {
+    if (!args.input) throw new Error("Missing input");
+    const runs = JSON.parse(readFileSync(args.input, "utf8"));
+    const pricing = args.pricing ? JSON.parse(readFileSync(args.pricing, "utf8")) : undefined;
+    const report = summarizeUsageAcceptance(runs, { pricing });
+    const text = JSON.stringify(report, null, 2);
+    if (args.output) writeFileSync(args.output, text + "\n", "utf8");
+    console.log(text);
+    if (report.overallStatus === "invalid") process.exitCode = 1;
+  } catch {
+    console.error(JSON.stringify({ error: "Koşu girdisi, belirtilen fiyat dosyası veya çıktı yolu geçersiz." }));
+    process.exitCode = 1;
   }
-  const runs = JSON.parse(readFileSync(args.input, "utf8"));
-  const pricing = args.pricing && existsSync(args.pricing) ? JSON.parse(readFileSync(args.pricing, "utf8")) : undefined;
-  const report = summarizeUsageAcceptance(runs, { pricing });
-  const text = JSON.stringify(report, null, 2);
-  if (args.output) writeFileSync(args.output, text + "\n", "utf8");
-  console.log(text);
-  if (report.overallStatus === "invalid") process.exitCode = 1;
 }

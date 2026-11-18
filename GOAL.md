@@ -9,6 +9,15 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
+### 2026-11-18 — Furkan / Codex: canlı tablo kabulünün hazırlığı
+
+- [x] Sahip: Furkan — Canlı CSV/XLSX kabulünde seçilen sayfa, ölçüm, kaynak kimliği ve sayısal sonuçları bağımsız sentetik beklentiyle karşılaştır.
+- [x] Sahip: Furkan — İlk bağlantı sonrası bir ücretli CSV denemesiyle durabilen kabul modu ekle. Kapalı ve altı dilli kabul akışları ayrı kalır.
+- [x] Sahip: Furkan — Kabul çıktısını ve temizlik günlüğünü koşuya özel, Git dışı alana bağla. Başarı ve başarısızlık kayıtları kullanım özetiyle uyumlu olsun.
+- [x] Sahip: Furkan — Kullanım özetinde başarılı, hatalı ve eksik koşuların kabul kararını ve ortalamalarını doğrula.
+
+Yerel kabul: lint, 213 arayüz, 144 Functions, 62 script ve 49 Python testi geçti. Python hesaplayıcısı ile üretim rapor biçimleyicisi, CSV/XLSX vakalarını altı dilde sentetik anlatımla geçti. Gerçek Gemini isteği yapılmadı. Son canlı kontrolün sağlayıcı engeli ile genel analiz kapısı [beta kabul planında](docs/BETA-ACCEPTANCE.md) izlenir.
+
 ### 2026-11-18 — Furkan / Codex: işlemler sırasında gezinme
 
 - [x] Sahip: Furkan — Geçmişte tekli ve toplu silme onayı kapanır. Çalışma alanında tamamlanan istekler ve kısmi hata sonucu görünür. Kullanıcının bu sırada değiştirdiği filtre veya seçim korunur.

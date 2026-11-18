@@ -8,6 +8,15 @@ const PROJECT = "incagen-eeef4";
 const UID = /^[a-zA-Z0-9_-]{20,128}$/;
 const ID = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 
+// Özel JSON'u aynı dizinde atomik olarak değiştirir.
+export function writePrivateJson(path, data) {
+  const temporary = `${path}.${randomUUID()}.tmp`;
+  try {
+    writeFileSync(temporary, JSON.stringify(data, null, 2) + "\n", { mode: 0o600, flag: "wx" });
+    renameSync(temporary, path);
+  } finally { rmSync(temporary, { force: true }); }
+}
+
 // Her koşu ayrı özel dosyaya yazılır; yalnız sentetik kaynak kimlikleri tutulur, oturum bilgisi tutulmaz.
 export function createAcceptanceJournal(purpose, directory = resolve(".incagen-local")) {
   assert.ok(["connectivity", "preparation", "tabular"].includes(purpose), "Unexpected journal purpose.");
@@ -18,14 +27,7 @@ export function createAcceptanceJournal(purpose, directory = resolve(".incagen-l
   const path = join(directory, `${purpose}-${state.runId}.json`);
   assert.ok(!existsSync(path), "Journal already exists.");
 
-  // Aynı dizindeki atomik rename, yarım JSON'un önceki kaynak kaydını bozmasını önler.
-  function persist() {
-    const temporary = `${path}.${randomUUID()}.tmp`;
-    try {
-      writeFileSync(temporary, JSON.stringify(state), { mode: 0o600, flag: "wx" });
-      renameSync(temporary, path);
-    } finally { rmSync(temporary, { force: true }); }
-  }
+  function persist() { writePrivateJson(path, state); }
   persist();
   return {
     path,

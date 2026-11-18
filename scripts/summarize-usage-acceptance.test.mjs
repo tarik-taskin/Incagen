@@ -47,8 +47,10 @@ test("distinguishes real zero measurements from unmeasured fields and avoids inv
   // Eksik pythonMs sıfır kabul edilip ortalamaya katılmaz (yalnız r-zero ölçülü: avg = 0, measuredCounts = 1).
   assert.equal(report.measuredCounts.calculationMs, 1);
   assert.equal(report.averages.calculationMs, 0);
-  assert.equal(report.measuredCounts.totalDurationMs, 2);
-  assert.equal(report.averages.totalDurationMs, 45_000);
+  assert.equal(report.measuredCounts.totalDurationMs, 1);
+  assert.equal(report.averages.totalDurationMs, 0);
+  assert.equal(report.completedCount, 1);
+  assert.equal(report.failedCount, 1);
 });
 
 test("calculates estimated cost only with explicit pricing input and matching model", () => {
@@ -169,4 +171,16 @@ test("rejects unexplained token mismatch (prompt+output !== totalTokens) and exc
   assert.equal(report.averages.modelMs, 5);
   assert.equal(report.averages.totalDurationMs, 10);
   assert.deepEqual(report.excludedInvalidRunIds, ["invalid-run"]);
+});
+
+
+test("unfinished runs cannot satisfy the usage acceptance or influence success latency", () => {
+  const unfinished = { runId: "interrupted", status: "running", pythonMs: 1, modelMs: 2, durationMs: 1000,
+    usage: { promptTokens: 1, outputTokens: 1, totalTokens: 2 } };
+  const report = summarizeUsageAcceptance([unfinished]);
+  assert.equal(report.overallStatus, "partial");
+  assert.equal(report.runs[0].measurementStatus, "partial");
+  assert.equal(report.completedCount, 0);
+  assert.equal(report.measuredCounts.totalDurationMs, 0);
+  assert.equal(report.averages.totalDurationMs, null);
 });
