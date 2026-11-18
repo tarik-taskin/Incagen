@@ -128,21 +128,22 @@ test("collectCiEvidence blocks mixed auth specs/report.spec.ts, traversal/parent
   try {
     const rawResults = join(dir, "test-results");
     const outDir = join(dir, "ci-evidence");
-    const outsideDir = join(dir, "outside-secrets");
+    const outsideDir = join(dir, "outside-results");
+    const freshDir = join(dir, "new-evidence");
     mkdirSync(rawResults, { recursive: true });
     mkdirSync(join(outDir, "public-screenshots"), { recursive: true });
     mkdirSync(outsideDir, { recursive: true });
 
-    // Önceki koşudan kalmış eski dosya temizlenmeli
+    // Dolu dizin silinmez ve yayın girdisi olarak kullanılmaz.
     writeFileSync(join(outDir, "stale-leak.txt"), "old-secret-leak");
     writeFileSync(join(outDir, "public-screenshots", "stale.png"), "old-png");
 
     // Parent dizin symlink / path traversal tuzağı
-    const secretOutsidePng = join(outsideDir, "secret-outside.png");
+    const secretOutsidePng = join(outsideDir, "outside.png");
     writeFileSync(secretOutsidePng, "outside-secret-bytes");
     const linkedSubdir = join(rawResults, "linked-subdir");
     symlinkSync(outsideDir, linkedSubdir);
-    const traversedPng = join(linkedSubdir, "secret-outside.png");
+    const traversedPng = join(linkedSubdir, "outside.png");
 
     // Karışık dosyadaki (layout-and-entry.spec.ts) auth senaryosu reddedilmeli, public senaryo kabul edilmeli
     const authScenarioPng = join(rawResults, "auth-scenario.png");
@@ -201,7 +202,7 @@ test("collectCiEvidence blocks mixed auth specs/report.spec.ts, traversal/parent
             status: "unexpected",
             results: [{
               status: "failed",
-              error: { message: "Expect timed out waiting for selector" },
+              error: { message: "Expect comparison to pass\nReceived: Example Company (synthetic fixture)" },
               attachments: [
                 { name: "screenshot", contentType: "image/png", path: reportSpecPng },
                 { name: "screenshot", contentType: "image/png", path: traversedPng },
@@ -215,23 +216,28 @@ test("collectCiEvidence blocks mixed auth specs/report.spec.ts, traversal/parent
     const reportPath = join(dir, "playwright-report.json");
     writeFileSync(reportPath, JSON.stringify(playwrightReport), "utf8");
 
+    assert.throws(() => collectCiEvidence({ outDir }), /boş bir dizin/);
+    assert.equal(existsSync(join(outDir, "stale-leak.txt")), true);
+    assert.equal(isAllowedPublicScreenshot(publicLayoutPng, "layout-and-entry.spec.ts",
+      "iki örnek aynı başlık, sekme ve içerik eksenini kullanır; landing görsel önizleme yüklemez"), false);
     const summary = collectCiEvidence({
       failedStep: 'browser {"secret":"StepSecret444"}',
       playwrightJsonPath: reportPath,
       resultsDir: rawResults,
-      outDir,
+      outDir: freshDir,
     });
 
-    assert.equal(existsSync(join(outDir, "stale-leak.txt")), false);
-    assert.equal(existsSync(join(outDir, "public-screenshots", "stale.png")), false);
+    assert.equal(existsSync(join(freshDir, "stale-leak.txt")), false);
+    assert.equal(existsSync(join(freshDir, "public-screenshots", "stale.png")), false);
     assert.equal(summary.publicScreenshotCount, 1);
-    const copiedNames = readdirSync(join(outDir, "public-screenshots"));
+    const copiedNames = readdirSync(join(freshDir, "public-screenshots"));
     assert.deepEqual(copiedNames, ["public-1.png"]);
 
-    const summaryJsonText = readFileSync(join(outDir, "summary.json"), "utf8");
-    const summaryMdText = readFileSync(join(outDir, "summary.md"), "utf8");
+    const summaryJsonText = readFileSync(join(freshDir, "summary.json"), "utf8");
+    const summaryMdText = readFileSync(join(freshDir, "summary.md"), "utf8");
     const combined = `${summaryJsonText}\n${summaryMdText}`;
-    assert.doesNotMatch(combined, /JsonPassword999|Multi\nLineSecret888|LineSecret888|LeakProj777|LeakTitle555|StepSecret444|Unexpected opaque payload/);
+    assert.match(combined, /Test beklentisi karşılanmadı/);
+    assert.doesNotMatch(combined, /JsonPassword999|Multi\nLineSecret888|LineSecret888|LeakProj777|LeakTitle555|StepSecret444|Unexpected opaque payload|Example Company/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

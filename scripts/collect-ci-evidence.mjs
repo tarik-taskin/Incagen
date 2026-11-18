@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
 import { basename, extname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -43,8 +43,7 @@ export const PUBLIC_SCREENSHOT_ALLOWLIST = new Map([
 export const PUBLIC_SCREENSHOT_SPECS = new Set(PUBLIC_SCREENSHOT_ALLOWLIST.keys());
 
 const FORBIDDEN_FILE_PATTERNS = /(\.env|storageState|firebase-debug|trace\.zip|secret|token|credential|auth-state|\.json$|\.log$|\.txt$|\.har$)/i;
-const ALLOWED_IMAGE_EXTENSIONS = new Set([".png", ".webp"]);
-const SAFE_ERROR_CLASSES = /^(Error:\s*)?(Timed out|TimeoutError|Test timeout|Expect(?:ed)?\b|page\.|locator\.|net::ERR_)/i;
+const SCREENSHOT_MIME = new Map([[".png", "image/png"], [".webp", "image/webp"]]);
 const MAX_PUBLIC_SCREENSHOTS = 10;
 const MAX_ERROR_LENGTH = 400;
 
@@ -72,17 +71,13 @@ export function sanitizeErrorSummary(message) {
   return cleaned.length > MAX_ERROR_LENGTH ? `${cleaned.slice(0, MAX_ERROR_LENGTH - 3)}...` : cleaned;
 }
 
-// Tanınmayan veya gövde taşıyabilecek ham hata metinlerini genel güvenli sınıfa indirger.
+// CI'ya yalnız sabit hata kategorilerini aktarır; hedef/gerçek değerleri rapora taşımaz.
 function formatSafeFailureError(rawError) {
-  const sanitized = sanitizeErrorSummary(rawError);
-  if (!rawError || typeof rawError !== "string" || !rawError.trim()) {
-    return "Ayrıntısız test hatası.";
-  }
-  const firstLine = redactSecrets(rawError.split(/\r?\n/)[0] ?? "");
-  if (!SAFE_ERROR_CLASSES.test(firstLine) || /Response body|\{"/i.test(sanitized)) {
-    return "Test başarısız (ayrıntılı ham hata yükü güvenlik nedeniyle özetlenmedi).";
-  }
-  return sanitized;
+  const firstLine = sanitizeErrorSummary(typeof rawError === "string" ? rawError.split(/\r?\n/, 1)[0] : "");
+  if (/^(Error:\s*)?(Timed out|Timeout|Test timeout)/i.test(firstLine)) return "Test zaman aşımına uğradı.";
+  if (/^(Error:\s*)?Expect(?:ed)?\b/i.test(firstLine)) return "Test beklentisi karşılanmadı.";
+  if (/^(Error:\s*)?(page\.|locator\.|net::ERR_)/i.test(firstLine)) return "Tarayıcı işlemi başarısız.";
+  return "Test başarısız.";
 }
 
 // Playwright JSON rapor ağacından başarısız veya beklenmeyen testleri özyinelemeli toplar.
@@ -126,33 +121,23 @@ function extractFailedTests(suites, inheritedFile = "", results = []) {
 
 // Dosyanın symlink/traversal olmadan sonuç kökü içinde ve birebir izinli public (dosya, test başlığı) çiftine ait olduğunu doğrular.
 export function isAllowedPublicScreenshot(filePath, specFile, specTitle, resultsRoot) {
-  if (!filePath || !existsSync(filePath)) return false;
+  if (!filePath || !resultsRoot) return false;
   const allowedTitles = PUBLIC_SCREENSHOT_ALLOWLIST.get(basename(specFile || ""));
   if (!allowedTitles || typeof specTitle !== "string" || !allowedTitles.has(specTitle)) {
     return false;
   }
-  let stat;
   try {
-    stat = lstatSync(filePath);
+    if (!lstatSync(filePath).isFile()) return false;
+    const realRoot = realpathSync(resultsRoot);
+    if (!realpathSync(filePath).startsWith(`${realRoot}${sep}`)) return false;
   } catch {
     return false;
   }
-  if (!stat.isFile() || stat.isSymbolicLink()) return false;
-  if (resultsRoot) {
-    try {
-      const realRoot = realpathSync(resultsRoot);
-      const realFile = realpathSync(filePath);
-      if (!realFile.startsWith(`${realRoot}${sep}`)) return false;
-    } catch {
-      return false;
-    }
-  }
-  const ext = extname(filePath).toLowerCase();
-  if (!ALLOWED_IMAGE_EXTENSIONS.has(ext)) return false;
+  if (!SCREENSHOT_MIME.has(extname(filePath).toLowerCase())) return false;
   return !FORBIDDEN_FILE_PATTERNS.test(filePath);
 }
 
-// Başarısız CI koşularında önce eski çıktıları siler, yalnız güvenli özet ve allowlist'teki public görselleri yazar.
+// Yeni veya boş çıktı dizinine yalnız özet ve izinli public görselleri yazar.
 export function collectCiEvidence(options = {}) {
   const failedStep = redactSecrets(String(options.failedStep || "unknown"), "unknown");
   const outDir = resolve(options.outDir || "ci-evidence");
@@ -160,8 +145,10 @@ export function collectCiEvidence(options = {}) {
   const resultsRoot = options.resultsDir ? resolve(options.resultsDir) : null;
   const screenshotsOutDir = join(outDir, "public-screenshots");
 
-  rmSync(outDir, { recursive: true, force: true });
-  mkdirSync(outDir, { recursive: true, mode: 0o755 });
+  mkdirSync(outDir, { recursive: true, mode: 0o700 });
+  if (!lstatSync(outDir).isDirectory() || readdirSync(outDir).length !== 0) {
+    throw new Error("CI kanıt çıktısı için yeni veya boş bir dizin gerekir.");
+  }
 
   let failures = [];
   let reportParsed = false;
@@ -181,7 +168,8 @@ export function collectCiEvidence(options = {}) {
     let copiedScreenshot = null;
     if (copiedCount < MAX_PUBLIC_SCREENSHOTS) {
       const imageAttachment = failure.attachments.find(att =>
-        att.contentType.startsWith("image/")
+        att.name === "screenshot"
+        && SCREENSHOT_MIME.get(extname(att.path).toLowerCase()) === att.contentType
         && isAllowedPublicScreenshot(att.path, failure.rawFile, failure.rawTitle, resultsRoot)
       );
       if (imageAttachment) {

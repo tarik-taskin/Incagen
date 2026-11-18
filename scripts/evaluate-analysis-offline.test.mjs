@@ -75,13 +75,18 @@ function validFeedbackCandidate() {
     { id: "problemMentions.delivery", label: "Teslimat sorunu", unit: "yorum", method: "İnsan etiketi sayımı.", status: "available", value: 3, evidence: [anchor] },
     { id: "problemMentionPercent.delivery", label: "Teslimat sorunu yüzdesi", unit: "%", method: "Payda 8 yorum.", status: "available", value: 37.5, evidence: [anchor] },
   ];
+  const labels = { delivery: "Teslimat", support: "Destek", quality: "Kalite", billing: "Faturalama" };
+  const points = Object.entries(feedbackExpected.metrics.problemMentions).map(([key, value]) => ({
+    label: labels[key], metricId: `problemMentions.${key}`, value,
+  }));
+  for (const point of points.slice(1)) {
+    metrics.push({ id: point.metricId, label: point.label, unit: "yorum", method: "İnsan etiketi sayımı.", status: "available", value: point.value, evidence: [anchor] });
+  }
   const datasets = [{
     id: "problems",
     label: "Sorun sayıları",
     unit: "yorum",
-    points: [
-      { label: "Teslimat", metricId: "problemMentions.delivery", value: 3 },
-    ],
+    points,
   }];
   const statement = {
     text: "Sekiz sentetik müşteri yorumunda teslimat ve diğer temalar özetlendi.",
@@ -230,4 +235,18 @@ test("rejects unverified extra metric/chart, sub-cent rounding drift (2550.004),
   const badUnitRecord = evaluateAnalysisOffline({ caseId: "feedback-themes-v1", candidateData: badUnitCandidate });
   assert.equal(badUnitRecord.gates["numeric-integrity"].status, "fail");
   assert.equal(badUnitRecord.overallDecision, "fail");
+});
+
+
+test("rejects a chart with individually valid metrics from a different scope or an incomplete axis", () => {
+  const wrongScope = validSalesCandidate();
+  wrongScope.datasets[0].points[0] = { label: "Eylül", metricId: "netSalesTry", value: salesExpected.metrics.netSalesTry };
+  const wrongScopeRecord = evaluateAnalysisOffline({ caseId: "sales-net-revenue-v1", candidateData: wrongScope });
+  assert.equal(wrongScopeRecord.gates["numeric-integrity"].status, "pass");
+  assert.equal(wrongScopeRecord.gates["chart-integrity"].status, "fail");
+
+  const incomplete = validFeedbackCandidate();
+  incomplete.datasets[0].points.pop();
+  const incompleteRecord = evaluateAnalysisOffline({ caseId: "feedback-themes-v1", candidateData: incomplete });
+  assert.equal(incompleteRecord.gates["chart-integrity"].status, "fail");
 });

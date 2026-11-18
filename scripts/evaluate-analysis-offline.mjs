@@ -134,36 +134,41 @@ function evaluateNumericIntegrity(candidate, catalog, casePolicy, tolerances) {
   return { status: "pass", reason: `Politikadaki tüm ${casePolicy.requiredMetricPaths.length} zorunlu metrik ve aday çıktıdaki ${candidateMetrics.length} metrik doğrulandı.` };
 }
 
-// Grafik türü yanında veri kümesinin yalnız doğrulanmış katalog metriklerine bağlandığını denetler.
+// Her grafik, vaka referansındaki eksenin tamamını ve doğrulanmış metrik değerlerini kullanır.
 function evaluateChartIntegrity(candidate, expectedReference, catalog) {
-  const expectedChartTypes = new Set((expectedReference.charts ?? []).map(item => item.type));
+  const expectedCharts = expectedReference.charts ?? [];
   const charts = candidate.charts ?? [];
-  if ((expectedReference.charts?.length ?? 0) > 0 && charts.length === 0) {
-    return { status: "fail", reason: "Baz vakada beklenen grafik önerisi eksik." };
-  }
   const datasetMap = new Map((candidate.datasets ?? []).map(ds => [ds.id, ds]));
   const metricMap = new Map((candidate.metrics ?? []).map(metric => [metric.id, metric]));
+  const matchedReferences = new Set();
 
   for (const chart of charts) {
-    if (!expectedChartTypes.has(chart.type)) {
-      return { status: "fail", reason: `Vaka kurallarına aykırı grafik türü: ${chart.type}.` };
-    }
     const dataset = datasetMap.get(chart.datasetId);
     if (!dataset) {
       return { status: "fail", reason: `Grafik (${chart.id}) tanımsız veri kümesine bağlı: ${chart.datasetId}.` };
     }
-    for (const point of dataset.points ?? []) {
+    const points = dataset.points ?? [];
+    const actualIds = new Set(points.map(point => point.metricId));
+    const reference = expectedCharts.find(item => chart.type === item.type
+      && dataset.unit === item.unit
+      && points.length === item.x.length
+      && item.x.every(key => actualIds.has(`${item.metricPath}.${key}`)));
+    if (!reference) {
+      return { status: "fail", reason: `Grafik (${chart.id}) referans türü, birimi veya metrik kapsamıyla uyuşmuyor.` };
+    }
+    for (const point of points) {
       const spec = catalog.get(point.metricId);
       const metric = metricMap.get(point.metricId);
-      if (!spec || !metric) {
-        return { status: "fail", reason: `Grafik (${chart.id}) kaynakta doğrulanmamış metriğe bağlı: ${point.metricId}.` };
-      }
-      if (dataset.unit !== spec.unit || metric.unit !== spec.unit || point.value !== metric.value) {
-        return { status: "fail", reason: `Grafik (${chart.id}) seri birimi/değeri doğrulanmış metrikle uyuşmuyor (${point.metricId}).` };
+      if (!spec || !metric || dataset.unit !== spec.unit || metric.unit !== spec.unit || point.value !== metric.value) {
+        return { status: "fail", reason: `Grafik (${chart.id}) doğrulanmış metrikle uyuşmuyor (${point.metricId}).` };
       }
     }
+    matchedReferences.add(reference.id);
   }
-  return { status: "pass", reason: "Grafik türü, seri değerleri, birim ve metrik bağlantıları doğrulandı." };
+  if (matchedReferences.size !== expectedCharts.length) {
+    return { status: "fail", reason: "Baz vakada beklenen grafik önerisi eksik." };
+  }
+  return { status: "pass", reason: "Grafik türü, referans metrik kapsamı, seri değerleri ve birim doğrulandı. Eksen ve başlık metninin anlamı insan incelemesinde değerlendirilir." };
 }
 
 // Parser kaynağı ve beklenen katalogdan aday çıktıyı kopyalamayan bağımsız güvenilir bağlam üretir.

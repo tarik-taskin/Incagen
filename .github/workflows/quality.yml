@@ -77,6 +77,7 @@ jobs:
         run: npm run test:integration
 
       - name: Collect sanitized failure evidence
+        id: failure_evidence
         if: ${{ !cancelled() && failure() }}
         run: |
           FAILED_STEP="unknown"
@@ -95,19 +96,20 @@ jobs:
               break
             fi
           done
-          rm -rf ci-evidence
+          evidence_dir="$(mktemp -d "$RUNNER_TEMP/incagen-evidence.XXXXXXXX")"
           node scripts/collect-ci-evidence.mjs \
             --failed-step "$FAILED_STEP" \
             --playwright-json test-results/playwright-report.json \
             --results-dir test-results \
-            --out-dir ci-evidence
-          cat ci-evidence/summary.md >> "$GITHUB_STEP_SUMMARY"
+            --out-dir "$evidence_dir"
+          cat "$evidence_dir/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          echo "dir=$evidence_dir" >> "$GITHUB_OUTPUT"
 
       - name: Upload sanitized failure summary and allowlisted public screenshots
-        if: ${{ !cancelled() && failure() }}
+        if: ${{ !cancelled() && failure() && steps.failure_evidence.outputs.dir != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: quality-failure-evidence
-          path: ci-evidence/
+          path: ${{ steps.failure_evidence.outputs.dir }}
           retention-days: 7
           if-no-files-found: ignore
