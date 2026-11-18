@@ -1,3 +1,5 @@
+import { useWorkspaceDeletion } from "../lib/workspace-deletion-context";
+import { OperationStatus } from "../components/operation-status";
 import { analysisDisplayStatus } from "../features/reports/analysis-status";
 import { useOutsideDismiss } from "../hooks/use-outside-dismiss";
 import { PageLoading } from "../components/page-loading";
@@ -38,37 +40,45 @@ function AnalysisScreen({ id }: { id: string }) {
   }, [workspace]);
   const [actionError, setActionError] = useState("");
   const [busy, setBusy] = useState(false);
+  const { progress, pendingIds, accountPending, remove } = useWorkspaceDeletion();
+  const deleting = pendingIds.has(id);
   // Ortak lease sinyali snapshot/sekme dönüşünde günceller; saat kopyası veya polling tutmaz.
   useDeadlineReached(analysis?.ai?.status === "running" ? analysis.ai.leaseUntil : undefined);
   const navigate = useNavigate();
   const [deleteOpen, setDeleteOpen] = useState(false);
   const deleteDialog = useRef<HTMLDialogElement>(null);
-  useOutsideDismiss(deleteDialog, () => setDeleteOpen(false), deleteOpen && !busy);
+  useOutsideDismiss(deleteDialog, () => setDeleteOpen(false), deleteOpen);
   useEffect(() => {
     const dialog = deleteDialog.current;
     if (deleteOpen && !dialog?.open) dialog?.showModal();
     else if (!deleteOpen && dialog?.open) dialog.close();
   }, [deleteOpen]);
 
-  // Başarısız hazırlığı yeniden çalıştırır veya kullanıcı onayıyla analiz kaynaklarını siler.
-  async function action(name: "prepareAnalysis" | "deleteAnalysis", reviewToken?: string) {
-    if (actionPending.current) return;
+  // Hazırlığı mevcut kayıt ve çalışma bağlamında yeniden çalıştırır.
+  async function prepare(reviewToken?: string) {
+    if (actionPending.current || deleting) return;
     actionPending.current = true;
     setBusy(true);
     setActionError("");
     try {
-      const response = await httpsCallable<unknown, { needsReview?: boolean; ready?: boolean }>(getServices().functions, name, { timeout: 310_000 })({ id, ...(reviewToken ? { reviewToken } : {}) });
+      const response = await httpsCallable<unknown, { needsReview?: boolean; ready?: boolean }>(getServices().functions, "prepareAnalysis", { timeout: 310_000 })({ id, ...(reviewToken ? { reviewToken } : {}) });
       if (!context.current) return;
-      if (name === "prepareAnalysis" && reviewToken && response.data.ready === true && context.current.activeId === id) context.current.completeDraft();
-      if (name === "deleteAnalysis") navigate("/app/history", { replace: true });
+      if (reviewToken && response.data.ready === true && context.current.activeId === id) context.current.completeDraft();
     } catch (actionFailure) {
       if (!context.current) return;
-      setDeleteOpen(false);
       setActionError(userError(actionFailure));
     } finally {
       actionPending.current = false;
       if (context.current) setBusy(false);
     }
+  }
+
+  // Onay sonrası diyaloğu kapatır ve sonuç aynı rapordayken geçmişe döner.
+  async function confirmRemoval(title: string) {
+    if (busy || progress || accountPending) return;
+    setDeleteOpen(false);
+    const result = await remove([{ id, title }]);
+    if (result?.deleted && context.current) navigate("/app/history", { replace: true });
   }
 
   if (loading) return <PageLoading label="Analiz hazırlanıyor…" />;
@@ -85,7 +95,8 @@ function AnalysisScreen({ id }: { id: string }) {
     {analysis.status === "completed" && !tabular && <p className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm dark:border-secondary/20">{t(tr.analysis.disclaimer)}</p>}
     {(analysis.error || actionError) && <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{t(actionError || analysis.error)}</p>}
     {analysis.status === "uploading" && <p className="mt-5 text-sm">{t("Yükleme tamamlanmadıysa Yeni analiz sayfasından aynı belgelerle devam edin.")}</p>}
-    {analysis.status === "processing" && <p className="mt-5 text-sm">{t("Belgelerin içeriği ayrıştırılıyor; sayfadan ayrılabilirsiniz. Beş dakikadan uzun sürerse yeniden denemek güvenlidir.")}</p>}
+    {(busy || analysis.status === "processing") && <div className="mt-5"><OperationStatus>{t("Belgelerin içeriği ayrıştırılıyor; sayfadan ayrılabilirsiniz. Beş dakikadan uzun sürerse yeniden denemek güvenlidir.")}</OperationStatus></div>}
+    {analysis.status === "deleting" && !deleting && <div className="mt-5"><OperationStatus>{t("Analiz siliniyor…")}</OperationStatus></div>}
     {analysis.status === "review" && analysis.preparationReview && <section className="surface mt-6 rounded-3xl border border-border bg-card p-5 shadow-sm sm:p-7" aria-labelledby="preparation-review-title">
       <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-300"><TriangleAlert className="h-5 w-5" aria-hidden="true" /></span>
       <h2 id="preparation-review-title" className="mt-4 text-xl font-semibold tracking-tight">{t("Belgeleri gözden geçirin")}</h2>
@@ -94,7 +105,7 @@ function AnalysisScreen({ id }: { id: string }) {
         {analysis.preparationReview.ready.map(source => <li key={source.id} className="flex min-w-0 items-center gap-3 px-4 py-3 text-sm"><Check className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" aria-hidden="true" /><span className="min-w-0 break-all">{source.name}</span><span className="ms-auto shrink-0 text-xs text-muted-foreground">{t("Hazır")}</span></li>)}
         {analysis.preparationReview.rejected.map(source => <li key={source.id} className="flex min-w-0 gap-3 px-4 py-3 text-sm"><TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300" aria-hidden="true" /><div className="min-w-0"><p className="break-all font-medium">{source.name}</p><p className="mt-1 break-words text-xs leading-5 text-muted-foreground">{t(source.reason)}</p></div></li>)}
       </ul>
-      <div className="mt-5 flex flex-wrap gap-3"><Button disabled={busy} className="h-auto min-h-11 whitespace-normal text-start" onClick={() => action("prepareAnalysis", analysis.preparationReview!.token)}>{busy ? t("Belgeler hazırlanıyor…") : t("Yalnız {0} belgeyle devam et", analysis.preparationReview.ready.length)}</Button><Button asChild variant="outline"><Link to="/app/new-analysis">{t("Dosyaları düzenle")}</Link></Button></div>
+      <div className="mt-5 flex flex-wrap gap-3"><Button disabled={busy || deleting} className="h-auto min-h-11 whitespace-normal text-start" onClick={() => prepare(analysis.preparationReview!.token)}>{busy ? t("Belgeler hazırlanıyor…") : t("Yalnız {0} belgeyle devam et", analysis.preparationReview.ready.length)}</Button><Button asChild variant="outline"><Link to="/app/new-analysis">{t("Dosyaları düzenle")}</Link></Button></div>
       <p className="mt-3 text-xs leading-5 text-muted-foreground">{t("Devam ettiğinizde hazırlanabilen belgeler kullanılır; dışarıda kalanlar sonuçta belirtilir.")}</p>
     </section>}
     {analysis.status === "failed" && !!analysis.preparationFailures?.length && <ul className="mt-5 space-y-3 rounded-2xl border border-border bg-card p-5 text-sm" aria-label={t("Hazırlanamayan belgeler")}>{analysis.preparationFailures.map(source => <li key={source.id}><p className="break-all font-medium">{source.name}</p><p className="mt-1 text-xs leading-5 text-muted-foreground">{t(source.reason)}</p></li>)}</ul>}
@@ -104,14 +115,14 @@ function AnalysisScreen({ id }: { id: string }) {
     </>}
     <div className="mt-6 flex flex-wrap gap-3">
       <Button asChild><Link className="gap-2" to="/app/new-analysis"><FilePlus2 className="h-4 w-4" aria-hidden="true" />  {t("Yeni analiz oluştur")}</Link></Button>
-      {["failed", "processing"].includes(analysis.status) && <Button disabled={busy} onClick={() => action("prepareAnalysis")}>{t(tr.analysis.retry)}</Button>}
-      <Button variant="outline" disabled={busy} onClick={() => setDeleteOpen(true)}>{t(tr.analysis.delete)}</Button>
+      {["failed", "processing"].includes(analysis.status) && <Button disabled={busy || deleting} onClick={() => prepare()}>{busy ? t("Belgeler hazırlanıyor…") : t(tr.analysis.retry)}</Button>}
+      <Button variant="outline" disabled={busy || accountPending || progress !== null || analysis.status === "deleting"} onClick={() => setDeleteOpen(true)}>{deleting ? t("Analiz siliniyor…") : t(tr.analysis.delete)}</Button>
     </div>
-    <dialog ref={deleteDialog} role="alertdialog" aria-labelledby="analysis-delete-title" aria-describedby="analysis-delete-description" onCancel={event => { if (busy) event.preventDefault(); else setDeleteOpen(false); }} onClose={() => { if (!busy) setDeleteOpen(false); }} className="surface w-[min(92vw,30rem)] max-w-none overscroll-contain rounded-3xl border border-border bg-card p-6 text-foreground shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm sm:p-7">
+    <dialog ref={deleteDialog} role="alertdialog" aria-labelledby="analysis-delete-title" aria-describedby="analysis-delete-description" onCancel={() => setDeleteOpen(false)} onClose={() => setDeleteOpen(false)} className="surface w-[min(92vw,30rem)] max-w-none overscroll-contain rounded-3xl border border-border bg-card p-6 text-foreground shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm sm:p-7">
       <h2 id="analysis-delete-title" className="text-xl font-semibold">{t("Bu analizi silmek istiyor musunuz?")}</h2>
       <p id="analysis-delete-description" className="mt-3 text-sm leading-6 text-muted-foreground">{t(tr.analysis.confirm)}</p>
       <p className="mt-4 break-words rounded-xl bg-muted px-4 py-3 text-sm font-medium">{analysis.title}</p>
-      <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><Button autoFocus variant="outline" disabled={busy} onClick={() => setDeleteOpen(false)}>{t("Vazgeç")}</Button><Button disabled={busy} onClick={() => action("deleteAnalysis")} className="bg-red-700 text-white hover:bg-red-800">{busy ? t("Siliniyor: {0}/{1}", 0, 1) : t("Analizi sil")}</Button></div>
+      <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><Button autoFocus variant="outline" disabled={busy} onClick={() => setDeleteOpen(false)}>{t("Vazgeç")}</Button><Button disabled={busy || accountPending || progress !== null} onClick={() => confirmRemoval(analysis.title)} className="bg-red-700 text-white hover:bg-red-800">{t("Analizi sil")}</Button></div>
     </dialog>
   </section>;
 }

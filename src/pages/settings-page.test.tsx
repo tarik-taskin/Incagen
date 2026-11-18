@@ -1,7 +1,9 @@
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { Link, MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { WorkspaceDeletionProvider } from "../components/workspace-deletion-provider";
+import { WorkspaceDeletionStatus } from "../components/workspace-deletion-status";
 import { SettingsPage } from "./settings-page";
 
 const signOutMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
@@ -19,17 +21,21 @@ vi.mock("firebase/auth", () => ({
   signOut: signOutMock,
 }));
 vi.mock("firebase/functions", () => ({ httpsCallable: () => deleteAccountMock }));
-vi.mock("../lib/firebase", () => ({ getServices: () => ({ auth: { name: "test-auth" }, functions: { name: "test-functions" } }) }));
+vi.mock("../lib/firebase", () => ({ getServices: () => ({ auth: { name: "test-auth", get currentUser() { return authState.user; } }, functions: { name: "test-functions" } }) }));
 vi.mock("../lib/auth-context", () => ({ useAuth: () => ({ user: authState.user, loading: false, error: "" }) }));
 
 // Ayarlar ekranını gerçek router davranışıyla oluşturur.
 function renderSettings() {
   return render(
     <MemoryRouter initialEntries={["/app/settings"]}>
-      <Routes>
-        <Route path="/" element={<h1>Ana sayfa</h1>} />
-        <Route path="/app/settings" element={<SettingsPage />} />
-      </Routes>
+      <WorkspaceDeletionProvider uid={String(authState.user?.uid)}>
+        <WorkspaceDeletionStatus />
+        <Routes>
+          <Route path="/" element={<h1>Ana sayfa</h1>} />
+          <Route path="/app/settings" element={<><Link to="/app/plan">Plan</Link><SettingsPage /></>} />
+          <Route path="/app/plan" element={<Link to="/app/settings">Ayarlara dön</Link>} />
+        </Routes>
+      </WorkspaceDeletionProvider>
     </MemoryRouter>,
   );
 }
@@ -57,7 +63,7 @@ describe("Ayarlar sayfası", () => {
     expect(screen.getByText("E-posta ve parola")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "E-postaya bağlantı gönder" }));
 
-    expect(sendPasswordResetEmailMock).toHaveBeenCalledWith({ name: "test-auth" }, "test@example.test");
+    expect(sendPasswordResetEmailMock).toHaveBeenCalledWith(expect.objectContaining({ name: "test-auth" }), "test@example.test");
     expect(await screen.findByRole("status")).toHaveTextContent("Şifre değiştirme isteği hazırlandı");
     expect(screen.getByRole("button", { name: "Tekrar gönder" })).toBeEnabled();
   });
@@ -105,6 +111,31 @@ describe("Ayarlar sayfası", () => {
     expect(getIdToken).toHaveBeenCalledWith(true);
     expect(deleteAccountMock).toHaveBeenCalledWith({ confirmation: "HESABIMI SİL" });
     expect(await screen.findByRole("heading", { name: "Ana sayfa" })).toBeInTheDocument();
+  });
+
+  it("hesap silme yanıtı beklerken onayı kapatır, gezintiyi ve tek isteği korur", async () => {
+    let finish!: (response: { data: { deleted: boolean } }) => void;
+    const pending = new Promise<{ data: { deleted: boolean } }>(resolve => { finish = resolve; });
+    authState.user = { uid: "google-user", email: "google@example.test", providerData: [{ providerId: "google.com" }], getIdToken: vi.fn() };
+    deleteAccountMock.mockReturnValueOnce(pending);
+    const user = userEvent.setup();
+    renderSettings();
+
+    await user.click(screen.getByRole("button", { name: "Hesabı sil" }));
+    const dialog = screen.getByRole("alertdialog");
+    await user.type(within(dialog).getByLabelText(/Onaylamak için/), "HESABIMI SİL");
+    await user.click(within(dialog).getByRole("button", { name: "Hesabı kalıcı olarak sil" }));
+    expect(dialog).not.toBeVisible();
+    await user.click(screen.getByRole("link", { name: "Plan" }));
+    expect(screen.getByRole("status")).toHaveTextContent("Hesap siliniyor…");
+    await user.click(screen.getByRole("link", { name: "Ayarlara dön" }));
+    expect(screen.getByRole("button", { name: "Hesabı sil" })).toBeDisabled();
+    expect(deleteAccountMock).toHaveBeenCalledOnce();
+
+    await act(() => finish({ data: { deleted: false } }));
+    expect(screen.getByRole("alert")).toHaveTextContent("Hesap silinemedi.");
+    expect(screen.getByRole("button", { name: "Hesabı sil" })).toBeEnabled();
+    expect(signOutMock).not.toHaveBeenCalled();
   });
 
   it("Google doğrulama penceresi kapatılırsa hesabı silmez ve hata göstermez", async () => {

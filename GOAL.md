@@ -9,6 +9,16 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
+### 2026-11-18 — Furkan / Codex: işlemler sırasında gezinme
+
+- [x] Sahip: Furkan — Geçmişte tekli ve toplu silme onayı kapanır. Çalışma alanında tamamlanan istekler ve kısmi hata sonucu görünür. Kullanıcının bu sırada değiştirdiği filtre veya seçim korunur.
+- [x] Sahip: Furkan — Rapor silme aynı oturum kuyruğunu kullanır. Geç yanıt başka bir rapora geçilmişse rotayı değiştirmez. Oturum değişince gönderilmemiş istekler durur.
+- [x] Sahip: Furkan — Hesap doğrulaması iptal edilebilir. Onaylı sunucu isteğinin ilerlemesi gezinmede görünür kalır ve tek istek gönderilir. Çıkış düğmesi kendi bekleme durumunu gösterir.
+- [x] Sahip: Furkan — Belge hazırlamada oluşturma, gerçek aktarım, sunucu hazırlığı ve yeniden deneme durumları ayrı görünür. Çalışma alanı gezinmesi ve altı dil korunur.
+- [x] Sahip: Furkan — Antigravity değişiklikleri bağımsız doğrulandı. Çevrimdışı grafik denetimi referans serisinin tamamını ister. CI kanıtı ham hata değerlerini taşımaz ve boş koşu dizinine yazar. Kullanım muhasebesi ve bulut tanılaması temizlik testleri geçti.
+
+Yerel kabul: lint, 213 arayüz / 144 Functions / 58 script / 49 Python / 11 entegrasyon testi ve üretim derlemesi geçti. Tarayıcı paketi retry kapalı 81 geçti ve üç mevcut platform atlamasıyla tamamlandı. Geciktirilmiş analiz ve hesap silme isteklerinde gezinme masaüstü ve mobilde sınandı. Son commit için GitHub Quality ve Netlify dosya/rota eşliği ayrıca doğrulanır.
+
 ### 2026-11-17 — Furkan / Antigravity: Gemini kanıt daraltma, çevrimdışı değerlendirici, doğrulama kabulü ve CI kanıt paketi
 
 - [!] Sahip: Furkan — Görev 1 (Gemini engelini kanıta dayalı daralt): `scripts/check-gemini-cloud.mjs` aşamalı çıktı (`configuration`, `clientAuth`, `callable`, `cleanup`), izinli sabit alan sözleşmesi ve `cleaned: false` yarım kayıt korumasıyla güncellendi; `check-gemini-cloud.test.mjs` (6/6) geçti. Tek sabit sentetik canlı kontrol (`21.684 ms` toplam) `configuration` (`2.110 ms`) ve `clientAuth` (`3.358 ms`) aşamalarını geçti; `callable` (`checkGemini`) `6.631 ms` içinde `functions/unavailable / busy` döndürdü (`callAttempted: true`), `cleanup` (`9.583 ms`, `verified-clean`) doğrulandı. Engel: sağlayıcı yanıtı (`busy`); gerçek analiz kalitesi kabulü bekler, iki yayın kapısı kapalı kalır.

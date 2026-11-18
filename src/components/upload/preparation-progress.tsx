@@ -1,4 +1,4 @@
-import { Check, FileCheck2, LoaderCircle, Upload } from "lucide-react";
+import { Check, LoaderCircle, Upload } from "lucide-react";
 import { Link } from "react-router-dom";
 import { t, useLocale, localeTag } from "../../i18n/runtime";
 import { useWorkspace } from "../../lib/workspace-context";
@@ -11,12 +11,12 @@ export function PreparationProgress({ compact = false }: { compact?: boolean }) 
   const preparing = phase === "preparing";
   const uploading = phase === "uploading";
   const title = preparing ? "Belgeler hazırlanıyor" : uploading ? "Dosyalar yükleniyor" : "Çalışma oluşturuluyor";
-  const Icon = preparing ? FileCheck2 : uploading ? Upload : LoaderCircle;
+  const Icon = uploading ? Upload : LoaderCircle;
   return <section aria-label={t("Belge hazırlama durumu")} className={`${compact ? "mb-5" : "mt-5"} rounded-2xl border border-primary/15 bg-primary/[0.035] p-4 dark:border-secondary/20 dark:bg-secondary/[0.04]`}>
     <div role="status" aria-live="polite" aria-atomic="true" className="flex items-start gap-3">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-card text-primary dark:text-secondary"><Icon className={`h-4 w-4 ${phase === "creating" ? "motion-safe:animate-spin" : ""}`} aria-hidden="true" /></span>
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-card text-primary dark:text-secondary"><Icon className={`h-4 w-4 ${!uploading ? "motion-safe:animate-spin" : ""}`} aria-hidden="true" /></span>
       <div className="min-w-0 flex-1"><p className="text-sm font-semibold">{t(title)}</p>
-        <p className="mt-1 text-xs leading-5 text-muted-foreground">{preparing ? t("Yükleme tamamlandı. Belgelerin içeriği ve kaynakları kontrol ediliyor.") : uploadingFile ? <><bdi className="break-all">{uploadingFile.name}</bdi> · {t("Dosya {0}/{1}", uploadingFile.index, uploadingFile.total)}</> : t("Belgeleriniz için güvenli çalışma kaydı açılıyor.")}</p>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">{preparing ? t("Yükleme tamamlandı. Belgelerin içeriği ve kaynakları kontrol ediliyor.") + " " + t("Bu sırada çalışma alanında gezinebilirsiniz.") : uploadingFile ? <><bdi className="break-all">{uploadingFile.name}</bdi> · {t("Dosya {0}/{1}", uploadingFile.index, uploadingFile.total)}</> : t("Belgeleriniz için güvenli çalışma kaydı açılıyor.")}</p>
       </div>
       {uploading && <span aria-hidden="true" className="shrink-0 text-sm font-semibold tabular-nums text-primary dark:text-secondary">{new Intl.NumberFormat(localeTag(), { style: "percent", maximumFractionDigits: 0 }).format(progress / 100)}</span>}
     </div>

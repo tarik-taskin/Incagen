@@ -1,3 +1,4 @@
+import { WorkspaceDeletionProvider } from "../components/workspace-deletion-provider";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes, useNavigate } from "react-router-dom";
@@ -13,7 +14,7 @@ const state = vi.hoisted(() => ({
 vi.mock("../lib/auth-context", () => ({ useAuth: () => ({ user: state.user }) }));
 vi.mock("../lib/workspace-context", () => ({ useWorkspace: () => ({ activeId: state.activeId, completeDraft: state.completeDraft }) }));
 vi.mock("../hooks/use-analyses", () => ({ useAnalysis: (id: string) => ({ analysis: state.analyses[id], loading: false, error: "" }) }));
-vi.mock("../lib/firebase", () => ({ getServices: () => ({ functions: {} }) }));
+vi.mock("../lib/firebase", () => ({ getServices: () => ({ functions: {}, auth: { currentUser: state.user } }) }));
 vi.mock("firebase/functions", () => ({ httpsCallable: () => state.call }));
 vi.mock("../components/prepared-documents", () => ({ PreparedDocuments: () => <p>Prepared sources</p> }));
 vi.mock("../features/reports/tabular-analysis-panel", () => ({ TabularAnalysisPanel: () => <p>Analysis panel</p> }));
@@ -21,17 +22,17 @@ vi.mock("../features/reports/tabular-analysis-panel", () => ({ TabularAnalysisPa
 // Gerçek route geçişi aynı sayfa türünü yeniden kullanır; key'in durum ve asenkron yanıtları ayırmasını sınar.
 function App() {
   const navigate = useNavigate();
-  return <><button onClick={() => navigate("/app/analyses/b")}>Open B</button><Routes>
+  return <WorkspaceDeletionProvider key={state.user.uid} uid={state.user.uid}><button onClick={() => navigate("/app/analyses/b")}>Open B</button><Routes>
     <Route path="/app/analyses/:id" element={<AnalysisPage />} />
     <Route path="/app/history" element={<p>History destination</p>} />
-  </Routes></>;
+  </Routes></WorkspaceDeletionProvider>;
 }
 function mount() { return render(<MemoryRouter initialEntries={["/app/analyses/a"]}><App /></MemoryRouter>); }
 
 // Yanıtı testin istediği anda tamamlar; gerçek callable veya model çağrısı yapılmaz.
 function deferred() {
-  let resolve!: (value: { data: { ready?: boolean } }) => void, reject!: (error: unknown) => void;
-  const promise = new Promise<{ data: { ready?: boolean } }>((yes, no) => { resolve = yes; reject = no; });
+  let resolve!: (value: { data: { ready?: boolean; deleted?: boolean } }) => void, reject!: (error: unknown) => void;
+  const promise = new Promise<{ data: { ready?: boolean; deleted?: boolean } }>((yes, no) => { resolve = yes; reject = no; });
   return { promise, resolve, reject };
 }
 
@@ -103,7 +104,7 @@ it("ignores a late delete success after navigating to another report", async () 
   expect(state.call).toHaveBeenCalledTimes(1);
   await user.click(screen.getByRole("button", { name: "Open B" }));
   expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
-  await act(async () => { request.resolve({ data: {} }); });
+  await act(async () => { request.resolve({ data: { deleted: true } }); });
   expect(screen.getByRole("heading", { name: "Report b" })).toBeVisible();
   expect(screen.queryByText("History destination")).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Analizi ve belgeleri sil" })).toBeEnabled();
@@ -127,7 +128,7 @@ it("resets dialogs and pending actions when the account changes on the same rout
   await userEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Analizi sil" }));
   state.user = { uid: "owner-b" };
   view.rerender(<MemoryRouter><App /></MemoryRouter>);
-  await act(async () => { request.resolve({ data: {} }); });
+  await act(async () => { request.resolve({ data: { deleted: true } }); });
   expect(screen.queryByText("History destination")).not.toBeInTheDocument();
   expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Analizi ve belgeleri sil" })).toBeEnabled();
@@ -151,7 +152,7 @@ it.each(["navigate", "new-draft", "stay"])("only completes the matching reviewed
 
 it("keeps successful deletion and safe retry errors working in the original context", async () => {
   state.analyses.a.status = "failed";
-  state.call.mockRejectedValueOnce({ code: "functions/unavailable" }).mockResolvedValue({ data: {} });
+  state.call.mockRejectedValueOnce({ code: "functions/unavailable" }).mockResolvedValue({ data: { deleted: true } });
   mount();
   await userEvent.click(screen.getByRole("button", { name: "Yeniden dene" }));
   expect(await screen.findByRole("alert")).not.toBeEmptyDOMElement();

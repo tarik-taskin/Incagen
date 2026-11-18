@@ -3,7 +3,6 @@ import { useOutsideDismiss } from "../hooks/use-outside-dismiss";
 import { PageLoading } from "../components/page-loading";
 import { t, useLocale, localeTag } from "../i18n/runtime";
 import { useEffect, useRef, useState } from "react";
-import { httpsCallable } from "firebase/functions";
 import { Archive, ArrowRight, ArrowUpRight, CheckCheck, CircleCheckBig, FileClock, FilePlus2, FolderOpen, Layers3, LoaderCircle, MoreHorizontal, RotateCcw, Search, SlidersHorizontal, Sparkles, Trash2, TriangleAlert, X } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import type { Analysis } from "../../functions/src/contracts";
@@ -13,18 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { buildHistoryView, DEFAULT_HISTORY_VIEW, parseHistoryView, serializeHistoryView, summarizeHistory, type HistoryPeriodFilter, type HistorySort, type HistoryStatusFilter, type HistoryViewOptions } from "../features/history/history-view";
 import { useAnalyses } from "../hooks/use-analyses";
 import { tr } from "../i18n/tr";
-import { userError } from "../lib/errors";
 import { authOnlyPreview } from "../lib/deployment-mode";
-import { getServices } from "../lib/firebase";
+import { useWorkspaceDeletion, type DeleteItem } from "../lib/workspace-deletion-context";
 
-interface DeleteTarget {
-  items: { id: string; title: string }[];
-}
-
-interface Notice {
-  kind: "success" | "error";
-  text: string;
-}
+type DeleteTarget = { items: DeleteItem[] };
 
 // Durumu listedeki kısa, renk destekli etikete dönüştürür; anlamı metin de taşır.
 function statusTone(status: Analysis["status"]) {
@@ -86,44 +77,40 @@ export function HistoryPage() {
   useLocale();
   const { rows, loading, error } = useAnalyses();
   const [now, setNow] = useState(() => Date.now());
-  // Yeni snapshot veya kullanıcı etkileşiminde eski state saati lease'i geriye taşıyamaz.
-  const displayNow = Math.max(now, Date.now());
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [target, setTarget] = useState<DeleteTarget | null>(null);
-  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
-  const [notice, setNotice] = useState<Notice | null>(null);
+  const { progress, pendingIds, accountPending, remove } = useWorkspaceDeletion();
   const [searchParams, setSearchParams] = useSearchParams();
   const view = parseHistoryView(searchParams);
   const { query, status: statusFilter, period: periodFilter, sort } = view;
+  const selectionRevision = useRef(0);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
-  useOutsideDismiss(dialogRef, () => setTarget(null), target !== null && progress === null);
+  useOutsideDismiss(dialogRef, () => setTarget(null), target !== null);
 
   // Lease ve seçili tarih aralığının bir sonraki sınırını tek hedefli zamanlayıcıyla yeniler.
   useEffect(() => {
-    const scheduledAt = Date.now();
     const deadlines = rows
-      .filter(r => r.status === "completed" && r.ai?.status === "running" && r.ai.leaseUntil > scheduledAt)
+      .filter(r => r.status === "completed" && r.ai?.status === "running" && r.ai.leaseUntil > now)
       .map(r => r.ai!.leaseUntil);
 
     if (periodFilter !== "all") {
       const windowMs = Number.parseInt(periodFilter, 10) * 86_400_000;
       for (const row of rows) {
         const expiry = row.createdAt + windowMs;
-        if (expiry >= scheduledAt) deadlines.push(expiry);
+        if (expiry >= now) deadlines.push(expiry);
       }
     }
     if (deadlines.length === 0) return;
 
     const earliestExpiry = Math.min(...deadlines);
-    const delay = Math.min(2_147_483_647, Math.max(50, earliestExpiry - scheduledAt + 50));
-
-    const timer = setTimeout(() => {
-      setNow(Date.now());
-    }, delay);
-
-    return () => clearTimeout(timer);
+    let timer: ReturnType<typeof setTimeout>;
+    const schedule = setTimeout(() => {
+      const delay = Math.min(2_147_483_647, Math.max(0, earliestExpiry - Date.now() + 1));
+      timer = setTimeout(() => setNow(Date.now()), delay);
+    }, 0);
+    return () => { clearTimeout(schedule); clearTimeout(timer); };
   }, [rows, now, periodFilter]);
 
   // Arka plan sekmesinden geri dönüldüğünde geciken zamanlayıcıları telafi etmek için saati tazele
@@ -137,10 +124,10 @@ export function HistoryPage() {
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
 
-  const visibleRows = buildHistoryView(rows, { query, status: statusFilter, period: periodFilter, sort }, displayNow, localeTag());
+  const visibleRows = buildHistoryView(rows, { query, status: statusFilter, period: periodFilter, sort }, now, localeTag());
   const selectedRows = visibleRows.filter(row => selectedIds.has(row.id));
   const allSelected = visibleRows.length > 0 && selectedRows.length === visibleRows.length;
-  const summary = summarizeHistory(rows, displayNow);
+  const summary = summarizeHistory(rows, now);
   const hasFilters = query.trim() !== "" || statusFilter !== "all" || periodFilter !== "all" || sort !== "newest";
   const advancedCount = Number(statusFilter !== "all") + Number(periodFilter !== "all") + Number(sort !== "newest");
   const [filtersOpen, setFiltersOpen] = useState(advancedCount > 0);
@@ -156,13 +143,14 @@ export function HistoryPage() {
 
   // Seçim modunu kapatırken önceki işten kalan seçimleri temizler.
   function toggleSelectionMode() {
+    selectionRevision.current++;
     setSelectionMode(value => !value);
     setSelectedIds(new Set());
-    setNotice(null);
   }
 
   // Kart seçimini kimlik üzerinden günceller; canlı liste sırası değişse de seçim kararlı kalır.
   function toggleSelected(id: string) {
+    selectionRevision.current++;
     setSelectedIds(current => {
       const next = new Set(current);
       if (next.has(id)) next.delete(id);
@@ -172,6 +160,7 @@ export function HistoryPage() {
   }
 
   function updateView(update: Partial<HistoryViewOptions>) {
+    selectionRevision.current++;
     setSearchParams(serializeHistoryView({ ...view, ...update }), { replace: true });
     setSelectedIds(new Set());
   }
@@ -180,36 +169,13 @@ export function HistoryPage() {
 
   // Onaydan sonra her analizi ayrı siler; kısmi hatada yalnız başarısız kayıtları seçili bırakır.
   async function deleteConfirmed() {
-    if (!target || progress) return;
-    const items = target.items;
-    setProgress({ done: 0, total: items.length });
-    setNotice(null);
-    const failed: { id: string; title: string; reason: string }[] = [];
-    let deleted = 0;
-    try {
-      const remove = httpsCallable<{ id: string }, { deleted: boolean }>(getServices().functions, "deleteAnalysis", { timeout: 310_000 });
-      for (const [index, item] of items.entries()) {
-        try {
-          await remove({ id: item.id });
-          deleted++;
-        } catch (actionError) {
-          failed.push({ ...item, reason: userError(actionError) });
-        }
-        setProgress({ done: index + 1, total: items.length });
-      }
-    } catch (actionError) {
-      failed.push(...items.map(item => ({ ...item, reason: userError(actionError) })));
-    }
-    setProgress(null);
+    if (!target || progress || accountPending) return;
+    const revision = selectionRevision.current;
     setTarget(null);
-    setSelectedIds(new Set(failed.map(item => item.id)));
-    setSelectionMode(failed.length > 0);
-    if (failed.length) {
-      const lead = failed[0];
-      setNotice({ kind: "error", text: (deleted ? deleted + " analiz silindi. " : "") + failed.length + " analiz silinemedi: " + lead.title + " — " + lead.reason + " Kalanları yeniden deneyebilirsiniz." });
-    } else {
-      setNotice({ kind: "success", text: deleted + " analiz ve kaynak belgeleri silindi." });
-    }
+    const result = await remove(target.items);
+    if (!result || selectionRevision.current !== revision) return;
+    setSelectedIds(new Set(result.failed.map(item => item.id)));
+    setSelectionMode(result.failed.length > 0);
   }
 
   return <section aria-labelledby="history-title" className="max-w-6xl">
@@ -223,16 +189,13 @@ export function HistoryPage() {
           <h1 id="history-title" className="mt-2 text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">{t(tr.analysis.history)}</h1>
           <p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">{t("Çalışmalarınızın düzenli adresi. Hazırladığınız analizleri yeniden açın, bulun ve ihtiyaç duymadıklarınızı yönetin.")}</p>
         </div>
-        {!loading && !error && rows.length > 0 && <Button variant="outline" className="gap-2 rounded-xl bg-card" disabled={progress !== null} onClick={toggleSelectionMode}>
+        {!loading && !error && rows.length > 0 && <Button variant="outline" className="gap-2 rounded-xl bg-card" onClick={toggleSelectionMode}>
           {selectionMode ? <X className="h-4 w-4" aria-hidden="true" /> : <Trash2 className="h-4 w-4" aria-hidden="true" />}
           {selectionMode ? t("Seçimi bitir") : t("Seç ve sil")}
         </Button>}
       </div>
       {!loading && !error && rows.length > 0 && <div className="relative mt-8 flex flex-wrap items-center gap-3 border-t border-border/70 pt-5 text-xs text-muted-foreground"><span className="inline-flex items-center gap-2"><Layers3 className="h-4 w-4" aria-hidden="true" /> {summary.total.toLocaleString(localeTag())}  {t("kayıt")}</span><span className="hidden h-1 w-1 rounded-full bg-primary/30 sm:block" aria-hidden="true" /><span>{t("Arama, filtreleme ve toplu yönetim bir arada")}</span></div>}
     </div>
-
-    {notice && <p role={notice.kind === "error" ? "alert" : "status"}
-      className={"mt-6 rounded-2xl border px-4 py-3 text-sm leading-6 " + (notice.kind === "error" ? "border-red-500/25 bg-red-500/5 text-red-700 dark:text-red-300" : "border-emerald-500/25 bg-emerald-500/5 text-emerald-700 dark:text-emerald-300")}>{t(notice.text)}</p>}
 
     {!loading && !error && rows.length > 0 && <section className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label={t("Arşiv özeti")}>
       {[
@@ -293,10 +256,13 @@ export function HistoryPage() {
     {selectionMode && visibleRows.length > 0 && <div className="mt-7 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/[0.04] p-4 dark:border-secondary/20 dark:bg-secondary/[0.04] sm:p-5" aria-label={t("Toplu silme işlemleri")}>
       <div><p className="font-semibold">{t("{0} analiz seçildi", selectedRows.length)}</p><p className="mt-1 text-xs text-muted-foreground">{t("Seçtiklerinizi silmeden önce onay isteyeceğiz.")}</p></div>
       <div className="flex flex-wrap items-center gap-2">
-        <Button variant="ghost" className="gap-2 rounded-xl" disabled={progress !== null} onClick={() => setSelectedIds(allSelected ? new Set() : new Set(visibleRows.map(row => row.id)))}>
+        <Button variant="ghost" className="gap-2 rounded-xl" onClick={() => {
+          selectionRevision.current++;
+          setSelectedIds(allSelected ? new Set() : new Set(visibleRows.map(row => row.id)));
+        }}>
           <CheckCheck className="h-4 w-4" aria-hidden="true" />{allSelected ? t("Seçimi temizle") : t("Görünenleri seç")}
         </Button>
-        <Button variant="outline" className="gap-2 rounded-xl border-red-500/30 text-red-700 hover:bg-red-500/10 dark:text-red-300" disabled={selectedRows.length === 0 || progress !== null}
+        <Button variant="outline" className="gap-2 rounded-xl border-red-500/30 text-red-700 hover:bg-red-500/10 dark:text-red-300" disabled={selectedRows.length === 0 || accountPending || progress !== null}
           onClick={() => setTarget({ items: selectedRows.map(row => ({ id: row.id, title: row.title })) })}>
           <Trash2 className="h-4 w-4" aria-hidden="true" />  {t("Seçilenleri sil")} </Button>
       </div>
@@ -307,18 +273,18 @@ export function HistoryPage() {
       <div className="relative flex min-h-56 items-center justify-center overflow-hidden border-t border-border/70 bg-gradient-to-br from-primary/[0.06] via-background to-primary/[0.12] p-8 dark:from-secondary/[0.06] dark:to-secondary/[0.12] lg:border-s lg:border-t-0" aria-hidden="true"><div className="absolute h-52 w-52 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="absolute h-36 w-36 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="surface relative flex h-24 w-24 items-center justify-center rounded-[1.75rem] border border-primary/15 bg-card shadow-xl shadow-primary/10 dark:border-secondary/20"><FolderOpen className="h-11 w-11 text-primary dark:text-secondary" /></div><span className="absolute bottom-5 end-5 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-muted-foreground shadow-sm">{t("İlk çalışmanız burada")}</span></div>
     </div> : <div role="alert" className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/[0.05] p-6 text-sm text-red-700 dark:text-red-300"><TriangleAlert className="mb-3 h-5 w-5" aria-hidden="true" />{t(error)}</div> : rows.length && visibleRows.length ? <ul className="mt-6 space-y-3" aria-label={t("Analiz geçmişi")}>{visibleRows.map(analysis => <li key={analysis.id} className="surface relative overflow-visible rounded-[1.35rem] border border-border/80 bg-card shadow-[0_12px_35px_-32px_rgba(55,20,95,0.7)] transition-[transform,box-shadow,border-color] duration-200 animate-in fade-in-0 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_40px_-27px_rgba(55,20,95,0.35)] dark:hover:border-secondary/30">
       {selectionMode ? <label className="flex min-h-24 cursor-pointer flex-wrap items-center gap-4 rounded-2xl p-4 transition-colors hover:bg-muted/40 sm:p-5">
-        <Checkbox checked={selectedIds.has(analysis.id)} disabled={progress !== null} onCheckedChange={() => toggleSelected(analysis.id)} aria-label={t("{0} seç", analysis.title)} />
+        <Checkbox checked={selectedIds.has(analysis.id)} onCheckedChange={() => toggleSelected(analysis.id)} aria-label={t("{0} seç", analysis.title)} />
         <span className="min-w-0 flex-1"><span className="block break-words font-semibold">{analysis.title}</span><span className="mt-1 block text-xs text-muted-foreground">{analysis.business} · {new Date(analysis.createdAt).toLocaleString(localeTag())}</span></span>
-        <span className={"rounded-full border px-3 py-1 text-xs font-medium " + statusTone(analysisDisplayStatus(analysis, displayNow).state)}>{t(analysisDisplayStatus(analysis, displayNow).label)}</span>
+        <span className={"rounded-full border px-3 py-1 text-xs font-medium " + statusTone(analysisDisplayStatus(analysis, now).state)}>{t(pendingIds.has(analysis.id) ? "Analiz siliniyor…" : analysisDisplayStatus(analysis, now).label)}</span>
       </label> : <div className="flex min-h-28 items-center gap-2 p-2 sm:gap-3">
         <Link className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl px-2 py-3 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:gap-5 sm:px-4" to={"/app/analyses/" + analysis.id}>
           <span className="hidden h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-primary/[0.07] text-primary dark:bg-secondary/[0.08] dark:text-secondary sm:flex"><span className="text-lg font-bold leading-none">{new Date(analysis.createdAt).toLocaleDateString(localeTag(), { day: "2-digit" })}</span><span className="mt-1 text-[10px] font-semibold uppercase">{new Date(analysis.createdAt).toLocaleDateString(localeTag(), { month: "short" })}</span></span>
-          <span className="min-w-0 flex-1"><span className="block break-words text-sm font-semibold tracking-tight sm:text-base">{analysis.title}</span><span className="mt-1.5 block break-words text-xs text-muted-foreground">{analysis.business} <span aria-hidden="true">·</span> {new Date(analysis.createdAt).toLocaleString(localeTag())}</span><span className={"mt-2 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium sm:hidden " + statusTone(analysisDisplayStatus(analysis, displayNow).state)}>{t(analysisDisplayStatus(analysis, displayNow).label)}</span></span>
+          <span className="min-w-0 flex-1"><span className="block break-words text-sm font-semibold tracking-tight sm:text-base">{analysis.title}</span><span className="mt-1.5 block break-words text-xs text-muted-foreground">{analysis.business} <span aria-hidden="true">·</span> {new Date(analysis.createdAt).toLocaleString(localeTag())}</span><span className={"mt-2 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium sm:hidden " + statusTone(analysisDisplayStatus(analysis, now).state)}>{t(pendingIds.has(analysis.id) ? "Analiz siliniyor…" : analysisDisplayStatus(analysis, now).label)}</span></span>
           <ArrowUpRight className="hidden h-4 w-4 shrink-0 text-muted-foreground sm:block" aria-hidden="true" />
         </Link>
         <div className="flex shrink-0 items-center gap-1 pe-1 sm:gap-2 sm:pe-2">
-          <span className={"hidden rounded-full border px-3 py-1 text-xs font-medium sm:inline-flex " + statusTone(analysisDisplayStatus(analysis, displayNow).state)}>{t(analysisDisplayStatus(analysis, displayNow).label)}</span>
-          <HistoryActions analysis={analysis} disabled={progress !== null} onDelete={() => setTarget({ items: [{ id: analysis.id, title: analysis.title }] })} />
+          <span className={"hidden rounded-full border px-3 py-1 text-xs font-medium sm:inline-flex " + statusTone(analysisDisplayStatus(analysis, now).state)}>{t(pendingIds.has(analysis.id) ? "Analiz siliniyor…" : analysisDisplayStatus(analysis, now).label)}</span>
+          <HistoryActions analysis={analysis} disabled={accountPending || progress !== null} onDelete={() => setTarget({ items: [{ id: analysis.id, title: analysis.title }] })} />
         </div>
       </div>}
     </li>)}</ul> : rows.length ? <div className="mt-6 rounded-[1.75rem] border border-dashed border-border bg-card/70 px-6 py-16 text-center shadow-sm">
@@ -331,19 +297,19 @@ export function HistoryPage() {
     </div>}
 
     <dialog ref={dialogRef} role="alertdialog" aria-labelledby="history-delete-title" aria-describedby="history-delete-description"
-      onCancel={event => { if (progress) event.preventDefault(); else setTarget(null); }}
-      onClose={() => { if (!progress) setTarget(null); }}
+      onCancel={() => setTarget(null)}
+      onClose={() => setTarget(null)}
       className="surface w-[min(92vw,30rem)] max-w-none overscroll-contain rounded-3xl border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm">
       <div className="p-6 sm:p-7">
         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/10 text-red-700 dark:text-red-300"><Trash2 className="h-5 w-5" aria-hidden="true" /></span>
-        <h2 id="history-delete-title" className="mt-5 text-xl font-semibold">{target?.items.length === 1 ? t("Bu analizi silmek istiyor musunuz?") : (target?.items.length ?? 0) + " analizi silmek istiyor musunuz?"}</h2>
+        <h2 id="history-delete-title" className="mt-5 text-xl font-semibold">{target?.items.length === 1 ? t("Bu analizi silmek istiyor musunuz?") : t("{0} analizi silmek istiyor musunuz?", target?.items.length ?? 0)}</h2>
         <p id="history-delete-description" className="mt-2 text-sm leading-6 text-muted-foreground">{t("Bu işlem geri alınamaz. Seçilen analizler, yüklenen kaynak belgeler ve hazırlanmış içerikler birlikte silinir.")}</p>
         {target?.items.length === 1 && <p className="mt-4 break-words rounded-xl bg-muted px-4 py-3 text-sm font-medium">{target.items[0].title}</p>}
-        {progress && <p role="status" className="mt-4 text-sm text-muted-foreground">{t("Siliniyor: {0}/{1}", progress.done, progress.total)}</p>}
+
         <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button ref={cancelRef} variant="outline" className="rounded-xl" disabled={progress !== null} onClick={() => setTarget(null)}>{t("Vazgeç")}</Button>
-          <Button className="gap-2 rounded-xl bg-red-700 text-white hover:bg-red-800 dark:bg-red-600 dark:hover:bg-red-700" disabled={progress !== null} onClick={deleteConfirmed}>
-            <Trash2 className="h-4 w-4" aria-hidden="true" />{target?.items.length === 1 ? t("Analizi sil") : (target?.items.length ?? 0) + " analizi sil"}
+          <Button ref={cancelRef} variant="outline" className="rounded-xl" onClick={() => setTarget(null)}>{t("Vazgeç")}</Button>
+          <Button className="gap-2 rounded-xl bg-red-700 text-white hover:bg-red-800 dark:bg-red-600 dark:hover:bg-red-700" disabled={accountPending || progress !== null} onClick={deleteConfirmed}>
+            <Trash2 className="h-4 w-4" aria-hidden="true" />{target?.items.length === 1 ? t("Analizi sil") : t("{0} analizi sil", target?.items.length ?? 0)}
           </Button>
         </div>
       </div>

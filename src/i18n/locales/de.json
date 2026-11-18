@@ -1126,5 +1126,15 @@
   "Seçilen tablo artık bu kaynakta bulunmuyor. Başka bir tablo seçin.": "Diese Tabelle ist in der Quelle nicht mehr vorhanden. Wählen Sie eine andere Tabelle.",
   "Tablo {0}": "Tabelle {0}",
   "İncelenecek tablo": "Tabelle zur Prüfung",
-  "İncelenecek tabloyu seçin.": "Wählen Sie eine Tabelle."
+  "İncelenecek tabloyu seçin.": "Wählen Sie eine Tabelle.",
+  "Bu sırada çalışma alanında gezinebilirsiniz.": "Sie können den Arbeitsbereich währenddessen weiter nutzen.",
+  "{0} analiz ve kaynak belgeleri silindi.": "{0} Analysen und ihre Quelldokumente wurden gelöscht.",
+  "{0} analiz silinemedi.": "{0} Analysen konnten nicht gelöscht werden.",
+  "Analiz siliniyor…": "Analyse wird gelöscht…",
+  "{0} analizi silmek istiyor musunuz?": "{0} Analysen löschen?",
+  "{0} analizi sil": "{0} Analysen löschen",
+  "Analiz silinemedi.": "Die Analyse konnte nicht gelöscht werden.",
+  "Hesap silinemedi.": "Das Konto konnte nicht gelöscht werden.",
+  "Kimliğiniz doğrulanıyor…": "Ihre Identität wird überprüft…",
+  "Oturum kapatılıyor…": "Abmeldung läuft…"
 }

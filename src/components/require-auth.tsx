@@ -1,3 +1,4 @@
+import { WorkspaceDeletionProvider } from "./workspace-deletion-provider";
 import { useLocale } from "../i18n/runtime";
 import { PageLoading } from "./page-loading";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
@@ -11,6 +12,6 @@ export function RequireAuth() {
   const { user, loading } = useAuth();
   const location = useLocation();
   if (loading) return <PageLoading fullPage kind="workspace" label={tr.auth.loading} />;
-  if (user) return <WorkspaceProvider key={user.uid}><Outlet /></WorkspaceProvider>;
+  if (user) return <WorkspaceProvider key={user.uid}><WorkspaceDeletionProvider uid={user.uid}><Outlet /></WorkspaceDeletionProvider></WorkspaceProvider>;
   return <Navigate to="/" state={location.state?.logoutPending ? null : { authOpen: true, from: location.pathname }} replace />;
 }

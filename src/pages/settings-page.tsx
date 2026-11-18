@@ -1,8 +1,9 @@
+import { OperationStatus } from "../components/operation-status";
 import { useOutsideDismiss } from "../hooks/use-outside-dismiss";
 import { t, useLocale } from "../i18n/runtime";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup, sendPasswordResetEmail, signOut } from "firebase/auth";
-import { httpsCallable } from "firebase/functions";
+import { useWorkspaceDeletion } from "../lib/workspace-deletion-context";
 import { BarChart3, CheckCircle2, Eye, EyeOff, KeyRound, Link2, LogOut, Mail, MousePointer2, ShieldCheck, Trash2, UserRound } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
@@ -24,14 +25,23 @@ export function SettingsPage() {
   const [error, setError] = useState("");
   const [resetStatus, setResetStatus] = useState<ResetStatus>("idle");
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deletePending, setDeletePending] = useState(false);
+  const { progress, accountPending, eraseAccount } = useWorkspaceDeletion();
+  const [verifying, setVerifying] = useState(false);
+  const deletePending = verifying || accountPending;
+  const verification = useRef<object | null>(null);
+  const resetPending = useRef(false);
+  const logoutPending = useRef(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  useLayoutEffect(() => () => {
+    verification.current = null;
+  }, [user?.uid]);
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [showDeletePassword, setShowDeletePassword] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const deleteDialogRef = useRef<HTMLDialogElement>(null);
   const methods = signInMethods(user);
-  useOutsideDismiss(deleteDialogRef, closeDeleteDialog, deleteOpen && !deletePending);
+  useOutsideDismiss(deleteDialogRef, closeDeleteDialog, deleteOpen);
 
   useEffect(() => {
     const dialog = deleteDialogRef.current;
@@ -42,7 +52,8 @@ export function SettingsPage() {
 
   // Oturumdaki e-posta için Firebase parola sıfırlama isteği oluşturur.
   async function requestPasswordReset() {
-    if (!user?.email || resetStatus === "sending") return;
+    if (!user?.email || resetPending.current) return;
+    resetPending.current = true;
 
     setError("");
     setResetStatus("sending");
@@ -52,11 +63,16 @@ export function SettingsPage() {
     } catch (resetError) {
       setResetStatus("idle");
       setError(userError(resetError));
+    } finally {
+      resetPending.current = false;
     }
   }
 
   // Firebase oturumunu kapattıktan sonra kullanıcıyı modal açmadan landing sayfasına taşır.
   async function logout() {
+    if (logoutPending.current || verification.current || accountPending) return;
+    logoutPending.current = true;
+    setLoggingOut(true);
     setError("");
     navigate(location.pathname, { replace: true, state: { logoutPending: true }, flushSync: true });
     try {
@@ -65,6 +81,9 @@ export function SettingsPage() {
     } catch (logoutError) {
       navigate(location.pathname, { replace: true, state: null, flushSync: true });
       setError(userError(logoutError));
+    } finally {
+      logoutPending.current = false;
+      setLoggingOut(false);
     }
   }
 
@@ -73,29 +92,36 @@ export function SettingsPage() {
   async function deleteAccount() {
     if (authOnlyPreview) return;
     const email = user?.email;
-    if (!user || deleteConfirmation !== t("HESABIMI SİL") || deletePending) return;
+    if (!user || deleteConfirmation !== t("HESABIMI SİL") || verification.current || accountPending || progress || logoutPending.current) return;
     if (methods.password && (!email || !deletePassword)) return;
     setDeleteError("");
-    setDeletePending(true);
+    const request = {};
+    verification.current = request;
+    setVerifying(true);
     try {
       if (methods.password && email) await reauthenticateWithCredential(user, EmailAuthProvider.credential(email, deletePassword));
       else await reauthenticateWithPopup(user, createGoogleProvider());
       await user.getIdToken(true);
-      const remove = httpsCallable<{ confirmation: string }, { deleted: boolean }>(getServices().functions, "deleteAccount", { timeout: 310_000 });
-      // Yerelleştirilmiş onay kullanıcıda doğrulanır; backend sözleşmesindeki sabit onay korunur.
-      await remove({ confirmation: "HESABIMI SİL" });
-      await signOut(getServices().auth);
-      navigate("/", { replace: true, state: null, flushSync: true });
+      if (verification.current !== request || getServices().auth.currentUser?.uid !== user.uid) return;
+      setDeleteOpen(false);
+      setDeletePassword("");
+      setDeleteConfirmation("");
+      setShowDeletePassword(false);
+      await eraseAccount();
     } catch (actionError) {
-      if (!isDismissedPopup(actionError)) setDeleteError(userError(actionError));
+      if (verification.current === request && !isDismissedPopup(actionError)) setDeleteError(userError(actionError));
     } finally {
-      setDeletePending(false);
+      if (verification.current === request) {
+        verification.current = null;
+        setVerifying(false);
+      }
     }
   }
 
   // İptalde şifreyi ve onay metnini bellekte tutmaz.
   function closeDeleteDialog() {
-    if (deletePending) return;
+    verification.current = null;
+    setVerifying(false);
     setDeleteOpen(false);
     setDeletePassword("");
     setDeleteConfirmation("");
@@ -206,26 +232,28 @@ export function SettingsPage() {
               <p className="mt-1 max-w-xl text-sm leading-6 text-muted-foreground">{t("Çıkışta devam eden yükleme durdurulur ve seçili yerel dosyalar temizlenir. Tamamlanan raporlar hesabınızda kalır.")}</p>
             </div>
           </div>
-          <Button type="button" className="h-11 shrink-0 rounded-xl px-5" onClick={logout}>{t(tr.auth.logout)}</Button>
+          <Button type="button" className="h-11 shrink-0 rounded-xl px-5" disabled={loggingOut || deletePending} aria-busy={loggingOut} onClick={logout}>{loggingOut ? t("Oturum kapatılıyor…") : t(tr.auth.logout)}</Button>
         </div>
       </section>
 
       <section className="mt-6 flex flex-col gap-5 rounded-[2rem] border border-red-500/20 bg-red-500/[0.035] p-6 dark:bg-red-500/[0.06] sm:flex-row sm:items-center sm:justify-between sm:p-8" aria-labelledby="delete-account-title">
         <div className="flex items-start gap-4"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-500/10 text-red-700 dark:text-red-300"><Trash2 className="h-5 w-5" aria-hidden="true" /></span><div><p className="text-xs font-semibold uppercase tracking-[0.15em] text-red-700 dark:text-red-300">{t("Tehlikeli alan")}</p><h2 id="delete-account-title" className="mt-1 text-lg font-semibold">{t("Hesabı sil")}</h2><p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">{t("Hesabınız, analiz geçmişiniz ve yüklediğiniz belgeler kalıcı olarak silinir. Bu işlem geri alınamaz.")}</p></div></div>
-        <Button type="button" variant="outline" className="h-11 shrink-0 scroll-mb-28 scroll-mt-24 rounded-xl border-red-500/30 px-5 text-red-700 hover:bg-red-500/10 dark:text-red-300" onClick={() => authOnlyPreview ? setError("Bu önizlemede hesap silme henüz etkin değil.") : setDeleteOpen(true)}>{t("Hesabı sil")}</Button>
+        <Button type="button" variant="outline" className="h-11 shrink-0 scroll-mb-28 scroll-mt-24 rounded-xl border-red-500/30 px-5 text-red-700 hover:bg-red-500/10 dark:text-red-300" disabled={deletePending || loggingOut || Boolean(progress)} onClick={() => authOnlyPreview ? setError("Bu önizlemede hesap silme henüz etkin değil.") : setDeleteOpen(true)}>{t("Hesabı sil")}</Button>
       </section>
 
-      <dialog ref={deleteDialogRef} role="alertdialog" aria-labelledby="delete-account-dialog-title" aria-describedby="delete-account-dialog-description" onCancel={event => { if (deletePending) event.preventDefault(); else closeDeleteDialog(); }} onClose={closeDeleteDialog}
+      {!deleteOpen && deleteError && <p role="alert" className="mt-3 text-sm text-red-700 dark:text-red-300">{t(deleteError)}</p>}
+      <dialog ref={deleteDialogRef} role="alertdialog" aria-labelledby="delete-account-dialog-title" aria-describedby="delete-account-dialog-description" onCancel={closeDeleteDialog} onClose={closeDeleteDialog}
         className="surface w-[min(92vw,32rem)] max-w-none overscroll-contain rounded-[2rem] border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-slate-950/60 backdrop:backdrop-blur-sm">
         <div className="p-6 sm:p-8">
           <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/10 text-red-700 dark:text-red-300"><Trash2 className="h-5 w-5" aria-hidden="true" /></span>
           <h2 id="delete-account-dialog-title" className="mt-5 text-2xl font-semibold tracking-tight">{t("Hesabınızı kalıcı olarak silin")}</h2>
           <p id="delete-account-dialog-description" className="mt-2 text-sm leading-6 text-muted-foreground">{methods.password ? t("Bu işlem hesabınızı, tüm analizlerinizi ve belgelerinizi siler. Devam etmek için parolanızı ve aşağıdaki onay metnini girin.") : t("Bu işlem hesabınızı, tüm analizlerinizi ve belgelerinizi siler. Onay metnini girin; ardından açılan Google penceresinde kimliğinizi doğrulayın.")}</p>
+          {verifying && <div className="mt-4"><OperationStatus>{t("Kimliğiniz doğrulanıyor…")}</OperationStatus></div>}
           <form className="mt-6 space-y-4" onSubmit={event => { event.preventDefault(); void deleteAccount(); }}>
             {methods.password && <div><label htmlFor="delete-account-password" className="text-sm font-medium">{t("Mevcut parola")}</label><div className="relative mt-2"><input id="delete-account-password" name="delete-account-password" type={showDeletePassword ? "text" : "password"} autoComplete="current-password" value={deletePassword} onChange={event => setDeletePassword(event.target.value)} disabled={deletePending} className="h-12 w-full rounded-xl border border-input bg-background px-4 pe-12 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary" /><button type="button" aria-label={showDeletePassword ? t("Parolayı gizle") : t("Parolayı göster")} className="absolute end-1 top-1 flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" onClick={() => setShowDeletePassword(value => !value)}>{showDeletePassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}</button></div></div>}
             <div><label htmlFor="delete-account-confirmation" className="text-sm font-medium">{t("Onaylamak için")} <strong>{t("HESABIMI SİL")}</strong>  {t("yazın")}</label><input id="delete-account-confirmation" name="delete-account-confirmation" type="text" autoComplete="off" spellCheck={false} value={deleteConfirmation} onChange={event => setDeleteConfirmation(event.target.value)} disabled={deletePending} className="mt-2 h-12 w-full rounded-xl border border-input bg-background px-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary" /></div>
             {deleteError && <p role="alert" className="rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-300">{t(deleteError)}</p>}
-            <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end"><Button type="button" variant="outline" className="rounded-xl" disabled={deletePending} onClick={closeDeleteDialog}>{t("Vazgeç")}</Button><Button type="submit" className="rounded-xl bg-red-700 text-white hover:bg-red-800 dark:bg-red-600 dark:hover:bg-red-700" disabled={deletePending || (methods.password && !deletePassword) || deleteConfirmation !== t("HESABIMI SİL")}>{deletePending ? t("Hesap siliniyor…") : t("Hesabı kalıcı olarak sil")}</Button></div>
+            <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end"><Button type="button" variant="outline" className="rounded-xl" onClick={closeDeleteDialog}>{t("Vazgeç")}</Button><Button type="submit" className="rounded-xl bg-red-700 text-white hover:bg-red-800 dark:bg-red-600 dark:hover:bg-red-700" disabled={deletePending || (methods.password && !deletePassword) || deleteConfirmation !== t("HESABIMI SİL")}>{deletePending ? t("Kimliğiniz doğrulanıyor…") : t("Hesabı kalıcı olarak sil")}</Button></div>
           </form>
         </div>
       </dialog>

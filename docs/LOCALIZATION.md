@@ -55,4 +55,4 @@ Testler dil anahtarı/yer tutucu eşitliğini, statik çeviri çağrılarının 
 
 ## Pencere kapatma
 
-Açılır kaynak, giriş, analiz/geçmiş ve hesap silme pencereleri dışarıda başlayıp dışarıda biten birincil fare/dokunma hareketiyle kapanır. İçerideki tıklama ve dışarı taşan sürükleme kapatmaz. Escape ve odak dönüşü korunur; devam eden silme işlemi kapatılarak kesilmez. Analiz sayfası da tarayıcı `confirm` kutusu yerine uygulamanın erişilebilir onay penceresini kullanır.
+Açılır kaynak, giriş, analiz/geçmiş ve hesap silme pencereleri dışarıda başlayıp dışarıda biten birincil fare/dokunma hareketiyle kapanır. İçerideki tıklama ve dışarı taşan sürükleme kapatmaz. Escape ve odak dönüşü korunur. Silme onayı tamamlanınca pencere kapanır, isteğin durumu çalışma alanında gösterilir. Hesap silmede yeniden kimlik doğrulama sırasında vazgeçmek sunucu isteğinin başlamasını önler. Analiz sayfası da tarayıcı `confirm` kutusu yerine uygulamanın erişilebilir onay penceresini kullanır.

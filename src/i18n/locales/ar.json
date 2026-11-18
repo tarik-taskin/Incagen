@@ -1126,5 +1126,15 @@
   "Seçilen tablo artık bu kaynakta bulunmuyor. Başka bir tablo seçin.": "لم يعد هذا الجدول موجودًا في المصدر. اختر جدولًا آخر.",
   "Tablo {0}": "الجدول {0}",
   "İncelenecek tablo": "الجدول المراد فحصه",
-  "İncelenecek tabloyu seçin.": "اختر جدولًا."
+  "İncelenecek tabloyu seçin.": "اختر جدولًا.",
+  "Bu sırada çalışma alanında gezinebilirsiniz.": "يمكنك مواصلة استخدام مساحة العمل أثناء العملية.",
+  "{0} analiz ve kaynak belgeleri silindi.": "تم حذف {0} من التحليلات ومستنداتها الأصلية.",
+  "{0} analiz silinemedi.": "تعذّر حذف {0} من التحليلات.",
+  "Analiz siliniyor…": "جارٍ حذف التحليل…",
+  "{0} analizi silmek istiyor musunuz?": "هل تريد حذف {0} من التحليلات؟",
+  "{0} analizi sil": "حذف {0} من التحليلات",
+  "Analiz silinemedi.": "تعذّر حذف التحليل.",
+  "Hesap silinemedi.": "تعذّر حذف الحساب.",
+  "Kimliğiniz doğrulanıyor…": "جارٍ التحقق من هويتك…",
+  "Oturum kapatılıyor…": "جارٍ تسجيل الخروج…"
 }

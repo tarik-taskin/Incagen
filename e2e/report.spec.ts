@@ -189,8 +189,27 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
   await expect(history.getByRole("listitem")).toHaveCount(1);
   await expect(page.getByText("1 analiz seçildi")).toBeVisible();
   await page.getByRole("button", { name: "Seçilenleri sil" }).click();
-  await confirmation.getByRole("button", { name: "Analizi sil" }).click();
+  const nav = page.getByRole("navigation", { name: testInfo.project.name === "mobile-chromium" ? "Mobil navigasyon" : "Ana navigasyon" });
+  const deleteEndpoint = /\/deleteAnalysis(?:\?|$)/;
+  const gate = Promise.withResolvers<void>();
+  await page.route(deleteEndpoint, async route => {
+    if (route.request().method() === "POST") await gate.promise;
+    await route.continue();
+  });
+  try {
+    await confirmation.getByRole("button", { name: "Analizi sil" }).click();
+    await expect(confirmation).not.toBeVisible();
+    const progress = page.getByRole("status").filter({ hasText: "Bu sırada çalışma alanında gezinebilirsiniz." });
+    await expect(progress).toBeVisible();
+    await nav.getByRole("link", { name: "Ayarlar" }).click();
+    await expect(page).toHaveURL(/\/app\/settings$/);
+    await expect(progress).toBeVisible();
+  } finally {
+    gate.resolve();
+  }
   await expect(page.getByRole("status").filter({ hasText: "1 analiz ve kaynak belgeleri silindi." })).toBeVisible({ timeout: 30_000 });
+  await expect(page).toHaveURL(/\/app\/settings$/);
+  await nav.getByRole("link", { name: "Geçmiş" }).click();
   await expect(page.getByText("Henüz analiziniz yok.")).toBeVisible({ timeout: 30_000 });
   expect(errors).toEqual([]);
 });

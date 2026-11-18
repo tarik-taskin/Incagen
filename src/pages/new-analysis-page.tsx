@@ -1,3 +1,4 @@
+import { LoaderCircle } from "lucide-react";
 import { t, useLocale } from "../i18n/runtime";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -118,7 +119,10 @@ export function NewAnalysisPage() {
         <DraftReadiness state={preparation} busy={busy} onFocusField={focusField} />
         <PreparationProgress />
         {(localError || error) && <p id="preparation-error" role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{localError || error}</p>}
-        <Button className="mt-5 w-full" aria-describedby="preparation-help" disabled={busy || files.length === 0} onClick={submit}>{t(tr.analysis.start)}</Button>
+        <Button className="mt-5 w-full gap-2" aria-busy={busy} aria-describedby="preparation-help" disabled={busy || files.length === 0} onClick={submit}>
+          {busy && <LoaderCircle className="h-4 w-4 shrink-0 motion-safe:animate-spin" aria-hidden="true" />}
+          {t(!busy ? tr.analysis.start : phase === "preparing" ? "Belgeler hazırlanıyor…" : phase === "uploading" ? "Dosyalar yükleniyor" : "Çalışma oluşturuluyor")}
+        </Button>
         {busy && phase !== "preparing" && <Button variant="ghost" className="mt-2 w-full" onClick={cancel}>{t(tr.analysis.cancel)}</Button>}
         {activeId && <Link className="mt-4 block text-sm underline" to={"/app/analyses/" + activeId}>{t("Son işlemi aç")}</Link>}
         <p className="mt-3 text-xs leading-5 text-muted-foreground">{t("Hazırlama başladığında dosyaların gerçek içerik türü doğrulanır; okunabilir bölümler kaynakları korunarak düzenlenir. Yorum ve öneriler bu aşamada üretilmez.")}</p>

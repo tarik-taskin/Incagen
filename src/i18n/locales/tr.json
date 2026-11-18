@@ -1126,5 +1126,15 @@
   "Seçilen tablo artık bu kaynakta bulunmuyor. Başka bir tablo seçin.": "Seçilen tablo artık bu kaynakta bulunmuyor. Başka bir tablo seçin.",
   "Tablo {0}": "Tablo {0}",
   "İncelenecek tablo": "İncelenecek tablo",
-  "İncelenecek tabloyu seçin.": "İncelenecek tabloyu seçin."
+  "İncelenecek tabloyu seçin.": "İncelenecek tabloyu seçin.",
+  "Bu sırada çalışma alanında gezinebilirsiniz.": "Bu sırada çalışma alanında gezinebilirsiniz.",
+  "{0} analiz ve kaynak belgeleri silindi.": "{0} analiz ve kaynak belgeleri silindi.",
+  "{0} analiz silinemedi.": "{0} analiz silinemedi.",
+  "Analiz siliniyor…": "Analiz siliniyor…",
+  "{0} analizi silmek istiyor musunuz?": "{0} analizi silmek istiyor musunuz?",
+  "{0} analizi sil": "{0} analizi sil",
+  "Analiz silinemedi.": "Analiz silinemedi.",
+  "Hesap silinemedi.": "Hesap silinemedi.",
+  "Kimliğiniz doğrulanıyor…": "Kimliğiniz doğrulanıyor…",
+  "Oturum kapatılıyor…": "Oturum kapatılıyor…"
 }

@@ -1,3 +1,4 @@
+import { WorkspaceDeletionProvider } from "../components/workspace-deletion-provider";
 import { act, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -67,7 +68,7 @@ describe("HistoryPage - reaktif zaman aşımı ve yaşam döngüsü kabulü", ()
 
     render(
       <MemoryRouter initialEntries={["/app/history"]}>
-        <HistoryPage />
+        <WorkspaceDeletionProvider uid="test-user"><HistoryPage /></WorkspaceDeletionProvider>
       </MemoryRouter>
     );
 
@@ -120,7 +121,7 @@ describe("HistoryPage - reaktif zaman aşımı ve yaşam döngüsü kabulü", ()
 
     render(
       <MemoryRouter initialEntries={["/app/history"]}>
-        <HistoryPage />
+        <WorkspaceDeletionProvider uid="test-user"><HistoryPage /></WorkspaceDeletionProvider>
       </MemoryRouter>
     );
 
@@ -129,11 +130,11 @@ describe("HistoryPage - reaktif zaman aşımı ve yaşam döngüsü kabulü", ()
 
   it("uzun boş beklemeden sonra gelen snapshot lease zamanlayıcısını geciktirmez", () => {
     mocks.rows = [];
-    const view = render(<MemoryRouter initialEntries={["/app/history?status=active"]}><HistoryPage /></MemoryRouter>);
+    const view = render(<MemoryRouter initialEntries={["/app/history?status=active"]}><WorkspaceDeletionProvider uid="test-user"><HistoryPage /></WorkspaceDeletionProvider></MemoryRouter>);
     vi.setSystemTime(13_000);
     mocks.rows = [{ id: "new", title: "Yeni iş", business: "Sentetik", status: "completed", createdAt: 1_000, updatedAt: 13_000,
       ai: { status: "running", attempts: 1, maxAttempts: 3, leaseUntil: 14_000 } as AiJob }];
-    view.rerender(<MemoryRouter initialEntries={["/app/history?status=active"]}><HistoryPage /></MemoryRouter>);
+    view.rerender(<MemoryRouter initialEntries={["/app/history?status=active"]}><WorkspaceDeletionProvider uid="test-user"><HistoryPage /></WorkspaceDeletionProvider></MemoryRouter>);
     expect(screen.getByText("Yeni iş")).toBeInTheDocument();
     act(() => { vi.advanceTimersByTime(1_100); });
     expect(screen.queryByText("Yeni iş")).not.toBeInTheDocument();
@@ -146,7 +147,7 @@ describe("HistoryPage - reaktif zaman aşımı ve yaşam döngüsü kabulü", ()
     const windowMs = days * 86_400_000;
     vi.setSystemTime(windowMs + 1_000);
     mocks.rows = [{ id: "expiring", title: "Süreli kayıt", business: "Sentetik", status: "completed", createdAt: 2_000, updatedAt: 2_000 }];
-    const view = render(<MemoryRouter initialEntries={[`/app/history?period=${days}d`]}><HistoryPage /></MemoryRouter>);
+    const view = render(<MemoryRouter initialEntries={[`/app/history?period=${days}d`]}><WorkspaceDeletionProvider uid="test-user"><HistoryPage /></WorkspaceDeletionProvider></MemoryRouter>);
     expect(screen.getByText("Süreli kayıt")).toBeInTheDocument();
     act(() => { vi.advanceTimersByTime(1_000); });
     expect(screen.getByText("Süreli kayıt")).toBeInTheDocument();

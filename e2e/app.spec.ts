@@ -238,7 +238,20 @@ test("boş geçmiş, bağlantı taslakları ve doğrulanmış hesap silme", asyn
   await dialog.getByRole("button", { name: "Hesabı kalıcı olarak sil" }).click();
   await expect(dialog.getByRole("alert")).toBeVisible();
   await dialog.getByLabel("Mevcut parola").fill("Synthetic123!");
-  await dialog.getByRole("button", { name: "Hesabı kalıcı olarak sil" }).click();
+  const gate = Promise.withResolvers<void>();
+  await page.route("**/deleteAccount", async route => {
+    if (route.request().method() === "POST") await gate.promise;
+    await route.continue();
+  });
+  try {
+    await dialog.getByRole("button", { name: "Hesabı kalıcı olarak sil" }).click();
+    await expect(dialog).not.toBeVisible();
+    await navigation.getByRole("link", { name: "Plan" }).click();
+    await expect(page).toHaveURL(/\/app\/plan$/);
+    await expect(page.getByRole("status").filter({ hasText: "Hesap siliniyor…" })).toBeVisible();
+  } finally {
+    gate.resolve();
+  }
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole("heading", { name: "Verilerinizdeki büyüme fırsatlarını keşfedin." })).toBeVisible();
 });
