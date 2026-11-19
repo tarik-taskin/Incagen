@@ -37,7 +37,20 @@
 - `VITE_TABULAR_ANALYSIS_ENABLED=true` açıkça verilmedikçe canlı arayüz yeni analiz ayarlarını göstermez; hazırlık raporu korunur. Var olan AI kaydının okunması bu anahtardan bağımsızdır. Bu arayüz anahtarı güvenlik sınırı değildir; backend kapısı bağımsız uygulanır.
 - Model/şema doğrulaması gevşetilmez, sessiz model değişimi ve otomatik ücretli tekrar yapılmaz. Güvenli tanı yalnız HTTP durum kodu, sabit hata kategorisi veya bitiş nedenidir; ham hata, belge ve yanıt metni loglanmaz.
 - `scripts/accept-tabular-cloud.mjs` açık opt-in ister. `--verify-closed` bir hazırlıkla ücretli iş rezervasyonu olmadan reddi doğrular. `--smoke` tek Türkçe CSV analiz isteği gönderir. Bayraksız tam kabul altı dilde üç CSV toplamı ve üç XLSX ortalaması çalıştırır. Sonuçların kapsamı, ölçümü, grafik değerleri, fiziksel kaynak satırları ve kullanım bilgisi bağımsız beklentiyle karşılaştırılır. İlk hata koşuyu durdurur. Sonuçlar, durum özeti ve kaynak temizliği koşuya özel [kabul kayıtlarında](TESTING.md#canlı-analiz-kabul-kayıtları) izlenir.
-- Altı canlı yanıtın insan tarafından kaynak/amaç eşliğinde değerlendirilmesi ve gerçek süre/token ölçümü tamamlanmadan iki yayın anahtarı açılmaz. Tek bir bağlantı testi veya emülatör taklidi kalite kabulü sayılmaz. Test hesapları, ham/türetilmiş dosyalar ve kişisel kayıtlar temizlenir; global maliyet sayaçları sıfırlanmaz.
+- Altı canlı yanıtın insan tarafından kaynak/amaç eşliğinde değerlendirilmesi ve gerçek süre/token ölçümü tamamlanmadan iki yayın anahtarı açılmaz. Tek bir bağlantı testi veya emülatör taklidi kalite kabulü sayılmaz. Sentetik anlatımla geçen testler (`scripts/python-to-report.test.ts`), altı dildeki gerçek model kabulünü kapatmaz. Test hesapları, ham/türetilmiş dosyalar ve kişisel kayıtlar temizlenir; global maliyet sayaçları sıfırlanmaz.
+
+### Gerçek rapor insan incelemesi tablosu
+
+Gerçek model yanıtı alındığında her altı dil (`tr`, `en`, `de`, `es`, `zh`, `ar`) için inceleyen kişi, otomatik mekanik kabulden (`acceptance.json`) ayrı olarak `reportId` + `reportSha256` + `sourceSha256` değerlerine bağlı ayrı insan incelemesi kaydı doldurur. Gerçek canlı model sonucu alınmadıkça genel kalite durumu **`beklemede` (`pending`)** kalır.
+
+| Ölçüt | İnceleme sorusu | Geçme koşulu |
+| --- | --- | --- |
+| 1. Kaynak satırı desteği | İddianın bağlandığı kaynak satırları (`rowStart`–`rowEnd`, `sheet`) iddiayı gerçekten destekliyor mu? | Seçili sayfa ve fiziksel satırlar metin iddiasıyla birebir tutarlı; ilgisiz veya dışarıda bırakılmış sayfa/satır dayanak gösterilmemiş. |
+| 2. Gözlem ve yorum ayrımı | Doğrudan gözlenen sayı/dağılım ile analitik yorum açıkça ayrılıyor mu? | Gözlemler ölçülen metrikten ayrışmıyor; yorum ifadeleri kesin olgu gibi sunulmuyor. |
+| 3. Eksik veri sınırı | Kapsam dışındaki veriler (maliyet, kâr, eksik dönem/satır sınırları) açıkça belirtilmiş mi? | Eksik veya tablo dışı boyutlar `limitations` ve ilgili metinde yer alıyor; sessiz sıfırlama veya tam kapsam iddiası yok. |
+| 4. Kanıtsız neden/tahmin reddi | Veriden çıkmayan nedensellik, kesin gelecek tahmini veya dış olgu iddiası var mı? | Kanıtsız “artış şundan kaynaklandı” veya gelecek garantisi ifadeleri bulunmuyor. |
+| 5. Öneri dayanağı | Sunulan öneriler (`recommendations`) doğrulanmış bulgu (`basisFindingIds`) ve kaynaklara dayanıyor mu? | Kaynaksız, genel geçer veya ilgisiz eylem önerisi yok. |
+| 6. Dil ve anlatım kalitesi | İlgili dilde (`tr`/`en`/`de`/`es`/`zh`/`ar`) terim, akıcılık ve sayı dışılığı kuralları korunuyor mu? | Doğal, anlaşılır anlatım; düz metne gömülü uydurma/ek rakam yok; tek bir dildeki yetersizlik tüm dilleri geçirmiş sayılmaz. |
 
 ## Somut dağıtım kapsamı
 
