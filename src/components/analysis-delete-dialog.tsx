@@ -10,6 +10,8 @@ type AnalysisDeleteDialogProps = {
   items: DeleteItem[] | null;
   description: string;
   disabled?: boolean;
+  openerElement?: HTMLElement | null;
+  fallbackFocus?: () => HTMLElement | null;
   onClose: () => void;
   onSuccess: (result: DeletionResult) => void;
   onFailure?: (result: DeletionResult) => void;
@@ -19,18 +21,28 @@ type OpenDialogProps = Omit<AnalysisDeleteDialogProps, "items"> & {
   items: DeleteItem[];
 };
 
+// Odak dönüşünde yalnızca görünür, bağlı ve etkinleştirilebilir hedefleri seçer.
+function isFocusableElement(element: HTMLElement | null | undefined): element is HTMLElement {
+  if (!element || !element.isConnected) return false;
+  if (element.hasAttribute("disabled") || element.getAttribute("aria-disabled") === "true") return false;
+  if (element.closest("[hidden], [inert]")) return false;
+  return true;
+}
+
 // Onay penceresini yalnız açıldığında bağlar; kapatmada modal katmanı ve durumu sıfırlanır.
 export function AnalysisDeleteDialog(props: AnalysisDeleteDialogProps) {
   if (!props.items) return null;
   return <OpenAnalysisDeleteDialog {...props} items={props.items} />;
 }
 
-// Tekli ve toplu analiz silme onayını, düğme içi gerçek ilerlemeyi ve kısmi hata tekrarını yönetir.
+// Tekli ve toplu analiz silme onayını, düğme içi gerçek ilerlemeyi, odak dönüşünü ve kısmi hata tekrarını yönetir.
 function OpenAnalysisDeleteDialog({
   idPrefix,
   items,
   description,
   disabled = false,
+  openerElement = null,
+  fallbackFocus,
   onClose,
   onSuccess,
   onFailure,
@@ -43,12 +55,25 @@ function OpenAnalysisDeleteDialog({
 
   const submittingRef = useRef(false);
   const mountedRef = useRef(true);
+  const capturedOpenerRef = useRef<HTMLElement | null>(null);
+  const dismissReasonRef = useRef<"dismissed" | "succeeded" | null>(null);
+  const focusTargetsRef = useRef<{ opener: HTMLElement | null; fallback?: () => HTMLElement | null }>({
+    opener: openerElement,
+    fallback: fallbackFocus,
+  });
   const dialogRef = useRef<HTMLDialogElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
   const retryRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    focusTargetsRef.current = { opener: openerElement, fallback: fallbackFocus };
+  }, [openerElement, fallbackFocus]);
+
+  useEffect(() => {
     mountedRef.current = true;
+    if (!capturedOpenerRef.current && document.activeElement instanceof HTMLElement) {
+      capturedOpenerRef.current = document.activeElement;
+    }
     const dialog = dialogRef.current;
     if (dialog && !dialog.open) {
       dialog.showModal();
@@ -57,6 +82,12 @@ function OpenAnalysisDeleteDialog({
     return () => {
       mountedRef.current = false;
       if (dialog?.open) dialog.close();
+      if (dismissReasonRef.current === "dismissed") {
+        const { opener, fallback } = focusTargetsRef.current;
+        const candidate = opener ?? capturedOpenerRef.current;
+        const target = isFocusableElement(candidate) ? candidate : fallback?.() ?? null;
+        if (isFocusableElement(target)) target.focus();
+      }
     };
   }, []);
 
@@ -71,9 +102,13 @@ function OpenAnalysisDeleteDialog({
     if (failure) retryRef.current?.focus();
   }, [submitting, failure]);
 
-  useOutsideDismiss(dialogRef, () => {
-    if (!submittingRef.current) onClose();
-  }, !submitting);
+  function dismissDialog() {
+    if (submittingRef.current) return;
+    dismissReasonRef.current = "dismissed";
+    onClose();
+  }
+
+  useOutsideDismiss(dialogRef, dismissDialog, !submitting);
 
   // Yalnız onay veya yeniden deneme isteği tamamlanınca diyaloğu kapatır; kısmi hatada başarısızları korur.
   async function confirmDeletion() {
@@ -86,6 +121,7 @@ function OpenAnalysisDeleteDialog({
       const result = await remove(batch);
       if (!mountedRef.current || !result) return;
       if (result.failed.length === 0) {
+        dismissReasonRef.current = "succeeded";
         onSuccess(result);
         return;
       }
@@ -133,7 +169,7 @@ function OpenAnalysisDeleteDialog({
       aria-describedby={descriptionId}
       onCancel={event => {
         event.preventDefault();
-        if (!submittingRef.current) onClose();
+        dismissDialog();
       }}
       onClose={event => {
         if (!mountedRef.current) return;
@@ -143,7 +179,7 @@ function OpenAnalysisDeleteDialog({
         }
         // React StrictMode temizliğindeki gecikmeli native close olayı yeniden açılan diyaloğu kapatmasın.
         if (event.currentTarget.open) return;
-        onClose();
+        dismissDialog();
       }}
       className="surface w-[min(92vw,30rem)] max-w-none overscroll-contain rounded-3xl border border-border bg-card p-0 text-foreground shadow-2xl focus:outline-none backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm"
     >
@@ -186,7 +222,7 @@ function OpenAnalysisDeleteDialog({
             variant="outline"
             className="rounded-xl"
             disabled={submitting}
-            onClick={() => { if (!submittingRef.current) onClose(); }}
+            onClick={dismissDialog}
           >
             {failure ? t("Kapat") : t("Vazgeç")}
           </Button>

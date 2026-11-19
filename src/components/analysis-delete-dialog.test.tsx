@@ -80,6 +80,65 @@ describe("AnalysisDeleteDialog", () => {
     expect(state.call).not.toHaveBeenCalled();
   });
 
+  it("Vazgeç, Escape ve dış tıklama sonrasında odağı açıcıya, açıcı yoksa yedek hedefe geri verir", async () => {
+    const user = userEvent.setup();
+    const fallbackHeading = document.createElement("h1");
+    fallbackHeading.tabIndex = -1;
+    fallbackHeading.textContent = "Sayfa Başlığı";
+    document.body.appendChild(fallbackHeading);
+
+    const opener = document.createElement("button");
+    opener.type = "button";
+    opener.textContent = "Silmeyi aç";
+    document.body.appendChild(opener);
+
+    try {
+      const renderDialog = (props: { open: boolean; targetOpener: HTMLElement | null; onClose: () => void }) => (
+        <WorkspaceDeletionProvider uid="user-1">
+          <AnalysisDeleteDialog
+            idPrefix="focus-restore"
+            items={props.open ? [{ id: "a1", title: "Birinci" }] : null}
+            description="Bu işlem geri alınamaz."
+            openerElement={props.targetOpener}
+            fallbackFocus={() => fallbackHeading}
+            onClose={props.onClose}
+            onSuccess={vi.fn()}
+          />
+        </WorkspaceDeletionProvider>
+      );
+
+      // 1. Vazgeç -> odağı açıcıya döndürür.
+      opener.focus();
+      let closed = false;
+      const view = render(<MemoryRouter>{renderDialog({ open: true, targetOpener: opener, onClose: () => { closed = true; } })}</MemoryRouter>);
+      await user.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Vazgeç" }));
+      expect(closed).toBe(true);
+      view.rerender(<MemoryRouter>{renderDialog({ open: false, targetOpener: opener, onClose: vi.fn() })}</MemoryRouter>);
+      expect(opener).toHaveFocus();
+
+      // 2. Escape -> odağı açıcıya döndürür.
+      opener.focus();
+      view.rerender(<MemoryRouter>{renderDialog({ open: true, targetOpener: opener, onClose: vi.fn() })}</MemoryRouter>);
+      fireEvent(screen.getByRole("alertdialog"), new Event("cancel", { cancelable: true }));
+      view.rerender(<MemoryRouter>{renderDialog({ open: false, targetOpener: opener, onClose: vi.fn() })}</MemoryRouter>);
+      expect(opener).toHaveFocus();
+
+      // 3. Dış tıklama -> açıcı bağlı değilse anlamlı yedek hedefe odaklanır.
+      opener.focus();
+      view.rerender(<MemoryRouter>{renderDialog({ open: true, targetOpener: opener, onClose: vi.fn() })}</MemoryRouter>);
+      opener.remove();
+      fireEvent.pointerDown(document.body, { isPrimary: true, button: 0 });
+      fireEvent.pointerUp(document.body, { isPrimary: true, button: 0 });
+      fireEvent.click(document.body);
+      view.rerender(<MemoryRouter>{renderDialog({ open: false, targetOpener: opener, onClose: vi.fn() })}</MemoryRouter>);
+      expect(fallbackHeading).toHaveFocus();
+      view.unmount();
+    } finally {
+      opener.remove();
+      fallbackHeading.remove();
+    }
+  });
+
   it("silme sürerken açık kalır, tekli ve çoklu ilerlemeyi düğmede gösterir ve çift tıklamayı engeller", async () => {
     const user = userEvent.setup();
     const p1 = deferred<{ data: { deleted: boolean } }>();

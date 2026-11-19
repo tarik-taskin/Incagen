@@ -283,4 +283,108 @@ describe("HistoryPage - analiz silme onay, ilerleme ve kısmi hata tekrarı", ()
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("1 analiz ve kaynak belgeleri silindi.");
   });
+
+  it("dinleyici yükleme veya hata durumuna geçtiğinde silme diyaloğunu yeniden bağlamaz", async () => {
+    mocks.loading = false;
+    mocks.error = null;
+    const user = userEvent.setup();
+    mocks.rows = [
+      { id: "h1", title: "Birinci", business: "B1", status: "completed", createdAt: 2_000, updatedAt: 2_000 },
+      { id: "h2", title: "İkinci", business: "B2", status: "completed", createdAt: 1_000, updatedAt: 1_000 },
+    ];
+
+    const view = render(
+      <MemoryRouter initialEntries={["/app/history"]}>
+        <WorkspaceDeletionProvider uid="test-user">
+          <WorkspaceDeletionStatus />
+          <HistoryPage />
+        </WorkspaceDeletionProvider>
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Seç ve sil" }));
+    await user.click(screen.getByRole("button", { name: "Görünenleri seç" }));
+    await user.click(screen.getByRole("button", { name: "Seçilenleri sil" }));
+
+    const initialDialog = screen.getByRole("alertdialog");
+    const p1 = deferred();
+    const p2 = deferred();
+    mocks.call.mockReturnValueOnce(p1.promise).mockReturnValueOnce(p2.promise);
+
+    await user.click(within(initialDialog).getByRole("button", { name: "2 analizi sil" }));
+    expect(within(initialDialog).getByRole("button", { name: "Siliniyor… 1/2" })).toBeDisabled();
+
+    mocks.loading = true;
+    view.rerender(
+      <MemoryRouter initialEntries={["/app/history"]}>
+        <WorkspaceDeletionProvider uid="test-user">
+          <WorkspaceDeletionStatus />
+          <HistoryPage />
+        </WorkspaceDeletionProvider>
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole("alertdialog")).toBe(initialDialog);
+    expect(within(initialDialog).getByRole("button", { name: "Siliniyor… 1/2" })).toBeDisabled();
+
+    mocks.loading = false;
+    mocks.error = "Geçmiş okunamıyor.";
+    view.rerender(
+      <MemoryRouter initialEntries={["/app/history"]}>
+        <WorkspaceDeletionProvider uid="test-user">
+          <WorkspaceDeletionStatus />
+          <HistoryPage />
+        </WorkspaceDeletionProvider>
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole("alertdialog")).toBe(initialDialog);
+
+    await act(async () => { p1.resolve({ data: { deleted: true } }); });
+    expect(within(initialDialog).getByRole("button", { name: "Siliniyor… 2/2" })).toBeDisabled();
+    await act(async () => { p2.resolve({ data: { deleted: true } }); });
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("2 analiz ve kaynak belgeleri silindi.");
+  });
+
+  it("kart menüsü ve toplu silmede kapatma sonrası odağı açıcıya veya yedek hedefe döndürür", async () => {
+    mocks.loading = false;
+    mocks.error = null;
+    const user = userEvent.setup();
+    mocks.rows = [
+      { id: "h1", title: "Birinci", business: "B1", status: "completed", createdAt: 2_000, updatedAt: 2_000 },
+    ];
+
+    const view = render(
+      <MemoryRouter initialEntries={["/app/history"]}>
+        <WorkspaceDeletionProvider uid="test-user">
+          <HistoryPage />
+        </WorkspaceDeletionProvider>
+      </MemoryRouter>,
+    );
+
+    const cardTrigger = screen.getByRole("button", { name: "Birinci için diğer işlemler" });
+    await user.click(cardTrigger);
+    await user.click(screen.getByRole("button", { name: "Analizi sil" }));
+    fireEvent(screen.getByRole("alertdialog"), new Event("cancel", { cancelable: true }));
+    expect(cardTrigger).toHaveFocus();
+
+    // Kart silme sırasında kayıt listeden silinirse Kapat sonrasında anlamlı yedek hedefe odaklanır.
+    const failed = deferred();
+    mocks.call.mockReturnValueOnce(failed.promise);
+    await user.click(cardTrigger);
+    await user.click(screen.getByRole("button", { name: "Analizi sil" }));
+    const dialog = screen.getByRole("alertdialog");
+    await user.click(within(dialog).getByRole("button", { name: "Analizi sil" }));
+    await act(async () => { failed.reject({ code: "functions/unavailable" }); });
+
+    mocks.rows = [];
+    view.rerender(
+      <MemoryRouter initialEntries={["/app/history"]}>
+        <WorkspaceDeletionProvider uid="test-user">
+          <HistoryPage />
+        </WorkspaceDeletionProvider>
+      </MemoryRouter>,
+    );
+    await user.click(within(dialog).getByRole("button", { name: "Kapat" }));
+    expect(screen.getByRole("link", { name: "İlk analizini hazırla" })).toHaveFocus();
+  });
 });

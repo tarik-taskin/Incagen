@@ -80,14 +80,17 @@ test("kayıt, belge hazırlığı, geçmiş, silme ve çıkış", async ({ page 
   await nav.getByRole("link", { name: "Geçmiş" }).click();
   await page.getByRole("link", { name: /Eylül faaliyet analizi/ }).click();
   await expect(page).toHaveURL(reportUrl);
-  await page.getByRole("button", { name: "Analizi ve belgeleri sil" }).click();
+  const reportDeleteTrigger = page.getByRole("button", { name: "Analizi ve belgeleri sil" });
+  await reportDeleteTrigger.click();
   await page.mouse.click(2, 2);
   await expect(page.getByRole("alertdialog")).not.toBeVisible();
-  await page.getByRole("button", { name: "Analizi ve belgeleri sil" }).click();
+  await expect(reportDeleteTrigger).toBeFocused();
+  await reportDeleteTrigger.click();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("alertdialog")).not.toBeVisible();
+  await expect(reportDeleteTrigger).toBeFocused();
 
-  await page.getByRole("button", { name: "Analizi ve belgeleri sil" }).click();
+  await reportDeleteTrigger.click();
   const reportDeleteDialog = page.getByRole("alertdialog");
   const deleteEndpoint = /\/deleteAnalysis(?:\?|$)/;
   const deleteGate = Promise.withResolvers<void>();
@@ -196,6 +199,7 @@ test("geçmişte tekli silme onayla, klavyeyle ve iki temada çalışır", async
   await expect(confirmation).toContainText("Bu işlem geri alınamaz");
   await page.mouse.click(2, 2);
   await expect(confirmation).not.toBeVisible();
+  await expect(menuTrigger).toBeFocused();
   await expect(history.getByRole("listitem")).toHaveCount(2);
 
   await menuTrigger.click();
@@ -232,9 +236,11 @@ test("geçmişte tekli silme onayla, klavyeyle ve iki temada çalışır", async
   expect(accessibility.violations).toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 
-  await page.getByRole("button", { name: "Seçilenleri sil" }).click();
+  const bulkDeleteTrigger = page.getByRole("button", { name: "Seçilenleri sil" });
+  await bulkDeleteTrigger.click();
   await expect(confirmation).toContainText("Bu analizi silmek istiyor musunuz?");
   await confirmation.getByRole("button", { name: "Vazgeç" }).click();
+  await expect(bulkDeleteTrigger).toBeFocused();
   await expect(history.getByRole("listitem")).toHaveCount(1);
   await expect(page.getByText("1 analiz seçildi")).toBeVisible();
   expect(errors).toEqual([]);

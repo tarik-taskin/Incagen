@@ -10,10 +10,12 @@ import { AnalysisPage } from "./analysis-page";
 const state = vi.hoisted(() => ({
   user: { uid: "owner-a" }, activeId: "a", completeDraft: vi.fn(), call: vi.fn(),
   analyses: {} as Record<string, Analysis>,
+  loading: false,
+  error: "",
 }));
 vi.mock("../lib/auth-context", () => ({ useAuth: () => ({ user: state.user }) }));
 vi.mock("../lib/workspace-context", () => ({ useWorkspace: () => ({ activeId: state.activeId, completeDraft: state.completeDraft }) }));
-vi.mock("../hooks/use-analyses", () => ({ useAnalysis: (id: string) => ({ analysis: state.analyses[id], loading: false, error: "" }) }));
+vi.mock("../hooks/use-analyses", () => ({ useAnalysis: (id: string) => ({ analysis: state.analyses[id], loading: state.loading, error: state.error }) }));
 vi.mock("../lib/firebase", () => ({ getServices: () => ({ functions: {}, auth: { currentUser: state.user } }) }));
 vi.mock("firebase/functions", () => ({ httpsCallable: () => state.call }));
 vi.mock("../components/prepared-documents", () => ({ PreparedDocuments: () => <p>Prepared sources</p> }));
@@ -37,7 +39,7 @@ function deferred() {
 }
 
 beforeEach(() => {
-  state.user = { uid: "owner-a" }; state.activeId = "a"; state.completeDraft.mockReset(); state.call.mockReset();
+  state.user = { uid: "owner-a" }; state.activeId = "a"; state.loading = false; state.error = ""; state.completeDraft.mockReset(); state.call.mockReset();
   state.analyses = Object.fromEntries(["a", "b"].map(id => [id, { id, title: `Report ${id}`, business: "Synthetic", status: "completed", createdAt: 1, updatedAt: 1 }]));
   HTMLDialogElement.prototype.showModal = function () { this.setAttribute("open", ""); };
   HTMLDialogElement.prototype.close = function () { this.removeAttribute("open"); };
@@ -239,4 +241,66 @@ it("keeps the delete dialog open when Firestore clears the analysis before the s
   expect(within(dialog).getByRole("button", { name: "Siliniyor…" })).toBeDisabled();
   await act(async () => { retryRequest.resolve({ data: { deleted: true } }); });
   expect(await screen.findByText("History destination")).toBeVisible();
+});
+
+it("keeps the same delete dialog mounted and locked during listener loading/error and navigates to history on success", async () => {
+  const user = userEvent.setup();
+  const request = deferred();
+  state.call.mockReturnValueOnce(request.promise);
+  const view = mount();
+
+  await user.click(screen.getByRole("button", { name: "Analizi ve belgeleri sil" }));
+  const initialDialog = screen.getByRole("alertdialog");
+  await user.click(within(initialDialog).getByRole("button", { name: "Analizi sil" }));
+  expect(within(initialDialog).getByRole("button", { name: "Siliniyor…" })).toBeDisabled();
+
+  // Firestore dinleyicisi yükleme durumuna dönse bile aynı dialog DOM düğümü korunur ve bekleme kilidi sürer.
+  state.loading = true;
+  view.rerender(<MemoryRouter><App /></MemoryRouter>);
+  expect(screen.getByRole("alertdialog")).toBe(initialDialog);
+  expect(within(initialDialog).getByRole("button", { name: "Siliniyor…" })).toBeDisabled();
+  expect(within(initialDialog).getByRole("button", { name: "Vazgeç" })).toBeDisabled();
+
+  // Firestore dinleyicisi hata üretse bile aynı dialog DOM düğümü ve istek kilidi bozulmaz.
+  state.loading = false;
+  state.error = "Analiz okunamıyor.";
+  delete (state.analyses as Record<string, Analysis | undefined>).a;
+  view.rerender(<MemoryRouter><App /></MemoryRouter>);
+  expect(screen.getByRole("alertdialog")).toBe(initialDialog);
+  expect(within(initialDialog).getByRole("button", { name: "Siliniyor…" })).toBeDisabled();
+
+  await act(async () => { request.resolve({ data: { deleted: true } }); });
+  expect(await screen.findByText("History destination")).toBeVisible();
+});
+
+it("restores focus to the delete trigger on Vazgeç/Escape/outside click, and uses Geçmişe dön fallback if the trigger is gone", async () => {
+  const user = userEvent.setup();
+  const view = mount();
+
+  const trigger = screen.getByRole("button", { name: "Analizi ve belgeleri sil" });
+  trigger.focus();
+  await user.click(trigger);
+  await user.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Vazgeç" }));
+  expect(trigger).toHaveFocus();
+
+  await user.click(trigger);
+  fireEvent(screen.getByRole("alertdialog"), new Event("cancel", { cancelable: true }));
+  expect(trigger).toHaveFocus();
+
+  await user.click(trigger);
+  await user.click(document.body);
+  expect(trigger).toHaveFocus();
+
+  // Başarısız silme sırasında kayıt ve açıcı düğme kalkarsa Kapat sonrası odağı anlamlı Geçmişe dön bağlantısına verir.
+  const failingRequest = deferred();
+  state.call.mockReturnValueOnce(failingRequest.promise);
+  await user.click(trigger);
+  const dialog = screen.getByRole("alertdialog");
+  await user.click(within(dialog).getByRole("button", { name: "Analizi sil" }));
+  await act(async () => { failingRequest.reject({ code: "functions/unavailable" }); });
+
+  delete (state.analyses as Record<string, Analysis | undefined>).a;
+  view.rerender(<MemoryRouter><App /></MemoryRouter>);
+  await user.click(within(dialog).getByRole("button", { name: "Kapat" }));
+  expect(screen.getByRole("link", { name: "Geçmişe dön" })).toHaveFocus();
 });

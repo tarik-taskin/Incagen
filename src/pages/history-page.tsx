@@ -24,7 +24,7 @@ function statusTone(status: Analysis["status"]) {
 }
 
 // Tekli silmeyi bağlamsal menüye yerleştirir; mobilde menüyü sabit alt navigasyonun üstüne açar.
-function HistoryActions({ analysis, disabled, onDelete }: { analysis: Analysis; disabled: boolean; onDelete: () => void }) {
+function HistoryActions({ analysis, disabled, onDelete }: { analysis: Analysis; disabled: boolean; onDelete: (opener: HTMLElement | null) => void }) {
   useLocale();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -65,7 +65,7 @@ function HistoryActions({ analysis, disabled, onDelete }: { analysis: Analysis; 
         onClick={() => setOpen(false)}>{t("Analizi aç")} <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
       <div className="my-1 border-t border-border" />
       <button type="button" className="flex min-h-10 w-full items-center gap-2 rounded-xl px-3 text-start text-sm text-red-700 transition-colors hover:bg-red-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:text-red-300"
-        onClick={() => { setOpen(false); onDelete(); }}><Trash2 className="h-4 w-4" aria-hidden="true" />  {t("Analizi sil")}</button>
+        onClick={() => { setOpen(false); onDelete(triggerRef.current); }}><Trash2 className="h-4 w-4" aria-hidden="true" />  {t("Analizi sil")}</button>
     </div>}
   </div>;
 }
@@ -77,12 +77,17 @@ export function HistoryPage() {
   const [now, setNow] = useState(() => Date.now());
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
-  const [deleteTarget, setDeleteTarget] = useState<{ items: DeleteItem[]; bulk: boolean } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ items: DeleteItem[]; bulk: boolean; opener: HTMLElement | null } | null>(null);
   const { progress, pendingIds, accountPending } = useWorkspaceDeletion();
   const [searchParams, setSearchParams] = useSearchParams();
   const view = parseHistoryView(searchParams);
   const { query, status: statusFilter, period: periodFilter, sort } = view;
   const selectionRevision = useRef(0);
+  const historyTitleRef = useRef<HTMLHeadingElement>(null);
+  const selectionToggleRef = useRef<HTMLButtonElement>(null);
+  const bulkDeleteButtonRef = useRef<HTMLButtonElement>(null);
+  const emptyActionRef = useRef<HTMLAnchorElement>(null);
+  const clearFiltersButtonRef = useRef<HTMLButtonElement>(null);
 
   // Lease ve seçili tarih aralığının bir sonraki sınırını tek hedefli zamanlayıcıyla yeniler.
   useEffect(() => {
@@ -184,10 +189,10 @@ export function HistoryPage() {
         <div className="max-w-2xl">
           <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-primary/15 bg-primary/[0.07] text-primary dark:border-secondary/20 dark:text-secondary"><FileClock className="h-5 w-5" aria-hidden="true" /></span>
           <p className="mt-5 text-[11px] font-bold uppercase tracking-[0.22em] text-primary dark:text-secondary">{t("Çalışma alanı / Arşiv")}</p>
-          <h1 id="history-title" className="mt-2 text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">{t(tr.analysis.history)}</h1>
+          <h1 ref={historyTitleRef} id="history-title" tabIndex={-1} className="mt-2 text-3xl font-semibold tracking-[-0.045em] focus:outline-none sm:text-4xl">{t(tr.analysis.history)}</h1>
           <p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">{t("Çalışmalarınızın düzenli adresi. Hazırladığınız analizleri yeniden açın, bulun ve ihtiyaç duymadıklarınızı yönetin.")}</p>
         </div>
-        {!loading && !error && rows.length > 0 && <Button variant="outline" disabled={interactionLocked} className="gap-2 rounded-xl bg-card" onClick={toggleSelectionMode}>
+        {!loading && !error && rows.length > 0 && <Button ref={selectionToggleRef} variant="outline" disabled={interactionLocked} className="gap-2 rounded-xl bg-card" onClick={toggleSelectionMode}>
           {selectionMode ? <X className="h-4 w-4" aria-hidden="true" /> : <Trash2 className="h-4 w-4" aria-hidden="true" />}
           {selectionMode ? t("Seçimi bitir") : t("Seç ve sil")}
         </Button>}
@@ -260,14 +265,14 @@ export function HistoryPage() {
         }}>
           <CheckCheck className="h-4 w-4" aria-hidden="true" />{allSelected ? t("Seçimi temizle") : t("Görünenleri seç")}
         </Button>
-        <Button variant="outline" className="gap-2 rounded-xl border-red-500/30 text-red-700 hover:bg-red-500/10 dark:text-red-300" disabled={selectedRows.length === 0 || interactionLocked}
-          onClick={() => setDeleteTarget({ items: selectedRows.map(row => ({ id: row.id, title: row.title })), bulk: true })}>
+        <Button ref={bulkDeleteButtonRef} variant="outline" className="gap-2 rounded-xl border-red-500/30 text-red-700 hover:bg-red-500/10 dark:text-red-300" disabled={selectedRows.length === 0 || interactionLocked}
+          onClick={() => setDeleteTarget({ items: selectedRows.map(row => ({ id: row.id, title: row.title })), bulk: true, opener: bulkDeleteButtonRef.current })}>
           <Trash2 className="h-4 w-4" aria-hidden="true" />  {t("Seçilenleri sil")} </Button>
       </div>
     </div>}
 
     {loading ? <div className="mt-8"><PageLoading kind="history" label="Geçmiş yükleniyor…" /></div> : error ? authOnlyPreview ? <div className="surface mt-6 grid overflow-hidden rounded-[1.75rem] border border-border/80 bg-card shadow-sm lg:grid-cols-[minmax(0,1fr)_minmax(15rem,0.75fr)]" role="status">
-      <div className="p-7 sm:p-9"><span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-primary dark:border-secondary/20 dark:bg-secondary/[0.08] dark:text-secondary"><FilePlus2 className="h-3.5 w-3.5" aria-hidden="true" />  {t("İlk çalışmanız")}</span><h2 className="mt-5 max-w-lg text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">{t("Henüz analiz yok.")}</h2><p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">{t("İlk adımı bir konu seçerek atın. İlgili belgeleri aynı çalışma alanında bir araya getirin; hazırladığınız analizleri ve kaynaklarını bu arşivden takip edin.")}</p><Link to="/app/new-analysis" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/15 transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/90">{t("Analize başla")} <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" /></Link></div>
+      <div className="p-7 sm:p-9"><span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-primary dark:border-secondary/20 dark:bg-secondary/[0.08] dark:text-secondary"><FilePlus2 className="h-3.5 w-3.5" aria-hidden="true" />  {t("İlk çalışmanız")}</span><h2 className="mt-5 max-w-lg text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">{t("Henüz analiz yok.")}</h2><p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">{t("İlk adımı bir konu seçerek atın. İlgili belgeleri aynı çalışma alanında bir araya getirin; hazırladığınız analizleri ve kaynaklarını bu arşivden takip edin.")}</p><Link ref={emptyActionRef} to="/app/new-analysis" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/15 transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/90">{t("Analize başla")} <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" /></Link></div>
       <div className="relative flex min-h-56 items-center justify-center overflow-hidden border-t border-border/70 bg-gradient-to-br from-primary/[0.06] via-background to-primary/[0.12] p-8 dark:from-secondary/[0.06] dark:to-secondary/[0.12] lg:border-s lg:border-t-0" aria-hidden="true"><div className="absolute h-52 w-52 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="absolute h-36 w-36 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="surface relative flex h-24 w-24 items-center justify-center rounded-[1.75rem] border border-primary/15 bg-card shadow-xl shadow-primary/10 dark:border-secondary/20"><FolderOpen className="h-11 w-11 text-primary dark:text-secondary" /></div><span className="absolute bottom-5 end-5 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-muted-foreground shadow-sm">{t("İlk çalışmanız burada")}</span></div>
     </div> : <div role="alert" className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/[0.05] p-6 text-sm text-red-700 dark:text-red-300"><TriangleAlert className="mb-3 h-5 w-5" aria-hidden="true" />{t(error)}</div> : rows.length && visibleRows.length ? <ul className="mt-6 space-y-3" aria-label={t("Analiz geçmişi")}>{visibleRows.map(analysis => <li key={analysis.id} className="surface relative overflow-visible rounded-[1.35rem] border border-border/80 bg-card shadow-[0_12px_35px_-32px_rgba(55,20,95,0.7)] transition-[transform,box-shadow,border-color] duration-200 animate-in fade-in-0 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_40px_-27px_rgba(55,20,95,0.35)] dark:hover:border-secondary/30">
       {selectionMode ? <label className="flex min-h-24 cursor-pointer flex-wrap items-center gap-4 rounded-2xl p-4 transition-colors hover:bg-muted/40 sm:p-5">
@@ -282,14 +287,14 @@ export function HistoryPage() {
         </Link>
         <div className="flex shrink-0 items-center gap-1 pe-1 sm:gap-2 sm:pe-2">
           <span className={"hidden rounded-full border px-3 py-1 text-xs font-medium sm:inline-flex " + statusTone(analysisDisplayStatus(analysis, now).state)}>{t(pendingIds.has(analysis.id) ? "Analiz siliniyor…" : analysisDisplayStatus(analysis, now).label)}</span>
-          <HistoryActions analysis={analysis} disabled={interactionLocked} onDelete={() => setDeleteTarget({ items: [{ id: analysis.id, title: analysis.title }], bulk: false })} />
+          <HistoryActions analysis={analysis} disabled={interactionLocked} onDelete={opener => setDeleteTarget({ items: [{ id: analysis.id, title: analysis.title }], bulk: false, opener })} />
         </div>
       </div>}
     </li>)}</ul> : rows.length ? <div className="mt-6 rounded-[1.75rem] border border-dashed border-border bg-card/70 px-6 py-16 text-center shadow-sm">
-      <Search className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden="true" /><h2 className="mt-4 text-xl font-semibold">{t("Bu ölçütlerle eşleşen analiz yok")}</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">{t("Arama ifadenizi veya seçtiğiniz durum ve tarih aralığını değiştirerek tekrar deneyin.")}</p><Button variant="outline" className="mt-5 gap-2 rounded-xl" onClick={clearFilters}><RotateCcw className="h-4 w-4" aria-hidden="true" />  {t("Filtreleri temizle")}</Button>
+      <Search className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden="true" /><h2 className="mt-4 text-xl font-semibold">{t("Bu ölçütlerle eşleşen analiz yok")}</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">{t("Arama ifadenizi veya seçtiğiniz durum ve tarih aralığını değiştirerek tekrar deneyin.")}</p><Button ref={clearFiltersButtonRef} variant="outline" className="mt-5 gap-2 rounded-xl" onClick={clearFilters}><RotateCcw className="h-4 w-4" aria-hidden="true" />  {t("Filtreleri temizle")}</Button>
     </div> : <div className="surface relative mt-6 overflow-hidden rounded-[1.75rem] border border-border/80 bg-card shadow-sm">
       <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(17rem,0.8fr)]">
-        <div className="p-7 sm:p-10"><span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.15em] text-primary dark:border-secondary/20 dark:bg-secondary/10 dark:text-secondary"><Sparkles className="h-3.5 w-3.5" aria-hidden="true" />  {t("Yeni bir başlangıç")}</span><h2 className="mt-5 max-w-lg text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">{t("İlk çalışmanız burada yerini alsın.")}</h2><p className="mt-3 max-w-lg text-sm leading-7 text-muted-foreground">{t("{0} Belgelerinizi hazırladığınızda her çalışmaya, kaynaklarına ve durumuna bu arşivden ulaşabilirsiniz.", t(tr.analysis.noHistory))}</p><Link to="/app/new-analysis" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/90">{t("İlk analizini hazırla")} <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" /></Link></div>
+        <div className="p-7 sm:p-10"><span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.15em] text-primary dark:border-secondary/20 dark:bg-secondary/10 dark:text-secondary"><Sparkles className="h-3.5 w-3.5" aria-hidden="true" />  {t("Yeni bir başlangıç")}</span><h2 className="mt-5 max-w-lg text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">{t("İlk çalışmanız burada yerini alsın.")}</h2><p className="mt-3 max-w-lg text-sm leading-7 text-muted-foreground">{t("{0} Belgelerinizi hazırladığınızda her çalışmaya, kaynaklarına ve durumuna bu arşivden ulaşabilirsiniz.", t(tr.analysis.noHistory))}</p><Link ref={emptyActionRef} to="/app/new-analysis" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary/90">{t("İlk analizini hazırla")} <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" /></Link></div>
         <div className="relative flex min-h-60 items-center justify-center overflow-hidden border-t border-border/70 bg-gradient-to-br from-primary/[0.04] via-background to-primary/[0.12] p-8 dark:from-secondary/[0.04] dark:to-secondary/[0.12] lg:border-s lg:border-t-0" aria-hidden="true"><div className="absolute h-56 w-56 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="absolute h-40 w-40 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="absolute start-1/2 top-1/2 flex h-28 w-28 -translate-x-[65%] -translate-y-[58%] rotate-[-10deg] items-center justify-center rounded-2xl border border-primary/15 bg-card shadow-sm dark:border-secondary/20"><FilePlus2 className="h-8 w-8 text-primary/35 dark:text-secondary/35" /></div><div className="relative flex h-32 w-32 rotate-[7deg] flex-col items-center justify-center rounded-2xl border border-primary/20 bg-card shadow-xl shadow-primary/10 dark:border-secondary/20"><FolderOpen className="h-10 w-10 text-primary dark:text-secondary" /><span className="mt-3 h-1.5 w-16 rounded-full bg-primary/15 dark:bg-secondary/20" /><span className="mt-1.5 h-1.5 w-10 rounded-full bg-primary/10 dark:bg-secondary/15" /></div></div>
       </div>
     </div>}
@@ -299,6 +304,8 @@ export function HistoryPage() {
       items={deleteTarget?.items ?? null}
       description="Bu işlem geri alınamaz. Seçilen analizler, yüklenen kaynak belgeler ve hazırlanmış içerikler birlikte silinir."
       disabled={accountPending}
+      openerElement={deleteTarget?.opener ?? null}
+      fallbackFocus={() => emptyActionRef.current ?? clearFiltersButtonRef.current ?? selectionToggleRef.current ?? historyTitleRef.current}
       onClose={() => setDeleteTarget(null)}
       onSuccess={handleDeleteSuccess}
       onFailure={handleDeleteFailure}
