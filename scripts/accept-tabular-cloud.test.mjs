@@ -1,8 +1,21 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
-import { acceptanceMode, checkResult, fixture, usageRecord } from "./accept-tabular-cloud.mjs";
+import {
+  acceptanceMode,
+  checkResult,
+  createHumanReviewRecord,
+  fixture,
+  usageRecord,
+  validateHumanReviewDecision,
+  verifyAcceptanceEvidence,
+  writeVerifiedReportFile,
+} from "./accept-tabular-cloud.mjs";
+import { writePrivateJson } from "./acceptance-resources.mjs";
 import { summarizeUsageAcceptance } from "./summarize-usage-acceptance.mjs";
 
 // Kazanılan test kanıtı için kaynak baytlarını koruyan kısa bir rapor hazırlar.
@@ -89,4 +102,126 @@ test("acceptance records feed the usage report without document or account field
   assert.equal(report.runs[1].locale, "tr");
   assert.equal(report.runs[1].model, null);
   assert.deepEqual(Object.keys(success).sort(), ["durationMs", "format", "locale", "model", "modelMs", "pythonMs", "runId", "status", "usage"]);
+});
+
+test("verifies linked full acceptance evidence, rejects partial/tampered/missing/unverified runs, keeps legacy readable without forging pass, and blocks secrets", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "incagen-accept-evidence-"));
+  const gitCommit = "a".repeat(40);
+  try {
+    const csvEx = await fixture("csv");
+    const sourceSha256 = createHash("sha256").update(csvEx.bytes).digest("hex");
+    const caseId = "smoke:1:tr:synthetic-service-csv-v1";
+    const fullDir = join(dir, "full-valid");
+    mkdtempSync(join(dir, "tmp-"));
+    writePrivateJson(join(dir, "placeholder.json"), { ok: true });
+    // Tam geçerli smoke/full kanıt dizini
+    const fsModule = await import("node:fs");
+    fsModule.mkdirSync(fullDir, { recursive: true });
+    const { reportFile, reportSha256 } = writeVerifiedReportFile(fullDir, "tr-csv-result.json", csvEx.artifact?.result ?? { analysisId: "syn-1", summary: [] });
+    const runId = "run-tr-1";
+    const linkedRun = usageRecord({
+      runId, gitCommit, caseId, locale: "tr", format: "csv", sourceSha256,
+      reportFile, reportSha256, job: (await example("csv")).record.ai, passed: true,
+    });
+    writePrivateJson(join(fullDir, "runs.json"), [linkedRun]);
+    writePrivateJson(join(fullDir, "acceptance.json"), {
+      schemaVersion: 2,
+      phase: "mechanical-acceptance",
+      gitCommit,
+      status: "passed",
+      mode: "smoke",
+      caseCount: 1,
+      completedReportCount: 1,
+      humanReviewRequired: true,
+      cleanup: "verified",
+      reports: [{ runId, gitCommit, caseId, format: "csv", locale: "tr", sourceSha256, reportFile, reportSha256, status: "completed" }],
+    });
+
+    const valid = verifyAcceptanceEvidence(fullDir, { expectedCommit: gitCommit });
+    assert.equal(valid.verified, true);
+    assert.equal(valid.status, "verified");
+    assert.equal(valid.verifiedReports.length, 1);
+
+    // 1. Değişmiş rapor dosyası (SHA-256 uyuşmazlığı) reddedilmeli
+    const tamperedDir = join(dir, "tampered");
+    fsModule.cpSync(fullDir, tamperedDir, { recursive: true });
+    writeFileSync(join(tamperedDir, "tr-csv-result.json"), '{"analysisId":"tampered"}\n');
+    const tampered = verifyAcceptanceEvidence(tamperedDir);
+    assert.equal(tampered.verified, false);
+    assert.match(tampered.errors.join(" "), /SHA-256/);
+
+    // 2. Eksik rapor dosyası reddedilmeli
+    const missingDir = join(dir, "missing");
+    fsModule.cpSync(fullDir, missingDir, { recursive: true });
+    rmSync(join(missingDir, "tr-csv-result.json"));
+    assert.equal(verifyAcceptanceEvidence(missingDir).verified, false);
+
+    // 3. Yarım koşu (completedReportCount < caseCount / failed) reddedilmeli
+    const partialDir = join(dir, "partial");
+    fsModule.cpSync(fullDir, partialDir, { recursive: true });
+    const partialManifest = JSON.parse(readFileSync(join(partialDir, "acceptance.json"), "utf8"));
+    partialManifest.mode = "full";
+    partialManifest.caseCount = 6;
+    writePrivateJson(join(partialDir, "acceptance.json"), partialManifest);
+    assert.equal(verifyAcceptanceEvidence(partialDir).verified, false);
+
+    // 4. Doğrulanmamış temizlik (cleanup: "unverified") reddedilmeli
+    const unverifiedDir = join(dir, "unverified-cleanup");
+    fsModule.cpSync(fullDir, unverifiedDir, { recursive: true });
+    const unverifiedManifest = JSON.parse(readFileSync(join(unverifiedDir, "acceptance.json"), "utf8"));
+    unverifiedManifest.cleanup = "unverified";
+    writePrivateJson(join(unverifiedDir, "acceptance.json"), unverifiedManifest);
+    assert.equal(verifyAcceptanceEvidence(unverifiedDir).verified, false);
+
+    // 5. Eski kayıt okunabilmeli ancak eksik alanları varsayıp verified: true dönmemeli
+    const legacyDir = join(dir, "legacy");
+    fsModule.mkdirSync(legacyDir, { recursive: true });
+    writePrivateJson(join(legacyDir, "runs.json"), [{ runId: "legacy-1", locale: "tr", format: "csv", status: "completed" }]);
+    writePrivateJson(join(legacyDir, "acceptance.json"), { phase: "mechanical-acceptance", status: "passed", mode: "smoke", caseCount: 1, completedReportCount: 1, cleanup: "verified" });
+    const legacy = verifyAcceptanceEvidence(legacyDir);
+    assert.equal(legacy.legacy, true);
+    assert.equal(legacy.verified, false);
+    assert.equal(legacy.status, "legacy-unverified");
+    assert.equal(legacy.readOnlySummary.completedReportCount, 1);
+
+    // 6. Rapor veya günlükte gizli veri / token sızıntısı reddedilmeli
+    const secretDir = join(dir, "secret-leak");
+    fsModule.cpSync(fullDir, secretDir, { recursive: true });
+    const secretToken = ["ya29.", "AbCdEfGhIjKlMnOpQrStUvWxYz"].join("");
+    writePrivateJson(join(secretDir, "tr-csv-result.json"), { analysisId: "syn-1", leak: `Bearer ${secretToken}` });
+    const leaked = verifyAcceptanceEvidence(secretDir);
+    assert.equal(leaked.verified, false);
+    assert.match(leaked.errors.join(" "), /gizli veri/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("keeps human review pending separately from mechanical checks and binds approvals to exact reportId and SHA-256", () => {
+  const binding = {
+    reportId: "analysis-live-tr-1",
+    reportSha256: "b".repeat(64),
+    sourceSha256: "c".repeat(64),
+    locale: "tr",
+    gitCommit: "a".repeat(40),
+  };
+  const pendingReview = createHumanReviewRecord(binding);
+  const pendingCheck = validateHumanReviewDecision(pendingReview, binding);
+  assert.equal(pendingCheck.valid, true);
+  assert.equal(pendingCheck.status, "pending");
+  assert.equal(pendingCheck.approved, false);
+
+  // Altı ölçüt pass olmadan approved geçersiz sayılmalı
+  const prematureApproval = { ...pendingReview, decision: "approved", reviewedAt: "2026-11-19T12:00:00Z" };
+  assert.equal(validateHumanReviewDecision(prematureApproval, binding).valid, false);
+
+  // Tüm ölçütler pass olsa da rapor hash'i değişince insan kararı geçersiz olmalı
+  const fullApproval = {
+    ...pendingReview,
+    decision: "approved",
+    reviewedAt: "2026-11-19T12:00:00Z",
+    criteria: Object.fromEntries(Object.keys(pendingReview.criteria).map(k => [k, "pass"])),
+  };
+  assert.equal(validateHumanReviewDecision(fullApproval, binding).approved, true);
+  assert.equal(validateHumanReviewDecision(fullApproval, { ...binding, reportSha256: "d".repeat(64) }).valid, false);
 });

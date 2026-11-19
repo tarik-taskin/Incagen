@@ -131,46 +131,126 @@ export function summarizeSingleRun(run, pricingInput) {
   };
 }
 
+// Küçük ve sıfır olmayan liste için ortalama, medyan (tipik değer) ve en uzun süreyi hesaplar.
+function computeDistribution(values) {
+  if (values.length === 0) return { sampleCount: 0, mean: null, median: null, max: null };
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  const median = sorted.length % 2 === 1
+    ? sorted[middle]
+    : Number(((sorted[middle - 1] + sorted[middle]) / 2).toFixed(2));
+  const mean = Number((sorted.reduce((sum, item) => sum + item, 0) / sorted.length).toFixed(2));
+  return {
+    sampleCount: sorted.length,
+    mean,
+    median: Number(median.toFixed(2)),
+    max: sorted[sorted.length - 1],
+  };
+}
+
+// Geçerli ve tamamlanmış tek format (CSV/XLSX) koşuları için örnek sayısı, tipik/medyan ve en uzun süreyi özetler.
+function summarizeFormatGroup(groupRuns) {
+  const sampleCount = groupRuns.length;
+  const calc = computeDistribution(groupRuns.map(i => i.calculationMs).filter(v => v !== null));
+  const model = computeDistribution(groupRuns.map(i => i.modelMs).filter(v => v !== null));
+  const total = computeDistribution(groupRuns.map(i => i.totalDurationMs).filter(v => v !== null));
+  const tokens = computeDistribution(groupRuns.map(i => i.usage?.totalTokens ?? null).filter(v => v !== null));
+  return {
+    sampleCount,
+    smallSample: sampleCount < 6,
+    sampleNote: sampleCount === 0
+      ? "Ölçülmüş tamamlanmış örnek yok."
+      : sampleCount < 6
+        ? "Küçük örneklem; geniş kullanıcı trafiği veya kesin SLA temsili değildir."
+        : "İlk temel örneklem eşiği (6+) karşılandı; üretim SLA garantisi değildir.",
+    typicalDurationMs: total.median,
+    calculationMs: calc,
+    modelMs: model,
+    totalDurationMs: total,
+    totalTokens: tokens,
+  };
+}
+
 // Kayıtlı sentetik koşu listesini süre/kullanım istatistikleriyle yeniden üretilebilir rapora dönüştürür.
 export function summarizeUsageAcceptance(runs, options = {}) {
   if (!Array.isArray(runs) || runs.length === 0) {
     throw new Error("En az bir kayıtlı analiz koşusu gereklidir.");
   }
   const pricing = validatePricingInput(options.pricing);
-  const items = runs.map(run => summarizeSingleRun(run, pricing));
-  const invalidRuns = items.filter(i => i.measurementStatus === "invalid-measurement");
-  const completedRuns = items.filter(i => i.status === "completed" && i.measurementStatus !== "invalid-measurement");
+  const seenRunIds = new Set();
+  const duplicateRunIds = [];
+  const items = runs.map(run => {
+    const summarized = summarizeSingleRun(run, pricing);
+    const isDuplicate = summarized.runId !== "unknown" && seenRunIds.has(summarized.runId);
+    if (summarized.runId !== "unknown") seenRunIds.add(summarized.runId);
+    if (isDuplicate) duplicateRunIds.push(summarized.runId);
+    return isDuplicate ? { ...summarized, duplicateOfFirst: true } : summarized;
+  });
+
+  const uniqueItems = items.filter(i => !i.duplicateOfFirst);
+  const invalidRuns = uniqueItems.filter(i => i.measurementStatus === "invalid-measurement");
+  const completedRuns = uniqueItems.filter(i => i.status === "completed" && i.measurementStatus !== "invalid-measurement");
 
   const validCalc = completedRuns.map(i => i.calculationMs).filter(v => v !== null);
   const validModel = completedRuns.map(i => i.modelMs).filter(v => v !== null);
   const validTotal = completedRuns.map(i => i.totalDurationMs).filter(v => v !== null);
   const validUsage = completedRuns.map(i => i.usage).filter(v => v !== null);
 
-  const avg = list => (list.length > 0 ? Number((list.reduce((a, b) => a + b, 0) / list.length).toFixed(2)) : null);
+  const calcStats = computeDistribution(validCalc);
+  const modelStats = computeDistribution(validModel);
+  const totalStats = computeDistribution(validTotal);
+  const tokenStats = computeDistribution(validUsage.map(u => u.totalTokens));
   const invalidCount = invalidRuns.length;
 
   return {
     reportSchemaVersion: 1,
     generatedAt: new Date().toISOString(),
     runCount: items.length,
-    completedCount: items.filter(i => i.status === "completed").length,
-    failedCount: items.filter(i => i.status === "failed").length,
+    uniqueRunCount: uniqueItems.length,
+    completedCount: uniqueItems.filter(i => i.status === "completed").length,
+    validCompletedCount: completedRuns.length,
+    failedCount: uniqueItems.filter(i => i.status === "failed").length,
+    unfinishedCount: uniqueItems.filter(i => i.status !== "completed" && i.status !== "failed").length,
     invalidMeasurementCount: invalidCount,
     excludedInvalidRunIds: invalidRuns.map(i => i.runId),
+    duplicateRunIds: [...new Set(duplicateRunIds)],
+    excludedDuplicateCount: duplicateRunIds.length,
+    sampleConfidence: completedRuns.length < 6 ? "small-sample" : "baseline-met",
+    sampleNote: completedRuns.length === 0
+      ? "Tamamlanmış geçerli ölçüm bulunmuyor."
+      : completedRuns.length < 6
+        ? `Yalnız ${completedRuns.length} tamamlanmış koşu içerir; küçük örneklem büyük veri veya SLA temsili olarak sunulamaz.`
+        : `${completedRuns.length} tamamlanmış sentetik koşu özeti.`,
     measuredCounts: {
-      calculationMs: validCalc.length,
-      modelMs: validModel.length,
-      totalDurationMs: validTotal.length,
-      usage: validUsage.length,
+      calculationMs: calcStats.sampleCount,
+      modelMs: modelStats.sampleCount,
+      totalDurationMs: totalStats.sampleCount,
+      usage: tokenStats.sampleCount,
     },
     averages: {
-      calculationMs: avg(validCalc),
-      modelMs: avg(validModel),
-      totalDurationMs: avg(validTotal),
-      totalTokens: avg(validUsage.map(u => u.totalTokens)),
+      calculationMs: calcStats.mean,
+      modelMs: modelStats.mean,
+      totalDurationMs: totalStats.mean,
+      totalTokens: tokenStats.mean,
+    },
+    medians: {
+      calculationMs: calcStats.median,
+      modelMs: modelStats.median,
+      totalDurationMs: totalStats.median,
+      totalTokens: tokenStats.median,
+    },
+    maxima: {
+      calculationMs: calcStats.max,
+      modelMs: modelStats.max,
+      totalDurationMs: totalStats.max,
+      totalTokens: tokenStats.max,
+    },
+    byFormat: {
+      csv: summarizeFormatGroup(completedRuns.filter(i => i.format === "csv")),
+      xlsx: summarizeFormatGroup(completedRuns.filter(i => i.format === "xlsx")),
     },
     pricingUsed: pricing,
-    overallStatus: invalidCount > 0 ? "invalid" : (items.every(i => i.measurementStatus === "measured") ? "complete" : "partial"),
+    overallStatus: invalidCount > 0 ? "invalid" : (uniqueItems.every(i => i.measurementStatus === "measured") ? "complete" : "partial"),
     runs: items,
   };
 }

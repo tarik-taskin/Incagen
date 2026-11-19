@@ -181,6 +181,58 @@ test("unfinished runs cannot satisfy the usage acceptance or influence success l
   assert.equal(report.overallStatus, "partial");
   assert.equal(report.runs[0].measurementStatus, "partial");
   assert.equal(report.completedCount, 0);
+  assert.equal(report.unfinishedCount, 1);
   assert.equal(report.measuredCounts.totalDurationMs, 0);
   assert.equal(report.averages.totalDurationMs, null);
+  assert.equal(report.medians.totalDurationMs, null);
+});
+
+test("separates CSV and XLSX sample counts, medians, and maxima, prevents duplicate runId double-counting, and flags small samples without inventing cost", () => {
+  const csv1 = { runId: "csv-1", locale: "tr", format: "csv", status: "completed", model: "gemini-3.8-flash", pythonMs: 20, modelMs: 80, durationMs: 100, usage: { promptTokens: 100, outputTokens: 50, totalTokens: 150 } };
+  const csv2 = { runId: "csv-2", locale: "en", format: "csv", status: "completed", model: "gemini-3.8-flash", pythonMs: 40, modelMs: 160, durationMs: 200, usage: { promptTokens: 200, outputTokens: 100, totalTokens: 300 } };
+  const csv3 = { runId: "csv-3", locale: "de", format: "csv", status: "completed", model: "gemini-3.8-flash", pythonMs: 100, modelMs: 800, durationMs: 900, usage: { promptTokens: 300, outputTokens: 150, totalTokens: 450 } };
+  const xlsx1 = { runId: "xlsx-1", locale: "es", format: "xlsx", status: "completed", model: "gemini-3.8-flash", pythonMs: 300, modelMs: 1200, durationMs: 1500, usage: { promptTokens: 400, outputTokens: 200, totalTokens: 600 } };
+  const negativeRun = { runId: "bad-neg", locale: "zh", format: "csv", status: "completed", pythonMs: -5, modelMs: 10, durationMs: 20, usage: { promptTokens: 10, outputTokens: 10, totalTokens: 20 } };
+  const failedXlsx = { runId: "fail-xlsx", locale: "ar", format: "xlsx", status: "failed", error: "provider-busy", durationMs: 5000 };
+
+  // Aynı runId ("csv-1") iki kez verilse de ikinci kopya çift sayılmaz.
+  const report = summarizeUsageAcceptance([csv1, { ...csv1 }, csv2, csv3, xlsx1, negativeRun, failedXlsx]);
+
+  assert.equal(report.overallStatus, "invalid");
+  assert.equal(report.completedCount, 5);
+  assert.equal(report.validCompletedCount, 4); // csv-1, csv-2, csv-3, xlsx-1 (bad-neg invalid, duplicate csv-1 hariç)
+  assert.deepEqual(report.duplicateRunIds, ["csv-1"]);
+  assert.equal(report.excludedDuplicateCount, 1);
+  assert.deepEqual(report.excludedInvalidRunIds, ["bad-neg"]);
+  assert.equal(report.failedCount, 1);
+  assert.equal(report.sampleConfidence, "small-sample");
+  assert.match(report.sampleNote, /küçük örneklem/);
+
+  // CSV ayrı medyan ve en uzun süre (100, 200, 900 -> medyan=200, max=900)
+  assert.equal(report.byFormat.csv.sampleCount, 3);
+  assert.equal(report.byFormat.csv.smallSample, true);
+  assert.equal(report.byFormat.csv.typicalDurationMs, 200);
+  assert.equal(report.byFormat.csv.totalDurationMs.median, 200);
+  assert.equal(report.byFormat.csv.totalDurationMs.max, 900);
+
+  // XLSX ayrı medyan ve en uzun süre (yalnız xlsx1 başarılı, fail-xlsx dışarıda)
+  assert.equal(report.byFormat.xlsx.sampleCount, 1);
+  assert.equal(report.byFormat.xlsx.typicalDurationMs, 1500);
+  assert.equal(report.byFormat.xlsx.totalDurationMs.max, 1500);
+
+  // Genel medyan ve en uzun süre ([100, 200, 900, 1500] -> medyan=550, max=1500)
+  assert.equal(report.medians.totalDurationMs, 550);
+  assert.equal(report.maxima.totalDurationMs, 1500);
+
+  // Fiyat verilmediğinde maliyet hiçbir zaman uydurulmaz
+  assert.ok(report.runs.every(run => run.estimatedCost.status === "hesaplanamadı"));
+
+  // Eski format/locale olmayan kayıtlar okunabilir ve ortalamaları korur
+  const legacyReport = summarizeUsageAcceptance([
+    { runId: "old-1", status: "completed", pythonMs: 10, modelMs: 20, durationMs: 30, usage: { promptTokens: 5, outputTokens: 5, totalTokens: 10 } },
+  ]);
+  assert.equal(legacyReport.overallStatus, "complete");
+  assert.equal(legacyReport.averages.totalDurationMs, 30);
+  assert.equal(legacyReport.byFormat.csv.sampleCount, 0);
+  assert.equal(legacyReport.byFormat.xlsx.sampleCount, 0);
 });
