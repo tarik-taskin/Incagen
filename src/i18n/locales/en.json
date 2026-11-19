@@ -1136,5 +1136,9 @@
   "Analiz silinemedi.": "Could not delete the analysis.",
   "Hesap silinemedi.": "Could not delete the account.",
   "Kimliğiniz doğrulanıyor…": "Verifying your identity…",
-  "Oturum kapatılıyor…": "Signing out…"
+  "Oturum kapatılıyor…": "Signing out…",
+  "Siliniyor…": "Deleting…",
+  "Siliniyor… {0}/{1}": "Deleting… {0}/{1}",
+  "Başarısızları yeniden dene": "Retry failed",
+  "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz.": "You can retry only the failed records or close this dialog."
 }

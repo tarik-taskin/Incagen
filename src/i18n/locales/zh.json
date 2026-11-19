@@ -1136,5 +1136,9 @@
   "Analiz silinemedi.": "无法删除分析。",
   "Hesap silinemedi.": "无法删除账户。",
   "Kimliğiniz doğrulanıyor…": "正在验证您的身份…",
-  "Oturum kapatılıyor…": "正在退出登录…"
+  "Oturum kapatılıyor…": "正在退出登录…",
+  "Siliniyor…": "正在删除…",
+  "Siliniyor… {0}/{1}": "正在删除… {0}/{1}",
+  "Başarısızları yeniden dene": "重试失败项",
+  "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz.": "您可以仅重试失败的记录，或关闭此窗口。"
 }

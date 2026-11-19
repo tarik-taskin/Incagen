@@ -1,5 +1,5 @@
 import { analysisDisplayStatus } from "../features/reports/analysis-status";
-import { useOutsideDismiss } from "../hooks/use-outside-dismiss";
+import { AnalysisDeleteDialog } from "../components/analysis-delete-dialog";
 import { PageLoading } from "../components/page-loading";
 import { t, useLocale, localeTag } from "../i18n/runtime";
 import { useEffect, useRef, useState } from "react";
@@ -13,9 +13,7 @@ import { buildHistoryView, DEFAULT_HISTORY_VIEW, parseHistoryView, serializeHist
 import { useAnalyses } from "../hooks/use-analyses";
 import { tr } from "../i18n/tr";
 import { authOnlyPreview } from "../lib/deployment-mode";
-import { useWorkspaceDeletion, type DeleteItem } from "../lib/workspace-deletion-context";
-
-type DeleteTarget = { items: DeleteItem[] };
+import { useWorkspaceDeletion, type DeleteItem, type DeletionResult } from "../lib/workspace-deletion-context";
 
 // Durumu listedeki kısa, renk destekli etikete dönüştürür; anlamı metin de taşır.
 function statusTone(status: Analysis["status"]) {
@@ -79,15 +77,12 @@ export function HistoryPage() {
   const [now, setNow] = useState(() => Date.now());
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
-  const [target, setTarget] = useState<DeleteTarget | null>(null);
-  const { progress, pendingIds, accountPending, remove } = useWorkspaceDeletion();
+  const [deleteTarget, setDeleteTarget] = useState<{ items: DeleteItem[]; bulk: boolean } | null>(null);
+  const { progress, pendingIds, accountPending } = useWorkspaceDeletion();
   const [searchParams, setSearchParams] = useSearchParams();
   const view = parseHistoryView(searchParams);
   const { query, status: statusFilter, period: periodFilter, sort } = view;
   const selectionRevision = useRef(0);
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const cancelRef = useRef<HTMLButtonElement>(null);
-  useOutsideDismiss(dialogRef, () => setTarget(null), target !== null);
 
   // Lease ve seçili tarih aralığının bir sonraki sınırını tek hedefli zamanlayıcıyla yeniler.
   useEffect(() => {
@@ -131,18 +126,11 @@ export function HistoryPage() {
   const hasFilters = query.trim() !== "" || statusFilter !== "all" || periodFilter !== "all" || sort !== "newest";
   const advancedCount = Number(statusFilter !== "all") + Number(periodFilter !== "all") + Number(sort !== "newest");
   const [filtersOpen, setFiltersOpen] = useState(advancedCount > 0);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (target && !dialog.open) {
-      dialog.showModal();
-      cancelRef.current?.focus();
-    } else if (!target && dialog.open) dialog.close();
-  }, [target]);
+  const interactionLocked = accountPending || progress !== null || deleteTarget !== null;
 
   // Seçim modunu kapatırken önceki işten kalan seçimleri temizler.
   function toggleSelectionMode() {
+    if (interactionLocked) return;
     selectionRevision.current++;
     setSelectionMode(value => !value);
     setSelectedIds(new Set());
@@ -150,6 +138,7 @@ export function HistoryPage() {
 
   // Kart seçimini kimlik üzerinden günceller; canlı liste sırası değişse de seçim kararlı kalır.
   function toggleSelected(id: string) {
+    if (interactionLocked) return;
     selectionRevision.current++;
     setSelectedIds(current => {
       const next = new Set(current);
@@ -167,15 +156,24 @@ export function HistoryPage() {
 
   function clearFilters() { updateView(DEFAULT_HISTORY_VIEW); }
 
-  // Onaydan sonra her analizi ayrı siler; kısmi hatada yalnız başarısız kayıtları seçili bırakır.
-  async function deleteConfirmed() {
-    if (!target || progress || accountPending) return;
-    const revision = selectionRevision.current;
-    setTarget(null);
-    const result = await remove(target.items);
-    if (!result || selectionRevision.current !== revision) return;
-    setSelectedIds(new Set(result.failed.map(item => item.id)));
-    setSelectionMode(result.failed.length > 0);
+  // Tam başarıda diyalogu ve toplu seçimi kapatır.
+  function handleDeleteSuccess() {
+    const wasBulk = deleteTarget?.bulk ?? false;
+    setDeleteTarget(null);
+    if (wasBulk) {
+      selectionRevision.current++;
+      setSelectedIds(new Set());
+      setSelectionMode(false);
+    }
+  }
+
+  // Kısmi veya tam hatada diyalog kapanırsa yalnız başarısız kayıtları seçili bırakır.
+  function handleDeleteFailure(result: DeletionResult) {
+    if (deleteTarget?.bulk) {
+      selectionRevision.current++;
+      setSelectedIds(new Set(result.failed.map(item => item.id)));
+      setSelectionMode(true);
+    }
   }
 
   return <section aria-labelledby="history-title" className="max-w-6xl">
@@ -189,7 +187,7 @@ export function HistoryPage() {
           <h1 id="history-title" className="mt-2 text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">{t(tr.analysis.history)}</h1>
           <p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">{t("Çalışmalarınızın düzenli adresi. Hazırladığınız analizleri yeniden açın, bulun ve ihtiyaç duymadıklarınızı yönetin.")}</p>
         </div>
-        {!loading && !error && rows.length > 0 && <Button variant="outline" className="gap-2 rounded-xl bg-card" onClick={toggleSelectionMode}>
+        {!loading && !error && rows.length > 0 && <Button variant="outline" disabled={interactionLocked} className="gap-2 rounded-xl bg-card" onClick={toggleSelectionMode}>
           {selectionMode ? <X className="h-4 w-4" aria-hidden="true" /> : <Trash2 className="h-4 w-4" aria-hidden="true" />}
           {selectionMode ? t("Seçimi bitir") : t("Seç ve sil")}
         </Button>}
@@ -256,14 +254,14 @@ export function HistoryPage() {
     {selectionMode && visibleRows.length > 0 && <div className="mt-7 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/[0.04] p-4 dark:border-secondary/20 dark:bg-secondary/[0.04] sm:p-5" aria-label={t("Toplu silme işlemleri")}>
       <div><p className="font-semibold">{t("{0} analiz seçildi", selectedRows.length)}</p><p className="mt-1 text-xs text-muted-foreground">{t("Seçtiklerinizi silmeden önce onay isteyeceğiz.")}</p></div>
       <div className="flex flex-wrap items-center gap-2">
-        <Button variant="ghost" className="gap-2 rounded-xl" onClick={() => {
+        <Button variant="ghost" disabled={interactionLocked} className="gap-2 rounded-xl" onClick={() => {
           selectionRevision.current++;
           setSelectedIds(allSelected ? new Set() : new Set(visibleRows.map(row => row.id)));
         }}>
           <CheckCheck className="h-4 w-4" aria-hidden="true" />{allSelected ? t("Seçimi temizle") : t("Görünenleri seç")}
         </Button>
-        <Button variant="outline" className="gap-2 rounded-xl border-red-500/30 text-red-700 hover:bg-red-500/10 dark:text-red-300" disabled={selectedRows.length === 0 || accountPending || progress !== null}
-          onClick={() => setTarget({ items: selectedRows.map(row => ({ id: row.id, title: row.title })) })}>
+        <Button variant="outline" className="gap-2 rounded-xl border-red-500/30 text-red-700 hover:bg-red-500/10 dark:text-red-300" disabled={selectedRows.length === 0 || interactionLocked}
+          onClick={() => setDeleteTarget({ items: selectedRows.map(row => ({ id: row.id, title: row.title })), bulk: true })}>
           <Trash2 className="h-4 w-4" aria-hidden="true" />  {t("Seçilenleri sil")} </Button>
       </div>
     </div>}
@@ -273,7 +271,7 @@ export function HistoryPage() {
       <div className="relative flex min-h-56 items-center justify-center overflow-hidden border-t border-border/70 bg-gradient-to-br from-primary/[0.06] via-background to-primary/[0.12] p-8 dark:from-secondary/[0.06] dark:to-secondary/[0.12] lg:border-s lg:border-t-0" aria-hidden="true"><div className="absolute h-52 w-52 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="absolute h-36 w-36 rounded-full border border-primary/10 dark:border-secondary/15" /><div className="surface relative flex h-24 w-24 items-center justify-center rounded-[1.75rem] border border-primary/15 bg-card shadow-xl shadow-primary/10 dark:border-secondary/20"><FolderOpen className="h-11 w-11 text-primary dark:text-secondary" /></div><span className="absolute bottom-5 end-5 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-muted-foreground shadow-sm">{t("İlk çalışmanız burada")}</span></div>
     </div> : <div role="alert" className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/[0.05] p-6 text-sm text-red-700 dark:text-red-300"><TriangleAlert className="mb-3 h-5 w-5" aria-hidden="true" />{t(error)}</div> : rows.length && visibleRows.length ? <ul className="mt-6 space-y-3" aria-label={t("Analiz geçmişi")}>{visibleRows.map(analysis => <li key={analysis.id} className="surface relative overflow-visible rounded-[1.35rem] border border-border/80 bg-card shadow-[0_12px_35px_-32px_rgba(55,20,95,0.7)] transition-[transform,box-shadow,border-color] duration-200 animate-in fade-in-0 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_40px_-27px_rgba(55,20,95,0.35)] dark:hover:border-secondary/30">
       {selectionMode ? <label className="flex min-h-24 cursor-pointer flex-wrap items-center gap-4 rounded-2xl p-4 transition-colors hover:bg-muted/40 sm:p-5">
-        <Checkbox checked={selectedIds.has(analysis.id)} onCheckedChange={() => toggleSelected(analysis.id)} aria-label={t("{0} seç", analysis.title)} />
+        <Checkbox disabled={interactionLocked || pendingIds.has(analysis.id)} checked={selectedIds.has(analysis.id)} onCheckedChange={() => toggleSelected(analysis.id)} aria-label={t("{0} seç", analysis.title)} />
         <span className="min-w-0 flex-1"><span className="block break-words font-semibold">{analysis.title}</span><span className="mt-1 block text-xs text-muted-foreground">{analysis.business} · {new Date(analysis.createdAt).toLocaleString(localeTag())}</span></span>
         <span className={"rounded-full border px-3 py-1 text-xs font-medium " + statusTone(analysisDisplayStatus(analysis, now).state)}>{t(pendingIds.has(analysis.id) ? "Analiz siliniyor…" : analysisDisplayStatus(analysis, now).label)}</span>
       </label> : <div className="flex min-h-28 items-center gap-2 p-2 sm:gap-3">
@@ -284,7 +282,7 @@ export function HistoryPage() {
         </Link>
         <div className="flex shrink-0 items-center gap-1 pe-1 sm:gap-2 sm:pe-2">
           <span className={"hidden rounded-full border px-3 py-1 text-xs font-medium sm:inline-flex " + statusTone(analysisDisplayStatus(analysis, now).state)}>{t(pendingIds.has(analysis.id) ? "Analiz siliniyor…" : analysisDisplayStatus(analysis, now).label)}</span>
-          <HistoryActions analysis={analysis} disabled={accountPending || progress !== null} onDelete={() => setTarget({ items: [{ id: analysis.id, title: analysis.title }] })} />
+          <HistoryActions analysis={analysis} disabled={interactionLocked} onDelete={() => setDeleteTarget({ items: [{ id: analysis.id, title: analysis.title }], bulk: false })} />
         </div>
       </div>}
     </li>)}</ul> : rows.length ? <div className="mt-6 rounded-[1.75rem] border border-dashed border-border bg-card/70 px-6 py-16 text-center shadow-sm">
@@ -296,23 +294,14 @@ export function HistoryPage() {
       </div>
     </div>}
 
-    <dialog ref={dialogRef} role="alertdialog" aria-labelledby="history-delete-title" aria-describedby="history-delete-description"
-      onCancel={() => setTarget(null)}
-      onClose={() => setTarget(null)}
-      className="surface w-[min(92vw,30rem)] max-w-none overscroll-contain rounded-3xl border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-slate-950/55 backdrop:backdrop-blur-sm">
-      <div className="p-6 sm:p-7">
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-500/10 text-red-700 dark:text-red-300"><Trash2 className="h-5 w-5" aria-hidden="true" /></span>
-        <h2 id="history-delete-title" className="mt-5 text-xl font-semibold">{target?.items.length === 1 ? t("Bu analizi silmek istiyor musunuz?") : t("{0} analizi silmek istiyor musunuz?", target?.items.length ?? 0)}</h2>
-        <p id="history-delete-description" className="mt-2 text-sm leading-6 text-muted-foreground">{t("Bu işlem geri alınamaz. Seçilen analizler, yüklenen kaynak belgeler ve hazırlanmış içerikler birlikte silinir.")}</p>
-        {target?.items.length === 1 && <p className="mt-4 break-words rounded-xl bg-muted px-4 py-3 text-sm font-medium">{target.items[0].title}</p>}
-
-        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button ref={cancelRef} variant="outline" className="rounded-xl" onClick={() => setTarget(null)}>{t("Vazgeç")}</Button>
-          <Button className="gap-2 rounded-xl bg-red-700 text-white hover:bg-red-800 dark:bg-red-600 dark:hover:bg-red-700" disabled={accountPending || progress !== null} onClick={deleteConfirmed}>
-            <Trash2 className="h-4 w-4" aria-hidden="true" />{target?.items.length === 1 ? t("Analizi sil") : t("{0} analizi sil", target?.items.length ?? 0)}
-          </Button>
-        </div>
-      </div>
-    </dialog>
+    <AnalysisDeleteDialog
+      idPrefix="history-delete"
+      items={deleteTarget?.items ?? null}
+      description="Bu işlem geri alınamaz. Seçilen analizler, yüklenen kaynak belgeler ve hazırlanmış içerikler birlikte silinir."
+      disabled={accountPending}
+      onClose={() => setDeleteTarget(null)}
+      onSuccess={handleDeleteSuccess}
+      onFailure={handleDeleteFailure}
+    />
   </section>;
 }

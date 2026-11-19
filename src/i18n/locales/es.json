@@ -1136,5 +1136,9 @@
   "Analiz silinemedi.": "No se pudo eliminar el análisis.",
   "Hesap silinemedi.": "No se pudo eliminar la cuenta.",
   "Kimliğiniz doğrulanıyor…": "Verificando tu identidad…",
-  "Oturum kapatılıyor…": "Cerrando sesión…"
+  "Oturum kapatılıyor…": "Cerrando sesión…",
+  "Siliniyor…": "Eliminando…",
+  "Siliniyor… {0}/{1}": "Eliminando… {0}/{1}",
+  "Başarısızları yeniden dene": "Reintentar fallidos",
+  "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz.": "Puede reintentar solo los registros fallidos o cerrar esta ventana."
 }

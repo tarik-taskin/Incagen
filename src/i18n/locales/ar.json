@@ -1136,5 +1136,9 @@
   "Analiz silinemedi.": "تعذّر حذف التحليل.",
   "Hesap silinemedi.": "تعذّر حذف الحساب.",
   "Kimliğiniz doğrulanıyor…": "جارٍ التحقق من هويتك…",
-  "Oturum kapatılıyor…": "جارٍ تسجيل الخروج…"
+  "Oturum kapatılıyor…": "جارٍ تسجيل الخروج…",
+  "Siliniyor…": "جارٍ الحذف…",
+  "Siliniyor… {0}/{1}": "جارٍ الحذف… {0}/{1}",
+  "Başarısızları yeniden dene": "إعادة محاولة العناصر الفاشلة",
+  "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz.": "يمكنك إعادة محاولة السجلات الفاشلة فقط أو إغلاق هذه النافذة."
 }

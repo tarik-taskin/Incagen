@@ -6,9 +6,8 @@ import { Button } from "./ui/button";
 // Onay penceresi kapandıktan sonra çalışma alanında silme durumunu ve sonucu gösterir.
 export function WorkspaceDeletionStatus() {
   useLocale();
-  const { progress, result, accountPending, accountError, dismiss } = useWorkspaceDeletion();
+  const { result, accountPending, accountError, dismiss } = useWorkspaceDeletion();
   if (accountPending) return <div className="mb-5"><OperationStatus>{t("Hesap siliniyor…")} {t("Bu sırada çalışma alanında gezinebilirsiniz.")}</OperationStatus></div>;
-  if (progress) return <div className="mb-5"><OperationStatus>{t("Siliniyor: {0}/{1}", progress.done, progress.total)}. {t("Bu sırada çalışma alanında gezinebilirsiniz.")}</OperationStatus></div>;
   if (!result && !accountError) return null;
   const failed = result?.failed[0];
   return <div className="mb-5 flex items-start justify-between gap-2 rounded-xl border border-border bg-card p-3">

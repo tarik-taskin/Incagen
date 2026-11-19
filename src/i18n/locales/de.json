@@ -1136,5 +1136,9 @@
   "Analiz silinemedi.": "Die Analyse konnte nicht gelöscht werden.",
   "Hesap silinemedi.": "Das Konto konnte nicht gelöscht werden.",
   "Kimliğiniz doğrulanıyor…": "Ihre Identität wird überprüft…",
-  "Oturum kapatılıyor…": "Abmeldung läuft…"
+  "Oturum kapatılıyor…": "Abmeldung läuft…",
+  "Siliniyor…": "Wird gelöscht…",
+  "Siliniyor… {0}/{1}": "Wird gelöscht… {0}/{1}",
+  "Başarısızları yeniden dene": "Fehlgeschlagene erneut versuchen",
+  "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz.": "Sie können nur die fehlgeschlagenen Einträge erneut versuchen oder das Fenster schließen."
 }

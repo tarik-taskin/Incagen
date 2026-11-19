@@ -1136,5 +1136,9 @@
   "Analiz silinemedi.": "Analiz silinemedi.",
   "Hesap silinemedi.": "Hesap silinemedi.",
   "Kimliğiniz doğrulanıyor…": "Kimliğiniz doğrulanıyor…",
-  "Oturum kapatılıyor…": "Oturum kapatılıyor…"
+  "Oturum kapatılıyor…": "Oturum kapatılıyor…",
+  "Siliniyor…": "Siliniyor…",
+  "Siliniyor… {0}/{1}": "Siliniyor… {0}/{1}",
+  "Başarısızları yeniden dene": "Başarısızları yeniden dene",
+  "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz.": "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz."
 }
