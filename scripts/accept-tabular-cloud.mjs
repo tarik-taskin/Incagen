@@ -133,7 +133,40 @@ export function checkResult(artifact, record, expected, id, locale) {
 
 const SHA256_HEX = /^[a-f0-9]{64}$/;
 const GIT_SHA = /^[a-f0-9]{40}$/;
+const ISO_TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?(Z|[+-]\d{2}:\d{2})$/;
 const SECRET_LEAK_PATTERN = /(Bearer\s+[A-Za-z0-9._-]+|AIza[0-9A-Za-z_-]{20,}|ya29\.[0-9A-Za-z_-]{15,}|ghp_[0-9A-Za-z]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|"(?:apiKey|password|secret|token)"\s*:|\b(?:apiKey|password|secret|token)\s*=|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i;
+
+// Mod bazında beklenen benzersiz kabul vaka kimliklerini, dillerini ve formatlarını döner.
+export function expectedAcceptanceCases(mode) {
+  if (mode === "closed") return [];
+  if (mode === "smoke") {
+    return [{ caseId: "smoke:1:tr:synthetic-service-csv-v1", locale: "tr", format: "csv" }];
+  }
+  if (mode === "full") {
+    return locales.map((locale, index) => {
+      const format = index % 2 ? "xlsx" : "csv";
+      const cid = format === "csv" ? "synthetic-service-csv-v1" : "synthetic-service-xlsx-v1";
+      return { caseId: `full:${index + 1}:${locale}:${cid}`, locale, format };
+    });
+  }
+  throw new Error(`Bilinmeyen kabul modu: ${String(mode)}`);
+}
+
+// Geçerli ISO-8601 inceleme tarihini takvim sınırlarıyla (ör. 2026-02-30 hariç) doğrular.
+function isValidIsoReviewTimestamp(value) {
+  if (typeof value !== "string" || value.trim() !== value) return false;
+  const match = ISO_TIMESTAMP.exec(value);
+  if (!match || !Number.isFinite(Date.parse(value))) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const hour = Number(match[4]);
+  const minute = Number(match[5]);
+  const second = Number(match[6]);
+  if (hour > 23 || minute > 59 || second > 59 || month < 1 || month > 12 || day < 1) return false;
+  const dateCheck = new Date(Date.UTC(year, month - 1, day));
+  return dateCheck.getUTCFullYear() === year && dateCheck.getUTCMonth() === month - 1 && dateCheck.getUTCDate() === day;
+}
 
 // Koşu kapsamındaki mevcut Git HEAD SHA bilgisini alır; hata olursa "unknown" döner.
 export function resolveAcceptanceGitCommit(explicitCommit) {
@@ -199,16 +232,19 @@ export function createHumanReviewRecord({ reportId, reportSha256, sourceSha256, 
   };
 }
 
-// İnsan kararının otomatik doğrulamadan ayrı, geçerli rapor hash'ine bağlı ve altı ölçütlü olduğunu denetler.
+// İnsan kararının otomatik doğrulamadan ayrı, geçerli rapor/kaynak hash, commit, dil ve tarihe bağlı olduğunu denetler.
 export function validateHumanReviewDecision(record, expectedBinding) {
   if (!record || record.kind !== "human-review-decision") {
     return { valid: false, status: "invalid", reason: "Geçersiz insan inceleme kaydı türü." };
   }
-  if (!record.reportId || record.reportId !== expectedBinding.reportId
+  if (!expectedBinding
+    || !record.reportId || record.reportId !== expectedBinding.reportId
     || !SHA256_HEX.test(String(record.reportSha256)) || record.reportSha256 !== expectedBinding.reportSha256
     || !SHA256_HEX.test(String(record.sourceSha256)) || record.sourceSha256 !== expectedBinding.sourceSha256
-    || !locales.includes(record.locale) || record.locale !== expectedBinding.locale) {
-    return { valid: false, status: "invalid", reason: "İnsan kararı rapor kimliği, kaynak/sonuç hash veya dille eşleşmiyor." };
+    || !locales.includes(record.locale) || record.locale !== expectedBinding.locale
+    || !GIT_SHA.test(String(record.gitCommit)) || !GIT_SHA.test(String(expectedBinding.gitCommit))
+    || record.gitCommit !== expectedBinding.gitCommit) {
+    return { valid: false, status: "invalid", reason: "İnsan kararı rapor kimliği, kaynak/sonuç hash, Git commit veya dille eşleşmiyor." };
   }
   if (!["pending", "approved", "rejected"].includes(record.decision)) {
     return { valid: false, status: "invalid", reason: "Geçersiz insan karar durumu." };
@@ -223,15 +259,51 @@ export function validateHumanReviewDecision(record, expectedBinding) {
   }
   if (record.decision === "approved") {
     const allPass = HUMAN_REVIEW_CRITERIA.every(key => record.criteria[key] === "pass");
-    if (!allPass || !record.reviewedAt) {
-      return { valid: false, status: "invalid", approved: false, reason: "Altı ölçütün tamamı pass ve inceleme zamanı olmadan onay verilemez." };
+    if (!allPass || !isValidIsoReviewTimestamp(record.reviewedAt)) {
+      return { valid: false, status: "invalid", approved: false, reason: "Altı ölçütün tamamı pass ve geçerli ISO inceleme tarihi olmadan onay verilemez." };
     }
     return { valid: true, status: "approved", approved: true };
   }
   return { valid: true, status: "rejected", approved: false };
 }
 
-// Kabul dizinindeki acceptance.json, runs.json ve rapor dosyalarını bütünlük/temizlik/eski-kayıt sınırıyla doğrular.
+// Sentetik kabul raporunun bekleyen insan incelemesi kaydını özel kanıt dizinine yazar.
+export function writePendingHumanReviewFile(outputDirectory, fileName, reviewInput) {
+  const target = join(outputDirectory, fileName);
+  const record = createHumanReviewRecord(reviewInput);
+  writePrivateJson(target, record);
+  return { humanReviewFile: fileName, record };
+}
+
+// Koşu sonunda acceptance.json, runs.json ve insan inceleme dosyalarını yazar; doğrulama başarısızsa acceptance'ı failed işaretler.
+export function finalizeAcceptanceEvidence({ outputDirectory, mode, gitCommit, failure, results, reports, cleanupStatus }) {
+  const expectedCount = expectedAcceptanceCases(mode).length;
+  const acceptance = {
+    schemaVersion: 2,
+    phase: "mechanical-acceptance",
+    gitCommit,
+    status: failure ? "failed" : "passed",
+    mode,
+    caseCount: expectedCount,
+    completedReportCount: results.filter(run => run.status === "completed").length,
+    humanReviewRequired: mode !== "closed",
+    cleanup: cleanupStatus,
+    reports,
+  };
+  writePrivateJson(join(outputDirectory, "runs.json"), results);
+  writePrivateJson(join(outputDirectory, "acceptance.json"), acceptance);
+
+  const verification = verifyAcceptanceEvidence(outputDirectory, { expectedCommit: gitCommit });
+  if (!failure && !verification.verified) {
+    const verificationFailure = new Error(`Kabul kanıt doğrulaması başarısız: ${verification.errors.join(" ")}`);
+    acceptance.status = "failed";
+    writePrivateJson(join(outputDirectory, "acceptance.json"), acceptance);
+    return { acceptance, verification, failure: verificationFailure };
+  }
+  return { acceptance, verification, failure };
+}
+
+// Kabul dizinindeki acceptance.json, runs.json, rapor ve insan inceleme dosyalarını tam bütünlükle doğrular.
 export function verifyAcceptanceEvidence(outputDirectory, options = {}) {
   const root = resolve(outputDirectory);
   if (!existsSync(root) || lstatSync(root).isSymbolicLink()) {
@@ -245,7 +317,11 @@ export function verifyAcceptanceEvidence(outputDirectory, options = {}) {
   }
 
   const acceptanceText = readFileSync(acceptancePath, "utf8");
-  const runsText = existsSync(runsPath) && !lstatSync(runsPath).isSymbolicLink() ? readFileSync(runsPath, "utf8") : "[]";
+  const hasRunsFile = existsSync(runsPath);
+  if (hasRunsFile && lstatSync(runsPath).isSymbolicLink()) {
+    return { verified: false, status: "failed", legacy: false, errors: ["runs.json symlink olamaz."], verifiedReports: [] };
+  }
+  const runsText = hasRunsFile ? readFileSync(runsPath, "utf8") : "[]";
   if (SECRET_LEAK_PATTERN.test(acceptanceText) || SECRET_LEAK_PATTERN.test(runsText)) {
     return { verified: false, status: "failed", legacy: false, errors: ["Kabul kaydında gizli veri/kimlik bilgisi sızıntısı tespit edildi."], verifiedReports: [] };
   }
@@ -282,31 +358,80 @@ export function verifyAcceptanceEvidence(outputDirectory, options = {}) {
   if (options.expectedCommit && acceptance.gitCommit !== options.expectedCommit) errors.push("Git commit beklenen revizyonla eşleşmiyor.");
   if (acceptance.cleanup !== "verified") errors.push(`Temizlik doğrulanmadı: ${String(acceptance.cleanup)}.`);
   if (acceptance.status !== "passed") errors.push(`Kabul durumu başarısız: ${String(acceptance.status)}.`);
-  if (acceptance.mode === "closed") {
-    if (acceptance.completedReportCount !== 0 || acceptance.reports.length !== 0) {
-      errors.push("Kapalı kabul modunda tamamlanmış rapor kaydı bulunamaz.");
-    }
-  } else {
-    if (acceptance.completedReportCount !== acceptance.caseCount) {
-      errors.push(`Tamamlanan rapor sayısı (${acceptance.completedReportCount}) beklenen vaka sayısına (${acceptance.caseCount}) eşit değil.`);
-    }
-    if (acceptance.reports.length !== acceptance.caseCount) {
-      errors.push("Rapor kayıt sayısı beklenen vaka sayısından az/farklı.");
+
+  let expectedCases;
+  try {
+    expectedCases = expectedAcceptanceCases(acceptance.mode);
+  } catch {
+    errors.push(`Geçersiz kabul modu: ${String(acceptance.mode)}.`);
+    expectedCases = [];
+  }
+
+  const expectedCount = expectedCases.length;
+  if (acceptance.caseCount !== expectedCount) {
+    errors.push(`Mod (${String(acceptance.mode)}) için beklenen vaka sayısı (${expectedCount}) ile caseCount (${String(acceptance.caseCount)}) eşleşmiyor.`);
+  }
+  if (acceptance.completedReportCount !== expectedCount) {
+    errors.push(`Tamamlanan rapor sayısı (${String(acceptance.completedReportCount)}) beklenen sayıya (${expectedCount}) eşit değil.`);
+  }
+  if (acceptance.reports.length !== expectedCount) {
+    errors.push(`Rapor kayıt sayısı (${acceptance.reports.length}) beklenen vaka sayısına (${expectedCount}) eşit değil.`);
+  }
+  if (!Array.isArray(runs)) {
+    errors.push("runs.json bir dizi olmalıdır.");
+  } else if (runs.length !== expectedCount) {
+    errors.push(`runs.json kayıt sayısı (${runs.length}) beklenen vaka sayısına (${expectedCount}) eşit değil.`);
+  }
+
+  const runById = new Map();
+  if (Array.isArray(runs)) {
+    for (const run of runs) {
+      if (!run?.runId || runById.has(run.runId)) {
+        errors.push(`runs.json içinde eksik veya yinelenen runId: ${String(run?.runId)}.`);
+      } else {
+        runById.set(run.runId, run);
+      }
     }
   }
 
-  const runById = new Map(Array.isArray(runs) ? runs.map(run => [run.runId, run]) : []);
+  const seenReportCaseIds = new Set();
+  const seenReportRunIds = new Set();
+  const seenLocaleFormat = new Set();
+  const expectedByCaseId = new Map(expectedCases.map(item => [item.caseId, item]));
+  const matchedRunIds = new Set();
+
   for (const entry of acceptance.reports) {
     if (entry.status !== "completed") {
       errors.push(`Tamamlanmamış vaka kaydı (${String(entry.caseId)}): ${String(entry.status)}.`);
       continue;
     }
-    if (!GIT_SHA.test(String(entry.gitCommit)) || entry.gitCommit !== acceptance.gitCommit) {
-      errors.push(`Rapor Git commit eşleşmiyor (${String(entry.caseId)}).`);
+    if (!entry.caseId || seenReportCaseIds.has(entry.caseId)) {
+      errors.push(`Eksik veya yinelenen vaka kimliği: ${String(entry.caseId)}.`);
       continue;
     }
-    if (!entry.caseId || !["csv", "xlsx"].includes(entry.format) || !locales.includes(entry.locale)) {
-      errors.push(`Eksik vaka kimliği, format veya dil (${String(entry.caseId)}).`);
+    seenReportCaseIds.add(entry.caseId);
+
+    if (!entry.runId || seenReportRunIds.has(entry.runId)) {
+      errors.push(`Eksik veya yinelenen rapor runId: ${String(entry.runId)}.`);
+      continue;
+    }
+    seenReportRunIds.add(entry.runId);
+
+    const expectedSpec = expectedByCaseId.get(entry.caseId);
+    if (!expectedSpec || entry.locale !== expectedSpec.locale || entry.format !== expectedSpec.format) {
+      errors.push(`Beklenen kabul vakasıyla uyuşmayan rapor (${String(entry.caseId)} / ${String(entry.locale)} / ${String(entry.format)}).`);
+      continue;
+    }
+
+    const localeFormatKey = `${entry.locale}:${entry.format}`;
+    if (seenLocaleFormat.has(localeFormatKey)) {
+      errors.push(`Yinelenen (dil, format) çifti: ${localeFormatKey}.`);
+      continue;
+    }
+    seenLocaleFormat.add(localeFormatKey);
+
+    if (!GIT_SHA.test(String(entry.gitCommit)) || entry.gitCommit !== acceptance.gitCommit) {
+      errors.push(`Rapor Git commit eşleşmiyor (${entry.caseId}).`);
       continue;
     }
     if (!SHA256_HEX.test(String(entry.sourceSha256)) || !SHA256_HEX.test(String(entry.reportSha256))) {
@@ -337,6 +462,40 @@ export function verifyAcceptanceEvidence(outputDirectory, options = {}) {
       errors.push(`Rapor SHA-256 uyuşmuyor (${entry.reportFile}).`);
       continue;
     }
+
+    if (!entry.humanReviewFile || isAbsolute(entry.humanReviewFile) || entry.humanReviewFile.includes("..")) {
+      errors.push(`Bekleyen insan inceleme dosya yolu eksik/geçersiz (${entry.caseId}).`);
+      continue;
+    }
+    const humanReviewPath = join(root, entry.humanReviewFile);
+    if (!existsSync(humanReviewPath) || lstatSync(humanReviewPath).isSymbolicLink()) {
+      errors.push(`Bekleyen insan inceleme kaydı eksik veya symlink (${entry.humanReviewFile}).`);
+      continue;
+    }
+    const realHumanReviewPath = realpathSync(humanReviewPath);
+    if (!realHumanReviewPath.startsWith(`${realRoot}${sep}`)) {
+      errors.push(`İnsan inceleme kaydı kanıt dizini dışında (${entry.humanReviewFile}).`);
+      continue;
+    }
+    const humanReviewText = readFileSync(humanReviewPath, "utf8");
+    if (SECRET_LEAK_PATTERN.test(humanReviewText)) {
+      errors.push(`İnsan inceleme kaydında gizli veri sızıntısı (${entry.humanReviewFile}).`);
+      continue;
+    }
+    const humanReviewDoc = JSON.parse(humanReviewText);
+    const parsedReport = JSON.parse(reportText);
+    const reviewValidation = validateHumanReviewDecision(humanReviewDoc, {
+      reportId: entry.reportId ?? parsedReport.analysisId,
+      reportSha256: entry.reportSha256,
+      sourceSha256: entry.sourceSha256,
+      locale: entry.locale,
+      gitCommit: entry.gitCommit,
+    });
+    if (!reviewValidation.valid) {
+      errors.push(`İnsan inceleme kaydı geçersiz (${entry.humanReviewFile}): ${reviewValidation.reason}`);
+      continue;
+    }
+
     const linkedRun = runById.get(entry.runId);
     if (!linkedRun || linkedRun.status !== "completed" || linkedRun.gitCommit !== entry.gitCommit
       || linkedRun.caseId !== entry.caseId || linkedRun.format !== entry.format || linkedRun.locale !== entry.locale
@@ -345,7 +504,19 @@ export function verifyAcceptanceEvidence(outputDirectory, options = {}) {
       errors.push(`runs.json ile rapor kaydı uyuşmuyor (${entry.runId}).`);
       continue;
     }
+    matchedRunIds.add(entry.runId);
     verifiedReports.push(entry);
+  }
+
+  for (const runId of runById.keys()) {
+    if (!matchedRunIds.has(runId)) {
+      errors.push(`Raporla eşleşmeyen fazla koşu kaydı (${runId}).`);
+    }
+  }
+  for (const expectedSpec of expectedCases) {
+    if (!seenReportCaseIds.has(expectedSpec.caseId)) {
+      errors.push(`Beklenen kabul vakası eksik: ${expectedSpec.caseId}.`);
+    }
   }
 
   return {
@@ -469,8 +640,11 @@ async function main(args) {
         throw error;
       }
       const { reportFile, reportSha256 } = writeVerifiedReportFile(outputDirectory, `${locale}-${format}-result.json`, artifact.result);
+      const { humanReviewFile } = writePendingHumanReviewFile(outputDirectory, `human-review-${locale}-${format}.json`, {
+        reportId: created.id, reportSha256, sourceSha256, locale, gitCommit,
+      });
       results.push(usageRecord({ runId, gitCommit, caseId, locale, format, sourceSha256, reportFile, reportSha256, job, passed: true }));
-      reports.push({ runId, gitCommit, caseId, format, locale, sourceSha256, reportFile, reportSha256, status: "completed" });
+      reports.push({ runId, gitCommit, caseId, format, locale, sourceSha256, reportId: created.id, reportFile, reportSha256, humanReviewFile, status: "completed" });
       writePrivateJson(join(outputDirectory, "runs.json"), results);
       console.log(JSON.stringify({ phase: "real-model-passed", run: index + 1, locale, aggregate: input.total, durationMs: job.durationMs, tokens: job.usage.totalTokens }));
     }
@@ -503,21 +677,10 @@ async function main(args) {
       }
     } catch (error) { failure ??= error; }
     if (!failure && results.length !== (closed ? 0 : cases.length)) failure = new Error("Acceptance case count mismatch.");
-    const acceptance = {
-      schemaVersion: 2,
-      phase: "mechanical-acceptance",
-      gitCommit,
-      status: failure ? "failed" : "passed",
-      mode,
-      caseCount: cases.length,
-      completedReportCount: results.filter(run => run.status === "completed").length,
-      humanReviewRequired: !closed,
-      cleanup: cleanupStatus,
-      reports,
-    };
-    writePrivateJson(join(outputDirectory, "acceptance.json"), acceptance);
-    console.log(JSON.stringify({ phase: "cleanup", status: cleanupStatus, accounts: accountCount }));
-    console.log(JSON.stringify(acceptance));
+    const finalized = finalizeAcceptanceEvidence({ outputDirectory, mode, gitCommit, failure, results, reports, cleanupStatus });
+    failure = finalized.failure;
+    console.log(JSON.stringify({ phase: "cleanup", status: cleanupStatus, accounts: accountCount, evidenceVerified: finalized.verification.verified }));
+    console.log(JSON.stringify(finalized.acceptance));
   }
   if (failure) throw failure;
 }

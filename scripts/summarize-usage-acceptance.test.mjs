@@ -236,3 +236,40 @@ test("separates CSV and XLSX sample counts, medians, and maxima, prevents duplic
   assert.equal(legacyReport.byFormat.csv.sampleCount, 0);
   assert.equal(legacyReport.byFormat.xlsx.sampleCount, 0);
 });
+
+test("does not count six unmeasured completed runs as sufficient sample size", () => {
+  const partialRuns = Array.from({ length: 6 }, (_, index) => ({
+    runId: `unmeasured-${index + 1}`,
+    locale: ["tr", "en", "de", "es", "zh", "ar"][index],
+    format: "csv",
+    status: "completed",
+    model: "gemini-3.8-flash",
+    // pythonMs / modelMs / durationMs / usage eksik
+  }));
+  const partialReport = summarizeUsageAcceptance(partialRuns);
+  assert.equal(partialReport.validCompletedCount, 6);
+  assert.equal(partialReport.measuredSampleCount, 0);
+  assert.equal(partialReport.sampleConfidence, "small-sample");
+  assert.equal(partialReport.byFormat.csv.sampleCount, 6);
+  assert.equal(partialReport.byFormat.csv.measuredSampleCount, 0);
+  assert.equal(partialReport.byFormat.csv.smallSample, true);
+  assert.match(partialReport.sampleNote, /tam ölçülmüş/i);
+
+  // Yalnız süre + token alanlarının tamamı ölçülen 6 koşu temel örneklem yeterliliğine ulaşır.
+  const measuredRuns = Array.from({ length: 6 }, (_, index) => ({
+    runId: `measured-${index + 1}`,
+    locale: ["tr", "en", "de", "es", "zh", "ar"][index],
+    format: "csv",
+    status: "completed",
+    model: "gemini-3.8-flash",
+    pythonMs: 25 + index,
+    modelMs: 200 + index * 10,
+    durationMs: 250 + index * 10,
+    usage: { promptTokens: 100, outputTokens: 50, totalTokens: 150 },
+  }));
+  const measuredReport = summarizeUsageAcceptance(measuredRuns);
+  assert.equal(measuredReport.measuredSampleCount, 6);
+  assert.equal(measuredReport.sampleConfidence, "baseline-met");
+  assert.equal(measuredReport.byFormat.csv.measuredSampleCount, 6);
+  assert.equal(measuredReport.byFormat.csv.smallSample, false);
+});

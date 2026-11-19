@@ -151,18 +151,21 @@ function computeDistribution(values) {
 // Geçerli ve tamamlanmış tek format (CSV/XLSX) koşuları için örnek sayısı, tipik/medyan ve en uzun süreyi özetler.
 function summarizeFormatGroup(groupRuns) {
   const sampleCount = groupRuns.length;
+  const measuredRuns = groupRuns.filter(i => i.measurementStatus === "measured");
+  const measuredSampleCount = measuredRuns.length;
   const calc = computeDistribution(groupRuns.map(i => i.calculationMs).filter(v => v !== null));
   const model = computeDistribution(groupRuns.map(i => i.modelMs).filter(v => v !== null));
   const total = computeDistribution(groupRuns.map(i => i.totalDurationMs).filter(v => v !== null));
   const tokens = computeDistribution(groupRuns.map(i => i.usage?.totalTokens ?? null).filter(v => v !== null));
   return {
     sampleCount,
-    smallSample: sampleCount < 6,
-    sampleNote: sampleCount === 0
-      ? "Ölçülmüş tamamlanmış örnek yok."
-      : sampleCount < 6
-        ? "Küçük örneklem; geniş kullanıcı trafiği veya kesin SLA temsili değildir."
-        : "İlk temel örneklem eşiği (6+) karşılandı; üretim SLA garantisi değildir.",
+    measuredSampleCount,
+    smallSample: measuredSampleCount < 6,
+    sampleNote: measuredSampleCount === 0
+      ? "Süre ve tokenları tam ölçülmüş örnek yok."
+      : measuredSampleCount < 6
+        ? "Küçük veya kısmi ölçümlü örneklem; geniş kullanıcı trafiği veya kesin SLA temsili değildir."
+        : "İlk temel ölçülmüş örneklem eşiği (6+) karşılandı; üretim SLA garantisi değildir.",
     typicalDurationMs: total.median,
     calculationMs: calc,
     modelMs: model,
@@ -190,6 +193,7 @@ export function summarizeUsageAcceptance(runs, options = {}) {
   const uniqueItems = items.filter(i => !i.duplicateOfFirst);
   const invalidRuns = uniqueItems.filter(i => i.measurementStatus === "invalid-measurement");
   const completedRuns = uniqueItems.filter(i => i.status === "completed" && i.measurementStatus !== "invalid-measurement");
+  const measuredCompletedRuns = completedRuns.filter(i => i.measurementStatus === "measured");
 
   const validCalc = completedRuns.map(i => i.calculationMs).filter(v => v !== null);
   const validModel = completedRuns.map(i => i.modelMs).filter(v => v !== null);
@@ -209,18 +213,19 @@ export function summarizeUsageAcceptance(runs, options = {}) {
     uniqueRunCount: uniqueItems.length,
     completedCount: uniqueItems.filter(i => i.status === "completed").length,
     validCompletedCount: completedRuns.length,
+    measuredSampleCount: measuredCompletedRuns.length,
     failedCount: uniqueItems.filter(i => i.status === "failed").length,
     unfinishedCount: uniqueItems.filter(i => i.status !== "completed" && i.status !== "failed").length,
     invalidMeasurementCount: invalidCount,
     excludedInvalidRunIds: invalidRuns.map(i => i.runId),
     duplicateRunIds: [...new Set(duplicateRunIds)],
     excludedDuplicateCount: duplicateRunIds.length,
-    sampleConfidence: completedRuns.length < 6 ? "small-sample" : "baseline-met",
-    sampleNote: completedRuns.length === 0
-      ? "Tamamlanmış geçerli ölçüm bulunmuyor."
-      : completedRuns.length < 6
-        ? `Yalnız ${completedRuns.length} tamamlanmış koşu içerir; küçük örneklem büyük veri veya SLA temsili olarak sunulamaz.`
-        : `${completedRuns.length} tamamlanmış sentetik koşu özeti.`,
+    sampleConfidence: measuredCompletedRuns.length < 6 ? "small-sample" : "baseline-met",
+    sampleNote: measuredCompletedRuns.length === 0
+      ? "Süre ve tokenları tam ölçülmüş tamamlanmış koşu bulunmuyor."
+      : measuredCompletedRuns.length < 6
+        ? `Yalnız ${measuredCompletedRuns.length} tam ölçülmüş (süre + token) koşu içerir; küçük örneklem büyük veri veya SLA temsili olarak sunulamaz.`
+        : `${measuredCompletedRuns.length} tam ölçülmüş sentetik koşu özeti.`,
     measuredCounts: {
       calculationMs: calcStats.sampleCount,
       modelMs: modelStats.sampleCount,

@@ -9,10 +9,13 @@ import {
   acceptanceMode,
   checkResult,
   createHumanReviewRecord,
+  expectedAcceptanceCases,
+  finalizeAcceptanceEvidence,
   fixture,
   usageRecord,
   validateHumanReviewDecision,
   verifyAcceptanceEvidence,
+  writePendingHumanReviewFile,
   writeVerifiedReportFile,
 } from "./accept-tabular-cloud.mjs";
 import { writePrivateJson } from "./acceptance-resources.mjs";
@@ -104,76 +107,146 @@ test("acceptance records feed the usage report without document or account field
   assert.deepEqual(Object.keys(success).sort(), ["durationMs", "format", "locale", "model", "modelMs", "pythonMs", "runId", "status", "usage"]);
 });
 
-test("verifies linked full acceptance evidence, rejects partial/tampered/missing/unverified runs, keeps legacy readable without forging pass, and blocks secrets", async () => {
+test("verifies linked full, smoke, and closed evidence, rejects zero-report/duplicate/unmatched runs, and connects verification into normal acceptance finalization", async () => {
   const dir = mkdtempSync(join(tmpdir(), "incagen-accept-evidence-"));
   const gitCommit = "a".repeat(40);
   try {
-    const csvEx = await fixture("csv");
-    const sourceSha256 = createHash("sha256").update(csvEx.bytes).digest("hex");
-    const caseId = "smoke:1:tr:synthetic-service-csv-v1";
-    const fullDir = join(dir, "full-valid");
-    mkdtempSync(join(dir, "tmp-"));
-    writePrivateJson(join(dir, "placeholder.json"), { ok: true });
-    // Tam geçerli smoke/full kanıt dizini
     const fsModule = await import("node:fs");
-    fsModule.mkdirSync(fullDir, { recursive: true });
-    const { reportFile, reportSha256 } = writeVerifiedReportFile(fullDir, "tr-csv-result.json", csvEx.artifact?.result ?? { analysisId: "syn-1", summary: [] });
-    const runId = "run-tr-1";
-    const linkedRun = usageRecord({
-      runId, gitCommit, caseId, locale: "tr", format: "csv", sourceSha256,
-      reportFile, reportSha256, job: (await example("csv")).record.ai, passed: true,
+    const csvEx = await example("csv");
+    const xlsxEx = await example("xlsx");
+    const csvSha = createHash("sha256").update(csvEx.expected.bytes).digest("hex");
+    const xlsxSha = createHash("sha256").update(xlsxEx.expected.bytes).digest("hex");
+
+    // 1. Geçerli smoke kabul akışı (bekleyen insan inceleme kaydıyla birlikte)
+    const smokeDir = join(dir, "smoke-valid");
+    fsModule.mkdirSync(smokeDir, { recursive: true });
+    const smokeReport = writeVerifiedReportFile(smokeDir, "tr-csv-result.json", csvEx.artifact.result);
+    const smokeReview = writePendingHumanReviewFile(smokeDir, "human-review-tr-csv.json", {
+      reportId: csvEx.artifact.result.analysisId, reportSha256: smokeReport.reportSha256, sourceSha256: csvSha, locale: "tr", gitCommit,
     });
-    writePrivateJson(join(fullDir, "runs.json"), [linkedRun]);
-    writePrivateJson(join(fullDir, "acceptance.json"), {
-      schemaVersion: 2,
-      phase: "mechanical-acceptance",
-      gitCommit,
-      status: "passed",
+    assert.equal(smokeReview.record.decision, "pending");
+    const smokeRun = usageRecord({
+      runId: "run-tr-1", gitCommit, caseId: "smoke:1:tr:synthetic-service-csv-v1", locale: "tr", format: "csv",
+      sourceSha256: csvSha, reportFile: smokeReport.reportFile, reportSha256: smokeReport.reportSha256, job: csvEx.record.ai, passed: true,
+    });
+    const smokeFinal = finalizeAcceptanceEvidence({
+      outputDirectory: smokeDir,
       mode: "smoke",
-      caseCount: 1,
-      completedReportCount: 1,
-      humanReviewRequired: true,
-      cleanup: "verified",
-      reports: [{ runId, gitCommit, caseId, format: "csv", locale: "tr", sourceSha256, reportFile, reportSha256, status: "completed" }],
+      gitCommit,
+      failure: undefined,
+      results: [smokeRun],
+      reports: [{
+        runId: "run-tr-1", gitCommit, caseId: "smoke:1:tr:synthetic-service-csv-v1", format: "csv", locale: "tr",
+        sourceSha256: csvSha, reportId: csvEx.artifact.result.analysisId, reportFile: smokeReport.reportFile,
+        reportSha256: smokeReport.reportSha256, humanReviewFile: smokeReview.humanReviewFile, status: "completed",
+      }],
+      cleanupStatus: "verified",
     });
+    assert.equal(smokeFinal.failure, undefined);
+    assert.equal(smokeFinal.verification.verified, true);
+    assert.equal(smokeFinal.acceptance.caseCount, 1);
 
-    const valid = verifyAcceptanceEvidence(fullDir, { expectedCommit: gitCommit });
-    assert.equal(valid.verified, true);
-    assert.equal(valid.status, "verified");
-    assert.equal(valid.verifiedReports.length, 1);
+    // 2. Geçerli tam (full) kabul: 6 beklenen benzersiz vaka
+    const fullDir = join(dir, "full-valid");
+    fsModule.mkdirSync(fullDir, { recursive: true });
+    const fullRuns = [];
+    const fullReports = [];
+    for (const spec of expectedAcceptanceCases("full")) {
+      const sample = spec.format === "csv" ? csvEx : xlsxEx;
+      const sourceSha = spec.format === "csv" ? csvSha : xlsxSha;
+      const rep = writeVerifiedReportFile(fullDir, `${spec.locale}-${spec.format}-result.json`, sample.artifact.result);
+      const rev = writePendingHumanReviewFile(fullDir, `human-review-${spec.locale}-${spec.format}.json`, {
+        reportId: sample.artifact.result.analysisId, reportSha256: rep.reportSha256, sourceSha256: sourceSha, locale: spec.locale, gitCommit,
+      });
+      const runId = `run-${spec.locale}-${spec.format}`;
+      fullRuns.push(usageRecord({
+        runId, gitCommit, caseId: spec.caseId, locale: spec.locale, format: spec.format, sourceSha256: sourceSha,
+        reportFile: rep.reportFile, reportSha256: rep.reportSha256, job: sample.record.ai, passed: true,
+      }));
+      fullReports.push({
+        runId, gitCommit, caseId: spec.caseId, format: spec.format, locale: spec.locale, sourceSha256: sourceSha,
+        reportId: sample.artifact.result.analysisId, reportFile: rep.reportFile, reportSha256: rep.reportSha256,
+        humanReviewFile: rev.humanReviewFile, status: "completed",
+      });
+    }
+    const fullFinal = finalizeAcceptanceEvidence({
+      outputDirectory: fullDir, mode: "full", gitCommit, failure: undefined, results: fullRuns, reports: fullReports, cleanupStatus: "verified",
+    });
+    assert.equal(fullFinal.failure, undefined);
+    assert.equal(fullFinal.verification.verified, true);
+    assert.equal(fullFinal.verification.verifiedReports.length, 6);
 
-    // 1. Değişmiş rapor dosyası (SHA-256 uyuşmazlığı) reddedilmeli
+    // 3. Geçerli kapalı (closed) mod: sıfır model sonucu / sıfır run kaydı / doğrulanmış temizlik
+    const closedDir = join(dir, "closed-valid");
+    fsModule.mkdirSync(closedDir, { recursive: true });
+    const closedFinal = finalizeAcceptanceEvidence({
+      outputDirectory: closedDir, mode: "closed", gitCommit, failure: undefined, results: [], reports: [], cleanupStatus: "verified",
+    });
+    assert.equal(closedFinal.failure, undefined);
+    assert.equal(closedFinal.verification.verified, true);
+    assert.equal(closedFinal.acceptance.caseCount, 0);
+
+    // 4. Sıfır rapor (full/smoke modunda reports=[] ve caseCount=0) reddedilmeli
+    const zeroDir = join(dir, "zero-reports");
+    fsModule.mkdirSync(zeroDir, { recursive: true });
+    const zeroFinal = finalizeAcceptanceEvidence({
+      outputDirectory: zeroDir, mode: "full", gitCommit, failure: undefined, results: [], reports: [], cleanupStatus: "verified",
+    });
+    assert.ok(zeroFinal.failure instanceof Error);
+    assert.equal(zeroFinal.acceptance.status, "failed");
+    assert.equal(verifyAcceptanceEvidence(zeroDir).verified, false);
+
+    // 5. Yinelenen vaka (duplicate caseId / runId / locale+format) reddedilmeli
+    const dupDir = join(dir, "duplicate-case");
+    fsModule.cpSync(fullDir, dupDir, { recursive: true });
+    const dupAcc = JSON.parse(readFileSync(join(dupDir, "acceptance.json"), "utf8"));
+    dupAcc.reports[5] = { ...dupAcc.reports[0] };
+    writePrivateJson(join(dupDir, "acceptance.json"), dupAcc);
+    assert.equal(verifyAcceptanceEvidence(dupDir).verified, false);
+
+    // 6. Raporla uyuşmayan / fazla runs.json kaydı reddedilmeli
+    const mismatchRunsDir = join(dir, "mismatched-runs");
+    fsModule.cpSync(smokeDir, mismatchRunsDir, { recursive: true });
+    const extraRuns = JSON.parse(readFileSync(join(mismatchRunsDir, "runs.json"), "utf8"));
+    extraRuns.push({ ...extraRuns[0], runId: "unmatched-extra-run" });
+    writePrivateJson(join(mismatchRunsDir, "runs.json"), extraRuns);
+    assert.equal(verifyAcceptanceEvidence(mismatchRunsDir).verified, false);
+
+    // 7. Değişmiş rapor dosyası (SHA-256 uyuşmazlığı) & eksik bekleyen insan inceleme dosyası reddedilmeli
     const tamperedDir = join(dir, "tampered");
-    fsModule.cpSync(fullDir, tamperedDir, { recursive: true });
+    fsModule.cpSync(smokeDir, tamperedDir, { recursive: true });
     writeFileSync(join(tamperedDir, "tr-csv-result.json"), '{"analysisId":"tampered"}\n');
     const tampered = verifyAcceptanceEvidence(tamperedDir);
     assert.equal(tampered.verified, false);
     assert.match(tampered.errors.join(" "), /SHA-256/);
 
-    // 2. Eksik rapor dosyası reddedilmeli
+    const missingReviewDir = join(dir, "missing-review");
+    fsModule.cpSync(smokeDir, missingReviewDir, { recursive: true });
+    rmSync(join(missingReviewDir, "human-review-tr-csv.json"));
+    assert.equal(verifyAcceptanceEvidence(missingReviewDir).verified, false);
+
+    // 8. Eksik rapor dosyası, eksik full vakası ve doğrulanmamış temizlik reddedilmeli
     const missingDir = join(dir, "missing");
-    fsModule.cpSync(fullDir, missingDir, { recursive: true });
+    fsModule.cpSync(smokeDir, missingDir, { recursive: true });
     rmSync(join(missingDir, "tr-csv-result.json"));
     assert.equal(verifyAcceptanceEvidence(missingDir).verified, false);
 
-    // 3. Yarım koşu (completedReportCount < caseCount / failed) reddedilmeli
     const partialDir = join(dir, "partial");
-    fsModule.cpSync(fullDir, partialDir, { recursive: true });
+    fsModule.cpSync(smokeDir, partialDir, { recursive: true });
     const partialManifest = JSON.parse(readFileSync(join(partialDir, "acceptance.json"), "utf8"));
     partialManifest.mode = "full";
     partialManifest.caseCount = 6;
     writePrivateJson(join(partialDir, "acceptance.json"), partialManifest);
     assert.equal(verifyAcceptanceEvidence(partialDir).verified, false);
 
-    // 4. Doğrulanmamış temizlik (cleanup: "unverified") reddedilmeli
     const unverifiedDir = join(dir, "unverified-cleanup");
-    fsModule.cpSync(fullDir, unverifiedDir, { recursive: true });
+    fsModule.cpSync(smokeDir, unverifiedDir, { recursive: true });
     const unverifiedManifest = JSON.parse(readFileSync(join(unverifiedDir, "acceptance.json"), "utf8"));
     unverifiedManifest.cleanup = "unverified";
     writePrivateJson(join(unverifiedDir, "acceptance.json"), unverifiedManifest);
     assert.equal(verifyAcceptanceEvidence(unverifiedDir).verified, false);
 
-    // 5. Eski kayıt okunabilmeli ancak eksik alanları varsayıp verified: true dönmemeli
+    // 9. Eski kayıt okunabilmeli ancak eksik alanları varsayıp verified: true dönmemeli
     const legacyDir = join(dir, "legacy");
     fsModule.mkdirSync(legacyDir, { recursive: true });
     writePrivateJson(join(legacyDir, "runs.json"), [{ runId: "legacy-1", locale: "tr", format: "csv", status: "completed" }]);
@@ -184,9 +257,9 @@ test("verifies linked full acceptance evidence, rejects partial/tampered/missing
     assert.equal(legacy.status, "legacy-unverified");
     assert.equal(legacy.readOnlySummary.completedReportCount, 1);
 
-    // 6. Rapor veya günlükte gizli veri / token sızıntısı reddedilmeli
+    // 10. Rapor veya günlükte gizli veri / token sızıntısı reddedilmeli
     const secretDir = join(dir, "secret-leak");
-    fsModule.cpSync(fullDir, secretDir, { recursive: true });
+    fsModule.cpSync(smokeDir, secretDir, { recursive: true });
     const secretToken = ["ya29.", "AbCdEfGhIjKlMnOpQrStUvWxYz"].join("");
     writePrivateJson(join(secretDir, "tr-csv-result.json"), { analysisId: "syn-1", leak: `Bearer ${secretToken}` });
     const leaked = verifyAcceptanceEvidence(secretDir);
@@ -197,7 +270,7 @@ test("verifies linked full acceptance evidence, rejects partial/tampered/missing
   }
 });
 
-test("keeps human review pending separately from mechanical checks and binds approvals to exact reportId and SHA-256", () => {
+test("keeps human review pending separately from mechanical checks and binds approvals to report/source hashes, commit, locale, and valid ISO date", () => {
   const binding = {
     reportId: "analysis-live-tr-1",
     reportSha256: "b".repeat(64),
@@ -215,13 +288,21 @@ test("keeps human review pending separately from mechanical checks and binds app
   const prematureApproval = { ...pendingReview, decision: "approved", reviewedAt: "2026-11-19T12:00:00Z" };
   assert.equal(validateHumanReviewDecision(prematureApproval, binding).valid, false);
 
-  // Tüm ölçütler pass olsa da rapor hash'i değişince insan kararı geçersiz olmalı
+  const validCriteria = Object.fromEntries(Object.keys(pendingReview.criteria).map(k => [k, "pass"]));
   const fullApproval = {
     ...pendingReview,
     decision: "approved",
-    reviewedAt: "2026-11-19T12:00:00Z",
-    criteria: Object.fromEntries(Object.keys(pendingReview.criteria).map(k => [k, "pass"])),
+    reviewedAt: "2026-11-19T12:00:00+03:00",
+    criteria: validCriteria,
   };
   assert.equal(validateHumanReviewDecision(fullApproval, binding).approved, true);
+
+  // Hash, commit, dil ve geçersiz/boş inceleme tarihi reddedilmeli
   assert.equal(validateHumanReviewDecision(fullApproval, { ...binding, reportSha256: "d".repeat(64) }).valid, false);
+  assert.equal(validateHumanReviewDecision(fullApproval, { ...binding, sourceSha256: "e".repeat(64) }).valid, false);
+  assert.equal(validateHumanReviewDecision(fullApproval, { ...binding, gitCommit: "f".repeat(40) }).valid, false);
+  assert.equal(validateHumanReviewDecision(fullApproval, { ...binding, locale: "en" }).valid, false);
+  for (const badDate of ["", "   ", "not-a-date", "2026-11-19", "2026-02-30T12:00:00Z"]) {
+    assert.equal(validateHumanReviewDecision({ ...fullApproval, reviewedAt: badDate }, binding).valid, false);
+  }
 });
