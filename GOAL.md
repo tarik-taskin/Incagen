@@ -9,6 +9,12 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
+### 2026-11-19 — Furkan / Antigravity: c271c55 inceleme bulguları düzeltmesi
+
+- [x] Sahip: Furkan — İnceleme Bulgusu 1 (Kabul doğrulayıcısı mod/vaka bağlamı ve insan inceleme kanıtı): `scripts/accept-tabular-cloud.mjs` içinde `expectedAcceptanceCases` ile `full` modu altı beklenen benzersiz vakaya, `smoke` tek beklenen vakaya ve `closed` sıfır model sonucuna bağlandı; sıfır rapor, yinelenen vaka ve uyuşmayan `runs.json` testleri eklendi; `finalizeAcceptanceEvidence` ile `verifyAcceptanceEvidence` normal kabul akışına bağlandı ve başarılı raporların bekleyen insan incelemesi kaydı (`human-review-*.json`) özel kanıt dizinine yazıldı ([testler](scripts/accept-tabular-cloud.test.mjs)).
+- [x] Sahip: Furkan — İnceleme Bulgusu 2 (İnsan onayı commit/dil/tarih doğrulaması): `validateHumanReviewDecision` rapor/kaynak SHA-256 hash’ine ek olarak `gitCommit`, `locale` ve takvim sınırlı geçerli ISO inceleme tarihini (`reviewedAt`) zorunlu kılacak şekilde güncellendi ve negatif/pozitif testlerle doğrulandı.
+- [x] Sahip: Furkan — İnceleme Bulgusu 3 (Kullanım özetinde ölçülmüş örneklem yeterliliği): `scripts/summarize-usage-acceptance.mjs` örneklem yeterliliğini (`measuredSampleCount`, `sampleConfidence`, `byFormat.*.smallSample`) yalnız süresi ve token’ları gerçekten ölçülmüş (`measurementStatus === "measured"`) koşulardan hesaplayacak şekilde güncellendi; ölçümsüz altı koşunun yeterli sayılmadığı test edildi ([testler](scripts/summarize-usage-acceptance.test.mjs)).
+
 ### 2026-11-19 — Furkan / Antigravity: 19 Kasım çalışma paketi
 
 - [!] Sahip: Furkan — Görev 1 (Gemini bağlantısının güncel durumunu doğrula): `2026-11-19T07:43:08Z` anında tek sabit sentetik kontrol (`INCAGEN_CLOUD_DIAGNOSTIC=1 node scripts/check-gemini-cloud.mjs`) çalıştırıldı; `configuration` (`1.532 ms`) ve `clientAuth` (`1.925 ms`) geçti, `callable` (`checkGemini`) `94.849 ms` içinde `functions/unavailable / timeout` döndürdü (`callAttempted: true`, toplam `109.768 ms`) ve `cleanup` (`11.461 ms`, `temporaryClaimRemoved: true`, `syntheticAccountDeleted: true`, `journalVerifiedClean: true`, `cleaned: true`) tamamlandı. Engel: sağlayıcı yanıtı (`timeout`); ek çağrı yapılmadı, `--smoke` çalıştırılmadı ve yayın kapıları kapalı tutuldu ([Gemini rehberi](docs/GEMINI.md)).
