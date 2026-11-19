@@ -1,5 +1,7 @@
 import { WorkspaceDeletionProvider } from "../components/workspace-deletion-provider";
-import { act, render, screen } from "@testing-library/react";
+import { WorkspaceDeletionStatus } from "../components/workspace-deletion-status";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { HistoryPage } from "./history-page";
@@ -10,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   rows: [] as Analysis[],
   loading: false,
   error: null as string | null,
+  call: vi.fn(),
 }));
 
 vi.mock("../hooks/use-analyses", () => ({
@@ -18,6 +21,14 @@ vi.mock("../hooks/use-analyses", () => ({
     loading: mocks.loading,
     error: mocks.error,
   }),
+}));
+
+vi.mock("../lib/firebase", () => ({
+  getServices: () => ({ functions: {}, auth: { currentUser: { uid: "test-user" } } }),
+}));
+
+vi.mock("firebase/functions", () => ({
+  httpsCallable: () => mocks.call,
 }));
 
 vi.mock("../lib/deployment-mode", () => ({ authOnlyPreview: false }));
@@ -158,4 +169,118 @@ describe("HistoryPage - reaktif zaman aşımı ve yaşam döngüsü kabulü", ()
     view.unmount();
   });
 
+});
+
+describe("HistoryPage - analiz silme onay, ilerleme ve kısmi hata tekrarı", () => {
+  beforeEach(() => {
+    mocks.call.mockReset();
+    HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
+      this.setAttribute("open", "");
+    };
+    HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
+      this.removeAttribute("open");
+    };
+  });
+
+  function deferred() {
+    let resolve!: (value: { data: { deleted: boolean } }) => void;
+    let reject!: (error: unknown) => void;
+    const promise = new Promise<{ data: { deleted: boolean } }>((yes, no) => {
+      resolve = yes;
+      reject = no;
+    });
+    return { promise, resolve, reject };
+  }
+
+  it("toplu silmede Firestore kayıtları erken kalksa da pencereyi açık tutar, ilerlemeyi sayar ve kısmi hatada yalnız başarısızı yeniden dener", async () => {
+    const user = userEvent.setup();
+    mocks.rows = [
+      { id: "h1", title: "Birinci Analiz", business: "B1", status: "completed", createdAt: 3_000, updatedAt: 3_000 },
+      { id: "h2", title: "Sorunlu Analiz", business: "B2", status: "completed", createdAt: 2_000, updatedAt: 2_000 },
+      { id: "h3", title: "Üçüncü Analiz", business: "B3", status: "completed", createdAt: 1_000, updatedAt: 1_000 },
+    ];
+
+    const view = render(
+      <MemoryRouter initialEntries={["/app/history"]}>
+        <WorkspaceDeletionProvider uid="test-user">
+          <WorkspaceDeletionStatus />
+          <HistoryPage />
+        </WorkspaceDeletionProvider>
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Seç ve sil" }));
+    await user.click(screen.getByRole("button", { name: "Görünenleri seç" }));
+    await user.click(screen.getByRole("button", { name: "Seçilenleri sil" }));
+
+    const dialog = screen.getByRole("alertdialog");
+    expect(within(dialog).getByRole("heading", { name: "3 analizi silmek istiyor musunuz?" })).toBeVisible();
+
+    const p1 = deferred();
+    const p2 = deferred();
+    const p3 = deferred();
+    mocks.call
+      .mockReturnValueOnce(p1.promise)
+      .mockReturnValueOnce(p2.promise)
+      .mockReturnValueOnce(p3.promise);
+
+    await user.click(within(dialog).getByRole("button", { name: "3 analizi sil" }));
+    expect(within(dialog).getByRole("button", { name: "Siliniyor… 1/3" })).toBeDisabled();
+    expect(within(dialog).getByRole("button", { name: "Vazgeç" })).toBeDisabled();
+
+    // Silme sürerken arka plan seçim kutuları da kilitlidir ve Escape kapatmaz.
+    expect(screen.getByRole("checkbox", { name: "Birinci Analiz seç" })).toBeDisabled();
+    const cancelEvent = new Event("cancel", { cancelable: true });
+    fireEvent(dialog, cancelEvent);
+    expect(cancelEvent.defaultPrevented).toBe(true);
+    expect(dialog).toBeVisible();
+
+    // Firestore ilk kaydı erken silse bile pencere kapanmaz; sıradaki adıma geçer.
+    mocks.rows = mocks.rows.slice(1);
+    view.rerender(
+      <MemoryRouter initialEntries={["/app/history"]}>
+        <WorkspaceDeletionProvider uid="test-user">
+          <WorkspaceDeletionStatus />
+          <HistoryPage />
+        </WorkspaceDeletionProvider>
+      </MemoryRouter>,
+    );
+    await act(async () => { p1.resolve({ data: { deleted: true } }); });
+    expect(dialog).toBeVisible();
+    expect(within(dialog).getByRole("button", { name: "Siliniyor… 2/3" })).toBeDisabled();
+
+    await act(async () => { p2.reject({ code: "functions/unavailable" }); });
+    expect(within(dialog).getByRole("button", { name: "Siliniyor… 3/3" })).toBeDisabled();
+
+    mocks.rows = [mocks.rows[0]];
+    view.rerender(
+      <MemoryRouter initialEntries={["/app/history"]}>
+        <WorkspaceDeletionProvider uid="test-user">
+          <WorkspaceDeletionStatus />
+          <HistoryPage />
+        </WorkspaceDeletionProvider>
+      </MemoryRouter>,
+    );
+    await act(async () => { p3.resolve({ data: { deleted: true } }); });
+
+    // Kısmi hatada pencere kapanmaz; yalnız Sorunlu Analiz yeniden denenebilir.
+    expect(dialog).toBeVisible();
+    expect(within(dialog).getByRole("heading", { name: "1 analiz silinemedi." })).toBeVisible();
+    expect(within(dialog).getByRole("alert")).toHaveTextContent("Sorunlu Analiz");
+    expect(screen.getByRole("checkbox", { name: "Sorunlu Analiz seç" })).toBeChecked();
+
+    mocks.call.mockClear();
+    const retry = deferred();
+    mocks.call.mockReturnValueOnce(retry.promise);
+    await user.click(within(dialog).getByRole("button", { name: "Yeniden dene" }));
+
+    expect(mocks.call).toHaveBeenCalledTimes(1);
+    expect(mocks.call).toHaveBeenCalledWith({ id: "h2" });
+    expect(within(dialog).getByRole("button", { name: "Siliniyor…" })).toBeDisabled();
+
+    mocks.rows = [];
+    await act(async () => { retry.resolve({ data: { deleted: true } }); });
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("1 analiz ve kaynak belgeleri silindi.");
+  });
 });

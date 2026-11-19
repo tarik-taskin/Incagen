@@ -205,3 +205,38 @@ it("analiz kapalıyken belge hazırlığı, geçmişten açma ve kaynak görün�
     vi.unstubAllEnvs();
   }
 });
+
+it("keeps the delete dialog open when Firestore clears the analysis before the server responds, and supports retry after failure", async () => {
+  const user = userEvent.setup();
+  const firstRequest = deferred();
+  state.call.mockReturnValueOnce(firstRequest.promise);
+  const view = mount();
+
+  await user.click(screen.getByRole("button", { name: "Analizi ve belgeleri sil" }));
+  const dialog = screen.getByRole("alertdialog");
+  await user.click(within(dialog).getByRole("button", { name: "Analizi sil" }));
+
+  // Silme sürerken düğmede spinner ve "Siliniyor…" metni görünür; Vazgeç devre dışıdır.
+  expect(dialog).toBeVisible();
+  expect(within(dialog).getByRole("button", { name: "Siliniyor…" })).toBeDisabled();
+  expect(within(dialog).getByRole("button", { name: "Vazgeç" })).toBeDisabled();
+
+  // Firestore canlı dinleyicisi yanıt gelmeden kaydı kaldırsa bile pencere açık kalır ve erken "silindi" uyarısı göstermez.
+  delete (state.analyses as Record<string, Analysis | undefined>).a;
+  view.rerender(<MemoryRouter><App /></MemoryRouter>);
+  expect(dialog).toBeVisible();
+  expect(screen.queryByText("Analiz bulunamadı veya silindi.")).not.toBeInTheDocument();
+
+  // Sunucu başarısız döndüğünde hata ve yalnız o kaydı yeniden deneme seçeneği görünür.
+  await act(async () => { firstRequest.reject({ code: "functions/unavailable" }); });
+  expect(dialog).toBeVisible();
+  expect(within(dialog).getByRole("heading", { name: "Analiz silinemedi." })).toBeVisible();
+  expect(within(dialog).getByRole("alert")).toHaveTextContent("Report a");
+
+  const retryRequest = deferred();
+  state.call.mockReturnValueOnce(retryRequest.promise);
+  await user.click(within(dialog).getByRole("button", { name: "Yeniden dene" }));
+  expect(within(dialog).getByRole("button", { name: "Siliniyor…" })).toBeDisabled();
+  await act(async () => { retryRequest.resolve({ data: { deleted: true } }); });
+  expect(await screen.findByText("History destination")).toBeVisible();
+});

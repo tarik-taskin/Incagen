@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { Buffer } from "node:buffer";
-import { setTheme } from "./ui-helpers";
+import { chooseLanguage, setTheme } from "./ui-helpers";
 
 test("kayıt, belge hazırlığı, geçmiş, silme ve çıkış", async ({ page }, testInfo) => {
   const errors: string[] = [];
@@ -84,7 +84,38 @@ test("kayıt, belge hazırlığı, geçmiş, silme ve çıkış", async ({ page 
   await page.mouse.click(2, 2);
   await expect(page.getByRole("alertdialog")).not.toBeVisible();
   await page.getByRole("button", { name: "Analizi ve belgeleri sil" }).click();
-  await page.getByRole("alertdialog").getByRole("button", { name: "Analizi sil", exact: true }).click();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("alertdialog")).not.toBeVisible();
+
+  await page.getByRole("button", { name: "Analizi ve belgeleri sil" }).click();
+  const reportDeleteDialog = page.getByRole("alertdialog");
+  const deleteEndpoint = /\/deleteAnalysis(?:\?|$)/;
+  const deleteGate = Promise.withResolvers<void>();
+  let reportDeleteRequests = 0;
+  await page.route(deleteEndpoint, async route => {
+    if (route.request().method() === "POST") {
+      reportDeleteRequests++;
+      await deleteGate.promise;
+    }
+    await route.continue();
+  });
+  try {
+    await reportDeleteDialog.getByRole("button", { name: "Analizi sil", exact: true }).click();
+    await expect(reportDeleteDialog).toBeVisible();
+    await expect(reportDeleteDialog.getByRole("button", { name: "Siliniyor…" })).toBeDisabled();
+    await expect(reportDeleteDialog.getByRole("button", { name: "Vazgeç" })).toBeDisabled();
+    expect(reportDeleteRequests).toBe(1);
+    await page.keyboard.press("Escape");
+    await page.mouse.click(2, 2);
+    await page.keyboard.press("Tab");
+    await expect(reportDeleteDialog).toBeVisible();
+    expect(await page.evaluate(() => Boolean(document.activeElement && document.activeElement !== document.body && !document.activeElement.closest("dialog")))).toBe(false);
+  } finally {
+    deleteGate.resolve();
+  }
+  await expect(page).toHaveURL(/\/app\/history$/);
+  await page.unroute(deleteEndpoint);
+  await expect(page.getByRole("status").filter({ hasText: "1 analiz ve kaynak belgeleri silindi." })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText("Henüz analiziniz yok.")).toBeVisible();
   await nav.getByRole("link", { name: "Ayarlar" }).click();
   await page.getByRole("button", { name: "Çıkış yap" }).click();
@@ -94,8 +125,8 @@ test("kayıt, belge hazırlığı, geçmiş, silme ve çıkış", async ({ page 
   expect(errors).toEqual([]);
 });
 
-test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışır", async ({ page }, testInfo) => {
-  // Üç hazırlama ve üç silme çağrısı CI'daki soğuk emülatörlerde tek ekran testinden uzun sürer.
+test("geçmişte tekli silme onayla, klavyeyle ve iki temada çalışır", async ({ page }, testInfo) => {
+  // İki hazırlama ve tekli silme çağrıları CI'daki soğuk emülatörlerde tek ekran testinden uzun sürer.
   test.setTimeout(120_000);
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
@@ -170,7 +201,25 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
   await menuTrigger.click();
   await expect(menuTrigger).toHaveAttribute("aria-expanded", "true");
   await menu.getByRole("button", { name: "Analizi sil", exact: true }).click();
-  await confirmation.getByRole("button", { name: "Analizi sil", exact: true }).click();
+  const deleteEndpoint = /\/deleteAnalysis(?:\?|$)/;
+  const singleGate = Promise.withResolvers<void>();
+  await page.route(deleteEndpoint, async route => {
+    if (route.request().method() === "POST") await singleGate.promise;
+    await route.continue();
+  });
+  try {
+    await confirmation.getByRole("button", { name: "Analizi sil", exact: true }).click();
+    await expect(confirmation).toBeVisible();
+    await expect(confirmation.getByRole("button", { name: "Siliniyor…" })).toBeDisabled();
+    await expect(confirmation.getByRole("button", { name: "Vazgeç" })).toBeDisabled();
+    await page.keyboard.press("Escape");
+    await page.mouse.click(2, 2);
+    await expect(confirmation).toBeVisible();
+  } finally {
+    singleGate.resolve();
+  }
+  await expect(confirmation).not.toBeVisible({ timeout: 30_000 });
+  await page.unroute(deleteEndpoint);
   await expect(page.getByRole("status").filter({ hasText: "1 analiz ve kaynak belgeleri silindi." })).toBeVisible({ timeout: 30_000 });
   await expect(history.getByRole("listitem")).toHaveCount(1, { timeout: 30_000 });
 
@@ -188,28 +237,114 @@ test("geçmişte tekli ve toplu silme onayla, klavyeyle ve iki temada çalışı
   await confirmation.getByRole("button", { name: "Vazgeç" }).click();
   await expect(history.getByRole("listitem")).toHaveCount(1);
   await expect(page.getByText("1 analiz seçildi")).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("geçmişte toplu silme gerçek ilerleme, arka plan kilidi, Arapça RTL ve kısmi hata tekrarını uygular", async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(error.message));
+  await page.goto("/app/new-analysis");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await page.getByLabel("E-posta", { exact: true }).fill("bulk-" + crypto.randomUUID() + "@example.test");
+  await page.getByLabel("Parola", { exact: true }).fill("Synthetic123!");
+  await page.getByLabel("Parola tekrarı", { exact: true }).fill("Synthetic123!");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Belgelerinizi analize hazırlayın" })).toBeVisible();
+
+  for (let index = 1; index <= 2; index++) {
+    if (index > 1) await page.goto("/app/new-analysis");
+    await page.getByLabel("Analiz edilecek dosyaları seç").setInputFiles({
+      name: "toplu-" + index + ".txt", mimeType: "text/plain",
+      buffer: Buffer.from("Toplu sentetik " + index),
+    });
+    await page.getByLabel("İşletme adı", { exact: true }).fill("Toplu İşletme");
+    await page.getByLabel("Analiz başlığı", { exact: true }).fill("Toplu testi " + index);
+    await page.getByLabel("Analiz hedefi", { exact: true }).fill("Belgedeki ana konuları açıkla.");
+    await page.getByRole("button", { name: "Belgeleri ayrıştır" }).click();
+    await expect(page.getByText("Analize hazır", { exact: true })).toBeVisible({ timeout: 30_000 });
+  }
+
+  await page.goto("/app/history");
+  const history = page.getByRole("list", { name: "Analiz geçmişi" });
+  await expect(history.getByRole("listitem")).toHaveCount(2);
+
+  await page.getByRole("button", { name: "Seç ve sil" }).click();
+  await page.getByRole("button", { name: "Görünenleri seç" }).click();
+  await expect(page.getByText("2 analiz seçildi")).toBeVisible();
+
+  const confirmation = page.getByRole("alertdialog");
+  // Arapça RTL üzerinde açılış ve erişilebilirlik kontrolü yapıp Türkçe görünüme döner.
+  await chooseLanguage(page, "ar");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await page.getByRole("button", { name: "حذف المحدد" }).click();
+  await expect(confirmation).toBeVisible();
+  expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze()).violations).toEqual([]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.keyboard.press("Escape");
+  await expect(confirmation).not.toBeVisible();
+  await chooseLanguage(page, "tr");
+  await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+
   await page.getByRole("button", { name: "Seçilenleri sil" }).click();
-  const nav = page.getByRole("navigation", { name: testInfo.project.name === "mobile-chromium" ? "Mobil navigasyon" : "Ana navigasyon" });
   const deleteEndpoint = /\/deleteAnalysis(?:\?|$)/;
-  const gate = Promise.withResolvers<void>();
+  const gate1 = Promise.withResolvers<void>();
+  const gate2 = Promise.withResolvers<void>();
+  const bulkSentIds: string[] = [];
+  let bulkCalls = 0;
   await page.route(deleteEndpoint, async route => {
-    if (route.request().method() === "POST") await gate.promise;
-    await route.continue();
+    if (route.request().method() !== "POST") return route.continue();
+    bulkCalls++;
+    const body = route.request().postDataJSON() as { data?: { id?: string } };
+    if (body?.data?.id) bulkSentIds.push(body.data.id);
+    if (bulkCalls === 1) {
+      await gate1.promise;
+      return route.continue();
+    }
+    await gate2.promise;
+    return route.fulfill({
+      status: 503,
+      contentType: "application/json",
+      body: JSON.stringify({ error: { status: "UNAVAILABLE", message: "Sentetik hata" } }),
+    });
   });
   try {
-    await confirmation.getByRole("button", { name: "Analizi sil" }).click();
-    await expect(confirmation).not.toBeVisible();
-    const progress = page.getByRole("status").filter({ hasText: "Bu sırada çalışma alanında gezinebilirsiniz." });
-    await expect(progress).toBeVisible();
-    await nav.getByRole("link", { name: "Ayarlar" }).click();
-    await expect(page).toHaveURL(/\/app\/settings$/);
-    await expect(progress).toBeVisible();
+    await confirmation.getByRole("button", { name: "2 analizi sil", exact: true }).click();
+    await expect(confirmation).toBeVisible();
+    await expect(confirmation.getByRole("button", { name: "Siliniyor… 1/2" })).toBeDisabled();
+    await expect(confirmation.getByRole("button", { name: "Vazgeç" })).toBeDisabled();
+    await page.keyboard.press("Escape");
+    await page.mouse.click(2, 2);
+    await page.keyboard.press("Tab");
+    await expect(confirmation).toBeVisible();
+    expect(await page.evaluate(() => Boolean(document.activeElement && document.activeElement !== document.body && !document.activeElement.closest("dialog")))).toBe(false);
+    await expect(history.getByRole("checkbox").first()).toBeChecked();
   } finally {
-    gate.resolve();
+    gate1.resolve();
   }
+  await expect(confirmation.getByRole("button", { name: "Siliniyor… 2/2" })).toBeDisabled({ timeout: 30_000 });
+  gate2.resolve();
+
+  await expect(confirmation).toBeVisible({ timeout: 30_000 });
+  await expect(confirmation.getByRole("heading", { name: "1 analiz silinemedi." })).toBeVisible({ timeout: 30_000 });
+  await page.unroute(deleteEndpoint);
+  await expect(confirmation).toContainText("1 analiz ve kaynak belgeleri silindi.");
+  expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze()).violations).toEqual([]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+
+  const retryIds: string[] = [];
+  await page.route(deleteEndpoint, async route => {
+    if (route.request().method() === "POST") {
+      const body = route.request().postDataJSON() as { data?: { id?: string } };
+      if (body?.data?.id) retryIds.push(body.data.id);
+    }
+    await route.continue();
+  });
+  await confirmation.getByRole("button", { name: "Yeniden dene", exact: true }).click();
+  await expect(confirmation).not.toBeVisible({ timeout: 30_000 });
+  await page.unroute(deleteEndpoint);
+  expect(retryIds).toEqual([bulkSentIds[1]]);
   await expect(page.getByRole("status").filter({ hasText: "1 analiz ve kaynak belgeleri silindi." })).toBeVisible({ timeout: 30_000 });
-  await expect(page).toHaveURL(/\/app\/settings$/);
-  await nav.getByRole("link", { name: "Geçmiş" }).click();
   await expect(page.getByText("Henüz analiziniz yok.")).toBeVisible({ timeout: 30_000 });
   expect(errors).toEqual([]);
 });
