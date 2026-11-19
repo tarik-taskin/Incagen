@@ -35,7 +35,7 @@
     "test:references": "vitest run --config vitest.functions.config.ts functions/src/parsing/reference.test.ts",
     "example:build": "npm run build:functions && node scripts/build-sales-example.cjs && node scripts/build-feedback-example.cjs",
     "screenshots": "npm run build:functions && firebase emulators:exec --project demo-incagen --only auth,firestore,storage,functions \"playwright test -c playwright.screenshots.config.ts\"",
-    "test:python": "python/.venv/bin/python -m pytest -q python",
+    "test:python": "python/.venv/bin/python -m pytest -q python && vitest run --config vitest.python.config.ts",
     "gemini:check": "npm run build:functions && node --env-file-if-exists=functions/.secret.local scripts/check-gemini.cjs",
     "test:cloud": "playwright test -c playwright.cloud.config.ts",
     "verify:release": "node scripts/verify-release.mjs",
