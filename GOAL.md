@@ -9,6 +9,10 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
+### 2026-11-19 — Furkan / Antigravity: 2873da1 silme inceleme bulguları
+
+- [x] Sahip: Furkan — Firestore dinleyici hatası veya yükleme durumunda [AnalysisPage](src/pages/analysis-page.tsx) içinde silme diyaloğunun yeniden bağlanmaması, bekleme kilidinin korunup aynı başarılı yanıtın Geçmiş’e dönmesi; `Vazgeç`, `Escape` ve dış tıklama sonrasında odağın pencereyi açan kontrole (açıcı yoksa anlamlı hedefe) geri verilmesi ve regresyon testleriyle doğrulanması (`37` arayüz/`226`, `15` Functions/`144`, `66` script, `13` entegrasyon, `83` tarayıcı testi geçti, `3` mevcut platform atlaması).
+
 ### 2026-11-19 — Furkan / Antigravity: analiz silme onay ve ilerleme deneyimi
 
 - [x] Sahip: Furkan — Geçmiş tekli/toplu silme ve rapor ekranı tekli silmede onay penceresinin işlem tamamlanana kadar açık kalması, düğmede spinner ve gerçek ilerleme (`Siliniyor…` / `Siliniyor… 1/3`) gösterilmesi, işlem sırasında Escape/dış tıklama/arka plan kontrollerinin ve çift tıklamanın engellenmesi, Firestore kaydı erken kalksa da sonucun beklenmesi, hata/kısmi başarıda yalnızca başarısız kayıtların yeniden denenebilmesi, altı dil / Arapça RTL / mobil / hareket azaltma / ekran okuyucu erişilebilirliği ve belgeler ile testlerin ([FLOW.md](FLOW.md), [docs/LOCALIZATION.md](docs/LOCALIZATION.md), [e2e/report.spec.ts](e2e/report.spec.ts)) güncellenmesi (`37` arayüz/`221`, `15` Functions/`144`, `66` script, `13` entegrasyon, `83` tarayıcı testi geçti, `3` mevcut platform atlaması).
