@@ -4,7 +4,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { getQuotaDay } from "../contracts";
-import { createGeminiGenerate, GEMINI_MODEL, GeminiError } from "./gemini";
+import { createGeminiGenerate, GEMINI_MODEL, GeminiError, type GeminiGenerate } from "./gemini";
 import { readGeminiKey } from "./gemini-secret";
 import { AnalysisPacketBudgetError } from "./input-packet";
 import { preparedAnalysis, type AiArtifact } from "./tabular-storage";
@@ -82,13 +82,20 @@ async function advanceAnalysis(uid: string, id: string, attemptId: string, stage
   if (!valid) throw new HttpsError("aborted", "Çalışma değişti veya silindi; işlem durduruldu.");
 }
 
-// Kullanıcı onayıyla tek tabloyu hesaplar ve yorumlar; otomatik ücretli retry veya metrik tahmini yapmaz.
-export const startAnalysis = onCall({ region: "europe-west1", timeoutSeconds: 180, memory: "1GiB", maxInstances: 2, concurrency: 1 }, async request => {
-  const parsed = startAnalysisSchema.safeParse(request.data);
+export interface StartAnalysisOptions {
+  rolloutEnabled?: () => boolean;
+  generate?: GeminiGenerate;
+  readKey?: () => Promise<string>;
+}
+
+// İstek doğrulama, rollout kapısı, Python hesabı, model çağrısı ve sonucu Atomik hata kaydıyla yürütür.
+export async function executeStartAnalysis(uid: string | undefined, rawData: unknown, options: StartAnalysisOptions = {}) {
+  const parsed = startAnalysisSchema.safeParse(rawData);
   if (!parsed.success) throw new HttpsError("invalid-argument", "Analiz kapsamını kontrol edin.");
-  const input = parsed.data, uid = request.auth?.uid;
+  const input = parsed.data;
   const { data, ref } = await preparedAnalysis(uid, input.id);
-  if (!tabularRolloutEnabled()) throw new HttpsError("failed-precondition", "Analiz servisi şu anda kullanılamıyor.", { analysisFailure: "configuration" });
+  const enabled = (options.rolloutEnabled ?? tabularRolloutEnabled)();
+  if (!enabled) throw new HttpsError("failed-precondition", "Analiz servisi şu anda kullanılamıyor.", { analysisFailure: "configuration" });
   const source = data.report.sources.find(source => source.id === input.sourceId && /\.(csv|xlsx)$/i.test(source.name));
   if (!source || !data.objective?.trim()) throw new HttpsError("failed-precondition", "Analiz için CSV veya XLSX tablosu ve bir hedef seçin.");
   const fingerprint = analysisFingerprint(source.sha256, source.id, input.selection, input.locale);
@@ -109,10 +116,20 @@ export const startAnalysis = onCall({ region: "europe-west1", timeoutSeconds: 18
     const packet = createTabularPacket(input.id, data.objective, worker, input.locale);
     await advanceAnalysis(uid!, input.id, job.attemptId, "interpreting");
     const emulator = isAnalysisEmulator();
-    const key = emulator ? "" : await readGeminiKey();
     let usage: AiJob["usage"];
+    let generateFn: GeminiGenerate;
+    let useFixedEmulatorText = false;
+    if (options.generate) {
+      generateFn = options.generate;
+    } else if (emulator) {
+      useFixedEmulatorText = true;
+      generateFn = async () => "";
+    } else {
+      const key = await (options.readKey ?? readGeminiKey)();
+      generateFn = createGeminiGenerate(key, value => { usage = value; });
+    }
     const modelStarted = Date.now();
-    const result = await interpretTable(packet, input.locale, emulator ? async () => "" : createGeminiGenerate(key, value => { usage = value; }), emulator);
+    const result = await interpretTable(packet, input.locale, generateFn, useFixedEmulatorText);
     const modelMs = Date.now() - modelStarted;
     await advanceAnalysis(uid!, input.id, job.attemptId, "saving");
     if (Buffer.byteLength(JSON.stringify(result)) > AI_JOB_LIMITS.outputBytes) throw new WorkerError("scope-limit");
@@ -138,4 +155,9 @@ export const startAnalysis = onCall({ region: "europe-west1", timeoutSeconds: 18
   } finally {
     if (saved && !committed) await bucket.file(artifactPath).delete({ ignoreNotFound: true });
   }
+}
+
+// Kullanıcı onayıyla tek tabloyu hesaplar ve yorumlar; otomatik ücretli retry veya metrik tahmini yapmaz.
+export const startAnalysis = onCall({ region: "europe-west1", timeoutSeconds: 180, memory: "1GiB", maxInstances: 2, concurrency: 1 }, async request => {
+  return executeStartAnalysis(request.auth?.uid, request.data);
 });

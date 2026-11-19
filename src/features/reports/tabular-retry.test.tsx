@@ -107,3 +107,44 @@ it("removes an active lease timer and visibility listener when the panel is clos
   await act(async () => { vi.advanceTimersByTime(60 * 60 * 1000); });
   expect(mocks.calls).not.toHaveBeenCalled();
 });
+
+it("handles provider-busy and timeout cooldowns deterministically and ignores late failure from a previous analysis", async () => {
+  vi.useFakeTimers({ now: 10_000 });
+  const now = 10_000;
+  const selection = { sheet: null, valueColumn: 1, groupColumn: 0, aggregation: "sum" as const, numberFormat: "plain" as const, unit: "USD" as const };
+
+  // 1. Timeout bekleme durumunu ve otomatik tekrar yapılmamasını doğrula
+  const timeoutAnalysis = {
+    id: "analysis-timeout",
+    ai: { status: "failed", attempts: 1, maxAttempts: 3, attemptId: "att-1", error: "timeout", retryAfter: now + 30_000, sourceId: "file-0", selection },
+  } as Analysis;
+  const view = render(<TabularAnalysisPanel analysis={timeoutAnalysis} />);
+  await act(async () => {});
+  expect(screen.getByRole("status")).toHaveTextContent("Analiz süresi doldu.");
+  expect(screen.getByRole("button", { name: "Kısa bir süre bekleyin" })).toBeDisabled();
+  await act(async () => { vi.advanceTimersByTime(30_001); });
+  expect(screen.getByRole("button", { name: "Yeniden dene" })).toBeEnabled();
+  expect(mocks.start).not.toHaveBeenCalled();
+
+  // 2. Bekleyen eski istek kullanıcı başka analize geçtikten sonra geç hata (provider-busy) dönerse yeni analizi bozmaz
+  vi.useRealTimers();
+  let rejectOld!: (err: unknown) => void;
+  mocks.start.mockImplementationOnce(() => new Promise((_res, rej) => { rejectOld = rej; }));
+  const firstAnalysis = {
+    id: "analysis-old",
+    ai: { status: "failed", attempts: 1, maxAttempts: 3, attemptId: "att-old", error: "timeout", sourceId: "file-0", selection },
+  } as Analysis;
+  view.rerender(<TabularAnalysisPanel analysis={firstAnalysis} />);
+  const retryBtn = await screen.findByRole("button", { name: "Yeniden dene" });
+  await waitFor(() => expect(retryBtn).toBeEnabled());
+  await userEvent.click(retryBtn);
+
+  // Kullanıcı yeni analize geçer; eski isteğin geç provider-busy hatası yeni ekrana alert yazmaz.
+  const nextAnalysis = { id: "analysis-new" } as Analysis;
+  view.rerender(<TabularAnalysisPanel analysis={nextAnalysis} />);
+  await act(async () => {
+    rejectOld({ code: "functions/failed-precondition", details: { analysisFailure: "provider-busy" } });
+  });
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Analizi oluştur" })).toBeInTheDocument();
+});

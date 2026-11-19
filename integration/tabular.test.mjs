@@ -254,3 +254,175 @@ test("aktif AI işi sürerken silme/hesap silme engeli ve Storage derived izolas
     await deleteApp(other.app);
   }
 });
+
+test("analiz kapalıyken belge hazırlama ve yeniden açma çalışır; AI işi, kota ve model çağrısı oluşmaz", { timeout: 60000 }, async () => {
+  assert.match(process.env.FIRESTORE_EMULATOR_HOST ?? "", /^127\.0\.0\.1:/);
+  if (!getApps().length) initializeAdmin({ projectId: "demo-incagen", storageBucket: "demo-incagen.appspot.com" });
+  const { executeStartAnalysis } = require("./lib/analysis/tabular-jobs");
+  const { getQuotaDay } = require("./lib/contracts");
+  const { GeminiError } = require("./lib/analysis/gemini");
+
+  const own = await client(), db = getFirestore();
+  const body = Buffer.from("Service,NetRevenue\nCloud,12000.10\nCloud,-500.10\nConsulting,5000.20\nConsulting,2500.30\n");
+  const selection = { sheet: null, valueColumn: 1, groupColumn: 0, aggregation: "sum", numberFormat: "plain", unit: "USD" };
+  let id;
+  let modelCalls = 0;
+
+  try {
+    const created = await own.call("createAnalysis", {
+      requestId: crypto.randomUUID(),
+      title: "Closed rollout preparation",
+      business: "Synthetic",
+      objective: "Prepare documents without AI call",
+      files: [{ name: "synthetic-service-revenue.csv", size: body.length, contentType: "text/csv" }],
+    });
+    id = created.data.id;
+    await uploadBytes(ref(own.storage, created.data.paths[0]), body, { contentType: "text/csv" });
+    await own.call("prepareAnalysis", { id });
+
+    // Kayıt geçmişten yeniden okunduğunda hazırlık özeti ve kaynaklar eksiksiz bulunur.
+    const uid = own.auth.currentUser.uid;
+    const recordRef = db.doc(`users/${uid}/analyses/${id}`);
+    const prepared = (await recordRef.get()).data();
+    assert.equal(prepared.status, "completed");
+    assert.equal(prepared.report.sources[0].name, "synthetic-service-revenue.csv");
+    assert.equal(prepared.ai, undefined);
+
+    const day = getQuotaDay(new Date());
+    await db.doc(`internalAnalysisQuotas/${day}`).delete().catch(() => {});
+
+    // Kapalı bayrakla analiz başlatma isteği reddedilir, model çağrılmaz ve AI işi/kota oluşmaz.
+    await assert.rejects(
+      executeStartAnalysis(
+        uid,
+        { id, sourceId: "file-0", selection, locale: "tr" },
+        {
+          rolloutEnabled: () => false,
+          generate: async () => {
+            modelCalls += 1;
+            throw new GeminiError("unavailable");
+          },
+        }
+      ),
+      { code: "failed-precondition", details: { analysisFailure: "configuration" } }
+    );
+
+    assert.equal(modelCalls, 0);
+    const afterClosed = (await recordRef.get()).data();
+    assert.equal(afterClosed.ai, undefined);
+    assert.equal((await db.doc(`users/${uid}/aiQuotas/${day}`).get()).exists, false);
+    assert.equal((await db.doc(`internalAnalysisQuotas/${day}`).get()).exists, false);
+    const [derivedAi] = await getAdminStorage().bucket().getFiles({ prefix: `derived/${uid}/analyses/${id}/ai/` });
+    assert.equal(derivedAi.length, 0);
+  } finally {
+    if (id) await own.call("deleteAnalysis", { id }).catch(() => {});
+    await deleteApp(own.app);
+  }
+});
+
+test("provider-busy ve timeout sonrası deterministik toparlanma, bekleme süresi ve manuel tekrar akışı", { timeout: 60000 }, async () => {
+  assert.match(process.env.FIRESTORE_EMULATOR_HOST ?? "", /^127\.0\.0\.1:/);
+  if (!getApps().length) initializeAdmin({ projectId: "demo-incagen", storageBucket: "demo-incagen.appspot.com" });
+  const { executeStartAnalysis } = require("./lib/analysis/tabular-jobs");
+  const { GeminiError } = require("./lib/analysis/gemini");
+  const { getQuotaDay } = require("./lib/contracts");
+
+  const own = await client(), db = getFirestore();
+  const prevEmu = process.env.FUNCTIONS_EMULATOR;
+  const prevProj = process.env.GCLOUD_PROJECT;
+  const body = Buffer.from("Channel,Revenue\nWeb,10.00\nStore,20.00\n");
+  const selection = { sheet: null, valueColumn: 1, groupColumn: 0, aggregation: "sum", numberFormat: "plain", unit: "USD" };
+  let id;
+
+  try {
+    process.env.FUNCTIONS_EMULATOR = "true";
+    process.env.GCLOUD_PROJECT = "demo-incagen";
+
+    const created = await own.call("createAnalysis", {
+      requestId: crypto.randomUUID(),
+      title: "Busy timeout recovery",
+      business: "Synthetic",
+      objective: "Recover after provider busy and timeout",
+      files: [{ name: "recovery.csv", size: body.length, contentType: "text/csv" }],
+    });
+    id = created.data.id;
+    await uploadBytes(ref(own.storage, created.data.paths[0]), body, { contentType: "text/csv" });
+    await own.call("prepareAnalysis", { id });
+    const uid = own.auth.currentUser.uid;
+    const recordRef = db.doc(`users/${uid}/analyses/${id}`);
+
+    let modelCalls = 0;
+    const busyGenerator = async () => {
+      modelCalls += 1;
+      throw new GeminiError("busy");
+    };
+
+    // 1. Deneme: provider-busy döner, retryAfter (~30 sn) saklanır ve hazırlanan dosya korunur.
+    await assert.rejects(
+      executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, { rolloutEnabled: () => true, generate: busyGenerator }),
+      { code: "failed-precondition", details: { analysisFailure: "provider-busy" } }
+    );
+    let docData = (await recordRef.get()).data();
+    assert.equal(docData.status, "completed");
+    assert.equal(docData.ai.status, "failed");
+    assert.equal(docData.ai.error, "provider-busy");
+    assert.equal(docData.ai.attempts, 1);
+    assert.ok(docData.ai.retryAfter > Date.now());
+    assert.equal(modelCalls, 1);
+
+    // Bekleme süresi dolmadan tekrar deneme modeli çağırmadan reddedilir.
+    await assert.rejects(
+      executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, { rolloutEnabled: () => true, generate: busyGenerator }),
+      { code: "resource-exhausted" }
+    );
+    assert.equal(modelCalls, 1);
+
+    // 2. Deneme: Bekleme süresi dolduktan sonra timeout durumu oluşur ve dosya hâlâ hazır kalır.
+    await recordRef.update({ "ai.retryAfter": Date.now() - 1 });
+    await assert.rejects(
+      executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, {
+        rolloutEnabled: () => true,
+        generate: async () => {
+          modelCalls += 1;
+          throw new GeminiError("timeout");
+        },
+      }),
+      { code: "failed-precondition", details: { analysisFailure: "timeout" } }
+    );
+    docData = (await recordRef.get()).data();
+    assert.equal(docData.ai.status, "failed");
+    assert.equal(docData.ai.error, "timeout");
+    assert.equal(docData.ai.attempts, 2);
+    assert.equal(modelCalls, 2);
+
+    // 3. Deneme: Bekleme sonrası başarılı manuel yeniden deneme raporu kaydeder.
+    await recordRef.update({ "ai.retryAfter": Date.now() - 1 });
+    const done = await executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, {
+      rolloutEnabled: () => true,
+      generate: async () => {
+        modelCalls += 1;
+        return JSON.stringify({
+          summary: [{ text: "Kanallar arası toplam net gelir özetlendi.", metricIds: ["aggregate"] }],
+          findings: [{ id: "finding-1", title: "Gelir dağılımı", text: "Mağaza ve web kaynak satırlarından doğrulandı.", metricIds: ["aggregate"] }],
+          recommendations: [],
+          limitations: ["Maliyet verisi yok."],
+        });
+      },
+    });
+    assert.equal(done.status, "completed");
+    docData = (await recordRef.get()).data();
+    assert.equal(docData.ai.status, "completed");
+    assert.equal(docData.ai.attempts, 3);
+    assert.equal(modelCalls, 3);
+  } finally {
+    if (prevEmu === undefined) delete process.env.FUNCTIONS_EMULATOR;
+    else process.env.FUNCTIONS_EMULATOR = prevEmu;
+    if (prevProj === undefined) delete process.env.GCLOUD_PROJECT;
+    else process.env.GCLOUD_PROJECT = prevProj;
+    const day = getQuotaDay(new Date());
+    await db.doc(`internalAnalysisQuotas/${day}`).delete().catch(() => {});
+    if (own.auth.currentUser?.uid) await db.doc(`users/${own.auth.currentUser.uid}/aiQuotas/${day}`).delete().catch(() => {});
+    if (id) await own.call("deleteAnalysis", { id }).catch(() => {});
+    await deleteApp(own.app);
+  }
+});

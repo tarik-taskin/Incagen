@@ -161,3 +161,47 @@ it("keeps successful deletion and safe retry errors working in the original cont
   await userEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Analizi sil" }));
   expect(await screen.findByText("History destination")).toBeVisible();
 });
+
+it("analiz kapalıyken belge hazırlığı, geçmişten açma ve kaynak görünümü çalışır; bozuk/pasif analiz düğmesi görünmez", () => {
+  vi.stubEnv("VITE_TABULAR_ANALYSIS_ENABLED", "false");
+  try {
+    state.analyses.a = {
+      id: "a",
+      title: "Synthetic CSV readiness",
+      business: "Synthetic",
+      status: "completed",
+      createdAt: 1,
+      updatedAt: 2,
+      report: {
+        version: 3,
+        fileCount: 1,
+        totalBytes: 84,
+        totalChunks: 1,
+        totalCharacters: 60,
+        sources: [{
+          id: "file-0",
+          name: "synthetic-service-revenue.csv",
+          size: 84,
+          declaredContentType: "text/csv",
+          detectedMime: "text/csv",
+          sha256: "a".repeat(64),
+          category: "Tablo",
+          chunkCount: 1,
+          characterCount: 60,
+          warnings: [],
+          metadata: {},
+        }],
+      },
+    };
+
+    mount();
+    expect(screen.getByText("Prepared sources")).toBeVisible();
+    expect(screen.getByText(/Belge içerikleri ayrıştırıldı/)).toBeVisible();
+    expect(screen.queryByText("Analysis panel")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Analizi oluştur|Tabloları yeniden yükle|Yeniden dene/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "← Geçmiş analizler" })).toHaveAttribute("href", "/app/history");
+    expect(state.call).not.toHaveBeenCalled();
+  } finally {
+    vi.unstubAllEnvs();
+  }
+});
