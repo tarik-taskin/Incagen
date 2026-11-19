@@ -9,6 +9,10 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
+### 2026-11-19 — Furkan / Antigravity: analiz silme onay ve ilerleme deneyimi
+
+- [x] Sahip: Furkan — Geçmiş tekli/toplu silme ve rapor ekranı tekli silmede onay penceresinin işlem tamamlanana kadar açık kalması, düğmede spinner ve gerçek ilerleme (`Siliniyor…` / `Siliniyor… 1/3`) gösterilmesi, işlem sırasında Escape/dış tıklama/arka plan kontrollerinin ve çift tıklamanın engellenmesi, Firestore kaydı erken kalksa da sonucun beklenmesi, hata/kısmi başarıda yalnızca başarısız kayıtların yeniden denenebilmesi, altı dil / Arapça RTL / mobil / hareket azaltma / ekran okuyucu erişilebilirliği ve belgeler ile testlerin ([FLOW.md](FLOW.md), [docs/LOCALIZATION.md](docs/LOCALIZATION.md), [e2e/report.spec.ts](e2e/report.spec.ts)) güncellenmesi (`37` arayüz/`221`, `15` Functions/`144`, `66` script, `13` entegrasyon, `83` tarayıcı testi geçti, `3` mevcut platform atlaması).
+
 ### 2026-11-19 — Furkan / Antigravity: c271c55 inceleme bulguları düzeltmesi
 
 - [x] Sahip: Furkan — İnceleme Bulgusu 1 (Kabul doğrulayıcısı mod/vaka bağlamı ve insan inceleme kanıtı): `scripts/accept-tabular-cloud.mjs` içinde `expectedAcceptanceCases` ile `full` modu altı beklenen benzersiz vakaya, `smoke` tek beklenen vakaya ve `closed` sıfır model sonucuna bağlandı; sıfır rapor, yinelenen vaka ve uyuşmayan `runs.json` testleri eklendi; `finalizeAcceptanceEvidence` ile `verifyAcceptanceEvidence` normal kabul akışına bağlandı ve başarılı raporların bekleyen insan incelemesi kaydı (`human-review-*.json`) özel kanıt dizinine yazıldı ([testler](scripts/accept-tabular-cloud.test.mjs)).
