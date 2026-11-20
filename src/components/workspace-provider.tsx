@@ -71,6 +71,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       return;
     }
     lock.current = true; cancelled.current = false; setPhase("creating"); setUploadingFile(null); setProgress(0);
+    selection.dismissAcceptance();
     try {
       const services = getServices();
       const create = httpsCallable<CreateAnalysis, { id: string; paths: string[] }>(services.functions, "createAnalysis");

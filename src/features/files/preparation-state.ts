@@ -15,9 +15,11 @@ export function getPreparationState(files: PreparedFile[], draft: Draft) {
   const fields = fieldDefinitions.map(item => ({ ...item, valid: createSchema.shape[item.field].safeParse(draft[item.field]).success }));
   const totalBytes = files.reduce((total, item) => total + item.file.size, 0);
   const withinCapacity = files.length <= LIMITS.files && totalBytes <= LIMITS.totalBytes;
+  const remainingBytes = Math.max(0, LIMITS.totalBytes - totalBytes);
+  const remainingFiles = Math.max(0, LIMITS.files - files.length);
+  const capacityMessage = !remainingBytes ? "Boyut sınırına ulaştınız" : !remainingFiles ? "Belge sayısı sınırına ulaştınız" : null;
   return {
-    fields, totalBytes, remainingBytes: Math.max(0, LIMITS.totalBytes - totalBytes),
-    remainingFiles: Math.max(0, LIMITS.files - files.length), withinCapacity,
+    fields, totalBytes, remainingBytes, remainingFiles, withinCapacity, capacityMessage,
     ready: files.length > 0 && withinCapacity && fields.every(item => item.valid),
     firstInvalidField: fields.find(item => !item.valid),
   };

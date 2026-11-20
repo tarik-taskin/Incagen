@@ -11,6 +11,8 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ### 2026-11-20 — Belge seçim geri bildirimi
 
+- [x] Sahip: Furkan — [Belge seçimi](src/pages/new-analysis-page.tsx) geçici kabul sayacı, seçilen dosyaları düzenleme yönlendirmesi, kapasite ve hazırlık sırasında anlaşılır seçim durumu, odak korunumu ve alan dışı dosya bırakma korumasıyla doğrulandı. Altı dil, açık/koyu klasik ve Glass görünümleri, gerçek emülatör aktarımı ve taslak korunumu test edildi. Yerelde 229 arayüz, 144 Functions, 66 script, 13 entegrasyon ve 11 ilgili tarayıcı testi geçti (1 mevcut platform atlaması).
+
 - [x] Sahip: Furkan — [Yeni analizde](src/pages/new-analysis-page.tsx) dosya bırakma ve seçme sonrasında yalnız taslağa kabul edilen belge sayısı kısa bir pota animasyonuyla gösteriliyor. Reddedilen ve yinelenen dosyalar, iç sayfadan dönüş, klavye, mobil, hareket azaltma ve altı dil doğrulandı. Yerel kontrollerde 228 arayüz, 144 Functions, 66 script, 13 entegrasyon ve 4 ilgili tarayıcı testi geçti.
 
 ### 2026-11-19 — Furkan / Antigravity: 2873da1 silme inceleme bulguları

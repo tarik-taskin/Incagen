@@ -113,9 +113,12 @@
   transform: translate(0.55rem, -0.55rem) rotate(-17deg);
 }
 
-.illustration[data-caught="true"] .document,
-.illustration[data-caught="true"] .orbit {
-  opacity: 0;
+.dropzone[data-available="false"] .illustration > :not(.score) {
+  opacity: 0.6;
+}
+
+.dropzone[data-dragging="true"] .score {
+  visibility: hidden;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -124,11 +127,11 @@
   }
 
   .illustration[data-caught="true"] .document {
-    animation: document-shot 610ms both;
+    animation: document-shot 790ms;
   }
 
   .illustration[data-caught="true"] .orbit {
-    animation: orbit-fade 360ms ease-out both;
+    animation: orbit-fade 790ms ease-out;
   }
 
   .illustration[data-caught="true"] .net {
@@ -136,22 +139,24 @@
   }
 
   .score {
-    animation: score-rise 260ms 430ms ease-out both;
+    animation: score-rise 220ms 430ms ease-out both;
   }
 }
 
 @keyframes document-shot {
   from { opacity: 1; transform: rotate(-13deg); }
-  28% { opacity: 1; transform: translate(2.2rem, -2.5rem) rotate(4deg) scale(0.94); }
-  51% { opacity: 1; transform: translate(4.5rem, -2.7rem) rotate(17deg) scale(0.82); }
-  68% { opacity: 1; transform: translate(5.85rem, -0.9rem) rotate(12deg) scale(0.72); }
-  85% { opacity: 0.88; transform: translate(5.85rem, 0.6rem) rotate(-4deg) scale(0.55); }
-  to { opacity: 0; transform: translate(5.85rem, 1.8rem) scale(0.35); }
+  23% { opacity: 1; transform: translate(2.2rem, -2.5rem) rotate(4deg) scale(0.94); }
+  39% { opacity: 1; transform: translate(4.5rem, -2.7rem) rotate(17deg) scale(0.82); }
+  52% { opacity: 1; transform: translate(5.85rem, -0.9rem) rotate(12deg) scale(0.72); }
+  65% { opacity: 0.88; transform: translate(5.85rem, 0.6rem) rotate(-4deg) scale(0.55); }
+  77% { opacity: 0; transform: translate(5.85rem, 1.8rem) scale(0.35); }
+  78% { opacity: 0; transform: rotate(-13deg); }
+  to { opacity: 1; transform: rotate(-13deg); }
 }
 
 @keyframes orbit-fade {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from, to { opacity: 1; }
+  42%, 72% { opacity: 0; }
 }
 
 @keyframes net-catch {
@@ -160,6 +165,6 @@
 }
 
 @keyframes score-rise {
-  from { opacity: 0; transform: translateY(0.5rem); }
-  to { opacity: 1; transform: translateY(0); }
+  from { transform: translateY(0.5rem) scale(0); }
+  to { transform: translateY(0) scale(1); }
 }

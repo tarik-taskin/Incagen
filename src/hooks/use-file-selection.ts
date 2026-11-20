@@ -16,6 +16,7 @@ type FileSelectionAction =
   | { type: "add"; files: File[]; limit: number }
   | { type: "remove"; id: string }
   | { type: "clear" }
+  | { type: "dismiss-acceptance" }
   | { type: "dismiss-rejections" };
 
 const initialState: FileSelectionState = { files: [], rejections: [], lastAccepted: [] };
@@ -35,6 +36,10 @@ function fileSelectionReducer(state: FileSelectionState, action: FileSelectionAc
     return { ...state, rejections: [] };
   }
 
+  if (action.type === "dismiss-acceptance") {
+    return { ...state, lastAccepted: [] };
+  }
+
   return initialState;
 }
 
@@ -47,6 +52,7 @@ export function useFileSelectionState(limit = FREE_PLAN_FILE_LIMIT) {
     addFiles: (files: File[]) => dispatch({ type: "add", files, limit }),
     removeFile: (id: string) => dispatch({ type: "remove", id }),
     clearFiles: () => dispatch({ type: "clear" }),
+    dismissAcceptance: () => dispatch({ type: "dismiss-acceptance" }),
     dismissRejections: () => dispatch({ type: "dismiss-rejections" }),
   };
 }

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 import { FileDropzone } from "./file-dropzone";
 import { useFileSelectionState } from "../../hooks/use-file-selection";
@@ -13,7 +13,7 @@ it("ignores text drags and clears nested file drag highlighting on leave, outsid
   const area = screen.getByRole("group");
   fireEvent.dragEnter(area, transfer([], ["text/plain"]));
   expect(screen.getByText("Belgelerinizi ekleyin")).toBeVisible();
-  fireEvent.drop(area, transfer([], ["text/plain"]));
+  expect(fireEvent.drop(area, transfer([], ["text/plain"]))).toBe(true);
   expect(select).not.toHaveBeenCalled();
   fireEvent.dragEnter(area, transfer()); fireEvent.dragEnter(area, transfer());
   fireEvent.dragLeave(area, transfer());
@@ -25,6 +25,10 @@ it("ignores text drags and clears nested file drag highlighting on leave, outsid
     fireEvent(window, new Event(event));
     expect(screen.getByText("Belgelerinizi ekleyin")).toBeVisible();
   }
+  expect(fireEvent.dragOver(window, transfer())).toBe(false);
+  expect(fireEvent.drop(window, transfer([new File(["data"], "outside.csv")]))).toBe(false);
+  expect(fireEvent.drop(window, transfer([], ["text/uri-list"]))).toBe(true);
+  expect(select).not.toHaveBeenCalled();
 });
 
 it("keeps file selections intact, permits reselection and ignores disabled or cancelled selections", () => {
@@ -40,9 +44,16 @@ it("keeps file selections intact, permits reselection and ignores disabled or ca
   expect(select.mock.calls).toEqual([[[file]], [[file]]]);
   const area = screen.getByRole("group");
   fireEvent.dragEnter(area, transfer());
-  rerender(<FileDropzone disabled onFilesSelected={select} />);
-  expect(screen.getByText("Belgelerinizi ekleyin")).toBeVisible();
-  expect(screen.getByRole("button")).toBeDisabled();
+  const button = screen.getByRole("button");
+  button.focus();
+  rerender(<FileDropzone unavailable={{ title: "Seçim kapalı", detail: "Bir dosya kaldırın." }} onFilesSelected={select} />);
+  expect(screen.getByText("Seçim kapalı")).toBeVisible();
+  expect(button).toHaveAttribute("aria-disabled", "true");
+  expect(button).toHaveAccessibleDescription("Bir dosya kaldırın.");
+  expect(button).toHaveFocus();
+  const openPicker = vi.spyOn(input, "click");
+  fireEvent.click(button);
+  expect(openPicker).not.toHaveBeenCalled();
   fireEvent.drop(area, transfer([file]));
   fireEvent.change(input, { target: { files: [file] } });
   expect(select).toHaveBeenCalledTimes(2);
@@ -67,11 +78,11 @@ it("confirms only accepted files, announces equal-sized additions and does not r
 
   fireEvent.change(input, { target: { files: [first, unsupported] } });
   const status = screen.getByRole("status");
-  expect(status).toHaveTextContent("Taslağa 1 belge eklendi");
+  expect(status).toHaveTextContent("Seçime 1 dosya eklendi");
   const initialMessage = status.firstElementChild;
 
   fireEvent.drop(screen.getByRole("group"), transfer([first, second]));
-  expect(status).toHaveTextContent("Taslağa 1 belge eklendi");
+  expect(status).toHaveTextContent("Seçime 1 dosya eklendi");
   expect(status.firstElementChild).not.toBe(initialMessage);
 
   fireEvent.drop(screen.getByRole("group"), transfer([first, second, unsupported]));
@@ -79,10 +90,31 @@ it("confirms only accepted files, announces equal-sized additions and does not r
   expect(screen.queryByText("+1")).not.toBeInTheDocument();
 
   fireEvent.drop(screen.getByRole("group"), transfer([new File(["notes"], "third.txt")]));
-  expect(status).toHaveTextContent("Taslağa 1 belge eklendi");
+  expect(status).toHaveTextContent("Seçime 1 dosya eklendi");
   rerender(<ValidatingDropzone show={false} />);
   rerender(<ValidatingDropzone show />);
   expect(screen.getByRole("status")).toBeEmptyDOMElement();
+});
+
+it("expires only the current score and retains the selection guidance", () => {
+  vi.useFakeTimers();
+  try {
+    render(<ValidatingDropzone show />);
+    const area = screen.getByRole("group");
+    fireEvent.drop(area, transfer([new File(["one"], "first.txt")]));
+    expect(screen.getByText("+1")).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(1500));
+    fireEvent.drop(area, transfer([new File(["two"], "second.txt"), new File(["three"], "third.txt")]));
+    expect(screen.queryByText("+1")).not.toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(600));
+    expect(screen.getByText("+2")).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(1400));
+    expect(screen.queryByText("+2")).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Seçime 2 dosya eklendi");
+    expect(screen.getByText("Seçiminizi aşağıdaki listeden düzenleyebilirsiniz.")).toBeVisible();
+  } finally {
+    vi.useRealTimers();
+  }
 });
 
 it("uses the locale's number formatting and singular or plural draft acknowledgement", () => {
@@ -90,14 +122,14 @@ it("uses the locale's number formatting and singular or plural draft acknowledge
     for (const { code, tag } of languages) {
       setLocale(code);
       for (const count of [1, 2, 5]) {
-        const message = t("Taslağa {0} belge eklendi", count);
+        const message = t("Seçime {0} dosya eklendi", count);
         expect(message).toContain(new Intl.NumberFormat(tag).format(count));
-        if (code !== "tr") expect(message).not.toMatch(/Taslağa|\{0\}/);
+        if (code !== "tr") expect(message).not.toMatch(/Seçime|\{0\}/);
       }
     }
     setLocale("en");
-    expect(t("Taslağa {0} belge eklendi", 1)).toBe("1 document added to your draft");
-    expect(t("Taslağa {0} belge eklendi", 2)).toBe("2 documents added to your draft");
+    expect(t("Seçime {0} dosya eklendi", 1)).toBe("1 file added to the selection");
+    expect(t("Seçime {0} dosya eklendi", 2)).toBe("2 files added to the selection");
   } finally {
     setLocale("tr");
   }

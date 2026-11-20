@@ -46,7 +46,11 @@ test("oluşturma, gerçek yükleme ve hazırlama ayrı görünür; rota/dil değ
   });
   await page.route("**/prepareAnalysis", async route => { await preparation.promise; await route.continue(); });
   try {
+    const dropzone = page.getByRole("group", { name: "Dosya seçim alanı" });
+    await expect(dropzone.getByRole("status")).toHaveText("Seçime 1 dosya eklendi");
     await page.getByRole("button", { name: "Belgeleri ayrıştır", exact: true }).click();
+    await expect(dropzone.getByRole("button", { name: "Belgeleri seç" })).toBeDisabled();
+    await expect(dropzone.getByRole("status")).toBeEmpty();
     const status = page.getByRole("region", { name: "Belge hazırlama durumu", exact: true });
     await expect(status).toContainText("Çalışma oluşturuluyor");
     await expect(status.getByRole("progressbar")).toHaveCount(0);
@@ -64,6 +68,9 @@ test("oluşturma, gerçek yükleme ve hazırlama ayrı görünür; rota/dil değ
     for (const [code, catalog] of Object.entries({ tr, en, de, es, zh, ar })) {
       await chooseLanguage(page, code);
       await expect(page.getByRole("region", { name: catalog["Belge hazırlama durumu"], exact: true })).toContainText(catalog["Belgeler hazırlanıyor"]);
+      const picker = page.getByRole("button", { name: catalog["Belgeleri seç"], exact: true });
+      await expect(picker).toBeDisabled();
+      await expect(picker).toHaveAccessibleDescription(catalog["Hazırlık sırasında dosya seçimi duraklatılır."]);
       await checkLayout(page);
       if (code === "ar") await page.screenshot({ path: testInfo.outputPath("preparation-rtl.png"), fullPage: true });
     }

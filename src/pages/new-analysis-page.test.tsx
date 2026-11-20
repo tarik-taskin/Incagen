@@ -78,7 +78,7 @@ describe("NewAnalysisPage", () => {
 
     expect(screen.getByText("faaliyet.xlsx")).toBeInTheDocument();
     expect(screen.getByText("rapor.pdf")).toBeInTheDocument();
-    expect(screen.getByText("2/5 dosya analize hazırlanıyor")).toBeInTheDocument();
+    expect(screen.getByText("2/5 dosya seçildi")).toBeInTheDocument();
     expect(screen.queryByText("Para birimi")).not.toBeInTheDocument();
     expect(screen.queryByText(/sütun eşleştirme/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Müşteri geri bildirimleri ya da finans verileri/)).toBeInTheDocument();
@@ -102,7 +102,7 @@ describe("NewAnalysisPage", () => {
     const alert = screen.getAllByRole("alert")[0];
     expect(alert).toHaveTextContent("veri.json: Bu dosya zaten seçili.");
     expect(alert).toHaveTextContent("arac.exe: Bu dosya türü şu anda desteklenmiyor.");
-    expect(screen.getAllByText("veri.json")).toHaveLength(1);
+    expect(within(screen.getByRole("list", { name: "Seçilen dosyalar" })).getAllByText("veri.json")).toHaveLength(1);
   });
 
   it("Free plan sınırının üzerindeki dosyayı eklemez", async () => {
@@ -113,9 +113,12 @@ describe("NewAnalysisPage", () => {
 
     await user.upload(input, files);
 
-    expect(screen.getByText("5/5 dosya analize hazırlanıyor")).toBeInTheDocument();
-    expect(screen.getByText(/belge-5.pdf:/)).toBeInTheDocument();
+    expect(screen.getByText("5/5 dosya seçildi")).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent("belge-5.pdf:");
     expect(input).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Belgeleri seç" })).toHaveAccessibleDescription("Yeni belge eklemek için seçili dosyalardan birini kaldırın.");
+    await user.click(screen.getByRole("button", { name: "belge-0.pdf dosyasını kaldır" }));
+    expect(input).toBeEnabled();
   });
 
   it("doğrulama başarısız olduğunda dosya ve analiz başlığını yeniden deneme için korur", async () => {
@@ -181,16 +184,19 @@ describe("NewAnalysisPage", () => {
     const user = setupUser();
     renderPage();
     const input = screen.getByLabelText("Analiz edilecek dosyaları seç");
-    await user.upload(input, new File([new Uint8Array(25 * 1024 ** 2)], "tam.txt", { type: "text/plain" }));
+    const exactLimit = new File([new Uint8Array(25 * 1024 ** 2)], "tam.txt", { type: "text/plain" });
+    await user.upload(input, [exactLimit, new File(["1"], "asan.txt", { type: "text/plain" })]);
     const summary = within(screen.getByRole("region", { name: "Belge kapasitesi" }));
     expect(summary.getByText("25 MB", { exact: true })).toBeInTheDocument();
     expect(summary.getByText("0 B")).toBeInTheDocument();
     expect(summary.getByText("Boyut sınırına ulaştınız")).toBeInTheDocument();
     expect(summary.queryByText("4 belge daha ekleyebilirsiniz")).not.toBeInTheDocument();
-    await user.upload(input, new File(["1"], "asan.txt", { type: "text/plain" }));
     expect(screen.getByRole("alert")).toHaveTextContent("toplamı 25 MB sınırını aşamaz");
-    expect(screen.queryByText("asan.txt", { exact: true })).not.toBeInTheDocument();
+    expect(within(screen.getByRole("list", { name: "Seçilen dosyalar" })).queryByText("asan.txt", { exact: true })).not.toBeInTheDocument();
     expect(summary.getByRole("progressbar")).toHaveAttribute("value", String(25 * 1024 ** 2));
+    expect(input).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "tam.txt dosyasını kaldır" }));
+    expect(input).toBeEnabled();
   });
 
   it("ilk seçilen dosyadan sade bir başlık önerir; tek tıkla kabul edilir ve kullanıcı metnini ezmez", async () => {

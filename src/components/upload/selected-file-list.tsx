@@ -28,7 +28,7 @@ export function SelectedFileList({ files, limit, onClear, onRemove }: SelectedFi
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 px-5 py-4 sm:px-6">
         <div>
           <h2 id="selected-files-title" className="font-semibold">{t("Seçilen dosyalar")}</h2>
-          <p className="mt-1 text-xs text-muted-foreground" aria-live="polite">{t("{0}/{1} dosya analize hazırlanıyor", files.length, limit)}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t("{0}/{1} dosya seçildi", files.length, limit)}</p>
         </div>
         <Button type="button" variant="ghost" className="h-9 gap-2 px-3 text-muted-foreground hover:text-foreground" onClick={onClear}>
           <Trash2 className="h-4 w-4" aria-hidden="true" />
@@ -44,7 +44,7 @@ export function SelectedFileList({ files, limit, onClear, onRemove }: SelectedFi
                 <CategoryIcon className="h-5 w-5" aria-hidden="true" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium" title={file.name}>{file.name}</p>
+                <p className="truncate text-sm font-medium" title={file.name}><bdi>{file.name}</bdi></p>
                 <p className="mt-1 text-xs text-muted-foreground">{t(category)} · {formatFileSize(file.size)}</p>
               </div>
               <Button

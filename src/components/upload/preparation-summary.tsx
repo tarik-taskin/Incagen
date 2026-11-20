@@ -11,7 +11,7 @@ export function SelectionSummary({ count, state }: { count: number; state: Prepa
   return <section className="surface overflow-hidden rounded-3xl border border-border/80 bg-card shadow-sm" aria-labelledby="selection-summary-title">
     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 px-5 py-4 sm:px-6">
       <h2 id="selection-summary-title" className="flex items-center gap-2 text-sm font-semibold"><Files className="h-4 w-4 text-primary dark:text-secondary" aria-hidden="true" />  {t("Belge kapasitesi")}</h2>
-      <span className="rounded-full border border-primary/15 bg-primary/[0.05] px-3 py-1 text-xs font-medium text-primary dark:border-secondary/20 dark:text-secondary">{!state.remainingBytes ? t("Boyut sınırına ulaştınız") : state.remainingFiles ? t("{0} belge daha ekleyebilirsiniz", state.remainingFiles) : t("Belge sayısı sınırına ulaştınız")}</span>
+      <span className="rounded-full border border-primary/15 bg-primary/[0.05] px-3 py-1 text-xs font-medium text-primary dark:border-secondary/20 dark:text-secondary">{state.capacityMessage ? t(state.capacityMessage) : t("{0} belge daha ekleyebilirsiniz", state.remainingFiles)}</span>
     </div>
     <dl className="grid grid-cols-3 gap-3 px-5 py-5 sm:gap-6 sm:px-6">
       <div><dt className="text-xs text-muted-foreground">{t("Seçilen belge")}</dt><dd className="mt-2 text-xl font-semibold tabular-nums sm:text-2xl">{count}<span className="ms-1 text-sm font-normal text-muted-foreground">/ {LIMITS.files}</span></dd></div>

@@ -144,9 +144,9 @@ test("farklı belge türleri hazırlanır ve listeden kaldırılabilir", async (
     { name: "rapor.pdf", mimeType: "application/pdf", buffer: Buffer.from("report") },
   ]);
 
-  await expect(page.getByText("2/5 dosya analize hazırlanıyor")).toBeVisible();
+  await expect(page.getByText("2/5 dosya seçildi")).toBeVisible();
   const dropzone = page.getByRole("group", { name: "Dosya seçim alanı" });
-  await expect(dropzone.getByRole("status")).toHaveText("Taslağa 2 belge eklendi");
+  await expect(dropzone.getByRole("status")).toHaveText("Seçime 2 dosya eklendi");
   await expect(dropzone.getByText("+2", { exact: true })).toBeVisible();
   expect(await dropzone.evaluate(element => element.getAnimations({ subtree: true }).length)).toBe(0);
   await expect(page.getByText("faaliyet.xlsx", { exact: true })).toBeVisible();
@@ -170,11 +170,17 @@ test("dosya atışı taslağa kabulü gösterir ve ekrana dönünce tekrarlanmaz
 
   await dropzone.dispatchEvent("dragenter", { dataTransfer: files });
   await expect(dropzone.getByRole("heading")).toHaveText("Belgelerinizi buraya bırakın");
-  await dropzone.screenshot({ path: testInfo.outputPath("document-drop-ready.png") });
+  await dropzone.screenshot({ path: testInfo.outputPath("document-drop-ready.png"), animations: "disabled" });
   await dropzone.dispatchEvent("drop", { dataTransfer: files });
-  await expect(status).toHaveText("Taslağa 1 belge eklendi");
-  await expect(dropzone.getByText("+1", { exact: true })).toHaveCSS("opacity", "1");
+  await expect(status).toHaveText("Seçime 1 dosya eklendi");
+  await expect(dropzone.getByText("+1", { exact: true })).toHaveCSS("transform", "matrix(1, 0, 0, 1, 0, 0)");
   await dropzone.screenshot({ path: testInfo.outputPath("document-drop-confirmed.png") });
+  await dropzone.dispatchEvent("dragenter", { dataTransfer: files });
+  await expect(dropzone.getByText("+1", { exact: true })).toBeHidden();
+  await expect(dropzone.locator("[data-caught] > div:has(svg)")).toHaveCSS("opacity", "1");
+  await dropzone.dispatchEvent("dragleave", { dataTransfer: files });
+  await expect(dropzone.getByText("+1", { exact: true })).toHaveCount(0);
+  await expect(dropzone.getByText("Seçiminizi aşağıdaki listeden düzenleyebilirsiniz.")).toBeVisible();
   await files.dispose();
 
   const fileChooserPromise = page.waitForEvent("filechooser");
@@ -187,11 +193,32 @@ test("dosya atışı taslağa kabulü gösterir ve ekrana dönünce tekrarlanmaz
   await dropzone.getByLabel("Analiz edilecek dosyaları seç").setInputFiles({
     name: "notlar.txt", mimeType: "text/plain", buffer: Buffer.from("notes"),
   });
-  await expect(status).toHaveText("Taslağa 1 belge eklendi");
+  await expect(status).toHaveText("Seçime 1 dosya eklendi");
   const navigation = getAppNavigation(page);
   await navigation.getByRole("link", { name: "Geçmiş" }).click();
   await navigation.getByRole("link", { name: "Yeni analiz" }).click();
   await expect(page.getByText("notlar.txt", { exact: true })).toBeVisible();
+  await expect(status).toBeEmpty();
+
+  const picker = dropzone.getByRole("button", { name: "Belgeleri seç" });
+  const input = dropzone.getByLabel("Analiz edilecek dosyaları seç");
+  await picker.focus();
+  await input.setInputFiles(Array.from({ length: 3 }, (_, index) => ({
+    name: `ek-${index}.txt`, mimeType: "text/plain", buffer: Buffer.from("sentetik"),
+  })));
+  await expect(picker).toBeDisabled();
+  await expect(picker).toBeFocused();
+  await expect(dropzone.getByRole("heading")).toHaveText("Belge sayısı sınırına ulaştınız");
+  for (const [mode, style] of [["light", "classic"], ["dark", "classic"], ["dark", "glass"], ["light", "glass"]] as const) {
+    await setTheme(page, { mode, style });
+    await expectNoAccessibilityViolations(page);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    if (mode === "dark" && style === "glass") {
+      await dropzone.screenshot({ path: testInfo.outputPath("document-drop-capacity-dark.png"), animations: "disabled" });
+    }
+  }
+  await page.getByRole("button", { name: "ek-0.txt dosyasını kaldır" }).click();
+  await expect(picker).toBeEnabled();
   await expect(status).toBeEmpty();
 });
 
