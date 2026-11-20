@@ -19,7 +19,7 @@ import { tr } from "../i18n/tr";
 export function NewAnalysisPage() {
   useLocale();
   const { selection, draft, setDraft, canUndoObjectiveExample, applyObjectiveExample, undoObjectiveExample, busy, phase, error, activeId, start, completeDraft, cancel } = useWorkspace();
-  const { files, rejections, addFiles, removeFile, clearFiles, dismissRejections } = selection;
+  const { files, rejections, lastAccepted, addFiles, removeFile, clearFiles, dismissRejections } = selection;
   const navigate = useNavigate();
   const [editingBusiness, setEditingBusiness] = useState(() => !draft.business);
   const [attempted, setAttempted] = useState(false);
@@ -50,7 +50,7 @@ export function NewAnalysisPage() {
     <div className="mt-8 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
       <div className="min-w-0 space-y-6">
         <SelectionSummary count={files.length} state={preparation} />
-        <FileDropzone disabled={busy || files.length >= FREE_PLAN_FILE_LIMIT} onFilesSelected={addFiles} />
+        <FileDropzone disabled={busy || files.length >= FREE_PLAN_FILE_LIMIT} lastAccepted={lastAccepted} onFilesSelected={addFiles} />
         {rejections.length > 0 && <div role="alert" className="rounded-2xl border border-red-500/30 bg-red-500/5 p-4 text-sm">
           <h2 className="font-semibold">{t("Bazı dosyalar eklenemedi")}</h2>
           <ul className="mt-2 space-y-1">{rejections.map(r => <li key={r.id} className="break-words">{r.fileName}: {t(r.reason)}</li>)}</ul>

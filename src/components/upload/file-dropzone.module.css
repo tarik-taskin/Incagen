@@ -1,0 +1,165 @@
+.dropzone {
+  --drop-accent: var(--primary);
+  background-image: radial-gradient(ellipse 18rem 9rem at 50% 3.5rem, hsl(var(--drop-accent) / 0.09), transparent 95%);
+}
+
+:global(.dark) .dropzone {
+  --drop-accent: var(--secondary);
+}
+
+.illustration {
+  position: relative;
+  isolation: isolate;
+  flex: none;
+  width: 13rem;
+  height: 7.25rem;
+  pointer-events: none;
+  color: hsl(var(--drop-accent));
+}
+
+.orbit {
+  position: absolute;
+  top: 1rem;
+  left: 1.5rem;
+  width: 7.75rem;
+  height: 4.35rem;
+  border: 1.5px dashed hsl(var(--drop-accent) / 0.32);
+  border-radius: 50%;
+  clip-path: inset(0 14% 46% 0);
+  transform: rotate(-23deg);
+}
+
+.backboard {
+  position: absolute;
+  top: 1.1rem;
+  left: 5.2rem;
+  width: 5rem;
+  height: 3.45rem;
+  border: 1px solid hsl(var(--drop-accent) / 0.46);
+  border-radius: 0.95rem;
+  background: linear-gradient(145deg, hsl(var(--card) / 0.91), hsl(var(--drop-accent) / 0.17));
+  box-shadow: inset 0 1px 0 hsl(var(--card)), 0 0.5rem 1.4rem hsl(var(--drop-accent) / 0.13);
+}
+
+.backboard::after {
+  position: absolute;
+  inset: auto 1.3rem 0.42rem;
+  height: 1.34rem;
+  content: "";
+  border: 1px solid hsl(var(--drop-accent) / 0.34);
+  border-radius: 0.25rem;
+}
+
+.rim {
+  position: absolute;
+  top: 4.1rem;
+  left: 5.72rem;
+  width: 3.95rem;
+  height: 0.85rem;
+  border: 2px solid hsl(var(--drop-accent));
+  border-radius: 50%;
+  box-shadow: 0 2px 7px hsl(var(--drop-accent) / 0.26), inset 0 1px 0 hsl(var(--card) / 0.7);
+}
+
+.net {
+  position: absolute;
+  top: 4.58rem;
+  left: 5.82rem;
+  width: 3.75rem;
+  height: 1.67rem;
+  clip-path: polygon(0 0, 100% 0, 72% 100%, 28% 100%);
+  background:
+    repeating-linear-gradient(56deg, transparent 0 6px, hsl(var(--drop-accent) / 0.45) 6px 7px),
+    repeating-linear-gradient(-56deg, transparent 0 6px, hsl(var(--drop-accent) / 0.45) 6px 7px),
+    linear-gradient(hsl(var(--drop-accent) / 0.14), transparent);
+  transform-origin: top center;
+}
+
+.document {
+  position: absolute;
+  top: 3.45rem;
+  left: 0.75rem;
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.75rem;
+  border: 1px solid hsl(var(--drop-accent) / 0.27);
+  border-radius: 0.57rem;
+  background: hsl(var(--card));
+  box-shadow: 0 0.35rem 0.85rem hsl(var(--drop-accent) / 0.16);
+  transform: rotate(-13deg);
+}
+
+.score {
+  position: absolute;
+  top: 0.85rem;
+  left: 9.85rem;
+  min-width: 2.1rem;
+  padding: 0.15rem 0.35rem;
+  border: 1px solid hsl(var(--drop-accent) / 0.26);
+  border-radius: 999px;
+  background: hsl(var(--card));
+  box-shadow: 0 0.25rem 0.8rem hsl(var(--drop-accent) / 0.15);
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.dropzone[data-dragging="true"] .orbit {
+  border-color: hsl(var(--drop-accent) / 0.72);
+}
+
+.dropzone[data-dragging="true"] .document {
+  transform: translate(0.55rem, -0.55rem) rotate(-17deg);
+}
+
+.illustration[data-caught="true"] .document,
+.illustration[data-caught="true"] .orbit {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .document {
+    transition: transform 180ms ease-out;
+  }
+
+  .illustration[data-caught="true"] .document {
+    animation: document-shot 610ms both;
+  }
+
+  .illustration[data-caught="true"] .orbit {
+    animation: orbit-fade 360ms ease-out both;
+  }
+
+  .illustration[data-caught="true"] .net {
+    animation: net-catch 310ms 380ms ease-out both;
+  }
+
+  .score {
+    animation: score-rise 260ms 430ms ease-out both;
+  }
+}
+
+@keyframes document-shot {
+  from { opacity: 1; transform: rotate(-13deg); }
+  28% { opacity: 1; transform: translate(2.2rem, -2.5rem) rotate(4deg) scale(0.94); }
+  51% { opacity: 1; transform: translate(4.5rem, -2.7rem) rotate(17deg) scale(0.82); }
+  68% { opacity: 1; transform: translate(5.85rem, -0.9rem) rotate(12deg) scale(0.72); }
+  85% { opacity: 0.88; transform: translate(5.85rem, 0.6rem) rotate(-4deg) scale(0.55); }
+  to { opacity: 0; transform: translate(5.85rem, 1.8rem) scale(0.35); }
+}
+
+@keyframes orbit-fade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes net-catch {
+  40% { transform: scale(0.92, 1.17); }
+  72% { transform: scale(1.04, 0.94); }
+}
+
+@keyframes score-rise {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to { opacity: 1; transform: translateY(0); }
+}

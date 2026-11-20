@@ -34,6 +34,8 @@ Yeni bir sayfa açıldığında içerik baştan gösterilir. Yeni analiz bağlan
 
 ### Hazırlama sırasında kullanıcı kontrolü
 
+Dosya seçici ve sürükle-bırak aynı taslak doğrulamasını kullanır. Seçim alanı yalnız son seçimde kabul edilen belge sayısını bildirir. Belge kabulünde kısa bir atış animasyonu gösterilir ve hareket azaltma tercihinde sonuç doğrudan görünür. Taslağa ekleme yerel durumdur. Gerçek aktarım hazırlama başlatıldığında ölçülür.
+
 Çalışma kaydı açma, dosya aktarımı ve belge hazırlama farklı istemci aşamalarıdır. Yüzde yalnız aktarılan baytlardan hesaplanır; %100 aktarım, hazırlığın veya AI analizinin bittiği anlamına gelmez. Hazırlama aşaması gerçek backend yanıtını bekler; açık hata veya belge incelemesi başarılı sonuç gibi gösterilmez. Yeni analiz ekranındaki ayrıntılı durum, başka bir iç sayfada tek kompakt duruma dönüşür; işlem ve taslak aynı sağlayıcıda yaşar. Oluşturma/yükleme iptalinde dosyalar korunur; yeniden deneme aynı içerik için mevcut idempotency anahtarını kullanır.
 
 Yerel dosyalar seçiliyken veya işlem sürerken `beforeunload` dinleyicisi bağlanır; tarayıcı destekliyorsa yenileme/sekme kapatmada native ayrılma onayı ister. Bu özellik otomatik kayıt değildir; cihaz/tarayıcı ve kullanıcı etkileşimi koşullarına bağlıdır. İç sayfa gezinmesini engellemez. Dosyalar temizlenince, başarılı hazırlık taslağı temizleyince veya oturum sağlayıcısı kaldırılınca dinleyici kaldırılır.

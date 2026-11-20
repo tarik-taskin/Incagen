@@ -9,6 +9,10 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
+### 2026-11-20 — Belge seçim geri bildirimi
+
+- [x] Sahip: Furkan — [Yeni analizde](src/pages/new-analysis-page.tsx) dosya bırakma ve seçme sonrasında yalnız taslağa kabul edilen belge sayısı kısa bir pota animasyonuyla gösteriliyor. Reddedilen ve yinelenen dosyalar, iç sayfadan dönüş, klavye, mobil, hareket azaltma ve altı dil doğrulandı. Yerel kontrollerde 228 arayüz, 144 Functions, 66 script, 13 entegrasyon ve 4 ilgili tarayıcı testi geçti.
+
 ### 2026-11-19 — Furkan / Antigravity: 2873da1 silme inceleme bulguları
 
 - [x] Sahip: Furkan — Firestore dinleyici hatası veya yükleme durumunda [AnalysisPage](src/pages/analysis-page.tsx) içinde silme diyaloğunun yeniden bağlanmaması, bekleme kilidinin korunup aynı başarılı yanıtın Geçmiş’e dönmesi; `Vazgeç`, `Escape` ve dış tıklama sonrasında odağın pencereyi açan kontrole (açıcı yoksa anlamlı hedefe) geri verilmesi ve regresyon testleriyle doğrulanması (`37` arayüz/`226`, `15` Functions/`144`, `66` script, `13` entegrasyon, `83` tarayıcı testi geçti, `3` mevcut platform atlaması).

@@ -145,11 +145,54 @@ test("farklı belge türleri hazırlanır ve listeden kaldırılabilir", async (
   ]);
 
   await expect(page.getByText("2/5 dosya analize hazırlanıyor")).toBeVisible();
+  const dropzone = page.getByRole("group", { name: "Dosya seçim alanı" });
+  await expect(dropzone.getByRole("status")).toHaveText("Taslağa 2 belge eklendi");
+  await expect(dropzone.getByText("+2", { exact: true })).toBeVisible();
+  expect(await dropzone.evaluate(element => element.getAnimations({ subtree: true }).length)).toBe(0);
   await expect(page.getByText("faaliyet.xlsx", { exact: true })).toBeVisible();
   await expect(page.getByText("rapor.pdf")).toBeVisible();
   await page.getByRole("button", { name: "faaliyet.xlsx dosyasını kaldır" }).click();
   await expect(page.getByText("faaliyet.xlsx", { exact: true })).toHaveCount(0);
   await expectNoAccessibilityViolations(page);
+});
+
+test("dosya atışı taslağa kabulü gösterir ve ekrana dönünce tekrarlanmaz", async ({ page }, testInfo) => {
+  await page.goto("/app/new-analysis");
+  await register(page);
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  const dropzone = page.getByRole("group", { name: "Dosya seçim alanı" });
+  const status = dropzone.getByRole("status");
+  const files = await page.evaluateHandle(() => {
+    const transfer = new DataTransfer();
+    transfer.items.add(new File(["region,total\nNorth,5"], "bolgeler.csv", { type: "text/csv" }));
+    return transfer;
+  });
+
+  await dropzone.dispatchEvent("dragenter", { dataTransfer: files });
+  await expect(dropzone.getByRole("heading")).toHaveText("Belgelerinizi buraya bırakın");
+  await dropzone.screenshot({ path: testInfo.outputPath("document-drop-ready.png") });
+  await dropzone.dispatchEvent("drop", { dataTransfer: files });
+  await expect(status).toHaveText("Taslağa 1 belge eklendi");
+  await expect(dropzone.getByText("+1", { exact: true })).toHaveCSS("opacity", "1");
+  await dropzone.screenshot({ path: testInfo.outputPath("document-drop-confirmed.png") });
+  await files.dispose();
+
+  const fileChooserPromise = page.waitForEvent("filechooser");
+  await dropzone.getByRole("button", { name: "Belgeleri seç" }).press("Enter");
+  const fileChooser = await fileChooserPromise;
+  await fileChooser.setFiles({ name: "reddedilir.exe", mimeType: "application/octet-stream", buffer: Buffer.from("sentetik") });
+  await expect(page.getByRole("alert")).toContainText("reddedilir.exe");
+  await expect(status).toBeEmpty();
+
+  await dropzone.getByLabel("Analiz edilecek dosyaları seç").setInputFiles({
+    name: "notlar.txt", mimeType: "text/plain", buffer: Buffer.from("notes"),
+  });
+  await expect(status).toHaveText("Taslağa 1 belge eklendi");
+  const navigation = getAppNavigation(page);
+  await navigation.getByRole("link", { name: "Geçmiş" }).click();
+  await navigation.getByRole("link", { name: "Yeni analiz" }).click();
+  await expect(page.getByText("notlar.txt", { exact: true })).toBeVisible();
+  await expect(status).toBeEmpty();
 });
 
 test("hazırlık özeti kapasiteyi ve eksik alan odağını iki temada korur", async ({ page }, testInfo) => {

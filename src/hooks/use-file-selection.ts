@@ -9,6 +9,7 @@ import {
 interface FileSelectionState {
   files: PreparedFile[];
   rejections: FileRejection[];
+  lastAccepted: PreparedFile[];
 }
 
 type FileSelectionAction =
@@ -17,17 +18,17 @@ type FileSelectionAction =
   | { type: "clear" }
   | { type: "dismiss-rejections" };
 
-const initialState: FileSelectionState = { files: [], rejections: [] };
+const initialState: FileSelectionState = { files: [], rejections: [], lastAccepted: [] };
 
 // Dosya seçimi durumunu tek noktada ve öngörülebilir eylemlerle günceller.
 function fileSelectionReducer(state: FileSelectionState, action: FileSelectionAction): FileSelectionState {
   if (action.type === "add") {
     const { accepted, rejected } = validateFileSelection(state.files, action.files, action.limit);
-    return { files: [...state.files, ...accepted], rejections: rejected };
+    return { files: [...state.files, ...accepted], rejections: rejected, lastAccepted: accepted };
   }
 
   if (action.type === "remove") {
-    return { ...state, files: state.files.filter(({ id }) => id !== action.id) };
+    return { ...state, files: state.files.filter(({ id }) => id !== action.id), lastAccepted: [] };
   }
 
   if (action.type === "dismiss-rejections") {
