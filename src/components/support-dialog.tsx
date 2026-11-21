@@ -12,7 +12,7 @@ import { getSupportConfig, sendSupportMessage, supportMailto, supportTopics, sup
 const questions = [
   [
     "Hangi belge türlerini birlikte kullanabilirim?",
-    "PDF, Word, Excel, CSV, PowerPoint, metin, JSON ve desteklenen görselleri aynı çalışmada bir araya getirebilirsiniz. Aynı dönem, konu veya iş sorusuyla ilişkili dosyaları birlikte seçin. Kalan belge ve boyut kapasitesi yükleme alanında gösterilir; hazırlığa başlamadan önce seçiminizi düzenleyebilirsiniz."
+    "PDF, Word, Excel, CSV, TSV, PowerPoint, metin, JSON ve desteklenen görselleri aynı çalışmada bir araya getirebilirsiniz. Aynı dönem, konu veya iş sorusuyla ilişkili dosyaları birlikte seçin. Kalan belge ve boyut kapasitesi yükleme alanında gösterilir; hazırlığa başlamadan önce seçiminizi düzenleyebilirsiniz."
   ],
   [
     "Analiz hedefini nasıl netleştirebilirim?",
