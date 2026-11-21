@@ -2,7 +2,7 @@ import { localeTag, t, useLocale } from "../../i18n/runtime";
 import { useEffect, useId, useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { Check, FilePlus2, FileText } from "lucide-react";
 import { Button } from "../ui/button";
-import { SUPPORTED_FILE_ACCEPT, type PreparedFile } from "../../features/files/file-rules";
+import { SUPPORTED_FILE_ACCEPT, SUPPORTED_FORMAT_GROUPS, type PreparedFile } from "../../features/files/file-rules";
 import { cn } from "../../lib/utils";
 import styles from "./file-dropzone.module.css";
 
@@ -159,7 +159,20 @@ export function FileDropzone({ unavailable, lastAccepted, onFilesSelected }: Fil
         <FilePlus2 className="h-4 w-4" aria-hidden="true" />
         {t("Belgeleri seç")}
       </Button>
-      <p className="relative mt-3 text-xs leading-5 text-muted-foreground">{t("PDF · DOCX · PPTX · XLSX/CSV · TXT/MD/JSON · PNG/JPEG/WebP")}</p>
+      <div
+        className="relative mt-3 flex max-w-full flex-wrap items-center justify-center gap-x-2 gap-y-1.5 text-xs leading-5 text-muted-foreground"
+        aria-label={t("Desteklenen formatlar")}
+      >
+        {SUPPORTED_FORMAT_GROUPS.map((group) => (
+          <span
+            key={group.category}
+            className="inline-flex max-w-full flex-wrap items-center gap-1 rounded-lg bg-muted/60 px-2 py-0.5"
+          >
+            <span className="font-medium text-foreground/80">{t(group.category)}:</span>
+            <span dir="ltr" className="uppercase">{group.extensions.join(" · ")}</span>
+          </span>
+        ))}
+      </div>
       <div role="status" aria-atomic="true" className="sr-only">
         {count > 0 && <span key={batchKey}>{t("Seçime {0} dosya eklendi", count)}</span>}
       </div>

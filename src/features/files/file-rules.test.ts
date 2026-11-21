@@ -4,9 +4,11 @@ import {
   getFileCategory,
   getFileExtension,
   getFileIdentity,
+  getSupportedFormatGroups,
   isSupportedFile,
   validateFileSelection,
 } from "./file-rules";
+import { SUPPORTED_FILE_EXTENSIONS } from "../../../functions/src/contracts";
 
 // Testlerde kararlı ad, boyut ve tarih taşıyan tarayıcı dosyaları üretir.
 function createFile(name: string, size = 4, lastModified = 1) {
@@ -74,5 +76,14 @@ describe("file rules", () => {
     expect(formatFileSize(0)).toBe("0 B");
     expect(formatFileSize(1536)).toBe("1.5 KB");
     expect(formatFileSize(2 * 1024 * 1024)).toBe("2.0 MB");
+  });
+
+  it("görünür format gruplarını merkezi SUPPORTED_FILE_EXTENSIONS listesiyle birebir eşler (TSV dahil)", () => {
+    const groups = getSupportedFormatGroups();
+    const listedExtensions = groups.flatMap(group => group.extensions);
+
+    expect(listedExtensions).toContain("tsv");
+    expect(new Set(listedExtensions)).toEqual(new Set(SUPPORTED_FILE_EXTENSIONS));
+    expect(listedExtensions).not.toContain("exe");
   });
 });

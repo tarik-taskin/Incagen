@@ -5,6 +5,7 @@ import {
   SUPPORTED_FILE_EXTENSIONS,
   SUPPORTED_FILE_FORMATS,
   type DocumentCategory,
+  type SupportedFileExtension,
 } from "../../../functions/src/contracts";
 
 export const FREE_PLAN_FILE_LIMIT: number = PLAN_RULES.free.filesPerAnalysis;
@@ -12,6 +13,24 @@ export const FREE_PLAN_FILE_LIMIT: number = PLAN_RULES.free.filesPerAnalysis;
 export const SUPPORTED_FILE_ACCEPT = SUPPORTED_FILE_EXTENSIONS
   .map((extension) => `.${extension}`)
   .join(",");
+
+const CATEGORY_ORDER: readonly DocumentCategory[] = ["Tablo", "Belge", "Sunum", "Veri", "Görsel"];
+
+// Görünür format rehberini yalnız backend sözleşmesindeki desteklenen uzantılardan üretir.
+export function getSupportedFormatGroups(): { category: DocumentCategory; extensions: SupportedFileExtension[] }[] {
+  const byCategory = new Map<DocumentCategory, SupportedFileExtension[]>();
+  for (const extension of SUPPORTED_FILE_EXTENSIONS) {
+    const category = SUPPORTED_FILE_FORMATS[extension].category;
+    const group = byCategory.get(category) ?? [];
+    group.push(extension);
+    byCategory.set(category, group);
+  }
+  return CATEGORY_ORDER
+    .map((category) => ({ category, extensions: byCategory.get(category) ?? [] }))
+    .filter((group) => group.extensions.length > 0);
+}
+
+export const SUPPORTED_FORMAT_GROUPS = getSupportedFormatGroups();
 
 export type FileCategory = DocumentCategory;
 

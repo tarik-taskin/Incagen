@@ -1,6 +1,8 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 import { FileDropzone } from "./file-dropzone";
+import { SUPPORTED_FORMAT_GROUPS } from "../../features/files/file-rules";
+import { SUPPORTED_FILE_EXTENSIONS } from "../../../functions/src/contracts";
 import { useFileSelectionState } from "../../hooks/use-file-selection";
 import { languages, setLocale, t } from "../../i18n/runtime";
 
@@ -130,6 +132,28 @@ it("uses the locale's number formatting and singular or plural draft acknowledge
     setLocale("en");
     expect(t("Seçime {0} dosya eklendi", 1)).toBe("1 file added to the selection");
     expect(t("Seçime {0} dosya eklendi", 2)).toBe("2 files added to the selection");
+  } finally {
+    setLocale("tr");
+  }
+});
+
+it("displays every accepted file extension including TSV grouped by localized category across all 6 locales", () => {
+  try {
+    for (const { code } of languages) {
+      setLocale(code);
+      const { unmount } = render(<FileDropzone onFilesSelected={() => {}} />);
+      const guide = screen.getByLabelText(t("Desteklenen formatlar"));
+      const text = guide.textContent?.toLowerCase() ?? "";
+
+      for (const extension of SUPPORTED_FILE_EXTENSIONS) {
+        expect(text).toContain(extension);
+      }
+      for (const group of SUPPORTED_FORMAT_GROUPS) {
+        expect(guide).toHaveTextContent(t(group.category));
+      }
+      expect(text).not.toContain("exe");
+      unmount();
+    }
   } finally {
     setLocale("tr");
   }
