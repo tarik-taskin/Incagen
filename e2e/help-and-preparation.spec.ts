@@ -1,4 +1,5 @@
 import { Buffer } from "node:buffer";
+import { writeFileSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import tr from "../src/i18n/locales/tr.json" with { type: "json" };
@@ -241,4 +242,159 @@ test("kısmi incelemeden sonra temizlenen taslakta yeni B çalışması A onayı
   await expect(page.getByRole("heading", { name: "B Çalışması" })).toBeVisible();
   expect(requestIds).toHaveLength(2);
   expect(requestIds[1]).toBe(requestIds[0]);
+});
+
+test("B başarısızlığından sonra aynı özgün dosyalar ve başlık yeniden seçildiğinde eski A onayı yeni taslağı silmez", async ({ page }, testInfo) => {
+  const validPath = testInfo.outputPath("faaliyet.txt");
+  const invalidPath = testInfo.outputPath("bozuk.pdf");
+  writeFileSync(validPath, "A geçerli özgün faaliyet içeriği");
+  writeFileSync(invalidPath, "PDF olmayan geçersiz içerik");
+
+  await page.goto("/app/new-analysis");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await page.getByLabel("E-posta", { exact: true }).fill(`reselect-${crypto.randomUUID()}@example.test`);
+  await page.getByLabel("Parola", { exact: true }).fill("Synthetic123!");
+  await page.getByLabel("Parola tekrarı", { exact: true }).fill("Synthetic123!");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/new-analysis$/);
+
+  await page.getByLabel("İşletme adı", { exact: true }).fill("Sentetik İşletme");
+  await page.getByLabel("Analiz başlığı", { exact: true }).fill("A Özgün Başlık");
+  await page.getByLabel("Analiz hedefi", { exact: true }).fill("A özgün hedefi");
+  await page.getByLabel("Analiz edilecek dosyaları seç").setInputFiles([validPath, invalidPath]);
+  await page.getByRole("button", { name: "Belgeleri ayrıştır", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Belgeleri gözden geçirin" })).toBeVisible({ timeout: 30000 });
+
+  // Dosyaları değiştirmeden B başlığıyla yeni hazırlık başlat ve B hazırlama çağrısını kontrollü başarısız yap.
+  await page.getByRole("link", { name: "Dosyaları düzenle", exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/new-analysis$/);
+  await page.getByLabel("Analiz başlığı", { exact: true }).fill("B Başarısız İş");
+
+  let failNextPrepare = true;
+  await page.route("**/prepareAnalysis", async route => {
+    if (failNextPrepare) {
+      failNextPrepare = false;
+      await route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: { message: "Unavailable", status: "UNAVAILABLE" } }) });
+      return;
+    }
+    await route.continue();
+  });
+
+  await page.getByRole("button", { name: "Belgeleri ayrıştır", exact: true }).click();
+  await expect(page.getByRole("alert")).not.toBeEmpty({ timeout: 20000 });
+
+  // Tümünü temizle ve A ile birebir aynı başlık, hedef ve özgün disk dosyalarını yeniden seç.
+  await page.getByRole("button", { name: "Tümünü temizle", exact: true }).click();
+  await page.getByLabel("Analiz başlığı", { exact: true }).fill("A Özgün Başlık");
+  await page.getByLabel("Analiz hedefi", { exact: true }).fill("A özgün hedefi");
+  await page.getByLabel("Analiz edilecek dosyaları seç").setInputFiles([validPath, invalidPath]);
+  await expect(page.getByText("faaliyet.txt", { exact: true })).toBeVisible();
+  await expect(page.getByText("bozuk.pdf", { exact: true })).toBeVisible();
+
+  // Geçmişten eski A'yı aç ve hazır belgeyle devam et.
+  const nav = page.getByRole("navigation", { name: testInfo.project.name === "mobile-chromium" ? "Mobil navigasyon" : "Ana navigasyon" });
+  await nav.getByRole("link", { name: "Geçmiş", exact: true }).click();
+  await page.getByRole("link", { name: /A Özgün Başlık/ }).click();
+  await expect(page.getByRole("heading", { name: "Belgeleri gözden geçirin" })).toBeVisible();
+  await page.getByRole("button", { name: "Yalnız 1 belgeyle devam et", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Belgelerin içeriği ayrıştırıldı" })).toBeVisible({ timeout: 30000 });
+
+  // Yeni Analiz'e dönüldüğünde yeniden seçilen taslak korunmuş olmalı.
+  await nav.getByRole("link", { name: "Yeni analiz", exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/new-analysis$/);
+  const selectedFiles = page.getByRole("list", { name: "Seçilen dosyalar" });
+  await expect(selectedFiles.getByText("faaliyet.txt", { exact: true })).toBeVisible();
+  await expect(selectedFiles.getByText("bozuk.pdf", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Analiz başlığı", { exact: true })).toHaveValue("A Özgün Başlık");
+  await expect(page.getByLabel("Analiz hedefi", { exact: true })).toHaveValue("A özgün hedefi");
+});
+
+test("ready: false bekleme bildirimi Geçmiş ekranında kayıt emülatörde tamamlanınca otomatik hazır sonucuna geçer", async ({ page }, testInfo) => {
+  await page.goto("/app/new-analysis");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await page.getByLabel("E-posta", { exact: true }).fill(`live-watch-${crypto.randomUUID()}@example.test`);
+  await page.getByLabel("Parola", { exact: true }).fill("Synthetic123!");
+  await page.getByLabel("Parola tekrarı", { exact: true }).fill("Synthetic123!");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/new-analysis$/);
+
+  await page.getByLabel("İşletme adı", { exact: true }).fill("Sentetik İşletme");
+  await page.getByLabel("Analiz başlığı", { exact: true }).fill("Canlı Takip");
+  await page.getByLabel("Analiz hedefi", { exact: true }).fill("Gerçek kayıt tamamlamasını izle");
+  await page.getByLabel("Analiz edilecek dosyaları seç").setInputFiles({
+    name: "takip.txt", mimeType: "text/plain", buffer: Buffer.from("Canlı takip belgesi metin içeriği."),
+  });
+
+  let capturedAuth = "";
+  let capturedUid = "";
+  let capturedAnalysisId = "";
+  let intercepted = false;
+  let releasePrepare!: () => void;
+  const prepareGate = new Promise<void>(resolve => { releasePrepare = resolve; });
+  let markPrepareSeen!: () => void;
+  const prepareSeen = new Promise<void>(resolve => { markPrepareSeen = resolve; });
+  await page.route("**/prepareAnalysis", async route => {
+    if (!intercepted) {
+      intercepted = true;
+      capturedAuth = route.request().headers().authorization ?? "";
+      const tokenPayload = JSON.parse(Buffer.from(capturedAuth.replace(/^Bearer\s+/i, "").split(".")[1], "base64url").toString("utf8")) as { user_id?: string };
+      capturedUid = tokenPayload.user_id ?? "";
+      capturedAnalysisId = (route.request().postDataJSON() as { data?: { id?: string } })?.data?.id ?? "";
+      markPrepareSeen();
+      await prepareGate;
+      const docUrl = `http://127.0.0.1:8080/v1/projects/demo-incagen/databases/(default)/documents/users/${capturedUid}/analyses/${capturedAnalysisId}?updateMask.fieldPaths=status&updateMask.fieldPaths=updatedAt`;
+      const patch = await fetch(docUrl, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer owner" },
+        body: JSON.stringify({ fields: { status: { stringValue: "processing" }, updatedAt: { integerValue: String(Date.now()) } } }),
+      });
+      expect(patch.ok).toBe(true);
+    }
+    await route.continue();
+  });
+
+  const prepareResponsePromise = page.waitForResponse("**/prepareAnalysis");
+  try {
+    await page.getByRole("button", { name: "Belgeleri ayrıştır", exact: true }).click();
+    await prepareSeen;
+
+    // Hazırlama yanıtı dönmeden Geçmiş'e geç; sunucu { ready: false } yanıtını Geçmiş ekranındayken al.
+    const nav = page.getByRole("navigation", { name: testInfo.project.name === "mobile-chromium" ? "Mobil navigasyon" : "Ana navigasyon" });
+    await nav.getByRole("link", { name: "Geçmiş", exact: true }).click();
+    await expect(page).toHaveURL(/\/app\/history$/);
+
+    releasePrepare();
+    await prepareResponsePromise;
+  } finally {
+    releasePrepare();
+  }
+
+  const statusBanner = page.getByRole("region", { name: "Belge hazırlama durumu", exact: true });
+  await expect(statusBanner.getByRole("link", { name: "İşlemi izle", exact: true })).toBeVisible({ timeout: 20000 });
+  await expect(statusBanner.getByRole("button", { name: "Kapat", exact: true })).toBeVisible();
+  const card = page.getByRole("listitem").filter({ has: page.getByRole("link", { name: /Canlı Takip/ }) });
+  await expect(card).toContainText("Veriler hesaplanıyor");
+
+  // Aynı kaydı arka planda gerçek Firebase Functions emülatöründe tamamla (lease süresini aşmış gibi updatedAt=1 yapıp prepareAnalysis çalıştır).
+  const expireUrl = `http://127.0.0.1:8080/v1/projects/demo-incagen/databases/(default)/documents/users/${capturedUid}/analyses/${capturedAnalysisId}?updateMask.fieldPaths=updatedAt`;
+  await fetch(expireUrl, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: "Bearer owner" },
+    body: JSON.stringify({ fields: { updatedAt: { integerValue: "1" } } }),
+  });
+  const fnResponse = await fetch("http://127.0.0.1:5001/demo-incagen/europe-west1/prepareAnalysis", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: capturedAuth },
+    body: JSON.stringify({ data: { id: capturedAnalysisId } }),
+  });
+  expect(fnResponse.ok).toBe(true);
+
+  await expect(card).toContainText("Analize hazır", { timeout: 20000 });
+  await expect(statusBanner).toContainText("Belgeleriniz hazır", { timeout: 20000 });
+  await expect(statusBanner.getByRole("link", { name: "Hazırlık özetini aç", exact: true })).toBeVisible();
+  await expect(statusBanner.getByRole("link", { name: "İşlemi izle", exact: true })).toHaveCount(0);
+
+  await statusBanner.getByRole("link", { name: "Hazırlık özetini aç", exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`/app/analyses/${capturedAnalysisId}$`), { timeout: 20000 });
+  await expect(page.getByRole("heading", { name: "Belgelerin içeriği ayrıştırıldı" })).toBeVisible();
 });

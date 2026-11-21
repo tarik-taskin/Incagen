@@ -6,15 +6,31 @@ import { WorkspaceProvider } from "./workspace-provider";
 import { PreparationProgress } from "./upload/preparation-progress";
 import { useWorkspace } from "../lib/workspace-context";
 
-const api = vi.hoisted(() => ({ create: vi.fn(), prepare: vi.fn(), upload: vi.fn(), afterPrepareStatus: "" as string, docError: "", docExists: true }));
+const api = vi.hoisted(() => ({
+  create: vi.fn(),
+  prepare: vi.fn(),
+  upload: vi.fn(),
+  afterPrepareStatus: "" as string,
+  docError: "",
+  docExists: true,
+  listeners: new Set<(snap: { exists: () => boolean; data: () => Record<string, unknown> }) => void>(),
+  unsubscribedCount: 0,
+}));
 vi.mock("../lib/deployment-mode", () => ({ authOnlyPreview: false }));
 vi.mock("../lib/firebase", () => ({ getServices: () => ({ auth: { currentUser: { uid: "synthetic-user" } }, functions: {}, storage: {}, db: {} }) }));
 vi.mock("firebase/functions", () => ({ httpsCallable: (_service: unknown, name: string) => name === "createAnalysis" ? api.create : api.prepare }));
 vi.mock("firebase/firestore", () => ({
-  doc: vi.fn(),
+  doc: vi.fn((_db: unknown, ...segments: string[]) => segments.join("/")),
   getDoc: async () => {
     const status = api.prepare.mock.calls.length > 0 && api.afterPrepareStatus ? api.afterPrepareStatus : "uploading";
     return { exists: () => api.docExists, data: () => ({ status, error: api.docError }) };
+  },
+  onSnapshot: (_ref: unknown, onNext: (snap: { exists: () => boolean; data: () => Record<string, unknown> }) => void) => {
+    api.listeners.add(onNext);
+    return () => {
+      api.listeners.delete(onNext);
+      api.unsubscribedCount++;
+    };
   },
 }));
 vi.mock("firebase/storage", () => ({ ref: vi.fn(), uploadBytesResumable: api.upload }));
@@ -34,7 +50,7 @@ let uploads: { progress: (snapshot: { bytesTransferred: number }) => void; rejec
 function Probe({ compact = false }: { compact?: boolean }) {
   const workspace = useWorkspace();
   return <>
-    <input aria-label="files" type="file" onChange={event => workspace.selection.addFiles(Array.from(event.target.files ?? []))} />
+    <input aria-label="files" type="file" onChange={event => { workspace.selection.addFiles(Array.from(event.target.files ?? [])); event.target.value = ""; }} />
     <button onClick={() => workspace.setDraft(() => ({ title: "Sentetik analiz", business: "Sentetik işletme", objective: "Gelir değişimini incele" }))}>Fill</button>
     <button onClick={() => workspace.setDraft(() => ({ title: "B çalışması", business: "Sentetik işletme", objective: "B hedefi" }))}>FillB</button>
     <button onClick={() => workspace.setDraft(current => ({ ...current, title: "Yeni yerel taslak" }))}>EditTitle</button>
@@ -72,6 +88,7 @@ function leavingIsPrevented() {
 beforeEach(() => {
   vi.clearAllMocks();
   api.afterPrepareStatus = ""; api.docError = ""; api.docExists = true;
+  api.listeners.clear(); api.unsubscribedCount = 0;
   create = deferred(); prepare = deferred(); uploads = [];
   api.create.mockImplementation(() => create.promise);
   api.prepare.mockImplementation(() => prepare.promise);
@@ -300,5 +317,113 @@ describe("Gerçek hazırlama aşamaları ve taslak", () => {
     await act(async () => prepare.resolve({ data: { ready: false } }));
     expect(screen.getByText("Bazı belgeler inceleme bekliyor")).toBeVisible();
     expect(screen.getByRole("link", { name: "İncelemeyi aç" })).toHaveAttribute("href", "/app/analyses/review-3");
+  });
+
+  it("B hazırlama hatasından sonra tümü temizlenip aynı A dosyaları ve başlık/hedef yeniden seçildiğinde eski A onayı yeni taslağı temizlemez", async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter><WorkspaceProvider><Probe compact /></WorkspaceProvider></MemoryRouter>);
+    const sharedFile = new File(["aaaa"], "ozgun.txt", { type: "text/plain", lastModified: 1700000000000 });
+    await user.click(screen.getByText("Fill"));
+    await user.upload(screen.getByLabelText("files"), sharedFile);
+
+    await user.click(screen.getByText("Start"));
+    await act(async () => create.resolve({ data: { id: "review-a", paths: ["path-a"] } }));
+    await waitFor(() => expect(uploads).toHaveLength(1));
+    await act(async () => uploads[0].finish());
+    await act(async () => prepare.resolve({ data: { ready: false, needsReview: true } }));
+
+    // Dosyaları değiştirmeden yalnız başlığı B'ye çevirip başarısız olan B hazırlığını başlat.
+    await user.click(screen.getByText("FillB"));
+    create = deferred();
+    prepare = deferred();
+    await user.click(screen.getByText("Start"));
+    await act(async () => create.resolve({ data: { id: "failed-b", paths: ["path-b"] } }));
+    await waitFor(() => expect(uploads).toHaveLength(2));
+    await act(async () => uploads[1].finish());
+    await act(async () => prepare.reject(Object.assign(new Error("Unavailable"), { code: "functions/unavailable" })));
+
+    // Tümünü temizle ve aynı özgün dosya + A başlığı/hedefini yeni taslak örneği olarak yeniden seç.
+    await user.click(screen.getByText("Clear"));
+    await user.click(screen.getByText("Fill"));
+    await user.upload(screen.getByLabelText("files"), sharedFile);
+    expect(screen.getByTestId("count")).toHaveTextContent("1");
+    expect(screen.getByTestId("title")).toHaveTextContent("Sentetik analiz");
+
+    // Eski A kısmi onayı tamamlansa bile yeni taslak örneği kesinlikle temizlenmez.
+    await user.click(screen.getByText("CompleteA"));
+    expect(screen.getByTestId("count")).toHaveTextContent("1");
+    expect(screen.getByTestId("title")).toHaveTextContent("Sentetik analiz");
+    expect(screen.getByTestId("objective")).toHaveTextContent("Gelir değişimini incele");
+  });
+
+  it("bekleme bildirimini canlı Firestore kaydıyla günceller ve sonuç, silinme, kapatma ile unmount sonrasında dinleyiciyi bırakır", async () => {
+    const { user, unmount } = await setup(true);
+    api.afterPrepareStatus = "processing";
+    await user.click(screen.getByText("Start"));
+    await act(async () => create.resolve({ data: { id: "proc-live-1", paths: ["path-1"] } }));
+    await waitFor(() => expect(uploads).toHaveLength(1));
+    await act(async () => uploads[0].finish());
+    await act(async () => prepare.resolve({ data: { ready: false } }));
+
+    expect(screen.getByRole("link", { name: "İşlemi izle" })).toHaveAttribute("href", "/app/analyses/proc-live-1");
+    await waitFor(() => expect(api.listeners.size).toBe(1));
+
+    // Kayıt completed olduğunda üst bildirim otomatik Hazırlık özetini aç olur ve dinleyici bırakılır.
+    await act(async () => {
+      for (const listener of api.listeners) listener({ exists: () => true, data: () => ({ status: "completed" }) });
+    });
+    expect(screen.getByText("Belgeleriniz hazır")).toBeVisible();
+    expect(screen.getByRole("link", { name: "Hazırlık özetini aç" })).toHaveAttribute("href", "/app/analyses/proc-live-1");
+    expect(api.listeners.size).toBe(0);
+    expect(api.unsubscribedCount).toBe(1);
+
+    // Yeni bekleme kaydı silindiğinde bildirim kapanır ve dinleyici bırakılır.
+    create = deferred();
+    prepare = deferred();
+    api.prepare.mockClear();
+    await user.click(screen.getByText("Fill"));
+    await user.upload(screen.getByLabelText("files"), new File(["bb"], "ikinci.txt", { type: "text/plain" }));
+    await user.click(screen.getByText("Start"));
+    await act(async () => create.resolve({ data: { id: "proc-live-2", paths: ["path-2"] } }));
+    await waitFor(() => expect(uploads).toHaveLength(2));
+    await act(async () => uploads[1].finish());
+    await act(async () => prepare.resolve({ data: { ready: false } }));
+    await waitFor(() => expect(api.listeners.size).toBe(1));
+
+    await act(async () => {
+      for (const listener of api.listeners) listener({ exists: () => false, data: () => ({}) });
+    });
+    expect(screen.queryByRole("link", { name: "İşlemi izle" })).not.toBeInTheDocument();
+    expect(api.listeners.size).toBe(0);
+    expect(api.unsubscribedCount).toBe(2);
+
+    // Bildirim kapatıldığında ve oturum/bileşen unmount olduğunda takip durur.
+    create = deferred();
+    prepare = deferred();
+    api.prepare.mockClear();
+    await user.click(screen.getByText("Start"));
+    await act(async () => create.resolve({ data: { id: "proc-live-3", paths: ["path-3"] } }));
+    await waitFor(() => expect(uploads).toHaveLength(3));
+    await act(async () => uploads[2].finish());
+    await act(async () => prepare.resolve({ data: { ready: false } }));
+    await waitFor(() => expect(api.listeners.size).toBe(1));
+
+    await user.click(screen.getByRole("button", { name: "Kapat" }));
+    expect(api.listeners.size).toBe(0);
+    expect(api.unsubscribedCount).toBe(3);
+
+    create = deferred();
+    prepare = deferred();
+    api.prepare.mockClear();
+    await user.click(screen.getByText("Start"));
+    await act(async () => create.resolve({ data: { id: "proc-live-4", paths: ["path-4"] } }));
+    await waitFor(() => expect(uploads).toHaveLength(4));
+    await act(async () => uploads[3].finish());
+    await act(async () => prepare.resolve({ data: { ready: false } }));
+    await waitFor(() => expect(api.listeners.size).toBe(1));
+
+    unmount();
+    expect(api.listeners.size).toBe(0);
+    expect(api.unsubscribedCount).toBe(4);
   });
 });

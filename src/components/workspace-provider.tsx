@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { httpsCallable } from "firebase/functions";
 import { ref, uploadBytesResumable, type UploadTask } from "firebase/storage";
-import { getDoc, doc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { ANALYSIS_OBJECTIVE_MAX_LENGTH, createSchema, LIMITS, type CreateAnalysis } from "../../functions/src/contracts";
 import { useFileSelectionState } from "../hooks/use-file-selection";
 import { type PreparedFile } from "../features/files/file-rules";
@@ -44,7 +44,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const cancelled = useRef(false);
   const request = useRef<{ signature: string; id: string } | null>(null);
   const latestSignatureRef = useRef("");
-  const jobDraftSignaturesRef = useRef(new Map<string, string>());
+  const draftInstanceRef = useRef(1);
+  const jobDraftBindingsRef = useRef(new Map<string, { instanceId: number; signature: string }>());
   useBeforeUnload(selection.files.length > 0 || busy);
 
   useEffect(() => {
@@ -86,25 +87,30 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   const wrappedSelection = useMemo(() => ({
     ...selection,
-    // Yerel dosyalar tamamen temizlendiğinde eski inceleme kaydının taslak sahipliği geri gelmez.
+    // Yerel dosyalar tamamen temizlendiğinde yeni taslak örneği başlar; eski inceleme kaydının sahipliği ve eşleşmesi geri gelmez.
     removeFile: (fileId: string) => {
       const removesLastFile = selection.files.length <= 1 && selection.files.some(file => file.id === fileId);
       if (removesLastFile) {
-        if (draftAnalysisId) jobDraftSignaturesRef.current.delete(draftAnalysisId);
+        draftInstanceRef.current += 1;
+        request.current = null;
+        if (draftAnalysisId) jobDraftBindingsRef.current.delete(draftAnalysisId);
         setDraftAnalysisId("");
       }
       selection.removeFile(fileId);
     },
     clearFiles: () => {
-      if (draftAnalysisId) jobDraftSignaturesRef.current.delete(draftAnalysisId);
+      draftInstanceRef.current += 1;
+      request.current = null;
+      if (draftAnalysisId) jobDraftBindingsRef.current.delete(draftAnalysisId);
       setDraftAnalysisId("");
       selection.clearFiles();
     },
   }), [selection, draftAnalysisId]);
 
-  // Yalnız gönderilenle hâlâ aynı kalan taslağın dosya, başlık ve hedefini temizler; işletme ve diğer istek kimlikleri kalır.
-  function clearMatchedDraft(expectedSignature: string) {
-    if (latestSignatureRef.current !== expectedSignature) return;
+  // Yalnız aynı taslak örneğinde gönderilenle hâlâ birebir eşleşen taslağın dosya, başlık ve hedefini temizler; işletme ve diğer işler kalır.
+  function clearMatchedDraft(expectedInstanceId: number, expectedSignature: string) {
+    if (draftInstanceRef.current !== expectedInstanceId || latestSignatureRef.current !== expectedSignature) return;
+    draftInstanceRef.current += 1;
     selection.clearFiles();
     setDraftState(current => ({ draft: { ...current.draft, title: "", objective: "" }, originalObjective: null }));
     setDraftAnalysisId("");
@@ -114,6 +120,63 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       request.current = null;
     }
   }
+
+  const clearMatchedDraftRef = useRef(clearMatchedDraft);
+  useLayoutEffect(() => {
+    clearMatchedDraftRef.current = clearMatchedDraft;
+  });
+
+  const processingOutcomeId = outcome?.kind === "processing" ? outcome.id : "";
+  // İlk hazırlama yanıtı sürmekte olan kaydı gösterirken canlı Firestore belgesini tek dinleyiciyle izler; sonuç, silme, kapatma veya oturum değişiminde bırakır.
+  useEffect(() => {
+    if (!processingOutcomeId || authOnlyPreview) return;
+    const services = getServices();
+    const uid = services.auth.currentUser?.uid;
+    if (!uid) return;
+    const unsubscribe = onSnapshot(
+      doc(services.db, "users", uid, "analyses", processingOutcomeId),
+      snap => {
+        if (!active.current || getServices().auth.currentUser?.uid !== uid) return;
+        if (!snap.exists()) {
+          jobDraftBindingsRef.current.delete(processingOutcomeId);
+          setOutcome(current => current?.kind === "processing" && current.id === processingOutcomeId ? null : current);
+          return;
+        }
+        const data = snap.data();
+        const nextStatus = data?.status;
+        if (nextStatus === "completed") {
+          const binding = jobDraftBindingsRef.current.get(processingOutcomeId);
+          if (binding) {
+            jobDraftBindingsRef.current.delete(processingOutcomeId);
+            clearMatchedDraftRef.current(binding.instanceId, binding.signature);
+          }
+          setOutcome({ kind: "ready", id: processingOutcomeId });
+          return;
+        }
+        if (nextStatus === "review") {
+          setOutcome({ kind: "review", id: processingOutcomeId });
+          return;
+        }
+        if (nextStatus === "failed") {
+          const message = typeof data?.error === "string" && data.error ? data.error : "Belgeler hazırlanamadı.";
+          setError(message);
+          setOutcome({ kind: "failed", id: processingOutcomeId, message });
+          return;
+        }
+        if (nextStatus === "deleting") {
+          jobDraftBindingsRef.current.delete(processingOutcomeId);
+          setOutcome(current => current?.kind === "processing" && current.id === processingOutcomeId ? null : current);
+        }
+      },
+      () => {
+        if (!active.current) return;
+        setOutcome(current => current?.kind === "processing" && current.id === processingOutcomeId ? null : current);
+      },
+    );
+    return () => {
+      unsubscribe();
+    };
+  }, [processingOutcomeId]);
 
   // Aynı taslağı tekrar gönderirken aynı istek kimliğini kullanarak ağ belirsizliğinde çift iş açmaz.
   async function start() {
@@ -129,14 +192,20 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       files: selection.files.map(({ file }) => ({ name: file.name, size: file.size, contentType: file.type || "application/octet-stream" })),
     };
     const signature = buildDraftSignature(draft, selection.files);
-    if (!request.current || request.current.signature !== signature) request.current = { signature, id: crypto.randomUUID() };
-    const parsed = createSchema.safeParse({ ...body, requestId: request.current.id });
+    const isSamePendingRetry = request.current?.signature === signature;
+    const candidateRequestId = isSamePendingRetry ? request.current!.id : crypto.randomUUID();
+    const parsed = createSchema.safeParse({ ...body, requestId: candidateRequestId });
     if (!parsed.success) {
       setError(parsed.error.issues.some(issue => issue.path[0] === "objective")
         ? `Analiz hedefini belirtin (en fazla ${ANALYSIS_OBJECTIVE_MAX_LENGTH} karakter).`
         : `İşletme ve analiz başlığını doldurun. Free sınırları: ${LIMITS.files} dosya ve toplam ${LIMITS.totalBytes / 1024 ** 2} MB/analiz.`);
       return;
     }
+    if (!isSamePendingRetry) {
+      request.current = { signature, id: candidateRequestId };
+      draftInstanceRef.current += 1;
+    }
+    const submittedInstanceId = draftInstanceRef.current;
     const expectedUid = getServices().auth.currentUser?.uid;
     const isSameSession = () => active.current && getServices().auth.currentUser?.uid === expectedUid;
     let createdId = "";
@@ -149,9 +218,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       if (!isSameSession()) return;
       if (cancelled.current) throw new Error("Yükleme iptal edildi.");
       createdId = data.id;
-      jobDraftSignaturesRef.current.set(createdId, signature);
+      jobDraftBindingsRef.current.set(createdId, { instanceId: submittedInstanceId, signature });
       setActiveId(createdId);
-      setDraftAnalysisId(latestSignatureRef.current === signature ? createdId : "");
+      setDraftAnalysisId(draftInstanceRef.current === submittedInstanceId && latestSignatureRef.current === signature ? createdId : "");
       const uid = services.auth.currentUser!.uid;
       const existing = await getDoc(doc(services.db, "users", uid, "analyses", createdId));
       if (!isSameSession()) return;
@@ -159,8 +228,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       if (["processing", "review", "completed"].includes(existingStatus)) {
         const ready = existingStatus === "completed";
         if (ready) {
-          jobDraftSignaturesRef.current.delete(createdId);
-          clearMatchedDraft(signature);
+          jobDraftBindingsRef.current.delete(createdId);
+          clearMatchedDraft(submittedInstanceId, signature);
           setOutcome({ kind: "ready", id: createdId });
         } else if (existingStatus === "review") {
           setOutcome({ kind: "review", id: createdId });
@@ -193,8 +262,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       const result = await httpsCallable<{ id: string }, { needsReview?: boolean; ready: boolean }>(services.functions, "prepareAnalysis", { timeout: 310_000 })({ id: createdId });
       if (!isSameSession()) return;
       if (result.data.ready === true) {
-        jobDraftSignaturesRef.current.delete(createdId);
-        clearMatchedDraft(signature);
+        jobDraftBindingsRef.current.delete(createdId);
+        clearMatchedDraft(submittedInstanceId, signature);
         setOutcome({ kind: "ready", id: createdId });
         return { id: createdId, ready: true };
       }
@@ -207,8 +276,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       if (!isSameSession()) return;
       const latestStatus = latest.exists() ? latest.data()?.status : undefined;
       if (latestStatus === "completed") {
-        jobDraftSignaturesRef.current.delete(createdId);
-        clearMatchedDraft(signature);
+        jobDraftBindingsRef.current.delete(createdId);
+        clearMatchedDraft(submittedInstanceId, signature);
         setOutcome({ kind: "ready", id: createdId });
         return { id: createdId, ready: true };
       }
@@ -244,13 +313,13 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       }
     }
   }
-  // Yalnız onaylanan kaydın kendi gönderilmiş taslağı hâlâ eşleşiyorsa bir kez temizler; işletme ve diğer işler korunur.
+  // Yalnız onaylanan kaydın aynı taslak örneği ve imzası hâlâ eşleşiyorsa bir kez temizler; işletme ve yeni seçilen taslaklar korunur.
   function completeDraft(analysisId: string) {
     if (!analysisId) return;
-    const submittedSignature = jobDraftSignaturesRef.current.get(analysisId);
-    if (!submittedSignature) return;
-    jobDraftSignaturesRef.current.delete(analysisId);
-    clearMatchedDraft(submittedSignature);
+    const binding = jobDraftBindingsRef.current.get(analysisId);
+    if (!binding) return;
+    jobDraftBindingsRef.current.delete(analysisId);
+    clearMatchedDraft(binding.instanceId, binding.signature);
   }
   function cancel() { cancelled.current = true; task.current?.cancel(); }
   const ownedDraftAnalysisId = selection.files.length > 0 ? draftAnalysisId : "";
