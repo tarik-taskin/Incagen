@@ -26,6 +26,7 @@ export interface WorkspaceState {
   uploadingFile: UploadingFile | null;
   outcome: PreparationOutcome | null;
   dismissOutcome: () => void;
+  closeOutcome?: () => void;
   start: () => Promise<{ id: string; ready: boolean } | undefined>;
   completeDraft: (analysisId: string) => void;
   cancel: () => void;

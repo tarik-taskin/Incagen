@@ -309,22 +309,8 @@ test("B başarısızlığından sonra aynı özgün dosyalar ve başlık yeniden
   await expect(page.getByLabel("Analiz hedefi", { exact: true })).toHaveValue("A özgün hedefi");
 });
 
-test("ready: false bekleme bildirimi Geçmiş ekranında kayıt emülatörde tamamlanınca otomatik hazır sonucuna geçer", async ({ page }, testInfo) => {
-  await page.goto("/app/new-analysis");
-  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
-  await page.getByLabel("E-posta", { exact: true }).fill(`live-watch-${crypto.randomUUID()}@example.test`);
-  await page.getByLabel("Parola", { exact: true }).fill("Synthetic123!");
-  await page.getByLabel("Parola tekrarı", { exact: true }).fill("Synthetic123!");
-  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
-  await expect(page).toHaveURL(/\/app\/new-analysis$/);
-
-  await page.getByLabel("İşletme adı", { exact: true }).fill("Sentetik İşletme");
-  await page.getByLabel("Analiz başlığı", { exact: true }).fill("Canlı Takip");
-  await page.getByLabel("Analiz hedefi", { exact: true }).fill("Gerçek kayıt tamamlamasını izle");
-  await page.getByLabel("Analiz edilecek dosyaları seç").setInputFiles({
-    name: "takip.txt", mimeType: "text/plain", buffer: Buffer.from("Canlı takip belgesi metin içeriği."),
-  });
-
+// İlk prepareAnalysis yanıtını kontrollü şekilde bekleyen ("processing") duruma çevirir ve ardından emülatörde tamamlanmasını sağlar.
+async function setupPendingPrepareEmulator(page: Page) {
   let capturedAuth = "";
   let capturedUid = "";
   let capturedAnalysisId = "";
@@ -333,6 +319,7 @@ test("ready: false bekleme bildirimi Geçmiş ekranında kayıt emülatörde tam
   const prepareGate = new Promise<void>(resolve => { releasePrepare = resolve; });
   let markPrepareSeen!: () => void;
   const prepareSeen = new Promise<void>(resolve => { markPrepareSeen = resolve; });
+
   await page.route("**/prepareAnalysis", async route => {
     if (!intercepted) {
       intercepted = true;
@@ -353,29 +340,15 @@ test("ready: false bekleme bildirimi Geçmiş ekranında kayıt emülatörde tam
     await route.continue();
   });
 
-  const prepareResponsePromise = page.waitForResponse("**/prepareAnalysis");
-  try {
-    await page.getByRole("button", { name: "Belgeleri ayrıştır", exact: true }).click();
-    await prepareSeen;
+  return {
+    prepareSeen,
+    releasePrepare,
+    state: () => ({ capturedAuth, capturedUid, capturedAnalysisId }),
+  };
+}
 
-    // Hazırlama yanıtı dönmeden Geçmiş'e geç; sunucu { ready: false } yanıtını Geçmiş ekranındayken al.
-    const nav = page.getByRole("navigation", { name: testInfo.project.name === "mobile-chromium" ? "Mobil navigasyon" : "Ana navigasyon" });
-    await nav.getByRole("link", { name: "Geçmiş", exact: true }).click();
-    await expect(page).toHaveURL(/\/app\/history$/);
-
-    releasePrepare();
-    await prepareResponsePromise;
-  } finally {
-    releasePrepare();
-  }
-
-  const statusBanner = page.getByRole("region", { name: "Belge hazırlama durumu", exact: true });
-  await expect(statusBanner.getByRole("link", { name: "İşlemi izle", exact: true })).toBeVisible({ timeout: 20000 });
-  await expect(statusBanner.getByRole("button", { name: "Kapat", exact: true })).toBeVisible();
-  const card = page.getByRole("listitem").filter({ has: page.getByRole("link", { name: /Canlı Takip/ }) });
-  await expect(card).toContainText("Veriler hesaplanıyor");
-
-  // Aynı kaydı arka planda gerçek Firebase Functions emülatöründe tamamla (lease süresini aşmış gibi updatedAt=1 yapıp prepareAnalysis çalıştır).
+// Bekleyen işi lease süresini aşmış gibi güncelleyip gerçek Functions emülatöründe tamamlar.
+async function completePendingPrepareEmulator({ capturedAuth, capturedUid, capturedAnalysisId }: { capturedAuth: string; capturedUid: string; capturedAnalysisId: string }) {
   const expireUrl = `http://127.0.0.1:8080/v1/projects/demo-incagen/databases/(default)/documents/users/${capturedUid}/analyses/${capturedAnalysisId}?updateMask.fieldPaths=updatedAt`;
   await fetch(expireUrl, {
     method: "PATCH",
@@ -388,6 +361,49 @@ test("ready: false bekleme bildirimi Geçmiş ekranında kayıt emülatörde tam
     body: JSON.stringify({ data: { id: capturedAnalysisId } }),
   });
   expect(fnResponse.ok).toBe(true);
+}
+
+test("ready: false bekleme bildirimi Geçmiş ekranında kayıt emülatörde tamamlanınca otomatik hazır sonucuna geçer", async ({ page }, testInfo) => {
+  await page.goto("/app/new-analysis");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await page.getByLabel("E-posta", { exact: true }).fill(`live-watch-${crypto.randomUUID()}@example.test`);
+  await page.getByLabel("Parola", { exact: true }).fill("Synthetic123!");
+  await page.getByLabel("Parola tekrarı", { exact: true }).fill("Synthetic123!");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/new-analysis$/);
+
+  await page.getByLabel("İşletme adı", { exact: true }).fill("Sentetik İşletme");
+  await page.getByLabel("Analiz başlığı", { exact: true }).fill("Canlı Takip");
+  await page.getByLabel("Analiz hedefi", { exact: true }).fill("Gerçek kayıt tamamlamasını izle");
+  await page.getByLabel("Analiz edilecek dosyaları seç").setInputFiles({
+    name: "takip.txt", mimeType: "text/plain", buffer: Buffer.from("Canlı takip belgesi metin içeriği."),
+  });
+
+  const pending = await setupPendingPrepareEmulator(page);
+  const prepareResponsePromise = page.waitForResponse("**/prepareAnalysis");
+  try {
+    await page.getByRole("button", { name: "Belgeleri ayrıştır", exact: true }).click();
+    await pending.prepareSeen;
+
+    // Hazırlama yanıtı dönmeden Geçmiş'e geç; sunucu { ready: false } yanıtını Geçmiş ekranındayken al.
+    const nav = page.getByRole("navigation", { name: testInfo.project.name === "mobile-chromium" ? "Mobil navigasyon" : "Ana navigasyon" });
+    await nav.getByRole("link", { name: "Geçmiş", exact: true }).click();
+    await expect(page).toHaveURL(/\/app\/history$/);
+
+    pending.releasePrepare();
+    await prepareResponsePromise;
+  } finally {
+    pending.releasePrepare();
+  }
+
+  const { capturedAnalysisId } = pending.state();
+  const statusBanner = page.getByRole("region", { name: "Belge hazırlama durumu", exact: true });
+  await expect(statusBanner.getByRole("link", { name: "İşlemi izle", exact: true })).toBeVisible({ timeout: 20000 });
+  await expect(statusBanner.getByRole("button", { name: "Kapat", exact: true })).toBeVisible();
+  const card = page.getByRole("listitem").filter({ has: page.getByRole("link", { name: /Canlı Takip/ }) });
+  await expect(card).toContainText("Veriler hesaplanıyor");
+
+  await completePendingPrepareEmulator(pending.state());
 
   await expect(card).toContainText("Analize hazır", { timeout: 20000 });
   await expect(statusBanner).toContainText("Belgeleriniz hazır", { timeout: 20000 });
@@ -397,4 +413,98 @@ test("ready: false bekleme bildirimi Geçmiş ekranında kayıt emülatörde tam
   await statusBanner.getByRole("link", { name: "Hazırlık özetini aç", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`/app/analyses/${capturedAnalysisId}$`), { timeout: 20000 });
   await expect(page.getByRole("heading", { name: "Belgelerin içeriği ayrıştırıldı" })).toBeVisible();
+});
+
+test("ready: false sonrası otomatik açılan rapor tamamlanınca dönülen Yeni Analiz taslağı temizler ve işletmeyi korur", async ({ page }) => {
+  await page.goto("/app/new-analysis");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await page.getByLabel("E-posta", { exact: true }).fill(`auto-pending-${crypto.randomUUID()}@example.test`);
+  await page.getByLabel("Parola", { exact: true }).fill("Synthetic123!");
+  await page.getByLabel("Parola tekrarı", { exact: true }).fill("Synthetic123!");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/new-analysis$/);
+
+  await page.getByLabel("İşletme adı", { exact: true }).fill("Sentetik İşletme");
+  await page.getByLabel("Analiz başlığı", { exact: true }).fill("Otomatik Geçiş");
+  await page.getByLabel("Analiz hedefi", { exact: true }).fill("Otomatik geçiş hedefi");
+  await page.getByLabel("Analiz edilecek dosyaları seç").setInputFiles({
+    name: "oto-takip.txt", mimeType: "text/plain", buffer: Buffer.from("Otomatik geçiş bekleyen belge içeriği."),
+  });
+
+  const pending = await setupPendingPrepareEmulator(page);
+  try {
+    await page.getByRole("button", { name: "Belgeleri ayrıştır", exact: true }).click();
+    await pending.prepareSeen;
+    pending.releasePrepare();
+  } finally {
+    pending.releasePrepare();
+  }
+
+  const { capturedAnalysisId } = pending.state();
+  await expect(page).toHaveURL(new RegExp(`/app/analyses/${capturedAnalysisId}$`), { timeout: 30000 });
+  await expect(page.getByRole("region", { name: "Belge hazırlama durumu", exact: true })).toHaveCount(0);
+  await expect(page.getByText("Veriler hesaplanıyor", { exact: true })).toBeVisible();
+
+  await completePendingPrepareEmulator(pending.state());
+  await expect(page.getByRole("heading", { name: "Belgelerin içeriği ayrıştırıldı" })).toBeVisible({ timeout: 20000 });
+
+  await page.getByRole("link", { name: "Yeni analiz oluştur", exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/new-analysis$/);
+  await expect(page.getByLabel("Analiz başlığı", { exact: true })).toHaveValue("");
+  await expect(page.getByLabel("Analiz hedefi", { exact: true })).toHaveValue("");
+  await expect(page.getByRole("list", { name: "Seçilen dosyalar" })).toHaveCount(0);
+  await expect(page.getByText("oto-takip.txt", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Sentetik İşletme", { exact: true })).toBeVisible();
+});
+
+test("Geçmişteki İşlemi izle ile açılan bekleyen rapor tamamlanınca dönülen Yeni Analiz taslağı temizler ve işletmeyi korur", async ({ page }, testInfo) => {
+  await page.goto("/app/new-analysis");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await page.getByLabel("E-posta", { exact: true }).fill(`watch-pending-${crypto.randomUUID()}@example.test`);
+  await page.getByLabel("Parola", { exact: true }).fill("Synthetic123!");
+  await page.getByLabel("Parola tekrarı", { exact: true }).fill("Synthetic123!");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/new-analysis$/);
+
+  await page.getByLabel("İşletme adı", { exact: true }).fill("Sentetik İşletme");
+  await page.getByLabel("Analiz başlığı", { exact: true }).fill("İzle Geçişi");
+  await page.getByLabel("Analiz hedefi", { exact: true }).fill("İzle geçiş hedefi");
+  await page.getByLabel("Analiz edilecek dosyaları seç").setInputFiles({
+    name: "izle-takip.txt", mimeType: "text/plain", buffer: Buffer.from("İzle bağlantısı bekleyen belge içeriği."),
+  });
+
+  const pending = await setupPendingPrepareEmulator(page);
+  const prepareResponsePromise = page.waitForResponse("**/prepareAnalysis");
+  try {
+    await page.getByRole("button", { name: "Belgeleri ayrıştır", exact: true }).click();
+    await pending.prepareSeen;
+
+    const nav = page.getByRole("navigation", { name: testInfo.project.name === "mobile-chromium" ? "Mobil navigasyon" : "Ana navigasyon" });
+    await nav.getByRole("link", { name: "Geçmiş", exact: true }).click();
+    await expect(page).toHaveURL(/\/app\/history$/);
+
+    pending.releasePrepare();
+    await prepareResponsePromise;
+  } finally {
+    pending.releasePrepare();
+  }
+
+  const { capturedAnalysisId } = pending.state();
+  const statusBanner = page.getByRole("region", { name: "Belge hazırlama durumu", exact: true });
+  await expect(statusBanner.getByRole("link", { name: "İşlemi izle", exact: true })).toBeVisible({ timeout: 20000 });
+  await statusBanner.getByRole("link", { name: "İşlemi izle", exact: true }).click();
+
+  await expect(page).toHaveURL(new RegExp(`/app/analyses/${capturedAnalysisId}$`), { timeout: 20000 });
+  await expect(page.getByRole("region", { name: "Belge hazırlama durumu", exact: true })).toHaveCount(0);
+
+  await completePendingPrepareEmulator(pending.state());
+  await expect(page.getByRole("heading", { name: "Belgelerin içeriği ayrıştırıldı" })).toBeVisible({ timeout: 20000 });
+
+  await page.getByRole("link", { name: "Yeni analiz oluştur", exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/new-analysis$/);
+  await expect(page.getByLabel("Analiz başlığı", { exact: true })).toHaveValue("");
+  await expect(page.getByLabel("Analiz hedefi", { exact: true })).toHaveValue("");
+  await expect(page.getByRole("list", { name: "Seçilen dosyalar" })).toHaveCount(0);
+  await expect(page.getByText("izle-takip.txt", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Sentetik İşletme", { exact: true })).toBeVisible();
 });

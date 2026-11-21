@@ -8,7 +8,7 @@ import { Button } from "../ui/button";
 export function PreparationProgress({ compact = false }: { compact?: boolean }) {
   useLocale();
   const location = useLocation();
-  const { busy, phase, progress, uploadingFile, activeId, outcome, dismissOutcome } = useWorkspace();
+  const { busy, phase, progress, uploadingFile, activeId, outcome, dismissOutcome, closeOutcome } = useWorkspace();
 
   if (busy) {
     const preparing = phase === "preparing";
@@ -107,7 +107,7 @@ export function PreparationProgress({ compact = false }: { compact?: boolean }) 
           variant="ghost"
           size="icon"
           aria-label={t("Kapat")}
-          onClick={dismissOutcome}
+          onClick={closeOutcome ?? dismissOutcome}
           className="h-8 w-8 shrink-0 rounded-lg"
         >
           <X className="h-4 w-4" aria-hidden="true" />

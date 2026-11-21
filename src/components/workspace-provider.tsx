@@ -38,6 +38,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [activeId, setActiveId] = useState("");
   const [draftAnalysisId, setDraftAnalysisId] = useState("");
   const [outcome, setOutcome] = useState<PreparationOutcome | null>(null);
+  const [pendingJob, setPendingJob] = useState<{ id: string; seq: number } | null>(null);
   const active = useRef(true);
   const task = useRef<UploadTask | null>(null);
   const lock = useRef(false);
@@ -45,12 +46,15 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const request = useRef<{ signature: string; id: string } | null>(null);
   const latestSignatureRef = useRef("");
   const draftInstanceRef = useRef(1);
+  const jobSeqRef = useRef(0);
+  const outcomeRef = useRef<PreparationOutcome | null>(null);
   const jobDraftBindingsRef = useRef(new Map<string, { instanceId: number; signature: string }>());
   useBeforeUnload(selection.files.length > 0 || busy);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     latestSignatureRef.current = buildDraftSignature(draft, selection.files);
-  }, [draft, selection.files]);
+    outcomeRef.current = outcome;
+  }, [draft, selection.files, outcome]);
 
   useEffect(() => {
     active.current = true;
@@ -81,8 +85,15 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setDraftState(current => current.originalObjective === null ? current : { draft: { ...current.draft, objective: current.originalObjective }, originalObjective: null });
   }
 
+  // Yalnız rapor veya gezinmede bildirim görünürlüğünü gizler; arka plandaki tamamlama ve taslak temizleme takibini kesmez.
   function dismissOutcome() {
     setOutcome(null);
+  }
+
+  // Kullanıcı bildirimi "Kapat" ile açıkça kapattığında bildirimi gizler ve sürmekte olan Firestore takibini durdurur.
+  function closeOutcome() {
+    setOutcome(null);
+    setPendingJob(null);
   }
 
   const wrappedSelection = useMemo(() => ({
@@ -126,57 +137,70 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     clearMatchedDraftRef.current = clearMatchedDraft;
   });
 
-  const processingOutcomeId = outcome?.kind === "processing" ? outcome.id : "";
-  // İlk hazırlama yanıtı sürmekte olan kaydı gösterirken canlı Firestore belgesini tek dinleyiciyle izler; sonuç, silme, kapatma veya oturum değişiminde bırakır.
+  const pendingJobId = pendingJob?.id ?? "";
+  const pendingJobSeq = pendingJob?.seq ?? 0;
+  // Rapor görünürlüğünden bağımsız olarak sürmekte olan kaydın Firestore belgesini tek dinleyiciyle izler; eski iş güncellemelerinin yeni işi ezmesini engeller.
   useEffect(() => {
-    if (!processingOutcomeId || authOnlyPreview) return;
+    if (!pendingJobId || authOnlyPreview) return;
     const services = getServices();
     const uid = services.auth.currentUser?.uid;
     if (!uid) return;
+    const clearPending = () => setPendingJob(current => current?.id === pendingJobId && current.seq === pendingJobSeq ? null : current);
+    const clearProcessingOutcome = (nextOutcome: PreparationOutcome | null) => {
+      setOutcome(current => current?.kind === "processing" && current.id === pendingJobId ? nextOutcome : current);
+    };
     const unsubscribe = onSnapshot(
-      doc(services.db, "users", uid, "analyses", processingOutcomeId),
+      doc(services.db, "users", uid, "analyses", pendingJobId),
       snap => {
-        if (!active.current || getServices().auth.currentUser?.uid !== uid) return;
+        if (!active.current || getServices().auth.currentUser?.uid !== uid || jobSeqRef.current !== pendingJobSeq) return;
         if (!snap.exists()) {
-          jobDraftBindingsRef.current.delete(processingOutcomeId);
-          setOutcome(current => current?.kind === "processing" && current.id === processingOutcomeId ? null : current);
+          jobDraftBindingsRef.current.delete(pendingJobId);
+          clearPending();
+          clearProcessingOutcome(null);
           return;
         }
         const data = snap.data();
         const nextStatus = data?.status;
         if (nextStatus === "completed") {
-          const binding = jobDraftBindingsRef.current.get(processingOutcomeId);
+          const binding = jobDraftBindingsRef.current.get(pendingJobId);
           if (binding) {
-            jobDraftBindingsRef.current.delete(processingOutcomeId);
+            jobDraftBindingsRef.current.delete(pendingJobId);
             clearMatchedDraftRef.current(binding.instanceId, binding.signature);
           }
-          setOutcome({ kind: "ready", id: processingOutcomeId });
+          clearPending();
+          clearProcessingOutcome({ kind: "ready", id: pendingJobId });
           return;
         }
         if (nextStatus === "review") {
-          setOutcome({ kind: "review", id: processingOutcomeId });
+          clearPending();
+          clearProcessingOutcome({ kind: "review", id: pendingJobId });
           return;
         }
         if (nextStatus === "failed") {
           const message = typeof data?.error === "string" && data.error ? data.error : "Belgeler hazırlanamadı.";
-          setError(message);
-          setOutcome({ kind: "failed", id: processingOutcomeId, message });
+          clearPending();
+          if (outcomeRef.current?.kind === "processing" && outcomeRef.current.id === pendingJobId) {
+            setError(message);
+          }
+          clearProcessingOutcome({ kind: "failed", id: pendingJobId, message });
           return;
         }
         if (nextStatus === "deleting") {
-          jobDraftBindingsRef.current.delete(processingOutcomeId);
-          setOutcome(current => current?.kind === "processing" && current.id === processingOutcomeId ? null : current);
+          jobDraftBindingsRef.current.delete(pendingJobId);
+          clearPending();
+          clearProcessingOutcome(null);
         }
       },
       () => {
-        if (!active.current) return;
-        setOutcome(current => current?.kind === "processing" && current.id === processingOutcomeId ? null : current);
+        if (!active.current || getServices().auth.currentUser?.uid !== uid || jobSeqRef.current !== pendingJobSeq) return;
+        clearPending();
+        clearProcessingOutcome(null);
       },
     );
     return () => {
       unsubscribe();
     };
-  }, [processingOutcomeId]);
+  }, [pendingJobId, pendingJobSeq]);
 
   // Aynı taslağı tekrar gönderirken aynı istek kimliğini kullanarak ağ belirsizliğinde çift iş açmaz.
   async function start() {
@@ -201,6 +225,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         : `İşletme ve analiz başlığını doldurun. Free sınırları: ${LIMITS.files} dosya ve toplam ${LIMITS.totalBytes / 1024 ** 2} MB/analiz.`);
       return;
     }
+    const submittedSeq = (jobSeqRef.current += 1);
+    setPendingJob(null);
     if (!isSamePendingRetry) {
       request.current = { signature, id: candidateRequestId };
       draftInstanceRef.current += 1;
@@ -235,6 +261,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
           setOutcome({ kind: "review", id: createdId });
         } else {
           setOutcome({ kind: "processing", id: createdId });
+          setPendingJob({ id: createdId, seq: submittedSeq });
         }
         return { id: createdId, ready };
       }
@@ -289,6 +316,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         setOutcome({ kind: "failed", id: createdId, message });
       } else if (latestStatus === "processing" || latestStatus === "uploading") {
         setOutcome({ kind: "processing", id: createdId });
+        setPendingJob({ id: createdId, seq: submittedSeq });
       } else {
         setOutcome(null);
       }
@@ -323,5 +351,5 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   }
   function cancel() { cancelled.current = true; task.current?.cancel(); }
   const ownedDraftAnalysisId = selection.files.length > 0 ? draftAnalysisId : "";
-  return <WorkspaceContext.Provider value={{ selection: wrappedSelection, draft, setDraft, canUndoObjectiveExample: originalObjective !== null, applyObjectiveExample, undoObjectiveExample, busy, progress, error, activeId, draftAnalysisId: ownedDraftAnalysisId, phase, uploadingFile, outcome, dismissOutcome, start, completeDraft, cancel }}>{children}</WorkspaceContext.Provider>;
+  return <WorkspaceContext.Provider value={{ selection: wrappedSelection, draft, setDraft, canUndoObjectiveExample: originalObjective !== null, applyObjectiveExample, undoObjectiveExample, busy, progress, error, activeId, draftAnalysisId: ownedDraftAnalysisId, phase, uploadingFile, outcome, dismissOutcome, closeOutcome, start, completeDraft, cancel }}>{children}</WorkspaceContext.Provider>;
 }

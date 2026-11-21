@@ -426,4 +426,93 @@ describe("Gerçek hazırlama aşamaları ve taslak", () => {
     expect(api.listeners.size).toBe(0);
     expect(api.unsubscribedCount).toBe(4);
   });
+
+  it("dismissOutcome ile rapor açıldığında arka plan tamamlama takibi sürer ve eşleşen taslağı temizler; yenilenen aynı taslağı ve yeni işi korur", async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter initialEntries={["/app/history"]}><WorkspaceProvider><Probe compact /></WorkspaceProvider></MemoryRouter>);
+    const sharedFile = new File(["aaaa"], "ozgun.txt", { type: "text/plain", lastModified: 1700000000000 });
+    await user.click(screen.getByText("Fill"));
+    await user.upload(screen.getByLabelText("files"), sharedFile);
+
+    api.afterPrepareStatus = "processing";
+    await user.click(screen.getByText("Start"));
+    await act(async () => create.resolve({ data: { id: "proc-open-1", paths: ["path-1"] } }));
+    await waitFor(() => expect(uploads).toHaveLength(1));
+    await act(async () => uploads[0].finish());
+    await act(async () => prepare.resolve({ data: { ready: false } }));
+    await waitFor(() => expect(api.listeners.size).toBe(1));
+
+    // "İşlemi izle" bağlantısına tıklamak (dismissOutcome) bildirimi gizler ancak tamamlama takibini kesmez.
+    await user.click(screen.getByRole("link", { name: "İşlemi izle" }));
+    expect(screen.queryByRole("link", { name: "İşlemi izle" })).not.toBeInTheDocument();
+    expect(api.listeners.size).toBe(1);
+
+    await act(async () => {
+      for (const listener of api.listeners) listener({ exists: () => true, data: () => ({ status: "completed" }) });
+    });
+    expect(screen.getByTestId("count")).toHaveTextContent("0");
+    expect(screen.getByTestId("title")).toHaveTextContent("");
+    expect(screen.getByTestId("objective")).toHaveTextContent("");
+    expect(screen.getByTestId("business")).toHaveTextContent("Sentetik işletme");
+    expect(screen.queryByRole("link", { name: "Hazırlık özetini aç" })).not.toBeInTheDocument();
+    expect(api.listeners.size).toBe(0);
+
+    // Bekleyen iş raporunda dismissOutcome sonrası kullanıcı birebir aynı dosyalarla yeni taslak kurarsa korunur.
+    create = deferred();
+    prepare = deferred();
+    api.prepare.mockClear();
+    await user.click(screen.getByText("Fill"));
+    await user.upload(screen.getByLabelText("files"), sharedFile);
+    await user.click(screen.getByText("Start"));
+    await act(async () => create.resolve({ data: { id: "proc-open-2", paths: ["path-2"] } }));
+    await waitFor(() => expect(uploads).toHaveLength(2));
+    await act(async () => uploads[1].finish());
+    await act(async () => prepare.resolve({ data: { ready: false } }));
+    await waitFor(() => expect(api.listeners.size).toBe(1));
+
+    await user.click(screen.getByRole("link", { name: "İşlemi izle" }));
+    await user.click(screen.getByText("Clear"));
+    await user.click(screen.getByText("Fill"));
+    await user.upload(screen.getByLabelText("files"), sharedFile);
+
+    await act(async () => {
+      for (const listener of api.listeners) listener({ exists: () => true, data: () => ({ status: "completed" }) });
+    });
+    expect(screen.getByTestId("count")).toHaveTextContent("1");
+    expect(screen.getByTestId("title")).toHaveTextContent("Sentetik analiz");
+    expect(screen.getByTestId("objective")).toHaveTextContent("Gelir değişimini incele");
+    expect(api.listeners.size).toBe(0);
+
+    // Eski iş sürerken yeni bir iş başlatılıp hata verse bile eski işin dinleyicisi bırakılır ve yeni bildirimi ezmez.
+    create = deferred();
+    prepare = deferred();
+    api.prepare.mockClear();
+    await user.click(screen.getByText("Start"));
+    await act(async () => create.resolve({ data: { id: "proc-old-3", paths: ["path-3"] } }));
+    await waitFor(() => expect(uploads).toHaveLength(3));
+    await act(async () => uploads[2].finish());
+    await act(async () => prepare.resolve({ data: { ready: false } }));
+    await waitFor(() => expect(api.listeners.size).toBe(1));
+    const staleListeners = Array.from(api.listeners);
+
+    create = deferred();
+    prepare = deferred();
+    api.prepare.mockClear();
+    await user.click(screen.getByText("Clear"));
+    await user.click(screen.getByText("FillB"));
+    await user.upload(screen.getByLabelText("files"), new File(["bbb"], "yeni-b.txt", { type: "text/plain" }));
+    await user.click(screen.getByText("Start"));
+    expect(api.listeners.size).toBe(0);
+    await act(async () => create.resolve({ data: { id: "proc-new-4", paths: ["path-4"] } }));
+    await waitFor(() => expect(uploads).toHaveLength(4));
+    await act(async () => uploads[3].finish());
+    await act(async () => prepare.reject(Object.assign(new Error("Unavailable"), { code: "functions/unavailable" })));
+    expect(screen.getByText("Belgeler hazırlanamadı")).toBeVisible();
+
+    await act(async () => {
+      for (const listener of staleListeners) listener({ exists: () => true, data: () => ({ status: "completed" }) });
+    });
+    expect(screen.getByText("Belgeler hazırlanamadı")).toBeVisible();
+    expect(screen.queryByText("Belgeleriniz hazır")).not.toBeInTheDocument();
+  });
 });
