@@ -84,6 +84,11 @@ test("oluşturma, gerçek yükleme ve hazırlama ayrı görünür; rota/dil değ
     await page.screenshot({ path: testInfo.outputPath("preparation-compact-dark.png"), fullPage: true });
     await nav.getByRole("link", { name: "Yeni analiz", exact: true }).click();
     preparation.release();
+    // Yeni açılan sayfada geç gelen tamamlama kullanıcıyı zorla başka rotaya atmaz; bildirimden açılabilir.
+    await expect(page).toHaveURL(/\/app\/new-analysis$/);
+    await expect(status).toContainText("Belgeleriniz hazır", { timeout: 30000 });
+    await checkLayout(page);
+    await page.getByRole("link", { name: "Hazırlık özetini aç", exact: true }).click();
     await expect(page).toHaveURL(/\/app\/analyses\//, { timeout: 30000 });
     await expect(page.getByText("Analize hazır", { exact: true })).toBeVisible();
     const details = page.locator("details").filter({ has: page.getByText("Teknik ayrıntılar", { exact: true }) });
@@ -98,6 +103,26 @@ test("oluşturma, gerçek yükleme ve hazırlama ayrı görünür; rota/dil değ
     await checkLayout(page);
     await page.screenshot({ path: testInfo.outputPath("prepared-details-light.png"), fullPage: true });
   } finally { creation.release(); upload.release(); preparation.release(); }
+});
+
+test("arka planda hazırlama başka sayfada biterse kullanıcıyı yerinden etmez ve bildirimden özet açılır", async ({ page }, testInfo) => {
+  await openDraft(page);
+  const preparation = gate();
+  await page.route("**/prepareAnalysis", async route => { await preparation.promise; await route.continue(); });
+  try {
+    await page.getByRole("button", { name: "Belgeleri ayrıştır", exact: true }).click();
+    const status = page.getByRole("region", { name: "Belge hazırlama durumu", exact: true });
+    await expect(status).toContainText("Belgeler hazırlanıyor", { timeout: 30000 });
+    const nav = page.getByRole("navigation", { name: testInfo.project.name === "mobile-chromium" ? "Mobil navigasyon" : "Ana navigasyon" });
+    await nav.getByRole("link", { name: "Geçmiş", exact: true }).click();
+    await expect(page).toHaveURL(/\/app\/history$/);
+    preparation.release();
+    await expect(status).toContainText("Belgeleriniz hazır", { timeout: 30000 });
+    await expect(page).toHaveURL(/\/app\/history$/);
+    await page.getByRole("link", { name: "Hazırlık özetini aç", exact: true }).click();
+    await expect(page).toHaveURL(/\/app\/analyses\//, { timeout: 30000 });
+    await expect(page.getByText("Analize hazır", { exact: true })).toBeVisible();
+  } finally { preparation.release(); }
 });
 
 test("çevrimdışı uyarısı altı dilde tek kalır; yeniden bağlantı ve iç gezinme taslağı değiştirmez", async ({ page, context }, testInfo) => {

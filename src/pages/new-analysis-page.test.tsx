@@ -1,10 +1,11 @@
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { setLocale, t, type Locale } from "../i18n/runtime";
 import { NewAnalysisPage } from "./new-analysis-page";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useNavigate } from "react-router-dom";
 import { WorkspaceProvider } from "../components/workspace-provider";
+import { WorkspaceContext, type WorkspaceState } from "../lib/workspace-context";
 
 // Sayfayı gerçek oturum içi taslak sağlayıcısıyla test eder.
 function renderPage() {
@@ -234,5 +235,88 @@ describe("NewAnalysisPage", () => {
     expect(screen.queryByText("Öneri:")).not.toBeInTheDocument();
     // Kullanıcının elle girdiği başlık korunmalı
     expect(titleInput).toHaveValue("Kendi Özel Başlığım");
+  });
+
+  it("yalnız aynı sayfa oturumunda kalınırken analiz sayfasına geçer; sayfadan ayrılıp dönülse bile geç gelen bitiş zorla yönlendirmez", async () => {
+    const user = setupUser();
+    let resolveStart!: (value: { id: string; ready: boolean } | undefined) => void;
+    const start = vi.fn(() => new Promise<{ id: string; ready: boolean } | undefined>(resolve => { resolveStart = resolve; }));
+    const dismissOutcome = vi.fn();
+    const fakeFile = new File(["veri"], "satis.csv", { type: "text/csv" });
+    const value: WorkspaceState = {
+      selection: {
+        files: [{ id: "f1", file: fakeFile, category: "Tablo" }],
+        rejections: [],
+        lastAccepted: [],
+        addFiles: vi.fn(),
+        removeFile: vi.fn(),
+        clearFiles: vi.fn(),
+        dismissAcceptance: vi.fn(),
+        dismissRejections: vi.fn(),
+      },
+      draft: { title: "Üçüncü çeyrek", business: "Atlas", objective: "Satışları özetle" },
+      setDraft: vi.fn(),
+      canUndoObjectiveExample: false,
+      applyObjectiveExample: vi.fn(),
+      undoObjectiveExample: vi.fn(),
+      busy: false,
+      progress: 0,
+      error: "",
+      activeId: "",
+      draftAnalysisId: "",
+      phase: "idle",
+      uploadingFile: null,
+      outcome: null,
+      dismissOutcome,
+      start,
+      completeDraft: vi.fn(),
+      cancel: vi.fn(),
+    };
+
+    function Harness() {
+      const navigate = useNavigate();
+      return <>
+        <button type="button" onClick={() => navigate("/app/history")}>Go History</button>
+        <button type="button" onClick={() => navigate("/app/new-analysis")}>Go New</button>
+        <Routes>
+          <Route path="/app/new-analysis" element={<NewAnalysisPage />} />
+          <Route path="/app/history" element={<p data-testid="history-view">History view</p>} />
+          <Route path="/app/analyses/:id" element={<p data-testid="detail-view">Analysis detail</p>} />
+        </Routes>
+      </>;
+    }
+
+    // 1. Aynı oturumda kalınırsa tamamlanınca analize geçer ve çift tıklama tek istek üretir.
+    const view1 = render(
+      <MemoryRouter initialEntries={["/app/new-analysis"]}>
+        <WorkspaceContext.Provider value={value}><Harness /></WorkspaceContext.Provider>
+      </MemoryRouter>,
+    );
+    const submit = screen.getByRole("button", { name: "Belgeleri ayrıştır" });
+    await user.click(submit);
+    await user.click(submit);
+    expect(start).toHaveBeenCalledTimes(1);
+    await act(async () => resolveStart({ id: "ready-1", ready: true }));
+    expect(await screen.findByTestId("detail-view")).toBeInTheDocument();
+    expect(dismissOutcome).toHaveBeenCalledTimes(1);
+    view1.unmount();
+
+    // 2. Kullanıcı Geçmiş'e gidip Yeni analiz ekranına geri dönse bile eski istek geç tamamlanınca yönlendirmez.
+    start.mockClear();
+    dismissOutcome.mockClear();
+    render(
+      <MemoryRouter initialEntries={["/app/new-analysis"]}>
+        <WorkspaceContext.Provider value={value}><Harness /></WorkspaceContext.Provider>
+      </MemoryRouter>,
+    );
+    await user.click(screen.getByRole("button", { name: "Belgeleri ayrıştır" }));
+    await user.click(screen.getByRole("button", { name: "Go History" }));
+    expect(screen.getByTestId("history-view")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Go New" }));
+    await act(async () => resolveStart({ id: "late-2", ready: true }));
+    expect(screen.queryByTestId("detail-view")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Belgeleri ayrıştır" })).toBeVisible();
+    expect(document.getElementById("new-analysis-title")).toBeInTheDocument();
+    expect(dismissOutcome).not.toHaveBeenCalled();
   });
 });

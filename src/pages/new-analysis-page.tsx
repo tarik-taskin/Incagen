@@ -1,6 +1,6 @@
 import { LoaderCircle } from "lucide-react";
 import { t, useLocale } from "../i18n/runtime";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Building2, Check, Pencil, Sparkles, Target } from "lucide-react";
 import { ANALYSIS_OBJECTIVE_MAX_LENGTH } from "../../functions/src/contracts";
@@ -18,11 +18,17 @@ import { tr } from "../i18n/tr";
 // Farklı iş belgesi türlerini analiz hazırlığı ve güvenli yerel yükleme akışında birleştirir.
 export function NewAnalysisPage() {
   useLocale();
-  const { selection, draft, setDraft, canUndoObjectiveExample, applyObjectiveExample, undoObjectiveExample, busy, phase, error, activeId, start, completeDraft, cancel } = useWorkspace();
+  const { selection, draft, setDraft, canUndoObjectiveExample, applyObjectiveExample, undoObjectiveExample, busy, phase, error, activeId, start, completeDraft, dismissOutcome, cancel } = useWorkspace();
   const { files, rejections, lastAccepted, addFiles, removeFile, clearFiles, dismissRejections } = selection;
   const navigate = useNavigate();
   const [editingBusiness, setEditingBusiness] = useState(() => !draft.business);
   const [attempted, setAttempted] = useState(false);
+  const screenMounted = useRef(true);
+  const submitting = useRef(false);
+  useEffect(() => {
+    screenMounted.current = true;
+    return () => { screenMounted.current = false; };
+  }, []);
   const preparation = getPreparationState(files, draft);
   const unavailable = busy
     ? { title: t("Belge hazırlığı sürüyor"), detail: t("Hazırlık sırasında dosya seçimi duraklatılır.") }
@@ -38,15 +44,21 @@ export function NewAnalysisPage() {
     if (field === "business") setEditingBusiness(true);
     requestAnimationFrame(() => document.getElementById({ business: "business-name", title: "analysis-title", objective: "analysis-objective" }[field])?.focus());
   }
-  // Başarılı hazırlığın kaydını açar; hata durumunda kullanıcının taslağını korur.
+  // Yalnız isteğin başladığı ekranda kalındıysa sonuç ekranına geçer; başka ekrandan dönüldüyse zorla yönlendirmez.
   async function submit() {
+    if (submitting.current || busy) return;
     setAttempted(true);
     if (preparation.firstInvalidField) { focusField(preparation.firstInvalidField.field); return; }
-    const result = await start();
-    if (result) {
+    submitting.current = true;
+    try {
+      const result = await start();
+      if (!result || !screenMounted.current) return;
       if (result.ready) completeDraft();
+      dismissOutcome();
       setAttempted(false);
       navigate("/app/analyses/" + result.id);
+    } finally {
+      submitting.current = false;
     }
   }
   return <section aria-labelledby="new-analysis-title">

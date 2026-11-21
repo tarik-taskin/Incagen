@@ -7,6 +7,11 @@ export interface Draft {
 }
 export type PreparationPhase = "idle" | "creating" | "uploading" | "preparing";
 export interface UploadingFile { name: string; index: number; total: number }
+export type PreparationOutcome =
+  | { kind: "ready"; id: string }
+  | { kind: "review"; id: string }
+  | { kind: "cancelled"; id?: string; message: string }
+  | { kind: "failed"; id?: string; message: string };
 export interface WorkspaceState {
   selection: ReturnType<typeof useFileSelectionState>;
   draft: Draft;
@@ -15,8 +20,11 @@ export interface WorkspaceState {
   applyObjectiveExample: (objective: string) => void;
   undoObjectiveExample: () => void;
   busy: boolean; progress: number; error: string; activeId: string;
+  draftAnalysisId: string;
   phase: PreparationPhase;
   uploadingFile: UploadingFile | null;
+  outcome: PreparationOutcome | null;
+  dismissOutcome: () => void;
   start: () => Promise<{ id: string; ready: boolean } | undefined>;
   completeDraft: () => void;
   cancel: () => void;
