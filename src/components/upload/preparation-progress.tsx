@@ -35,30 +35,41 @@ export function PreparationProgress({ compact = false }: { compact?: boolean }) 
 
   if (!outcome) return null;
   // Kullanıcı zaten ilgili kaydın sayfasındaysa veya Yeni analiz hata uyarısını gösteriyorsa çift duyuru yapmaz.
-  if ((outcome.kind === "ready" || outcome.kind === "review") && location.pathname === `/app/analyses/${outcome.id}`) return null;
+  if ((outcome.kind === "processing" || outcome.kind === "ready" || outcome.kind === "review") && location.pathname === `/app/analyses/${outcome.id}`) return null;
   if (!compact && (outcome.kind === "failed" || outcome.kind === "cancelled")) return null;
 
+  const isProcessing = outcome.kind === "processing";
   const isReady = outcome.kind === "ready";
   const isReview = outcome.kind === "review";
   const isError = outcome.kind === "failed" || outcome.kind === "cancelled";
-  const Icon = isReady ? CheckCircle2 : AlertTriangle;
+  const Icon = isProcessing ? LoaderCircle : isReady ? CheckCircle2 : AlertTriangle;
 
-  const heading = isReady
-    ? "Belgeleriniz hazır"
-    : isReview
-      ? "Bazı belgeler inceleme bekliyor"
-      : outcome.kind === "cancelled"
-        ? "Hazırlama durduruldu"
-        : "Belgeler hazırlanamadı";
+  const heading = isProcessing
+    ? "Belgeler hazırlanıyor"
+    : isReady
+      ? "Belgeleriniz hazır"
+      : isReview
+        ? "Bazı belgeler inceleme bekliyor"
+        : outcome.kind === "cancelled"
+          ? "Hazırlama durduruldu"
+          : "Belgeler hazırlanamadı";
 
-  const detail = isReady
-    ? t("Hazırlık özeti oluşturuldu. İsterseniz şimdi inceleyebilirsiniz.")
-    : isReview
-      ? t("Bazı dosyalar hazırlanamadı; hazır olanlarla devam etmek için açık onayınız gerekir.")
-      : t(outcome.message);
+  const detail = isProcessing
+    ? t("Yükleme tamamlandı. Belgelerin içeriği ve kaynakları kontrol ediliyor.")
+    : isReady
+      ? t("Hazırlık özeti oluşturuldu. İsterseniz şimdi inceleyebilirsiniz.")
+      : isReview
+        ? t("Bazı dosyalar hazırlanamadı; hazır olanlarla devam etmek için açık onayınız gerekir.")
+        : t(outcome.message);
 
-  const actionPath = isReady || isReview ? `/app/analyses/${outcome.id}` : "/app/new-analysis";
-  const actionLabel = isReady ? "Hazırlık özetini aç" : isReview ? "İncelemeyi aç" : "Yeni analize dön";
+  const actionPath = isProcessing || isReady || isReview ? `/app/analyses/${outcome.id}` : "/app/new-analysis";
+  const actionLabel = isProcessing
+    ? "İşlemi izle"
+    : isReady
+      ? "Hazırlık özetini aç"
+      : isReview
+        ? "İncelemeyi aç"
+        : "Yeni analize dön";
 
   return (
     <section
@@ -68,7 +79,9 @@ export function PreparationProgress({ compact = false }: { compact?: boolean }) 
           ? "border-red-500/25 bg-red-500/[0.04]"
           : isReview
             ? "border-amber-500/25 bg-amber-500/[0.05]"
-            : "border-emerald-500/25 bg-emerald-500/[0.05]"
+            : isProcessing
+              ? "border-primary/15 bg-primary/[0.035] dark:border-secondary/20 dark:bg-secondary/[0.04]"
+              : "border-emerald-500/25 bg-emerald-500/[0.05]"
       }`}
     >
       <div className="flex items-start gap-3">
@@ -78,10 +91,12 @@ export function PreparationProgress({ compact = false }: { compact?: boolean }) 
               ? "text-red-700 dark:text-red-300"
               : isReview
                 ? "text-amber-700 dark:text-amber-300"
-                : "text-emerald-700 dark:text-emerald-300"
+                : isProcessing
+                  ? "text-primary dark:text-secondary"
+                  : "text-emerald-700 dark:text-emerald-300"
           }`}
         >
-          <Icon className="h-4 w-4" aria-hidden="true" />
+          <Icon className={`h-4 w-4 ${isProcessing ? "motion-safe:animate-spin" : ""}`} aria-hidden="true" />
         </span>
         <div role={outcome.kind === "failed" ? "alert" : "status"} aria-live={outcome.kind === "failed" ? "assertive" : "polite"} aria-atomic="true" className="min-w-0 flex-1">
           <p className="text-sm font-semibold">{t(heading)}</p>

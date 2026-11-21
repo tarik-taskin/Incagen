@@ -8,6 +8,7 @@ export interface Draft {
 export type PreparationPhase = "idle" | "creating" | "uploading" | "preparing";
 export interface UploadingFile { name: string; index: number; total: number }
 export type PreparationOutcome =
+  | { kind: "processing"; id: string }
   | { kind: "ready"; id: string }
   | { kind: "review"; id: string }
   | { kind: "cancelled"; id?: string; message: string }
@@ -26,7 +27,7 @@ export interface WorkspaceState {
   outcome: PreparationOutcome | null;
   dismissOutcome: () => void;
   start: () => Promise<{ id: string; ready: boolean } | undefined>;
-  completeDraft: () => void;
+  completeDraft: (analysisId: string) => void;
   cancel: () => void;
 }
 export const WorkspaceContext = createContext<WorkspaceState | null>(null);

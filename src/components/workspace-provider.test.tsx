@@ -6,11 +6,17 @@ import { WorkspaceProvider } from "./workspace-provider";
 import { PreparationProgress } from "./upload/preparation-progress";
 import { useWorkspace } from "../lib/workspace-context";
 
-const api = vi.hoisted(() => ({ create: vi.fn(), prepare: vi.fn(), upload: vi.fn() }));
+const api = vi.hoisted(() => ({ create: vi.fn(), prepare: vi.fn(), upload: vi.fn(), afterPrepareStatus: "" as string, docError: "", docExists: true }));
 vi.mock("../lib/deployment-mode", () => ({ authOnlyPreview: false }));
 vi.mock("../lib/firebase", () => ({ getServices: () => ({ auth: { currentUser: { uid: "synthetic-user" } }, functions: {}, storage: {}, db: {} }) }));
 vi.mock("firebase/functions", () => ({ httpsCallable: (_service: unknown, name: string) => name === "createAnalysis" ? api.create : api.prepare }));
-vi.mock("firebase/firestore", () => ({ doc: vi.fn(), getDoc: async () => ({ data: () => ({ status: "uploading" }) }) }));
+vi.mock("firebase/firestore", () => ({
+  doc: vi.fn(),
+  getDoc: async () => {
+    const status = api.prepare.mock.calls.length > 0 && api.afterPrepareStatus ? api.afterPrepareStatus : "uploading";
+    return { exists: () => api.docExists, data: () => ({ status, error: api.docError }) };
+  },
+}));
 vi.mock("firebase/storage", () => ({ ref: vi.fn(), uploadBytesResumable: api.upload }));
 
 // Ağ çağrılarını test istediğinde çözer; yüzde ile hazırlık sonucunu birbirinden bağımsız sınar.
@@ -30,10 +36,13 @@ function Probe({ compact = false }: { compact?: boolean }) {
   return <>
     <input aria-label="files" type="file" onChange={event => workspace.selection.addFiles(Array.from(event.target.files ?? []))} />
     <button onClick={() => workspace.setDraft(() => ({ title: "Sentetik analiz", business: "Sentetik işletme", objective: "Gelir değişimini incele" }))}>Fill</button>
+    <button onClick={() => workspace.setDraft(() => ({ title: "B çalışması", business: "Sentetik işletme", objective: "B hedefi" }))}>FillB</button>
     <button onClick={() => workspace.setDraft(current => ({ ...current, title: "Yeni yerel taslak" }))}>EditTitle</button>
+    <button onClick={workspace.selection.clearFiles}>Clear</button>
     <button onClick={() => void workspace.start()}>Start</button>
     <button onClick={workspace.cancel}>Cancel</button>
-    <button onClick={workspace.completeDraft}>Complete</button>
+    <button onClick={() => workspace.completeDraft(workspace.activeId)}>Complete</button>
+    <button onClick={() => workspace.completeDraft("review-a")}>CompleteA</button>
     <p data-testid="phase">{workspace.phase}</p>
     <p data-testid="count">{workspace.selection.files.length}</p>
     <p data-testid="title">{workspace.draft.title}</p>
@@ -62,6 +71,7 @@ function leavingIsPrevented() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  api.afterPrepareStatus = ""; api.docError = ""; api.docExists = true;
   create = deferred(); prepare = deferred(); uploads = [];
   api.create.mockImplementation(() => create.promise);
   api.prepare.mockImplementation(() => prepare.promise);
@@ -207,5 +217,88 @@ describe("Gerçek hazırlama aşamaları ve taslak", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Yükleme iptal edildi; dosyalarınız korundu.");
     unmount();
     expect(leavingIsPrevented()).toBe(false);
+  });
+
+  it("A inceleme taslağı temizlenip B oluşturulurken B createAnalysis beklese ve hata verse bile B taslağını ve yeniden deneme kimliğini korur", async () => {
+    const { user } = await setup(true);
+    await user.click(screen.getByText("Start"));
+    await act(async () => create.resolve({ data: { id: "review-a", paths: ["path-a"] } }));
+    await waitFor(() => expect(uploads).toHaveLength(1));
+    await act(async () => uploads[0].finish());
+    await act(async () => prepare.resolve({ data: { ready: false, needsReview: true } }));
+    expect(screen.getByTestId("draft-analysis-id")).toHaveTextContent("review-a");
+
+    // A'nın dosyaları tamamen temizlenip yeni B dosyası seçilince A'nın sahipliği geri gelmez.
+    await user.click(screen.getByText("Clear"));
+    expect(screen.getByTestId("draft-analysis-id")).toBeEmptyDOMElement();
+    await user.click(screen.getByText("FillB"));
+    await user.upload(screen.getByLabelText("files"), new File(["bbb"], "b-dosya.txt", { type: "text/plain" }));
+    expect(screen.getByTestId("draft-analysis-id")).toBeEmptyDOMElement();
+
+    // B'nin createAnalysis isteği beklerken A kısmi onayı tamamlansa bile B taslağı ve requestId korunur.
+    create = deferred();
+    await user.click(screen.getByText("Start"));
+    expect(screen.getByTestId("active-id")).toHaveTextContent("review-a");
+    await user.click(screen.getByText("CompleteA"));
+    expect(screen.getByTestId("count")).toHaveTextContent("1");
+    expect(screen.getByTestId("title")).toHaveTextContent("B çalışması");
+    expect(screen.getByTestId("objective")).toHaveTextContent("B hedefi");
+
+    await act(async () => create.reject(Object.assign(new Error("Unavailable"), { code: "functions/unavailable" })));
+    expect(screen.getByTestId("count")).toHaveTextContent("1");
+    expect(screen.getByTestId("title")).toHaveTextContent("B çalışması");
+    expect(screen.getByTestId("objective")).toHaveTextContent("B hedefi");
+
+    // B yeniden denendiğinde ilk B çağrısındaki aynı requestId kullanılır.
+    create = deferred();
+    await user.click(screen.getByText("Start"));
+    expect(api.create).toHaveBeenCalledTimes(3);
+    expect(api.create.mock.calls[2][0].requestId).toBe(api.create.mock.calls[1][0].requestId);
+    expect(api.create.mock.calls[2][0].requestId).not.toBe(api.create.mock.calls[0][0].requestId);
+    await act(async () => create.resolve({ data: { id: "analysis-b", paths: ["path-b"] } }));
+  });
+
+  it("ready: false yanıtında needsReview yokken körü körüne inceleme göstermez; gerçek iş kaydına göre davranır", async () => {
+    const { user } = await setup(true);
+    api.afterPrepareStatus = "processing";
+    await user.click(screen.getByText("Start"));
+    await act(async () => create.resolve({ data: { id: "proc-1", paths: ["path-1"] } }));
+    await waitFor(() => expect(uploads).toHaveLength(1));
+    await act(async () => uploads[0].finish());
+    await act(async () => prepare.resolve({ data: { ready: false } }));
+
+    expect(screen.queryByText("Bazı belgeler inceleme bekliyor")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "İncelemeyi aç" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Belgeleriniz hazır")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "İşlemi izle" })).toHaveAttribute("href", "/app/analyses/proc-1");
+
+    // Kayıt gerçekten failed durumundaysa failed olarak bildirilir.
+    create = deferred();
+    prepare = deferred();
+    api.prepare.mockClear();
+    api.afterPrepareStatus = "failed";
+    api.docError = "Sunucu ayrıştırması tamamlanamadı.";
+    await user.click(screen.getByText("Start"));
+    await act(async () => create.resolve({ data: { id: "failed-2", paths: ["path-1"] } }));
+    await waitFor(() => expect(uploads).toHaveLength(2));
+    await act(async () => uploads[1].finish());
+    await act(async () => prepare.resolve({ data: { ready: false } }));
+    expect(screen.getByText("Belgeler hazırlanamadı")).toBeVisible();
+    expect(screen.getByRole("link", { name: "Yeni analize dön" })).toHaveAttribute("href", "/app/new-analysis");
+    expect(screen.queryByText("Bazı belgeler inceleme bekliyor")).not.toBeInTheDocument();
+
+    // Kayıt review durumundaysa (veya açık needsReview: true geldiyse) inceleme gösterilir.
+    create = deferred();
+    prepare = deferred();
+    api.prepare.mockClear();
+    api.afterPrepareStatus = "review";
+    api.docError = "";
+    await user.click(screen.getByText("Start"));
+    await act(async () => create.resolve({ data: { id: "review-3", paths: ["path-1"] } }));
+    await waitFor(() => expect(uploads).toHaveLength(3));
+    await act(async () => uploads[2].finish());
+    await act(async () => prepare.resolve({ data: { ready: false } }));
+    expect(screen.getByText("Bazı belgeler inceleme bekliyor")).toBeVisible();
+    expect(screen.getByRole("link", { name: "İncelemeyi aç" })).toHaveAttribute("href", "/app/analyses/review-3");
   });
 });

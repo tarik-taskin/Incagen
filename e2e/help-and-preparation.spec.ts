@@ -159,3 +159,86 @@ test("bozuk belge açık onay ister, taslak korunur, geçerli belgeyle sonuç ve
   await expect(page.getByRole("searchbox", { name: "Arşivde ara" })).toHaveValue("faaliyet icindeki");
   await checkPage(page);
 });
+
+test("kısmi incelemeden sonra temizlenen taslakta yeni B çalışması A onayı ve B hatasından etkilenmez", async ({ page }, testInfo) => {
+  await page.goto("/app/new-analysis");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await page.getByLabel("E-posta", { exact: true }).fill(`review-isolation-${crypto.randomUUID()}@example.test`);
+  await page.getByLabel("Parola", { exact: true }).fill("Synthetic123!");
+  await page.getByLabel("Parola tekrarı", { exact: true }).fill("Synthetic123!");
+  await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/new-analysis$/);
+
+  await page.getByLabel("İşletme adı", { exact: true }).fill("Sentetik İşletme");
+  await page.getByLabel("Analiz başlığı", { exact: true }).fill("A Çalışması");
+  await page.getByLabel("Analiz hedefi", { exact: true }).fill("A hedefi");
+  await page.getByLabel("Analiz edilecek dosyaları seç").setInputFiles([
+    { name: "faaliyet.txt", mimeType: "text/plain", buffer: Buffer.from("A geçerli belge içeriği") },
+    { name: "bozuk.pdf", mimeType: "application/pdf", buffer: Buffer.from("Geçersiz PDF") },
+  ]);
+  await page.getByRole("button", { name: "Belgeleri ayrıştır", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Belgeleri gözden geçirin" })).toBeVisible({ timeout: 30000 });
+
+  await page.getByRole("link", { name: "Dosyaları düzenle", exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/new-analysis$/);
+  await page.getByRole("button", { name: "Tümünü temizle", exact: true }).click();
+  await expect(page.getByText("bozuk.pdf", { exact: true })).toHaveCount(0);
+
+  await page.getByLabel("Analiz başlığı", { exact: true }).fill("B Çalışması");
+  await page.getByLabel("Analiz hedefi", { exact: true }).fill("B hedefi");
+  await page.getByLabel("Analiz edilecek dosyaları seç").setInputFiles({
+    name: "b-dosya.txt", mimeType: "text/plain", buffer: Buffer.from("B yeni çalışma belgesi"),
+  });
+
+  // B'nin createAnalysis isteğini beklet; ilk başarısız olduktan sonra yeniden denemede aynı requestId'yi doğrula.
+  let bCalls = 0;
+  const requestIds: string[] = [];
+  let releaseBFail!: () => void;
+  const bFailGate = new Promise<void>(resolve => { releaseBFail = resolve; });
+  await page.route("**/createAnalysis", async route => {
+    const body = route.request().postDataJSON() as { data?: { title?: string; requestId?: string } };
+    if (body?.data?.title === "B Çalışması") {
+      bCalls++;
+      if (body.data.requestId) requestIds.push(body.data.requestId);
+      if (bCalls === 1) {
+        await bFailGate;
+        await route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: { message: "Unavailable", status: "UNAVAILABLE" } }) });
+        return;
+      }
+    }
+    await route.continue();
+  });
+
+  await page.getByRole("button", { name: "Belgeleri ayrıştır", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Belge hazırlama durumu", exact: true })).toContainText("Çalışma oluşturuluyor");
+  await page.getByRole("link", { name: "Son işlemi aç", exact: true }).click();
+
+  // B oluşturulup temizlenmiş A ile ilgili artık hiçbir düzenleme bağı olmamalı.
+  await expect(page.getByRole("heading", { name: "Belgeleri gözden geçirin" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Dosyaları düzenle", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Belgeleri yeniden seç", exact: true })).toBeVisible();
+
+  await page.getByRole("button", { name: "Yalnız 1 belgeyle devam et", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Belgelerin içeriği ayrıştırıldı" })).toBeVisible({ timeout: 30000 });
+
+  // A tamamlandıktan sonra Yeni Analiz'e dönüşte B hâlâ korunuyor olmalı; sonra B createAnalysis hata versin.
+  const nav = page.getByRole("navigation", { name: testInfo.project.name === "mobile-chromium" ? "Mobil navigasyon" : "Ana navigasyon" });
+  await nav.getByRole("link", { name: "Yeni analiz", exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/new-analysis$/);
+  await expect(page.getByText("b-dosya.txt", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Analiz başlığı", { exact: true })).toHaveValue("B Çalışması");
+  await expect(page.getByLabel("Analiz hedefi", { exact: true })).toHaveValue("B hedefi");
+
+  releaseBFail();
+  await expect(page.getByRole("alert")).not.toBeEmpty({ timeout: 15000 });
+  await expect(page.getByText("b-dosya.txt", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Analiz başlığı", { exact: true })).toHaveValue("B Çalışması");
+  await expect(page.getByLabel("Analiz hedefi", { exact: true })).toHaveValue("B hedefi");
+
+  // Yeniden dene: B ilk isteğindeki requestId ile devam edip tamamlanır.
+  await page.getByRole("button", { name: "Belgeleri ayrıştır", exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/analyses\//, { timeout: 30000 });
+  await expect(page.getByRole("heading", { name: "B Çalışması" })).toBeVisible();
+  expect(requestIds).toHaveLength(2);
+  expect(requestIds[1]).toBe(requestIds[0]);
+});

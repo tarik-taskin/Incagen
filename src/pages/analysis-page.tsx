@@ -58,7 +58,7 @@ function AnalysisScreen({ id }: { id: string }) {
 
   useEffect(() => {
     const outcome = workspace.outcome;
-    if (outcome && outcome.id === id && (outcome.kind === "ready" || outcome.kind === "review")) {
+    if (outcome && outcome.id === id && (outcome.kind === "ready" || outcome.kind === "review" || outcome.kind === "processing")) {
       workspace.dismissOutcome?.();
     }
   }, [workspace, id]);
@@ -72,7 +72,7 @@ function AnalysisScreen({ id }: { id: string }) {
     try {
       const response = await httpsCallable<unknown, { needsReview?: boolean; ready?: boolean }>(getServices().functions, "prepareAnalysis", { timeout: 310_000 })({ id, ...(reviewToken ? { reviewToken } : {}) });
       if (!context.current) return;
-      if (reviewToken && response.data.ready === true && context.current.activeId === id) context.current.completeDraft();
+      if (reviewToken && response.data.ready === true) context.current.completeDraft(id);
     } catch (actionFailure) {
       if (!context.current) return;
       setActionError(userError(actionFailure));

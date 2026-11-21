@@ -160,7 +160,8 @@ it.each(["navigate", "new-draft", "stay"])("only completes the matching reviewed
     view.rerender(<MemoryRouter><App /></MemoryRouter>);
   }
   await act(async () => { request.resolve({ data: { ready: true } }); });
-  expect(state.completeDraft).toHaveBeenCalledTimes(next === "stay" ? 1 : 0);
+  expect(state.completeDraft).toHaveBeenCalledTimes(next === "navigate" ? 0 : 1);
+  if (next !== "navigate") expect(state.completeDraft).toHaveBeenCalledWith("a");
 });
 
 it("keeps successful deletion and safe retry errors working in the original context", async () => {

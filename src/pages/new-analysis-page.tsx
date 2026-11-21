@@ -53,7 +53,7 @@ export function NewAnalysisPage() {
     try {
       const result = await start();
       if (!result || !screenMounted.current) return;
-      if (result.ready) completeDraft();
+      if (result.ready) completeDraft(result.id);
       dismissOutcome();
       setAttempted(false);
       navigate("/app/analyses/" + result.id);
