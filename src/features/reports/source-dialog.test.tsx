@@ -190,3 +190,83 @@ it("bounds text rendering while searching every evidence section and preserves o
   expect(screen.getByText("Belgede aramanızla eşleşen bölüm yok.")).toBeVisible();
   expect(container.querySelectorAll("article")).toHaveLength(0);
 });
+
+it("restores focus to opener on Close, Escape and outside click, uses heading fallback when opener disappears, and never steals focus on route/report unmount", async () => {
+  const user = userEvent.setup();
+
+  function Harness({ showOpener = true, routeSwitched = false }: { showOpener?: boolean; routeSwitched?: boolean }) {
+    return (
+      <main>
+        <h1 id="report-title" tabIndex={-1}>Rapor Başlığı</h1>
+        <h2 id="findings-title" tabIndex={-1}>Bulgular</h2>
+        {showOpener && <button id="open-source" type="button">Kaynağı aç</button>}
+        {!routeSwitched && <SourceDialog selection={selection} sources={[source]} onClose={() => {}} />}
+        {routeSwitched && <button id="next-route-focus" type="button">Sonraki rapor kontrolü</button>}
+      </main>
+    );
+  }
+
+  // 1. Kapat düğmesi / Escape / dışarı tıklama açıcıya odak döndürür (burada Escape & Kapat simüle edilir).
+  const onClose = vi.fn();
+  function InteractiveHarness() {
+    return (
+      <main>
+        <h1 id="report-title" tabIndex={-1}>Rapor Başlığı</h1>
+        <button id="open-source" type="button">Kaynağı aç</button>
+      </main>
+    );
+  }
+  const { unmount } = render(<InteractiveHarness />);
+  const opener = document.getElementById("open-source") as HTMLButtonElement;
+  opener.focus();
+  expect(opener).toHaveFocus();
+
+  const dialogRender = render(<SourceDialog selection={selection} sources={[source]} onClose={onClose} />);
+  await user.click(screen.getByRole("button", { name: "Kaynak incelemesini kapat" }));
+  expect(onClose).toHaveBeenCalledTimes(1);
+  dialogRender.unmount();
+  expect(opener).toHaveFocus();
+
+  // Escape (cancel olayı) sonrasında açıcıya döner.
+  opener.focus();
+  const escRender = render(<SourceDialog selection={selection} sources={[source]} onClose={onClose} />);
+  fireEvent(screen.getByRole("dialog"), new Event("cancel", { cancelable: true }));
+  escRender.unmount();
+  expect(opener).toHaveFocus();
+
+  // Dışarı tıklama sonrasında açıcıya döner.
+  opener.focus();
+  const outRender = render(<SourceDialog selection={selection} sources={[source]} onClose={onClose} />);
+  await user.click(document.body);
+  outRender.unmount();
+  expect(opener).toHaveFocus();
+
+  unmount();
+
+  // 2. Açıcı kaldırıldığında kullanıcı kapatması anlamlı rapor başlığına (#report-title) odak düşürür.
+  const view2 = render(
+    <main>
+      <h1 id="report-title" tabIndex={-1}>Rapor Başlığı</h1>
+      <button id="vanishing-opener" type="button">Kaybolan açıcı</button>
+    </main>,
+  );
+  const vanishing = document.getElementById("vanishing-opener") as HTMLButtonElement;
+  vanishing.focus();
+  const dlg2 = render(<SourceDialog selection={selection} sources={[source]} onClose={onClose} />);
+  vanishing.remove();
+  await user.click(screen.getByRole("button", { name: "Kaynak incelemesini kapat" }));
+  dlg2.unmount();
+  expect(document.getElementById("report-title")).toHaveFocus();
+  view2.unmount();
+
+  // 3. Kullanıcı kapatmadan rota/rapor değişimiyle unmount olursa odağı yeni hedeften çalmaz.
+  const view3 = render(<Harness showOpener routeSwitched={false} />);
+  const nextTarget = document.createElement("button");
+  nextTarget.textContent = "Yeni ekran odağı";
+  document.body.appendChild(nextTarget);
+  nextTarget.focus();
+  view3.rerender(<Harness showOpener routeSwitched />);
+  expect(nextTarget).toHaveFocus();
+  nextTarget.remove();
+  view3.unmount();
+});

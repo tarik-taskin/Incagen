@@ -44,6 +44,11 @@ test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı 
   if (testInfo.project.name === "mobile-chromium") await page.touchscreen.tap(2, 2); else await page.mouse.click(2, 2);
   await expect(dialog).toHaveCount(0);
   await expect(net).toBeFocused();
+  await net.click();
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("button", { name: "Kaynak incelemesini kapat", exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(net).toBeFocused();
 
   await page.getByTestId("chart-trend").scrollIntoViewIfNeeded();
   await expect(page.getByTestId("chart-trend").locator("path[fill='#7351b5'], path[stroke='#7351b5']").first()).toBeVisible();

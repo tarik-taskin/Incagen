@@ -1,6 +1,6 @@
 import { useOutsideDismiss } from "../../hooks/use-outside-dismiss";
 import { t, useLocale, localeTag } from "../../i18n/runtime";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowLeft, ArrowRight, Check, Download, FileText, Search, X } from "lucide-react";
 import { sourceCatalog, sourceExtent } from "./source-catalog";
@@ -49,11 +49,33 @@ export function SourceDialog(props: SourceDialogProps) {
   return <SourceSession key={JSON.stringify(props.selection)} {...props} />;
 }
 
+// Kaynak diyaloğu kapanışında yalnızca erişilebilir, bağlı ve etkin odak hedeflerini kabul eder.
+function isFocusableTarget(target: HTMLElement | null): target is HTMLElement {
+  if (!target || !target.isConnected || target === document.body) return false;
+  if ("disabled" in target && Boolean((target as HTMLButtonElement).disabled)) return false;
+  if (target.closest("[aria-hidden='true'], [inert]")) return false;
+  return target.hasAttribute("tabindex") || target.tabIndex >= 0;
+}
+
+// Açıcı tetikleyici kaldırıldıysa veya kullanılamıyorsa rapor başlıklarına veya bölüme odak düşer.
+function findSourceDialogFallback(): HTMLElement | null {
+  for (const selector of ["#report-title", "#findings-title", "main h1", "h1", "#bulgular", "main"]) {
+    const candidate = document.querySelector<HTMLElement>(selector);
+    if (isFocusableTarget(candidate)) return candidate;
+  }
+  return null;
+}
+
 // Kaynak inceleme görünümüdür; backend yetki/doğrulama sınırının yerini almaz.
 function SourceSession({ selection, sources, onClose, translateContent = true, onDownloadSource }: SourceDialogProps) {
   useLocale();
   const dialog = useRef<HTMLDialogElement>(null);
-  useOutsideDismiss(dialog, onClose);
+  const closingByUserRef = useRef(false);
+  const dismissByUser = useCallback(() => {
+    closingByUserRef.current = true;
+    onClose();
+  }, [onClose]);
+  useOutsideDismiss(dialog, dismissByUser);
   const available = sources.filter(source => selection.evidence.some(item => matchesEvidence(source, item)));
   const [sourceId, setSourceId] = useState(available[0]?.sourceId ?? "");
   const [query, setQuery] = useState("");
@@ -73,7 +95,13 @@ function SourceSession({ selection, sources, onClose, translateContent = true, o
     const wasLocked = document.body.classList.contains("overflow-hidden");
     document.body.classList.add("overflow-hidden");
     element.showModal();
-    return () => { element.close(); if (!wasLocked) document.body.classList.remove("overflow-hidden"); previousFocus?.focus({ preventScroll: true }); };
+    return () => {
+      element.close();
+      if (!wasLocked) document.body.classList.remove("overflow-hidden");
+      if (!closingByUserRef.current) return;
+      const target = isFocusableTarget(previousFocus) ? previousFocus : findSourceDialogFallback();
+      target?.focus({ preventScroll: true });
+    };
   }, []);
   const source = available.find(item => item.sourceId === sourceId);
   const tables = source ? sourceTables(source) : [];
@@ -99,9 +127,9 @@ function SourceSession({ selection, sources, onClose, translateContent = true, o
   const shownText = textChunks.slice((current - 1) * TEXT_PAGE_SIZE, current * TEXT_PAGE_SIZE);
   const columns = table?.columns ?? [];
   // Native üst katmanda transform/kaydırma uygulanmaz; hareket yalnız iç panelde, taşma clip ile sınırlandırılır.
-  return <dialog ref={dialog} onCancel={event => { event.preventDefault(); onClose(); }} aria-labelledby="source-title" aria-describedby="source-description" className="surface fixed inset-0 m-auto h-[calc(100dvh-2rem)] overscroll-contain max-h-[56rem] w-[calc(100%-1.5rem)] max-w-7xl overflow-clip rounded-3xl border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-foreground/35 backdrop:backdrop-blur-md">
+  return <dialog ref={dialog} onCancel={event => { event.preventDefault(); dismissByUser(); }} aria-labelledby="source-title" aria-describedby="source-description" className="surface fixed inset-0 m-auto h-[calc(100dvh-2rem)] overscroll-contain max-h-[56rem] w-[calc(100%-1.5rem)] max-w-7xl overflow-clip rounded-3xl border border-border bg-card p-0 text-foreground shadow-2xl backdrop:bg-foreground/35 backdrop:backdrop-blur-md">
     <motion.div initial={{ opacity: 0, y: reduced ? 0 : 24, scale: reduced ? 1 : 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: reduced ? 0 : 12 }} transition={{ duration: reduced ? 0 : 0.25 }} className="flex h-full min-h-0 flex-col overflow-hidden">
-      <header className="relative z-20 flex shrink-0 items-start bg-card justify-between gap-4 border-b border-border p-5 sm:px-7 sm:py-6"><div><p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary dark:text-secondary"><span className="h-1.5 w-1.5 rounded-full bg-primary dark:bg-secondary" />  {t("Kaynak çalışma alanı")}</p><h2 id="source-title" className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">{content(selection.title)}</h2><p id="source-description" className="mt-2 text-xs leading-5 text-muted-foreground">{t("Sonucu özgün belgeye kadar takip edin. Tablolarda satır, PDF belgelerinde sayfa, Word belgelerinde metin bölümü korunur.")}</p></div><Button variant="ghost" size="icon" aria-label={t("Kaynak incelemesini kapat")} onClick={onClose} className="shrink-0 rounded-full"><X className="h-5 w-5" aria-hidden="true" /></Button></header>
+      <header className="relative z-20 flex shrink-0 items-start bg-card justify-between gap-4 border-b border-border p-5 sm:px-7 sm:py-6"><div><p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary dark:text-secondary"><span className="h-1.5 w-1.5 rounded-full bg-primary dark:bg-secondary" />  {t("Kaynak çalışma alanı")}</p><h2 id="source-title" className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">{content(selection.title)}</h2><p id="source-description" className="mt-2 text-xs leading-5 text-muted-foreground">{t("Sonucu özgün belgeye kadar takip edin. Tablolarda satır, PDF belgelerinde sayfa, Word belgelerinde metin bölümü korunur.")}</p></div><Button variant="ghost" size="icon" aria-label={t("Kaynak incelemesini kapat")} onClick={dismissByUser} className="shrink-0 rounded-full"><X className="h-5 w-5" aria-hidden="true" /></Button></header>
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]">
         <aside className="min-w-0 shrink-0 border-b border-border bg-muted/40 p-4 lg:border-b-0 lg:border-e lg:p-5" aria-label={t("Dayanak belgeleri")}><p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{t("Belgeler · {0}", available.length)}</p><div className="flex gap-2 overflow-x-auto pb-1 lg:flex-col">{available.map(item => <button key={item.sourceId} onClick={() => { setSourceId(item.sourceId); setQuery(""); setPage(1); setAllRows(false); setTableSelection(null); }} aria-pressed={sourceId === item.sourceId} className={`flex min-w-[12rem] items-start gap-3 rounded-xl border p-3 text-start text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${sourceId === item.sourceId ? "border-primary/25 bg-card shadow-sm dark:border-secondary/25" : "border-transparent hover:bg-card/70"}`}><FileText className="mt-0.5 h-4 w-4 shrink-0 text-primary dark:text-secondary" aria-hidden="true" /><span className="min-w-0"><span className="block font-semibold">{sourceName(item)}</span><span className="mt-1 block text-[10px] text-muted-foreground">{sourceExtent(item)} · {sourceCatalog[item.sourceId]?.format ?? t("Belge")}</span></span></button>)}</div><div className="mt-5 hidden rounded-xl border border-border bg-card/70 p-3 lg:block"><p className="flex items-center gap-2 text-[11px] font-medium"><Check className="h-3 w-3 text-primary dark:text-secondary" aria-hidden="true" />  {t("Kaynağa bağlı görünüm")}</p><p className="mt-2 text-[10px] leading-5 text-muted-foreground">{t("Arama ve sayfalama özgün satır numaralarını değiştirmez.")}</p></div></aside>
         <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6">
