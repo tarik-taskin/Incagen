@@ -42,7 +42,7 @@ Bulut ayarlarında, IAM’de, bütçede, kotada veya saklama politikasında değ
 
 Sağlayıcı yanıt vermeye başladığında yapılacak ilk kontrollü sentetik oturum sırası ([TESTING.md](TESTING.md), [DEVELOPMENT.md](DEVELOPMENT.md), [GEMINI.md](GEMINI.md)):
 
-1. **Ön koşul ve temizlik:** Kapıların kapalı olduğunu (`verify:release`) ve önceki sentetik hesap/dosya temizliğinin `verified-clean` olduğunu doğrula.
+1. **Ön koşul ve temizlik:** `verify:release` ile canlı ön yüz yayın bayraklarının kapalı olduğunu ve Netlify paket/manifest/rota eşliğini, `tabular-rollout.test.ts` / `integration/tabular.test.mjs` ile backend kapısı kilidini ve ayrı backend kabul adımından (`functions/.env.incagen-eeef4` dağıtım kontrolü / `accept-tabular-cloud` kapalı mod) canlı sunucu kapısının kapalı kaldığını doğrula; önceki sentetik hesap/dosya temizliğinin `verified-clean` olduğunu kontrol et.
 2. **Tek sentetik bağlantı kontrolü:** `check-gemini-cloud` akışıyla tek kontrollü istek gönder; otomatik tekrar yapma. Hata veya timeout gelirse oturumu durdur ve güvenli hata kodunu kaydet.
 3. **Tek CSV/XLSX sentetik çalışma + 6 dil örneklemi:** Yalnız onaylı küçük sentetik veriyle çalıştır; `usage:summarize` çıktısında ölçümsüz/sıfır alan varsa kabul verme.
 4. **Mekanik + insan incelemesi ayrımı:** `acceptance.json` sonrası her rapor için [insan incelemesi kararını](TABULAR-ANALYSIS.md#gerçek-rapor-insan-incelemesi-tablosu) (`reportId`, `reportSha256`, `sourceSha256`, `locale`, tarih, commit) kaydet; geçersiz veya eksik dil varsa genel betayı açma.
