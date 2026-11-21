@@ -259,7 +259,24 @@ it("restores focus to opener on Close, Escape and outside click, uses heading fa
   expect(document.getElementById("report-title")).toHaveFocus();
   view2.unmount();
 
-  // 3. Kullanıcı kapatmadan rota/rapor değişimiyle unmount olursa odağı yeni hedeften çalmaz.
+  // 3. Açıcı DOM'da kalsa bile CSS ile gizli veya devre dışıysa anlamlı rapor başlığına (#report-title) odak düşürür.
+  const viewHidden = render(
+    <main>
+      <h1 id="report-title" tabIndex={-1}>Rapor Başlığı</h1>
+      <button id="hidden-opener" type="button">Gizlenen açıcı</button>
+    </main>,
+  );
+  const hiddenOpener = document.getElementById("hidden-opener") as HTMLButtonElement;
+  hiddenOpener.focus();
+  const dlgHidden = render(<SourceDialog selection={selection} sources={[source]} onClose={onClose} />);
+  hiddenOpener.style.display = "none";
+  await user.click(screen.getByRole("button", { name: "Kaynak incelemesini kapat" }));
+  dlgHidden.unmount();
+  expect(document.getElementById("report-title")).toHaveFocus();
+  expect(hiddenOpener).not.toHaveFocus();
+  viewHidden.unmount();
+
+  // 4. Kullanıcı kapatmadan rota/rapor değişimiyle unmount olursa odağı yeni hedeften çalmaz.
   const view3 = render(<Harness showOpener routeSwitched={false} />);
   const nextTarget = document.createElement("button");
   nextTarget.textContent = "Yeni ekran odağı";

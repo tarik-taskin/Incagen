@@ -49,17 +49,39 @@ export function SourceDialog(props: SourceDialogProps) {
   return <SourceSession key={JSON.stringify(props.selection)} {...props} />;
 }
 
-// Kaynak diyaloğu kapanışında yalnızca erişilebilir, bağlı ve etkin odak hedeflerini kabul eder.
+// Kapatma sonrası hedefin yalnızca DOM'da değil, gerçekten görünür ve etkileşilebilir olduğunu doğrular.
+function isElementVisible(target: HTMLElement): boolean {
+  if (typeof target.checkVisibility === "function" && !target.checkVisibility({ visibilityProperty: true, contentVisibilityAuto: true })) {
+    return false;
+  }
+  for (let node: HTMLElement | null = target; node; node = node.parentElement) {
+    if (node.hidden) return false;
+    const style = window.getComputedStyle(node);
+    if (style.display === "none" || style.visibility === "hidden" || style.visibility === "collapse") return false;
+    const parent = node.parentElement;
+    if (parent?.tagName === "DETAILS" && !(parent as HTMLDetailsElement).open && node.tagName !== "SUMMARY") {
+      return false;
+    }
+  }
+  return true;
+}
+
+// Kaynak diyaloğu kapanışında yalnızca erişilebilir, bağlı, görünür ve etkin odak hedeflerini kabul eder.
 function isFocusableTarget(target: HTMLElement | null): target is HTMLElement {
   if (!target || !target.isConnected || target === document.body) return false;
-  if ("disabled" in target && Boolean((target as HTMLButtonElement).disabled)) return false;
+  try {
+    if (target.matches(":disabled")) return false;
+  } catch {
+    if ("disabled" in target && Boolean((target as HTMLButtonElement).disabled)) return false;
+  }
   if (target.closest("[aria-hidden='true'], [inert]")) return false;
+  if (!isElementVisible(target)) return false;
   return target.hasAttribute("tabindex") || target.tabIndex >= 0;
 }
 
-// Açıcı tetikleyici kaldırıldıysa veya kullanılamıyorsa rapor başlıklarına veya bölüme odak düşer.
+// Açıcı tetikleyici kaldırıldıysa veya gizli/devre dışıysa rapor başlıklarına veya bölüme odak düşer.
 function findSourceDialogFallback(): HTMLElement | null {
-  for (const selector of ["#report-title", "#findings-title", "main h1", "h1", "#bulgular", "main"]) {
+  for (const selector of ["#report-title", "main h1", "h1", "#findings-title", "#bulgular", "main"]) {
     const candidate = document.querySelector<HTMLElement>(selector);
     if (isFocusableTarget(candidate)) return candidate;
   }

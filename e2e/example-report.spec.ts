@@ -50,6 +50,29 @@ test("şirket raporu grafikleri, tabloları ve büyük kaynak aramasını aynı 
   await expect(dialog).toHaveCount(0);
   await expect(net).toBeFocused();
 
+  // Açıcı DOM'da kalsa bile gizlendiğinde kapanış odağı anlamlı rapor başlığına verir; rota dönüşünde odak taşınmaz.
+  await net.click();
+  await expect(dialog).toBeVisible();
+  await net.evaluate(el => { (el as HTMLElement).style.display = "none"; });
+  await dialog.getByRole("button", { name: "Kaynak incelemesini kapat", exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
+  await page.evaluate(() => {
+    for (const button of document.querySelectorAll("button")) {
+      if ((button as HTMLElement).style.display === "none") (button as HTMLElement).style.display = "";
+    }
+  });
+  await expect(net).toBeVisible();
+  // Kaynak diyaloğu açıkken tarayıcı geri düğmesiyle rota değiştiğinde eski pencere odağı geri almaz.
+  await net.click();
+  await expect(dialog).toBeVisible();
+  await page.goBack();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Örnek raporu incele" })).toBeVisible();
+  await page.goForward();
+  await expect(net).toBeVisible();
+
   await page.getByTestId("chart-trend").scrollIntoViewIfNeeded();
   await expect(page.getByTestId("chart-trend").locator("path[fill='#7351b5'], path[stroke='#7351b5']").first()).toBeVisible();
   await page.getByRole("button", { name: "Aylık net satış veri tablosu" }).click();
