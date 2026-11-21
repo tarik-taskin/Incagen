@@ -5,13 +5,14 @@ import { OperationStatus } from "../components/operation-status";
 import { analysisDisplayStatus } from "../features/reports/analysis-status";
 import { PageLoading } from "../components/page-loading";
 import { t, useLocale } from "../i18n/runtime";
-import { lazy, Suspense, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Check, FilePlus2, TriangleAlert } from "lucide-react";
 import { useWorkspace } from "../lib/workspace-context";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { httpsCallable } from "firebase/functions";
 import { Button } from "../components/ui/button";
 import { PreparedDocuments } from "../components/prepared-documents";
+import { buildHistoryReturnTarget, parseHistoryView } from "../features/history/history-view";
 import { useAnalysis } from "../hooks/use-analyses";
 import { useDeadlineReached } from "../hooks/use-deadline-reached";
 import { getServices } from "../lib/firebase";
@@ -46,12 +47,21 @@ function AnalysisScreen({ id }: { id: string }) {
   // Ortak lease sinyali snapshot/sekme dönüşünde günceller; saat kopyası veya polling tutmaz.
   useDeadlineReached(analysis?.ai?.status === "running" ? analysis.ai.leaseUntil : undefined);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const backToHistoryPath = buildHistoryReturnTarget(parseHistoryView(searchParams));
   const [deleteSnapshot, setDeleteSnapshot] = useState<{ items: DeleteItem[]; analysis: Analysis; opener: HTMLElement | null } | null>(null);
   const deleteButtonRef = useRef<HTMLButtonElement>(null);
   const reportTitleRef = useRef<HTMLHeadingElement>(null);
   const backToHistoryRef = useRef<HTMLAnchorElement>(null);
   const visibleAnalysis = analysis ?? deleteSnapshot?.analysis;
   const deleteTarget = deleteSnapshot?.items ?? null;
+
+  useEffect(() => {
+    const outcome = workspace.outcome;
+    if (outcome && outcome.id === id && (outcome.kind === "ready" || outcome.kind === "review")) {
+      workspace.dismissOutcome?.();
+    }
+  }, [workspace, id]);
 
   // Hazırlığı mevcut kayıt ve çalışma bağlamında yeniden çalıştırır.
   async function prepare(reviewToken?: string) {
@@ -84,7 +94,7 @@ function AnalysisScreen({ id }: { id: string }) {
       onClose={() => setDeleteSnapshot(null)}
       onSuccess={() => {
         setDeleteSnapshot(null);
-        if (context.current) navigate("/app/history", { replace: true });
+        if (context.current) navigate(backToHistoryPath, { replace: true });
       }}
     />
   );
@@ -93,15 +103,17 @@ function AnalysisScreen({ id }: { id: string }) {
   if (loading && !deleteSnapshot) {
     body = <PageLoading label="Analiz hazırlanıyor…" />;
   } else if (!visibleAnalysis || (error && !deleteSnapshot)) {
-    body = <div><p role="alert">{t(error || "Analiz bulunamadı veya silindi.")}</p><Link ref={backToHistoryRef} className="underline" to="/app/history">{t("Geçmişe dön")}</Link></div>;
+    body = <div><p role="alert">{t(error || "Analiz bulunamadı veya silindi.")}</p><Link ref={backToHistoryRef} className="underline" to={backToHistoryPath}>{t("Geçmişe dön")}</Link></div>;
   } else {
     const report = visibleAnalysis.report;
     const tabular = (import.meta.env.VITE_TABULAR_ANALYSIS_ENABLED === "true" || Boolean(visibleAnalysis.ai))
       && report?.sources.some(source => /\.(csv|xlsx)$/i.test(source.name));
     const status = analysisDisplayStatus(visibleAnalysis).label;
+    const readyCount = visibleAnalysis.preparationReview?.ready.length ?? 0;
+    const hasOwnedDraft = workspace.draftAnalysisId === id && (workspace.selection?.files.length ?? 0) > 0;
 
     body = <section aria-labelledby="report-title">
-      <Link to="/app/history" className="text-sm text-primary underline dark:text-secondary">{t("← Geçmiş analizler")}</Link>
+      <Link to={backToHistoryPath} className="text-sm text-primary underline dark:text-secondary">{t("← Geçmiş analizler")}</Link>
       <div className="mt-4 flex flex-wrap items-start justify-between gap-4"><div><p className="text-sm text-muted-foreground">{visibleAnalysis.business}</p><h1 ref={reportTitleRef} id="report-title" tabIndex={-1} className="mt-1 break-words text-3xl font-semibold focus:outline-none">{visibleAnalysis.title}</h1></div><span role="status" className="rounded-full border border-border bg-card px-4 py-2 text-sm">{t(status)}</span></div>
       {visibleAnalysis.objective && <section className="mt-5 rounded-2xl border border-border bg-card p-4 sm:p-5" aria-labelledby="saved-objective-title"><h2 id="saved-objective-title" className="text-xs font-semibold uppercase tracking-wider text-primary dark:text-secondary">{t("Analiz hedefi")}</h2><p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6">{visibleAnalysis.objective}</p></section>}
       {visibleAnalysis.status === "completed" && !tabular && <p className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm dark:border-secondary/20">{t(tr.analysis.disclaimer)}</p>}
@@ -117,7 +129,13 @@ function AnalysisScreen({ id }: { id: string }) {
           {visibleAnalysis.preparationReview.ready.map(source => <li key={source.id} className="flex min-w-0 items-center gap-3 px-4 py-3 text-sm"><Check className="h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300" aria-hidden="true" /><span className="min-w-0 break-all">{source.name}</span><span className="ms-auto shrink-0 text-xs text-muted-foreground">{t("Hazır")}</span></li>)}
           {visibleAnalysis.preparationReview.rejected.map(source => <li key={source.id} className="flex min-w-0 gap-3 px-4 py-3 text-sm"><TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300" aria-hidden="true" /><div className="min-w-0"><p className="break-all font-medium">{source.name}</p><p className="mt-1 break-words text-xs leading-5 text-muted-foreground">{t(source.reason)}</p></div></li>)}
         </ul>
-        <div className="mt-5 flex flex-wrap gap-3"><Button disabled={busy || deleting} className="h-auto min-h-11 whitespace-normal text-start" onClick={() => prepare(visibleAnalysis.preparationReview!.token)}>{busy ? t("Belgeler hazırlanıyor…") : t("Yalnız {0} belgeyle devam et", visibleAnalysis.preparationReview.ready.length)}</Button><Button asChild variant="outline"><Link to="/app/new-analysis">{t("Dosyaları düzenle")}</Link></Button></div>
+        <div className="mt-5 flex flex-wrap gap-3">
+          {readyCount > 0 && <Button disabled={busy || deleting} className="h-auto min-h-11 whitespace-normal text-start" onClick={() => prepare(visibleAnalysis.preparationReview!.token)}>{busy ? t("Belgeler hazırlanıyor…") : t("Yalnız {0} belgeyle devam et", readyCount)}</Button>}
+          {hasOwnedDraft
+            ? <Button asChild variant="outline"><Link to="/app/new-analysis">{t("Dosyaları düzenle")}</Link></Button>
+            : <Button asChild variant={readyCount > 0 ? "outline" : "default"}><Link to="/app/new-analysis">{t("Belgeleri yeniden seç")}</Link></Button>}
+        </div>
+        {!hasOwnedDraft && <p className="mt-3 text-xs leading-5 text-muted-foreground">{t("Özgün yerel dosyalar bu tarayıcı oturumunda artık bulunmuyor. Düzenlemek veya dosyaları değiştirmek için yeni seçim yapabilirsiniz.")}</p>}
         <p className="mt-3 text-xs leading-5 text-muted-foreground">{t("Devam ettiğinizde hazırlanabilen belgeler kullanılır; dışarıda kalanlar sonuçta belirtilir.")}</p>
       </section>}
       {visibleAnalysis.status === "failed" && !!visibleAnalysis.preparationFailures?.length && <ul className="mt-5 space-y-3 rounded-2xl border border-border bg-card p-5 text-sm" aria-label={t("Hazırlanamayan belgeler")}>{visibleAnalysis.preparationFailures.map(source => <li key={source.id}><p className="break-all font-medium">{source.name}</p><p className="mt-1 text-xs leading-5 text-muted-foreground">{t(source.reason)}</p></li>)}</ul>}

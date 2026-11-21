@@ -127,6 +127,11 @@ test("bozuk belge açık onay ister, taslak korunur, geçerli belgeyle sonuç ve
   await expect(page.getByRole("textbox", { name: "Analiz hedefi", exact: true })).toHaveValue("Faaliyet içindeki öncelikleri belirle");
   await expect(page.getByText("bozuk.pdf", { exact: true })).toBeVisible();
   await page.getByRole("link", { name: "Son işlemi aç", exact: true }).click();
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Belgeleri gözden geçirin" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Dosyaları düzenle", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Belgeleri yeniden seç", exact: true })).toBeVisible();
+  await expect(page.getByText(/Özgün yerel dosyalar bu tarayıcı oturumunda artık bulunmuyor/)).toBeVisible();
   await page.getByRole("button", { name: "Yalnız 1 belgeyle devam et", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Belgelerin içeriği ayrıştırıldı" })).toBeVisible();
   await page.getByText("Kapsam dışında kalan 1 belge", { exact: true }).click();
@@ -145,5 +150,12 @@ test("bozuk belge açık onay ister, taslak korunur, geçerli belgeyle sonuç ve
   await page.reload();
   await expect(page.getByRole("searchbox", { name: "Arşivde ara" })).toHaveValue("faaliyet icindeki");
   await expect(page.getByRole("combobox", { name: "Tarihe göre filtrele", exact: true })).toHaveText("Son 7 gün");
+  await page.getByRole("link", { name: /Kaynak kontrolü/ }).click();
+  await expect(page).toHaveURL(/q=faaliyet\+icindeki/);
+  await expect(page).toHaveURL(/period=7d/);
+  await page.getByRole("link", { name: "← Geçmiş analizler", exact: true }).click();
+  await expect(page).toHaveURL(/q=faaliyet\+icindeki/);
+  await expect(page).toHaveURL(/period=7d/);
+  await expect(page.getByRole("searchbox", { name: "Arşivde ara" })).toHaveValue("faaliyet icindeki");
   await checkPage(page);
 });

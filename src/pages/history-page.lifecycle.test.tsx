@@ -387,4 +387,27 @@ describe("HistoryPage - analiz silme onay, ilerleme ve kısmi hata tekrarı", ()
     await user.click(within(dialog).getByRole("button", { name: "Kapat" }));
     expect(screen.getByRole("link", { name: "İlk analizini hazırla" })).toHaveFocus();
   });
+
+  it("kart ve menüden analiz açarken mevcut arama ve filtre parametrelerini taşır", async () => {
+    mocks.loading = false;
+    mocks.error = null;
+    const user = userEvent.setup();
+    mocks.rows = [
+      { id: "h1", title: "Birinci Analiz", business: "B1", status: "completed", createdAt: Date.now() - 1000, updatedAt: Date.now() },
+    ];
+
+    render(
+      <MemoryRouter initialEntries={["/app/history?q=Birinci&status=completed&period=30d&sort=title&evil=drop"]}>
+        <WorkspaceDeletionProvider uid="test-user">
+          <HistoryPage />
+        </WorkspaceDeletionProvider>
+      </MemoryRouter>,
+    );
+
+    const expectedHref = "/app/analyses/h1?q=Birinci&status=completed&period=30d&sort=title";
+    expect(screen.getByRole("link", { name: /Birinci Analiz/ })).toHaveAttribute("href", expectedHref);
+
+    await user.click(screen.getByRole("button", { name: "Birinci Analiz için diğer işlemler" }));
+    expect(screen.getByRole("link", { name: "Analizi aç" })).toHaveAttribute("href", expectedHref);
+  });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Analysis, AnalysisStatus } from "../../../functions/src/contracts";
-import { buildHistoryView, parseHistoryView, serializeHistoryView, summarizeHistory } from "./history-view";
+import { buildAnalysisDetailPath, buildHistoryReturnTarget, buildHistoryView, parseHistoryView, serializeHistoryView, summarizeHistory } from "./history-view";
 
 function analysis(id: string, status: AnalysisStatus): Analysis {
   return { id, title: id, business: "Sentetik İşletme", status, createdAt: 1, updatedAt: 1 };
@@ -145,4 +145,14 @@ it("finds source names from preparation review, failures and excluded sources wi
   }
   expect(buildHistoryView(rows, { ...options, query: "bozuk kaynak", status: "completed" })).toEqual([]);
   expect(summarizeHistory(rows)).toEqual({ total: 3, completed: 1, active: 0, failed: 2 });
+});
+
+it("builds sanitized history return targets and detail paths without leaking external parameters", () => {
+  const dirty = new URLSearchParams("q=Rapor&status=invalid&period=7d&sort=evil&redirect=https://evil.test&selected=a");
+  expect(buildHistoryReturnTarget(parseHistoryView(dirty))).toBe("/app/history?q=Rapor&period=7d");
+  expect(buildHistoryReturnTarget(parseHistoryView(new URLSearchParams("status=all&sort=newest")))).toBe("/app/history");
+  expect(buildAnalysisDetailPath("a1", { query: "Satış", status: "completed", period: "30d", sort: "title" }))
+    .toBe("/app/analyses/a1?q=Sat%C4%B1%C5%9F&status=completed&period=30d&sort=title");
+  expect(buildAnalysisDetailPath("a1", { query: "", status: "all", period: "all", sort: "newest" }))
+    .toBe("/app/analyses/a1");
 });

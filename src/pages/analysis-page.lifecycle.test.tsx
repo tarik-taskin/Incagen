@@ -1,20 +1,30 @@
 import { WorkspaceDeletionProvider } from "../components/workspace-deletion-provider";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter, Route, Routes, useNavigate } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { Analysis } from "../../functions/src/contracts";
 import type { AiJob } from "../../functions/src/analysis/tabular-contract";
 import { AnalysisPage } from "./analysis-page";
 
 const state = vi.hoisted(() => ({
-  user: { uid: "owner-a" }, activeId: "a", completeDraft: vi.fn(), call: vi.fn(),
+  user: { uid: "owner-a" }, activeId: "a", draftAnalysisId: "", selectionFiles: 0,
+  outcome: null as null | { kind: "ready"; id: string }, dismissOutcome: vi.fn(), completeDraft: vi.fn(), call: vi.fn(),
   analyses: {} as Record<string, Analysis>,
   loading: false,
   error: "",
 }));
 vi.mock("../lib/auth-context", () => ({ useAuth: () => ({ user: state.user }) }));
-vi.mock("../lib/workspace-context", () => ({ useWorkspace: () => ({ activeId: state.activeId, completeDraft: state.completeDraft }) }));
+vi.mock("../lib/workspace-context", () => ({
+  useWorkspace: () => ({
+    activeId: state.activeId,
+    draftAnalysisId: state.draftAnalysisId,
+    selection: { files: Array.from({ length: state.selectionFiles }) },
+    outcome: state.outcome,
+    dismissOutcome: state.dismissOutcome,
+    completeDraft: state.completeDraft,
+  }),
+}));
 vi.mock("../hooks/use-analyses", () => ({ useAnalysis: (id: string) => ({ analysis: state.analyses[id], loading: state.loading, error: state.error }) }));
 vi.mock("../lib/firebase", () => ({ getServices: () => ({ functions: {}, auth: { currentUser: state.user } }) }));
 vi.mock("firebase/functions", () => ({ httpsCallable: () => state.call }));
@@ -39,7 +49,8 @@ function deferred() {
 }
 
 beforeEach(() => {
-  state.user = { uid: "owner-a" }; state.activeId = "a"; state.loading = false; state.error = ""; state.completeDraft.mockReset(); state.call.mockReset();
+  state.user = { uid: "owner-a" }; state.activeId = "a"; state.draftAnalysisId = ""; state.selectionFiles = 0; state.outcome = null; state.loading = false; state.error = "";
+  state.dismissOutcome.mockReset(); state.completeDraft.mockReset(); state.call.mockReset();
   state.analyses = Object.fromEntries(["a", "b"].map(id => [id, { id, title: `Report ${id}`, business: "Synthetic", status: "completed", createdAt: 1, updatedAt: 1 }]));
   HTMLDialogElement.prototype.showModal = function () { this.setAttribute("open", ""); };
   HTMLDialogElement.prototype.close = function () { this.removeAttribute("open"); };
@@ -304,3 +315,75 @@ it("restores focus to the delete trigger on Vazgeç/Escape/outside click, and us
   await user.click(within(dialog).getByRole("button", { name: "Kapat" }));
   expect(screen.getByRole("link", { name: "Geçmişe dön" })).toHaveFocus();
 });
+
+it("kısmi incelemede hazır belge ve yerel taslak sahipliğine göre devam/düzenle veya yeniden seç sunar", () => {
+  state.analyses.a = {
+    id: "a",
+    title: "İnceleme Kaydı",
+    business: "Sentetik",
+    status: "review",
+    createdAt: 1,
+    updatedAt: 1,
+    preparationReview: {
+      token: "tok-1",
+      ready: [{ id: "r1", name: "hazir.txt" }],
+      rejected: [{ id: "bad", name: "bozuk.pdf", reason: "Dosya içeriği okunamadı." }],
+    },
+  };
+
+  // Başka oturum veya temizlenmiş yerel taslak varken "Dosyaları düzenle" görünmez; "Belgeleri yeniden seç" çıkar.
+  state.draftAnalysisId = "other-analysis";
+  state.selectionFiles = 1;
+  const view = render(<MemoryRouter initialEntries={["/app/analyses/a"]}><App /></MemoryRouter>);
+  expect(screen.getByRole("button", { name: "Yalnız 1 belgeyle devam et" })).toBeVisible();
+  expect(screen.queryByRole("link", { name: "Dosyaları düzenle" })).not.toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Belgeleri yeniden seç" })).toHaveAttribute("href", "/app/new-analysis");
+  expect(screen.getByText(/Özgün yerel dosyalar bu tarayıcı oturumunda artık bulunmuyor/)).toBeVisible();
+
+  // Yerel taslak bu kayda aitse "Dosyaları düzenle" gösterilir.
+  state.draftAnalysisId = "a";
+  state.selectionFiles = 1;
+  view.rerender(<MemoryRouter initialEntries={["/app/analyses/a"]}><App /></MemoryRouter>);
+  expect(screen.getByRole("link", { name: "Dosyaları düzenle" })).toHaveAttribute("href", "/app/new-analysis");
+  expect(screen.queryByRole("link", { name: "Belgeleri yeniden seç" })).not.toBeInTheDocument();
+
+  // Hazır belge yoksa "Yalnız 0 belgeyle devam et" butonu kesinlikle render edilmez.
+  state.analyses.a = {
+    ...state.analyses.a,
+    preparationReview: { token: "tok-2", ready: [], rejected: [{ id: "bad", name: "bozuk.pdf", reason: "Dosya içeriği okunamadı." }] },
+  };
+  view.rerender(<MemoryRouter initialEntries={["/app/analyses/a"]}><App /></MemoryRouter>);
+  expect(screen.queryByRole("button", { name: /belgeyle devam et/ })).not.toBeInTheDocument();
+});
+
+it("geçmiş arama ve filtre sorgusunu geri dönüşte, eksik kayıtta ve silme sonrası yönlendirmede korur", async () => {
+  const user = userEvent.setup();
+  const deleteRequest = deferred();
+  state.call.mockReturnValueOnce(deleteRequest.promise);
+
+  render(
+    <MemoryRouter initialEntries={["/app/analyses/a?q=Sat%C4%B1%C5%9F&status=completed&period=30d&sort=title&evil=https://evil.test&selected=a"]}>
+      <WorkspaceDeletionProvider key={state.user.uid} uid={state.user.uid}>
+        <Routes>
+          <Route path="/app/analyses/:id" element={<AnalysisPage />} />
+          <Route path="/app/history" element={<HistoryTargetEcho />} />
+        </Routes>
+      </WorkspaceDeletionProvider>
+    </MemoryRouter>,
+  );
+
+  expect(screen.getByRole("link", { name: "← Geçmiş analizler" }))
+    .toHaveAttribute("href", "/app/history?q=Sat%C4%B1%C5%9F&status=completed&period=30d&sort=title");
+
+  await user.click(screen.getByRole("button", { name: "Analizi ve belgeleri sil" }));
+  await user.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Analizi sil" }));
+  await act(async () => { deleteRequest.resolve({ data: { deleted: true } }); });
+
+  expect(await screen.findByTestId("history-location"))
+    .toHaveTextContent("/app/history?q=Sat%C4%B1%C5%9F&status=completed&period=30d&sort=title");
+});
+
+function HistoryTargetEcho() {
+  const location = useLocation();
+  return <p data-testid="history-location">{location.pathname + location.search}</p>;
+}

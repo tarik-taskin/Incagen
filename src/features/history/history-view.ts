@@ -51,6 +51,18 @@ export function serializeHistoryView(options: HistoryViewOptions) {
   return params;
 }
 
+// Doğrulanmış filtre parametrelerini sabit Geçmiş rotasına bağlayarak güvenli dönüş hedefi üretir.
+export function buildHistoryReturnTarget(options: HistoryViewOptions) {
+  const query = serializeHistoryView(options).toString();
+  return query ? `/app/history?${query}` : "/app/history";
+}
+
+// Rapor bağlantılarında yalnızca doğrulanmış Geçmiş filtre bağlamını taşır; harici URL veya kimlik eklemez.
+export function buildAnalysisDetailPath(id: string, options: HistoryViewOptions) {
+  const query = serializeHistoryView(options).toString();
+  return query ? `/app/analyses/${id}?${query}` : `/app/analyses/${id}`;
+}
+
 /**
  * Türkçe karakter ve boşluk farklarını aramada kullanıcı için öngörülebilir hale getirir.
  */

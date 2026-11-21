@@ -9,7 +9,7 @@ import type { Analysis } from "../../functions/src/contracts";
 import { Button } from "../components/ui/button";
 import { Checkbox } from "../components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { buildHistoryView, DEFAULT_HISTORY_VIEW, parseHistoryView, serializeHistoryView, summarizeHistory, type HistoryPeriodFilter, type HistorySort, type HistoryStatusFilter, type HistoryViewOptions } from "../features/history/history-view";
+import { buildAnalysisDetailPath, buildHistoryView, DEFAULT_HISTORY_VIEW, parseHistoryView, serializeHistoryView, summarizeHistory, type HistoryPeriodFilter, type HistorySort, type HistoryStatusFilter, type HistoryViewOptions } from "../features/history/history-view";
 import { useAnalyses } from "../hooks/use-analyses";
 import { tr } from "../i18n/tr";
 import { authOnlyPreview } from "../lib/deployment-mode";
@@ -24,7 +24,7 @@ function statusTone(status: Analysis["status"]) {
 }
 
 // Tekli silmeyi bağlamsal menüye yerleştirir; mobilde menüyü sabit alt navigasyonun üstüne açar.
-function HistoryActions({ analysis, disabled, onDelete }: { analysis: Analysis; disabled: boolean; onDelete: (opener: HTMLElement | null) => void }) {
+function HistoryActions({ analysis, openHref, disabled, onDelete }: { analysis: Analysis; openHref: string; disabled: boolean; onDelete: (opener: HTMLElement | null) => void }) {
   useLocale();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -60,7 +60,7 @@ function HistoryActions({ analysis, disabled, onDelete }: { analysis: Analysis; 
       <MoreHorizontal className="h-5 w-5" aria-hidden="true" />
     </button>
     {open && <div id={"history-actions-" + analysis.id} className="absolute bottom-full end-0 z-40 mb-1.5 w-48 rounded-2xl border border-border bg-card p-1.5 shadow-xl lg:bottom-auto lg:top-full lg:mb-0 lg:mt-1.5" aria-label={t("{0} işlemleri", analysis.title)}>
-      <Link ref={firstActionRef} to={"/app/analyses/" + analysis.id}
+      <Link ref={firstActionRef} to={openHref}
         className="flex min-h-10 items-center justify-between gap-2 rounded-xl px-3 text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         onClick={() => setOpen(false)}>{t("Analizi aç")} <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
       <div className="my-1 border-t border-border" />
@@ -280,14 +280,14 @@ export function HistoryPage() {
         <span className="min-w-0 flex-1"><span className="block break-words font-semibold">{analysis.title}</span><span className="mt-1 block text-xs text-muted-foreground">{analysis.business} · {new Date(analysis.createdAt).toLocaleString(localeTag())}</span></span>
         <span className={"rounded-full border px-3 py-1 text-xs font-medium " + statusTone(analysisDisplayStatus(analysis, now).state)}>{t(pendingIds.has(analysis.id) ? "Analiz siliniyor…" : analysisDisplayStatus(analysis, now).label)}</span>
       </label> : <div className="flex min-h-28 items-center gap-2 p-2 sm:gap-3">
-        <Link className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl px-2 py-3 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:gap-5 sm:px-4" to={"/app/analyses/" + analysis.id}>
+        <Link className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl px-2 py-3 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:gap-5 sm:px-4" to={buildAnalysisDetailPath(analysis.id, view)}>
           <span className="hidden h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-primary/[0.07] text-primary dark:bg-secondary/[0.08] dark:text-secondary sm:flex"><span className="text-lg font-bold leading-none">{new Date(analysis.createdAt).toLocaleDateString(localeTag(), { day: "2-digit" })}</span><span className="mt-1 text-[10px] font-semibold uppercase">{new Date(analysis.createdAt).toLocaleDateString(localeTag(), { month: "short" })}</span></span>
           <span className="min-w-0 flex-1"><span className="block break-words text-sm font-semibold tracking-tight sm:text-base">{analysis.title}</span><span className="mt-1.5 block break-words text-xs text-muted-foreground">{analysis.business} <span aria-hidden="true">·</span> {new Date(analysis.createdAt).toLocaleString(localeTag())}</span><span className={"mt-2 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-medium sm:hidden " + statusTone(analysisDisplayStatus(analysis, now).state)}>{t(pendingIds.has(analysis.id) ? "Analiz siliniyor…" : analysisDisplayStatus(analysis, now).label)}</span></span>
           <ArrowUpRight className="hidden h-4 w-4 shrink-0 text-muted-foreground sm:block" aria-hidden="true" />
         </Link>
         <div className="flex shrink-0 items-center gap-1 pe-1 sm:gap-2 sm:pe-2">
           <span className={"hidden rounded-full border px-3 py-1 text-xs font-medium sm:inline-flex " + statusTone(analysisDisplayStatus(analysis, now).state)}>{t(pendingIds.has(analysis.id) ? "Analiz siliniyor…" : analysisDisplayStatus(analysis, now).label)}</span>
-          <HistoryActions analysis={analysis} disabled={interactionLocked} onDelete={opener => setDeleteTarget({ items: [{ id: analysis.id, title: analysis.title }], bulk: false, opener })} />
+          <HistoryActions analysis={analysis} openHref={buildAnalysisDetailPath(analysis.id, view)} disabled={interactionLocked} onDelete={opener => setDeleteTarget({ items: [{ id: analysis.id, title: analysis.title }], bulk: false, opener })} />
         </div>
       </div>}
     </li>)}</ul> : rows.length ? <div className="mt-6 rounded-[1.75rem] border border-dashed border-border bg-card/70 px-6 py-16 text-center shadow-sm">
