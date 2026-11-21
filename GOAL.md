@@ -9,6 +9,10 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
+### 2026-11-21 — Furkan / Antigravity: 10adc93 son kapanış düzeltmesi
+
+- [x] Sahip: Furkan — Bekleyen rapor açıldığında (`dismissOutcome`) Firestore tamamlama takibinin kopmasını önle: [workspace-provider.tsx](src/components/workspace-provider.tsx), [workspace-context.ts](src/lib/workspace-context.ts) ve [preparation-progress.tsx](src/components/upload/preparation-progress.tsx) içinde bildirim görünürlüğü (`outcome`) ile arka plan Firestore tamamlama takibi (`pendingJob` + `jobSeqRef`) ayrıştırıldı; rapor açıldığında (`dismissOutcome`) yalnız bildirim gizlenip `completed` durumunda iş kimliği/taslak örneği/imza eşleşmesiyle dosya, başlık ve hedef bir kez temizlenip işletme korundu; açık `Kapat` düğmesi (`closeOutcome`) bildirimi ve dinleyiciyi durdurdu; eski iş güncellemelerinin daha yeni işin bildirimini ezmesi engellendi. Düzeltme öncesi `desktop-chromium` ve `mobile-chromium` üzerinde yakalanan 4 yeni kabul vakası düzeltme sonrası geçti (`lint`, `38` arayüz/`246`, `15` Functions/`144`, `66` script, `build`, `13` entegrasyon, `97` tarayıcı / `3` mevcut platform atlaması).
+
 ### 2026-11-21 — Furkan / Antigravity: fe9d33f inceleme regresyonları
 
 - [x] Sahip: Furkan — Regresyon 1 (Eski onay yeni taslağı temizleyemesin): [workspace-provider.tsx](src/components/workspace-provider.tsx) içinde taslak temizliği iş kimliği, taslak örneği kimliği (`draftInstanceRef`) ve içerik imzasının (`latestSignatureRef`) birlikte eşleşmesine bağlandı; `Tümünü temizle` veya yeni gönderimle önceki örnekler geçersiz kılınarak B hazırlama hatası sonrası aynı başlık, hedef ve özgün dosyalarla kurulan yeni taslağın eski A kısmi onayıyla silinmesi önlendi (mevcut A/B yarış testiyle birlikte masaüstü/mobil emülatörde doğrulandı).
