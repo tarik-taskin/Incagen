@@ -1146,5 +1146,17 @@
   "Siliniyor…": "Siliniyor…",
   "Siliniyor… {0}/{1}": "Siliniyor… {0}/{1}",
   "Başarısızları yeniden dene": "Başarısızları yeniden dene",
-  "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz.": "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz."
+  "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz.": "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz.",
+  "Belgeleriniz hazır": "Belgeleriniz hazır",
+  "Hazırlık özeti oluşturuldu. İsterseniz şimdi inceleyebilirsiniz.": "Hazırlık özeti oluşturuldu. İsterseniz şimdi inceleyebilirsiniz.",
+  "Hazırlık özetini aç": "Hazırlık özetini aç",
+  "Bazı belgeler inceleme bekliyor": "Bazı belgeler inceleme bekliyor",
+  "Bazı dosyalar hazırlanamadı; hazır olanlarla devam etmek için açık onayınız gerekir.": "Bazı dosyalar hazırlanamadı; hazır olanlarla devam etmek için açık onayınız gerekir.",
+  "İncelemeyi aç": "İncelemeyi aç",
+  "Belgeler hazırlanamadı": "Belgeler hazırlanamadı",
+  "Hazırlama durduruldu": "Hazırlama durduruldu",
+  "Yeni analize dön": "Yeni analize dön",
+  "Desteklenen formatlar": "Desteklenen formatlar",
+  "Belgeleri yeniden seç": "Belgeleri yeniden seç",
+  "Özgün yerel dosyalar bu tarayıcı oturumunda artık bulunmuyor. Düzenlemek veya dosyaları değiştirmek için yeni seçim yapabilirsiniz.": "Özgün yerel dosyalar bu tarayıcı oturumunda artık bulunmuyor. Düzenlemek veya dosyaları değiştirmek için yeni seçim yapabilirsiniz."
 }

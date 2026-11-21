@@ -1146,5 +1146,17 @@
   "Siliniyor…": "正在删除…",
   "Siliniyor… {0}/{1}": "正在删除… {0}/{1}",
   "Başarısızları yeniden dene": "重试失败项",
-  "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz.": "您可以仅重试失败的记录，或关闭此窗口。"
+  "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz.": "您可以仅重试失败的记录，或关闭此窗口。",
+  "Belgeleriniz hazır": "您的文档已就绪",
+  "Hazırlık özeti oluşturuldu. İsterseniz şimdi inceleyebilirsiniz.": "准备摘要已生成，您现在可以查看。",
+  "Hazırlık özetini aç": "打开准备摘要",
+  "Bazı belgeler inceleme bekliyor": "部分文档等待审核",
+  "Bazı dosyalar hazırlanamadı; hazır olanlarla devam etmek için açık onayınız gerekir.": "部分文件未能准备就绪；需要您的明确确认才能继续处理可用文件。",
+  "İncelemeyi aç": "打开审核",
+  "Belgeler hazırlanamadı": "无法准备文档",
+  "Hazırlama durduruldu": "准备已停止",
+  "Yeni analize dön": "返回新建分析",
+  "Desteklenen formatlar": "支持的格式",
+  "Belgeleri yeniden seç": "重新选择文档",
+  "Özgün yerel dosyalar bu tarayıcı oturumunda artık bulunmuyor. Düzenlemek veya dosyaları değiştirmek için yeni seçim yapabilirsiniz.": "原始本地文件已不再存在于此浏览器会话中。您可以重新选择文件以进行编辑或替换。"
 }

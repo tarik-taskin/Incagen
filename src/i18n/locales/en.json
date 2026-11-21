@@ -1146,5 +1146,17 @@
   "Siliniyor…": "Deleting…",
   "Siliniyor… {0}/{1}": "Deleting… {0}/{1}",
   "Başarısızları yeniden dene": "Retry failed",
-  "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz.": "You can retry only the failed records or close this dialog."
+  "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz.": "You can retry only the failed records or close this dialog.",
+  "Belgeleriniz hazır": "Your documents are ready",
+  "Hazırlık özeti oluşturuldu. İsterseniz şimdi inceleyebilirsiniz.": "The preparation summary has been created. You can review it whenever you're ready.",
+  "Hazırlık özetini aç": "Open preparation summary",
+  "Bazı belgeler inceleme bekliyor": "Some documents need review",
+  "Bazı dosyalar hazırlanamadı; hazır olanlarla devam etmek için açık onayınız gerekir.": "Some files could not be prepared; your explicit confirmation is needed to continue with the ready ones.",
+  "İncelemeyi aç": "Open review",
+  "Belgeler hazırlanamadı": "Could not prepare documents",
+  "Hazırlama durduruldu": "Preparation stopped",
+  "Yeni analize dön": "Return to new analysis",
+  "Desteklenen formatlar": "Supported formats",
+  "Belgeleri yeniden seç": "Select documents again",
+  "Özgün yerel dosyalar bu tarayıcı oturumunda artık bulunmuyor. Düzenlemek veya dosyaları değiştirmek için yeni seçim yapabilirsiniz.": "The original local files are no longer available in this browser session. You can select files again to edit or replace them."
 }

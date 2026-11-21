@@ -1146,5 +1146,17 @@
   "Siliniyor…": "جارٍ الحذف…",
   "Siliniyor… {0}/{1}": "جارٍ الحذف… {0}/{1}",
   "Başarısızları yeniden dene": "إعادة محاولة العناصر الفاشلة",
-  "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz.": "يمكنك إعادة محاولة السجلات الفاشلة فقط أو إغلاق هذه النافذة."
+  "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz.": "يمكنك إعادة محاولة السجلات الفاشلة فقط أو إغلاق هذه النافذة.",
+  "Belgeleriniz hazır": "مستنداتك جاهزة",
+  "Hazırlık özeti oluşturuldu. İsterseniz şimdi inceleyebilirsiniz.": "تم إنشاء ملخص التجهيز. يمكنك مراجعته الآن.",
+  "Hazırlık özetini aç": "فتح ملخص التجهيز",
+  "Bazı belgeler inceleme bekliyor": "بعض المستندات بانتظار المراجعة",
+  "Bazı dosyalar hazırlanamadı; hazır olanlarla devam etmek için açık onayınız gerekir.": "تعذّر تجهيز بعض الملفات؛ يلزم تأكيدك الصريح للمتابعة بالملفات الجاهزة.",
+  "İncelemeyi aç": "فتح المراجعة",
+  "Belgeler hazırlanamadı": "تعذّر تجهيز المستندات",
+  "Hazırlama durduruldu": "تم إيقاف التجهيز",
+  "Yeni analize dön": "العودة إلى تحليل جديد",
+  "Desteklenen formatlar": "التنسيقات المدعومة",
+  "Belgeleri yeniden seç": "إعادة اختيار المستندات",
+  "Özgün yerel dosyalar bu tarayıcı oturumunda artık bulunmuyor. Düzenlemek veya dosyaları değiştirmek için yeni seçim yapabilirsiniz.": "لم تعد الملفات المحلية الأصلية متوفرة في جلسة المتصفح هذه. يمكنك إعادة اختيار الملفات لتعديلها أو استبدالها."
 }

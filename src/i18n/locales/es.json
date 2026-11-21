@@ -1146,5 +1146,17 @@
   "Siliniyor…": "Eliminando…",
   "Siliniyor… {0}/{1}": "Eliminando… {0}/{1}",
   "Başarısızları yeniden dene": "Reintentar fallidos",
-  "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz.": "Puede reintentar solo los registros fallidos o cerrar esta ventana."
+  "Yalnız başarısız kayıtları yeniden deneyebilir veya pencereyi kapatabilirsiniz.": "Puede reintentar solo los registros fallidos o cerrar esta ventana.",
+  "Belgeleriniz hazır": "Tus documentos están listos",
+  "Hazırlık özeti oluşturuldu. İsterseniz şimdi inceleyebilirsiniz.": "Se creó el resumen de preparación. Puedes revisarlo cuando quieras.",
+  "Hazırlık özetini aç": "Abrir resumen de preparación",
+  "Bazı belgeler inceleme bekliyor": "Algunos documentos requieren revisión",
+  "Bazı dosyalar hazırlanamadı; hazır olanlarla devam etmek için açık onayınız gerekir.": "Algunos archivos no pudieron prepararse; se necesita tu confirmación explícita para continuar con los disponibles.",
+  "İncelemeyi aç": "Abrir revisión",
+  "Belgeler hazırlanamadı": "No se pudieron preparar los documentos",
+  "Hazırlama durduruldu": "Preparación detenida",
+  "Yeni analize dön": "Volver a nuevo análisis",
+  "Desteklenen formatlar": "Formatos admitidos",
+  "Belgeleri yeniden seç": "Volver a seleccionar documentos",
+  "Özgün yerel dosyalar bu tarayıcı oturumunda artık bulunmuyor. Düzenlemek veya dosyaları değiştirmek için yeni seçim yapabilirsiniz.": "Los archivos locales originales ya no están disponibles en esta sesión del navegador. Puedes volver a seleccionarlos para editarlos o reemplazarlos."
 }
