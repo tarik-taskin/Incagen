@@ -391,3 +391,31 @@ test("yavaş görünüm güncellemesinde yeni adresin gerçek pano bildirimi kor
     await session.detach();
   }
 });
+
+test("örnek rapordan satış CSV'si ZIP açmadan indirilebilir ve yeni analiz yolu otomatik iş başlatmaz", async ({ page }) => {
+  await page.goto("/ornek-rapor");
+  const csvDownloadPromise = page.waitForEvent("download");
+  await page.getByRole("link", { name: /Örnek satış CSV’sini indir/ }).click();
+  const csvDownload = await csvDownloadPromise;
+  expect(csvDownload.suggestedFilename()).toBe("atlas-satis-2025.csv");
+  expect(await csvDownload.failure()).toBeNull();
+
+  const zipDownloadPromise = page.waitForEvent("download");
+  await page.getByRole("link", { name: /Örnek belgeleri indir/ }).click();
+  const zipDownload = await zipDownloadPromise;
+  expect(zipDownload.suggestedFilename()).toBe("atlas-teknoloji-2025.zip");
+  expect(await zipDownload.failure()).toBeNull();
+
+  await expect(page.getByText(/Tıklama otomatik yükleme veya iş başlatmaz/)).toBeVisible();
+  const newAnalysisLink = page.getByRole("link", { name: "Yeni analiz ekranını aç", exact: true });
+  await expect(newAnalysisLink).toHaveAttribute("href", "/app/new-analysis");
+  await newAnalysisLink.click();
+  await expect(page.getByRole("dialog", { name: "Giriş yap" })).toBeVisible();
+
+  await page.goto("/ornek-rapor/musteri-deneyimi");
+  const feedbackDownloadPromise = page.waitForEvent("download");
+  await page.getByRole("link", { name: "Örnek yorumları indir", exact: true }).click();
+  const feedbackDownload = await feedbackDownloadPromise;
+  expect(feedbackDownload.suggestedFilename()).toBe("customer-feedback.csv");
+  expect(await feedbackDownload.failure()).toBeNull();
+});

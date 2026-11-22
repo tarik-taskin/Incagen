@@ -1158,5 +1158,15 @@
   "Yeni analize dön": "Zur neuen Analyse zurückkehren",
   "Desteklenen formatlar": "Unterstützte Formate",
   "Belgeleri yeniden seç": "Dokumente erneut auswählen",
-  "Özgün yerel dosyalar bu tarayıcı oturumunda artık bulunmuyor. Düzenlemek veya dosyaları değiştirmek için yeni seçim yapabilirsiniz.": "Die ursprünglichen lokalen Dateien sind in dieser Browsersitzung nicht mehr vorhanden. Sie können Dateien erneut auswählen, um sie zu bearbeiten oder zu ersetzen."
+  "Özgün yerel dosyalar bu tarayıcı oturumunda artık bulunmuyor. Düzenlemek veya dosyaları değiştirmek için yeni seçim yapabilirsiniz.": "Die ursprünglichen lokalen Dateien sind in dieser Browsersitzung nicht mehr vorhanden. Sie können Dateien erneut auswählen, um sie zu bearbeiten oder zu ersetzen.",
+  "Örnek satış CSV’sini indir": "Beispiel-Umsatz-CSV herunterladen",
+  "Bu sentetik satış CSV’sini ZIP açmadan indirip «Analize başla» üzerinden kendi ilk çalışmanızda seçebilirsiniz. Tıklama otomatik yükleme veya iş başlatmaz.": "Laden Sie diese synthetische Umsatz-CSV direkt ohne ZIP-Entpacken herunter und wählen Sie sie über „Analyse starten“ in Ihrer ersten Arbeit aus. Ein Klick startet weder Upload noch Analyse automatisch.",
+  "Yeni analiz ekranını aç": "Neue Analyse öffnen",
+  "Belge hazırlama ve analiz kapsamı": "Dokumentvorbereitung und Analyseumfang",
+  "PDF, DOCX, PPTX, TSV ve diğer desteklenen belgeler kaynakları korunarak hazırlanır. İlk tablo analizi kapsamı yalnızca CSV ve XLSX dosyalarını içerir.": "PDF, DOCX, PPTX, TSV und weitere unterstützte Dokumente werden mit erhaltenen Quellen vorbereitet. Der erste Tabellenanalyse-Umfang umfasst nur CSV- und XLSX-Dateien.",
+  "Seçilen {0} dosya belge hazırlığının ardından ilk tablo analizi (CSV/XLSX) için adaydır.": "Die {0} ausgewählten Datei(en) werden zuerst vorbereitet und kommen für die erste Tabellenanalyse (CSV/XLSX) infrage.",
+  "Seçilen {0} belge (PDF, DOCX, PPTX, TSV vb.) kaynak konumlu özet için hazırlanır; bu seçimde ilk tablo analizi (CSV/XLSX) kapsamına giren dosya yoktur.": "Die {0} ausgewählten Dokument(e) (PDF, DOCX, PPTX, TSV usw.) werden für quellenbasierte Zusammenfassungen vorbereitet; keine Datei dieser Auswahl fällt in den ersten Tabellenanalyse-Umfang (CSV/XLSX).",
+  "Seçilen tüm belgeler kaynaklarıyla hazırlanır. {0} dosya ilk tablo analizine (CSV/XLSX) adaydır; diğer {1} belge yalnızca belge hazırlığında ayrıştırılır.": "Alle ausgewählten Dokumente werden mit ihren Quellen vorbereitet. {0} Datei(en) kommen für die erste Tabellenanalyse (CSV/XLSX) infrage; die übrigen {1} Dokument(e) werden nur für die Dokumentvorbereitung aufbereitet.",
+  "Tablo analizi adayı": "Tabellenanalyse-Kandidat",
+  "Yalnız belge hazırlığı": "Nur Dokumentvorbereitung"
 }

@@ -319,4 +319,38 @@ describe("NewAnalysisPage", () => {
     expect(document.getElementById("new-analysis-title")).toBeInTheDocument();
     expect(dismissOutcome).not.toHaveBeenCalled();
   });
+
+  it.each<Locale>(["tr", "en", "de", "es", "zh", "ar"])("%s: belge hazırlama ile ilk tablo analizi (CSV/XLSX) farkını tek alanda seçime göre açıklar; TSV hazırlıkta kalır", async locale => {
+    setLocale(locale);
+    const user = setupUser();
+    renderPage();
+
+    const scopeNotices = screen.getAllByRole("region", { name: t("Belge hazırlama ve analiz kapsamı") });
+    expect(scopeNotices).toHaveLength(1);
+    const scopeNotice = scopeNotices[0];
+    expect(scopeNotice).toHaveTextContent(t("PDF, DOCX, PPTX, TSV ve diğer desteklenen belgeler kaynakları korunarak hazırlanır. İlk tablo analizi kapsamı yalnızca CSV ve XLSX dosyalarını içerir."));
+
+    const input = screen.getByLabelText(t("Analiz edilecek dosyaları seç"));
+    await user.upload(input, [
+      new File(["pdf icerigi"], "sunum-ozeti.pdf", { type: "application/pdf" }),
+      new File(["col1\tcol2\n1\t2"], "sekmeli.tsv", { type: "text/tab-separated-values" }),
+    ]);
+    expect(scopeNotice).toHaveTextContent(t("Seçilen {0} belge (PDF, DOCX, PPTX, TSV vb.) kaynak konumlu özet için hazırlanır; bu seçimde ilk tablo analizi (CSV/XLSX) kapsamına giren dosya yoktur.", 2));
+
+    await user.upload(input, [
+      new File(["kanal,gelir\nWeb,100"], "satis.csv", { type: "text/csv" }),
+      new File(["xlsx icerigi"], "butce.xlsx", { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
+    ]);
+    expect(scopeNotice).toHaveTextContent(t("Seçilen tüm belgeler kaynaklarıyla hazırlanır. {0} dosya ilk tablo analizine (CSV/XLSX) adaydır; diğer {1} belge yalnızca belge hazırlığında ayrıştırılır.", 2, 2));
+    const list = screen.getByRole("list", { name: t("Seçilen dosyalar") });
+    const rows = within(list).getAllByRole("listitem");
+    expect(rows.find(row => row.textContent?.includes("satis.csv"))).toHaveTextContent(t("Tablo analizi adayı"));
+    expect(rows.find(row => row.textContent?.includes("butce.xlsx"))).toHaveTextContent(t("Tablo analizi adayı"));
+    expect(rows.find(row => row.textContent?.includes("sunum-ozeti.pdf"))).toHaveTextContent(t("Yalnız belge hazırlığı"));
+    expect(rows.find(row => row.textContent?.includes("sekmeli.tsv"))).toHaveTextContent(t("Yalnız belge hazırlığı"));
+
+    await user.click(screen.getByRole("button", { name: t("{0} dosyasını kaldır", "sunum-ozeti.pdf") }));
+    await user.click(screen.getByRole("button", { name: t("{0} dosyasını kaldır", "sekmeli.tsv") }));
+    expect(scopeNotice).toHaveTextContent(t("Seçilen {0} dosya belge hazırlığının ardından ilk tablo analizi (CSV/XLSX) için adaydır.", 2));
+  });
 });

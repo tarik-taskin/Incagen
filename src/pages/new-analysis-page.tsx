@@ -7,7 +7,7 @@ import { ANALYSIS_OBJECTIVE_MAX_LENGTH } from "../../functions/src/contracts";
 import { FileDropzone } from "../components/upload/file-dropzone";
 import { SelectedFileList } from "../components/upload/selected-file-list";
 import { PreparationProgress } from "../components/upload/preparation-progress";
-import { DraftReadiness, SelectionSummary } from "../components/upload/preparation-summary";
+import { DraftReadiness, SelectionScopeNotice, SelectionSummary } from "../components/upload/preparation-summary";
 import { getPreparationState, type DraftField } from "../features/files/preparation-state";
 import { Button } from "../components/ui/button";
 import { FREE_PLAN_FILE_LIMIT } from "../features/files/file-rules";
@@ -69,6 +69,7 @@ export function NewAnalysisPage() {
       <div className="min-w-0 space-y-6">
         <SelectionSummary count={files.length} state={preparation} />
         <FileDropzone unavailable={unavailable} lastAccepted={lastAccepted} onFilesSelected={addFiles} />
+        <SelectionScopeNotice files={files} />
         {rejections.length > 0 && <div role="alert" className="rounded-2xl border border-red-500/30 bg-red-500/5 p-4 text-sm">
           <h2 className="font-semibold">{t("Bazı dosyalar eklenemedi")}</h2>
           <ul className="mt-2 space-y-1">{rejections.map(r => <li key={r.id} className="break-words"><bdi>{r.fileName}</bdi>: {t(r.reason)}</li>)}</ul>

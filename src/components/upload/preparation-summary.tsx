@@ -1,6 +1,7 @@
 import { t, useLocale } from "../../i18n/runtime";
-import { Check, Files, HardDrive, Target } from "lucide-react";
+import { Check, Files, HardDrive, Table2, Target } from "lucide-react";
 import { LIMITS } from "../../../functions/src/contracts";
+import { summarizeSelectionScope, type PreparedFile } from "../../features/files/file-rules";
 import { formatCapacity, type getPreparationState, type DraftField } from "../../features/files/preparation-state";
 
 type PreparationState = ReturnType<typeof getPreparationState>;
@@ -35,5 +36,22 @@ export function DraftReadiness({ state, busy, onFocusField }: { state: Preparati
       {item.valid ? <span className="text-muted-foreground">{t("Hazır")}</span> : <button type="button" disabled={busy} className="min-h-8 rounded-lg px-2 font-semibold text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50 dark:text-secondary dark:focus-visible:ring-secondary" aria-label={t("{0} alanını tamamla", t(item.label))} onClick={() => onFocusField(item.field)}>{t("Tamamla")}</button>}
     </li>)}</ul>
     <p id="preparation-help" className="mt-3 border-t border-border/70 pt-3 text-xs leading-5 text-muted-foreground" aria-live="polite">{busy ? t("Belgeleriniz hazırlanıyor; çalışma ayrıntıları korunuyor.") : state.ready ? t("Belgeleriniz ve çalışma ayrıntılarınız hazırlamaya hazır.") : !state.withinCapacity ? t("Seçiminizi belge ve toplam boyut sınırlarına göre düzenleyin.") : state.firstInvalidField ? t("Başlamadan önce çalışma ayrıntılarını tamamlayın.") : t("Çalışma ayrıntıları hazır. Başlamak için belgelerinizi ekleyin.")}</p>
+  </section>;
+}
+
+// Seçili dosyalara göre belge hazırlığı ile ilk tablo analizi (CSV/XLSX) kapsamını tek yerde netleştirir.
+export function SelectionScopeNotice({ files }: { files: readonly PreparedFile[] }) {
+  useLocale();
+  const scope = summarizeSelectionScope(files);
+  return <section className="rounded-2xl border border-border/80 bg-card/75 px-4 py-3.5 text-xs leading-6 text-muted-foreground sm:px-5" aria-label={t("Belge hazırlama ve analiz kapsamı")}>
+    <div className="flex items-start gap-2.5">
+      <Table2 className="mt-1 h-4 w-4 shrink-0 text-primary dark:text-secondary" aria-hidden="true" />
+      <div className="min-w-0 flex-1">
+        {scope.kind === "empty" && <p>{t("PDF, DOCX, PPTX, TSV ve diğer desteklenen belgeler kaynakları korunarak hazırlanır. İlk tablo analizi kapsamı yalnızca CSV ve XLSX dosyalarını içerir.")}</p>}
+        {scope.kind === "tabular-only" && <p className="text-foreground/90">{t("Seçilen {0} dosya belge hazırlığının ardından ilk tablo analizi (CSV/XLSX) için adaydır.", scope.tabularFiles.length)}</p>}
+        {scope.kind === "preparation-only" && <p className="text-foreground/90">{t("Seçilen {0} belge (PDF, DOCX, PPTX, TSV vb.) kaynak konumlu özet için hazırlanır; bu seçimde ilk tablo analizi (CSV/XLSX) kapsamına giren dosya yoktur.", scope.preparationOnlyFiles.length)}</p>}
+        {scope.kind === "mixed" && <p className="text-foreground/90">{t("Seçilen tüm belgeler kaynaklarıyla hazırlanır. {0} dosya ilk tablo analizine (CSV/XLSX) adaydır; diğer {1} belge yalnızca belge hazırlığında ayrıştırılır.", scope.tabularFiles.length, scope.preparationOnlyFiles.length)}</p>}
+      </div>
+    </div>
   </section>;
 }

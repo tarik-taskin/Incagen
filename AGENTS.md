@@ -26,10 +26,10 @@ Bilgiyi tekrarlamak yerine asıl kaynağa bağlantı ver. Her geliştirme işi G
 - Push sonrasında local `main`, `origin/main`, aktif kişisel branch ve kullanılan remote kişisel branch aynı commit'e eşitlenir.
 - Tarık ve Furkan ayrı kod alanlarında paralel çalışmaya başladığında değişiklikler PR ile birleştirilir. Bunun dışında PR yalnız açıkça istendiğinde açılır.
 - `main`e push öncesinde en az `npm run lint`, `npm run test:run` ve `npm run build` çalıştırılır. Functions değiştiyse `npm run build:functions`; backend veya kullanıcı akışı değiştiyse ilgili `npm run test:integration` ve `npm run test:local` kontrolleri de çalıştırılır.
-- Her görev sonunda veya uzun işlerde anlamlı bir amaç tamamlanınca değişiklikleri inceleyip `git add .` ve commit yap.
+- Aynı teslim amacına hizmet eden 3–4 anlamlı işi bir commit'te topla. İlişkili kod, regresyon testleri ve belge güncellemeleri aynı commit'te yer alır. Küçük rötuşlar, ara denemeler ve durum notları paket tamamlanana kadar birikir. Oturum sonunda kalan işler tek başına doğrulanabilir bir sonuç oluşturuyorsa son paket daha küçük olabilir.
 - Stage işleminden sonra, commit ve push öncesinde `npm run check:secrets` çalıştır; index'te veya takip edilen çalışma dosyalarında credential kalıbı varsa düzeltmeden devam etme. Gerçek public Firebase anahtarı da test fixture'ına kopyalanmaz; biçim örnekleri çalışma anında sentetik üretilir.
 - Mesaj örnekleri: `feat(frontend/employees): limit shift list`, `fix(frontend/bills): fix Turkish labels`.
-- Commit gövdesine büyüklüğüne göre 2–6 açıklama maddesi ekle. Commit'ler tek bir işlevi veya amacı karşılayacak kadar küçük olsun; büyük planlarda yaklaşık 8–9, küçük değişikliklerde 1–2 commit yeterlidir.
+- Paket tamamlandığında değişiklikleri incele, pakete ait dosyaları stage et ve kalite kontrollerinden sonra commit yap. Commit gövdesinde ortak amacı ve doğrulanan değişiklikleri 2–6 maddeyle açıkla.
 - Genel akışı önemli ölçüde etkilemeyen mevcut küçük değişiklikleri inceleyerek uygun commit'e dahil et; ilgisiz veya anlamı belirsiz kullanıcı değişikliklerini koru.
 - Son yanıtta yapılan commit'leri belirt.
 - Her `main` güncellemesinde GOAL.md durumunu kontrol et; yalnız değişen görev, milestone, risk veya gerçek ürün/teknik kararları güncelle. Sırf push/merge kaydı için belge commit'i oluşturma.

@@ -94,7 +94,7 @@ Firebase CLI Node 20+ ister; PowerShell'de `--only` listesi tırnak içinde veri
 
 ## Değişiklik disiplini
 
-[AGENTS](../AGENTS.md)'deki görev/dal/commit akışını ve [RULES](../RULES.md)'deki kod/stil kurallarını izleyin. Belge ve testleri davranış değişikliğiyle birlikte güncelleyin; ürün limitleri ortak sözleşmeden gelir. Sırlar ve gerçek müşteri verileri Git'e eklenmez.
+[AGENTS.md’deki paketli commit ve dal düzenini](../AGENTS.md#commit-ve-ekip-düzeni) ve [RULES](../RULES.md)'deki kod/stil kurallarını izleyin. Belge ve testleri davranış değişikliğiyle birlikte güncelleyin; ürün limitleri ortak sözleşmeden gelir. Sırlar ve gerçek müşteri verileri Git'e eklenmez.
 
 Özetleme çalışmalarında [referans seti](../fixtures/analysis-reference/README.md) kullanılır. Cevap anahtarları değerlendirme içindir, model girdisine veya retrieval bağlamına verilmez. Hedef mimari ve servis kararları [FLOW](../FLOW.md#kabul-edilen-hedef-mimari--2026-10-10) içinde tutulur.
 

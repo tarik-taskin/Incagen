@@ -1158,5 +1158,15 @@
   "Yeni analize dön": "返回新建分析",
   "Desteklenen formatlar": "支持的格式",
   "Belgeleri yeniden seç": "重新选择文档",
-  "Özgün yerel dosyalar bu tarayıcı oturumunda artık bulunmuyor. Düzenlemek veya dosyaları değiştirmek için yeni seçim yapabilirsiniz.": "原始本地文件已不再存在于此浏览器会话中。您可以重新选择文件以进行编辑或替换。"
+  "Özgün yerel dosyalar bu tarayıcı oturumunda artık bulunmuyor. Düzenlemek veya dosyaları değiştirmek için yeni seçim yapabilirsiniz.": "原始本地文件已不再存在于此浏览器会话中。您可以重新选择文件以进行编辑或替换。",
+  "Örnek satış CSV’sini indir": "下载示例销售 CSV",
+  "Bu sentetik satış CSV’sini ZIP açmadan indirip «Analize başla» üzerinden kendi ilk çalışmanızda seçebilirsiniz. Tıklama otomatik yükleme veya iş başlatmaz.": "无需解压 ZIP 即可直接下载此合成销售 CSV，再通过“开始分析”在您的首次工作中选择使用。点击不会自动上传或启动任务。",
+  "Yeni analiz ekranını aç": "打开新建分析页面",
+  "Belge hazırlama ve analiz kapsamı": "文档准备与分析范围",
+  "PDF, DOCX, PPTX, TSV ve diğer desteklenen belgeler kaynakları korunarak hazırlanır. İlk tablo analizi kapsamı yalnızca CSV ve XLSX dosyalarını içerir.": "PDF、DOCX、PPTX、TSV 及其他受支持的文档会在保留来源的情况下完成准备。首批表格分析范围仅涵盖 CSV 和 XLSX 文件。",
+  "Seçilen {0} dosya belge hazırlığının ardından ilk tablo analizi (CSV/XLSX) için adaydır.": "所选的 {0} 个文件将在完成文档准备后成为首批表格分析（CSV/XLSX）的候选对象。",
+  "Seçilen {0} belge (PDF, DOCX, PPTX, TSV vb.) kaynak konumlu özet için hazırlanır; bu seçimde ilk tablo analizi (CSV/XLSX) kapsamına giren dosya yoktur.": "所选的 {0} 份文档（PDF、DOCX、PPTX、TSV 等）将用于带来源定位的准备摘要；当前选择中没有属于首批表格分析（CSV/XLSX）范围的文件。",
+  "Seçilen tüm belgeler kaynaklarıyla hazırlanır. {0} dosya ilk tablo analizine (CSV/XLSX) adaydır; diğer {1} belge yalnızca belge hazırlığında ayrıştırılır.": "所选全部文档都会在保留来源的情况下完成准备。{0} 个文件可作为首批表格分析（CSV/XLSX）候选；其余 {1} 份文档仅参与文档准备解析。",
+  "Tablo analizi adayı": "表格分析候选",
+  "Yalnız belge hazırlığı": "仅文档准备"
 }

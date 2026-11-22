@@ -1158,5 +1158,15 @@
   "Yeni analize dön": "Return to new analysis",
   "Desteklenen formatlar": "Supported formats",
   "Belgeleri yeniden seç": "Select documents again",
-  "Özgün yerel dosyalar bu tarayıcı oturumunda artık bulunmuyor. Düzenlemek veya dosyaları değiştirmek için yeni seçim yapabilirsiniz.": "The original local files are no longer available in this browser session. You can select files again to edit or replace them."
+  "Özgün yerel dosyalar bu tarayıcı oturumunda artık bulunmuyor. Düzenlemek veya dosyaları değiştirmek için yeni seçim yapabilirsiniz.": "The original local files are no longer available in this browser session. You can select files again to edit or replace them.",
+  "Örnek satış CSV’sini indir": "Download sample sales CSV",
+  "Bu sentetik satış CSV’sini ZIP açmadan indirip «Analize başla» üzerinden kendi ilk çalışmanızda seçebilirsiniz. Tıklama otomatik yükleme veya iş başlatmaz.": "Download this synthetic sales CSV without extracting the ZIP, then choose it in your own first workspace via “Start analysing”. Clicking does not upload or start a job automatically.",
+  "Yeni analiz ekranını aç": "Open new analysis screen",
+  "Belge hazırlama ve analiz kapsamı": "Document preparation and analysis scope",
+  "PDF, DOCX, PPTX, TSV ve diğer desteklenen belgeler kaynakları korunarak hazırlanır. İlk tablo analizi kapsamı yalnızca CSV ve XLSX dosyalarını içerir.": "PDF, DOCX, PPTX, TSV and other supported documents are prepared with their sources preserved. The initial tabular analysis scope covers CSV and XLSX files only.",
+  "Seçilen {0} dosya belge hazırlığının ardından ilk tablo analizi (CSV/XLSX) için adaydır.": "The {0} selected file(s) will be prepared first and are eligible for the initial tabular analysis (CSV/XLSX).",
+  "Seçilen {0} belge (PDF, DOCX, PPTX, TSV vb.) kaynak konumlu özet için hazırlanır; bu seçimde ilk tablo analizi (CSV/XLSX) kapsamına giren dosya yoktur.": "The {0} selected document(s) (PDF, DOCX, PPTX, TSV, etc.) will be prepared for source-grounded summaries; none in this selection fall under the initial tabular analysis (CSV/XLSX) scope.",
+  "Seçilen tüm belgeler kaynaklarıyla hazırlanır. {0} dosya ilk tablo analizine (CSV/XLSX) adaydır; diğer {1} belge yalnızca belge hazırlığında ayrıştırılır.": "All selected documents are prepared with their sources. {0} file(s) are eligible for initial tabular analysis (CSV/XLSX); the other {1} document(s) are parsed for document preparation only.",
+  "Tablo analizi adayı": "Tabular analysis candidate",
+  "Yalnız belge hazırlığı": "Document preparation only"
 }

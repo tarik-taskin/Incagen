@@ -1,7 +1,7 @@
 import { t, useLocale } from "../../i18n/runtime";
 import { File, FileSpreadsheet, FileText, Image, Presentation, Trash2, X } from "lucide-react";
 import { Button } from "../ui/button";
-import { formatFileSize, type FileCategory, type PreparedFile } from "../../features/files/file-rules";
+import { formatFileSize, isTabularAnalysisCandidate, type FileCategory, type PreparedFile } from "../../features/files/file-rules";
 
 interface SelectedFileListProps {
   files: PreparedFile[];
@@ -38,6 +38,7 @@ export function SelectedFileList({ files, limit, onClear, onRemove }: SelectedFi
       <ul className="divide-y divide-border/70" aria-label={t("Seçilen dosyalar")}>
         {files.map(({ id, file, category }) => {
           const CategoryIcon = categoryIconMap[category];
+          const tabularCandidate = isTabularAnalysisCandidate(file);
           return (
             <li key={id} className="flex items-center gap-3 px-5 py-4 sm:px-6">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-secondary/10 dark:text-secondary">
@@ -45,7 +46,12 @@ export function SelectedFileList({ files, limit, onClear, onRemove }: SelectedFi
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium" title={file.name}><bdi>{file.name}</bdi></p>
-                <p className="mt-1 text-xs text-muted-foreground">{t(category)} · {formatFileSize(file.size)}</p>
+                <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                  <span>{t(category)} · {formatFileSize(file.size)}</span>
+                  <span className={tabularCandidate ? "rounded-md bg-primary/10 px-1.5 py-0.5 text-[11px] font-medium text-primary dark:bg-secondary/15 dark:text-secondary" : "rounded-md bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground"}>
+                    {tabularCandidate ? t("Tablo analizi adayı") : t("Yalnız belge hazırlığı")}
+                  </span>
+                </p>
               </div>
               <Button
                 type="button"

@@ -57,6 +57,32 @@ export function isSupportedFile(file: File) {
   return getSupportedExtension(file.name) !== null;
 }
 
+// İlk tablo analizi kapsamına giren dosya türlerini (CSV ve XLSX) hazırlanan diğer belgelerden ayırır.
+export function isTabularAnalysisCandidate(file: File | string) {
+  const extension = getFileExtension(typeof file === "string" ? file : file.name);
+  return extension === "csv" || extension === "xlsx";
+}
+
+export interface SelectionScopeSummary {
+  kind: "empty" | "tabular-only" | "preparation-only" | "mixed";
+  tabularFiles: PreparedFile[];
+  preparationOnlyFiles: PreparedFile[];
+}
+
+// Seçili dosyaları ilk tablo analizi adayları ve yalnız belge hazırlığında ayrıştırılanlar olarak sınıflandırır.
+export function summarizeSelectionScope(files: readonly PreparedFile[]): SelectionScopeSummary {
+  const tabularFiles: PreparedFile[] = [];
+  const preparationOnlyFiles: PreparedFile[] = [];
+  for (const item of files) {
+    if (isTabularAnalysisCandidate(item.file)) tabularFiles.push(item);
+    else preparationOnlyFiles.push(item);
+  }
+  if (files.length === 0) return { kind: "empty", tabularFiles, preparationOnlyFiles };
+  if (tabularFiles.length === files.length) return { kind: "tabular-only", tabularFiles, preparationOnlyFiles };
+  if (tabularFiles.length === 0) return { kind: "preparation-only", tabularFiles, preparationOnlyFiles };
+  return { kind: "mixed", tabularFiles, preparationOnlyFiles };
+}
+
 // Dosyayı arayüzde gösterilecek iş verisi kategorisine eşler.
 export function getFileCategory(file: File): FileCategory {
   const extension = getSupportedExtension(file.name);
