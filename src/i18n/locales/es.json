@@ -1199,5 +1199,8 @@
   "Boş satır etkisi": "Efecto de filas vacías",
   "Kayıtlı rapor dili": "Idioma guardado del informe",
   "Kapsam kaynağını incele": "Inspeccionar fuente del alcance",
-  "Birim": "Unidad"
+  "Birim": "Unidad",
+  "Dosya satırı": "Línea de archivo",
+  "Kayıt sırası": "Orden de registro",
+  "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.": "Se muestra el orden de registro de datos porque no se pudo determinar la línea física original de este registro."
 }

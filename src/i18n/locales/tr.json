@@ -1199,5 +1199,8 @@
   "Boş satır etkisi": "Boş satır etkisi",
   "Kayıtlı rapor dili": "Kayıtlı rapor dili",
   "Kapsam kaynağını incele": "Kapsam kaynağını incele",
-  "Birim": "Birim"
+  "Birim": "Birim",
+  "Dosya satırı": "Dosya satırı",
+  "Kayıt sırası": "Kayıt sırası",
+  "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.": "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir."
 }

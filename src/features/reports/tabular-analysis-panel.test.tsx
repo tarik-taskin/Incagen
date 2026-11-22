@@ -16,6 +16,7 @@ beforeEach(() => {
 const mocks = vi.hoisted(() => ({
   user: { uid: "test-user" },
   start: vi.fn(),
+  getResult: vi.fn(),
   tables: [
     { sourceId: "file-1", fileName: "satislar.xlsx", sheet: "Q1", columns: ["Kategori", "Tutar", "Adet"], rows: 150 },
     { sourceId: "file-2", fileName: "masraflar.csv", sheet: null, columns: ["Departman", "Harcama"], rows: 40 },
@@ -27,6 +28,7 @@ vi.mock("../../lib/firebase", () => ({ getServices: () => ({ functions: {} }) })
 vi.mock("firebase/functions", () => ({
   httpsCallable: (...args: unknown[]) => {
     if (args[1] === "startAnalysis") return mocks.start;
+    if (args[1] === "getAnalysisResult") return mocks.getResult;
     return async () => ({
       data: {
         tables: mocks.tables,
@@ -38,6 +40,7 @@ vi.mock("firebase/functions", () => ({
 
 afterEach(() => {
   mocks.start.mockReset();
+  mocks.getResult.mockReset();
   mocks.tables = [
     { sourceId: "file-1", fileName: "satislar.xlsx", sheet: "Q1", columns: ["Kategori", "Tutar", "Adet"], rows: 150 },
     { sourceId: "file-2", fileName: "masraflar.csv", sheet: null, columns: ["Departman", "Harcama"], rows: 40 },
@@ -151,22 +154,65 @@ describe("TabularAnalysisPanel - Görev 2 kapsam ve düzen kontrolleri", () => {
         columns: ["Ekip", "Gelir"],
         rows: 12,
         nonEmptyRows: 12,
+        sampleRowNumbering: "file-line",
         sampleRows: [
           { row: 2, values: ["Alfa", "10.00"] },
           { row: 3, values: ["Beta", "25.50"] },
         ],
       },
+      {
+        sourceId: "file-1",
+        fileName: "eski.csv",
+        sheet: null,
+        columns: ["Kanal", "Tutar"],
+        rows: 2,
+        nonEmptyRows: 2,
+        sampleRowNumbering: "record",
+        sampleRows: [
+          { row: 1, values: ["Web", "10"] },
+          { row: 2, values: ["Store", "20"] },
+        ],
+      },
+      {
+        sourceId: "file-2",
+        fileName: "genis.csv",
+        sheet: null,
+        columns: ["Bölge", "Ciro"],
+        rows: 50,
+        nonEmptyRows: 50,
+        sampleRowNumbering: "file-line",
+        sampleRows: [],
+      },
     ];
     const analysis = { id: "preview-1", title: "Önizleme", business: "Test", status: "completed", createdAt: 1, updatedAt: 1 } as Analysis;
     render(<TabularAnalysisPanel analysis={analysis} />);
 
-    const summaryToggle = await screen.findByText("Tablo önizlemesi");
-    await user.click(summaryToggle);
+    // 1. Fiziksel satır numarası bilinen tabloda "Dosya satırı" başlığı görünür
+    await screen.findByText("1. İncelenecek veri kaynağı");
+    await user.click(screen.getByRole("combobox", { name: "Analiz tablosu" }));
+    await user.click(await screen.findByRole("option", { name: "gelir.xlsx · Hizmetler" }));
+    await user.click(screen.getByText("Tablo önizlemesi"));
     expect(screen.getByText(/İlk 2 satır · 2 sütun/)).toBeVisible();
     const previewTable = screen.getByRole("table", { name: "Seçili tablodan örnek satırlar" });
+    expect(within(previewTable).getByRole("columnheader", { name: "Dosya satırı" })).toBeVisible();
     expect(within(previewTable).getByText("Alfa")).toBeVisible();
     expect(within(previewTable).getByText("25.50")).toBeVisible();
     expect(screen.getByText(/Yalnızca ilk 2 satır örnek olarak gösterilir/)).toBeVisible();
+
+    // 2. Fiziksel konumu belirlenemeyen eski kayıtta açıkça "Kayıt sırası" ve açıklama gösterilir
+    await user.click(screen.getByRole("combobox", { name: "Analiz tablosu" }));
+    await user.click(await screen.findByRole("option", { name: "eski.csv" }));
+    const legacyTable = screen.getByRole("table", { name: "Seçili tablodan örnek satırlar" });
+    expect(within(legacyTable).getByRole("columnheader", { name: "Kayıt sırası" })).toBeVisible();
+    expect(screen.getByText(/özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir/)).toBeVisible();
+
+    // 3. Bütçe nedeniyle örnek satır dönmediğinde tablo ve sütun seçimi çalışmaya devam eder
+    await user.click(screen.getByRole("combobox", { name: "Analiz tablosu" }));
+    await user.click(await screen.findByRole("option", { name: "genis.csv" }));
+    expect(screen.getByText(/Örnek satır önizlemesi bu kayıt için mevcut değil/)).toBeVisible();
+    await user.click(screen.getByRole("combobox", { name: "Ölçüm alanı" }));
+    await user.click(await screen.findByRole("option", { name: "Ciro" }));
+    expect(screen.getByRole("button", { name: "Analizi oluştur" })).toBeEnabled();
     expect(mocks.start).not.toHaveBeenCalled();
   });
 
@@ -241,5 +287,16 @@ describe("TabularAnalysisPanel - Görev 2 kapsam ve düzen kontrolleri", () => {
       ai: { status: "failed", attemptId: "a3", attempts: 1, maxAttempts: 3, startedAt: 1, leaseUntil: 1, stage: "calculating", locale: "tr", sourceId: "file-0", selection: baseSelection, error: "legacy-unknown-code" as never },
     } as Analysis} />);
     expect(await screen.findByRole("status")).toHaveTextContent("Bu işlemden henüz sonuç alınamadı. Seçiminizi kontrol edip yeniden deneyebilirsiniz.");
+  });
+
+  it("tutarsız saklanan raporda getAnalysisResult reddedildiğinde kontrollü hata ve yeniden yükleme düğmesi gösterir", async () => {
+    mocks.getResult.mockRejectedValueOnce(Object.assign(new Error("Analiz sonucu doğrulanamadı. Yeniden yükleyin."), { code: "functions/failed-precondition" }));
+    const baseSelection = { sheet: null, valueColumn: 1, groupColumn: 0, aggregation: "sum" as const, numberFormat: "plain" as const, unit: "TRY" as const };
+    render(<TabularAnalysisPanel analysis={{
+      id: "corrupt-1", title: "Bozuk", business: "Test", status: "completed", createdAt: 1, updatedAt: 1,
+      ai: { status: "completed", attemptId: "a1", attempts: 1, maxAttempts: 3, startedAt: 1, finishedAt: 2, leaseUntil: 10, stage: "saving", locale: "tr", sourceId: "file-0", selection: baseSelection },
+    } as Analysis} />);
+    expect(await screen.findByRole("alert")).toHaveTextContent("Analiz sonucu doğrulanamadı. Yeniden yükleyin.");
+    expect(screen.getByRole("button", { name: "Yeniden yükle" })).toBeEnabled();
   });
 });

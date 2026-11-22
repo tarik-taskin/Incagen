@@ -31,6 +31,7 @@ export type TableSelection = z.infer<typeof tableSelectionSchema>;
 export type WorkerResult = z.infer<typeof workerResultSchema>;
 export type ResultLocale = z.infer<typeof resultLocaleSchema>;
 export type TableUnavailableReason = "empty-table" | "inconsistent-columns" | "unreadable-table" | "row-limit";
+export type SampleRowNumbering = "file-line" | "record";
 export interface TableSampleRow { row: number; values: (string | number | boolean | null)[] }
 export interface AnalysisTable {
   sourceId: string;
@@ -40,6 +41,7 @@ export interface AnalysisTable {
   rows: number;
   nonEmptyRows?: number;
   sampleRows?: TableSampleRow[];
+  sampleRowNumbering?: SampleRowNumbering;
   unavailableReason?: TableUnavailableReason;
 }
 export type AnalysisFailure =

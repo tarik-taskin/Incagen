@@ -33,7 +33,10 @@ test("gerçek Python hesabı, kaynaklı rapor, tekrar/yenileme, izolasyon ve tem
   };
   try {
     const id = await create(), record = db.doc(`users/${own.auth.currentUser.uid}/analyses/${id}`);
-    assert.equal((await own.call("getAnalysisTables", { id })).data.tables[0].rows, 2);
+    const previewCatalog = (await own.call("getAnalysisTables", { id })).data;
+    assert.equal(previewCatalog.tables[0].rows, 2);
+    assert.equal(previewCatalog.tables[0].sampleRowNumbering, "file-line");
+    assert.deepEqual(previewCatalog.tables[0].sampleRows.map(item => item.row), [2, 3]);
     for (const name of ["getAnalysisTables", "getAnalysisResult", "startAnalysis"]) await assert.rejects(other.call(name, name === "startAnalysis" ? { id, sourceId: "file-0", selection, locale: "en" } : { id }), { code: "functions/not-found" });
     await assert.rejects(own.call("startAnalysis", { id, sourceId: "file-0", selection: { ...selection, currencyGuess: true }, locale: "en" }), { code: "functions/invalid-argument" });
     const input = { id, sourceId: "file-0", selection, locale: "en" };
@@ -43,6 +46,7 @@ test("gerçek Python hesabı, kaynaklı rapor, tekrar/yenileme, izolasyon ve tem
     const report = (await own.call("getAnalysisResult", { id })).data;
     assert.equal(report.result.metrics.find(metric => metric.id === "aggregate").value, 0.3);
     assert.equal(report.result.charts.length, 1); assert.equal(report.sources[0].fileName, "revenue.csv");
+    assert.deepEqual(report.result.metrics.find(metric => metric.id === "rows").evidence.map(e => [e.locator.rowStart, e.locator.rowEnd]), [[2, 3]]);
     assert.equal((await own.call("startAnalysis", input)).data.reused, true);
     assert.equal((await record.get()).data().ai.attempts, 1);
     await assert.rejects(own.call("startAnalysis", { ...input, locale: "de" }), { code: "functions/failed-precondition" });

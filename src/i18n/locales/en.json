@@ -1199,5 +1199,8 @@
   "Boş satır etkisi": "Blank row impact",
   "Kayıtlı rapor dili": "Stored report language",
   "Kapsam kaynağını incele": "Inspect scope source",
-  "Birim": "Unit"
+  "Birim": "Unit",
+  "Dosya satırı": "File line",
+  "Kayıt sırası": "Record order",
+  "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.": "Data record order is shown because original file line numbers could not be determined for this record."
 }

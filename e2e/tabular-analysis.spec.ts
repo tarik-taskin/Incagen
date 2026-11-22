@@ -45,8 +45,15 @@ async function layout(page: Page) {
 }
 
 test("gerçek hesap → kaynaklı rapor → geçmiş/yenileme; altı dil ve özgün hücreler korunur", async ({ page }, info) => {
-  await prepare(page, "Channel,Revenue\nWeb,0.10\nStore,0.20\n");
+  await prepare(page, "Channel,Revenue\nWeb,0.10\n\nStore,0.20\n");
   await expect(page.getByRole("button", { name: "Analizi oluştur", exact: true })).toBeDisabled();
+  // Arada boş satır olan geçerli CSV'de önizleme fiziksel dosya satırlarını (2 ve 4) gösterir.
+  await page.getByText("Tablo önizlemesi", { exact: true }).click();
+  const preview = page.getByRole("table", { name: "Seçili tablodan örnek satırlar" });
+  await expect(preview.getByRole("columnheader", { name: "Dosya satırı", exact: true })).toBeVisible();
+  await expect(preview.getByRole("rowheader", { name: "2", exact: true })).toBeVisible();
+  await expect(preview.getByRole("rowheader", { name: "4", exact: true })).toBeVisible();
+  await page.getByText("Tablo önizlemesi", { exact: true }).click();
   await select(page, "Ölçüm alanı", "Revenue");
   await select(page, "Gruplama", "Channel");
   await select(page, "Birim", "USD · $");
@@ -68,6 +75,7 @@ test("gerçek hesap → kaynaklı rapor → geçmiş/yenileme; altı dil ve özg
   const dialog = page.getByRole("dialog", { name: "Store", exact: true });
   await expect(dialog.getByRole("table")).toContainText("0.20");
   await expect(dialog.getByRole("table")).not.toContainText("0.10");
+  await expect(dialog.getByRole("rowheader", { name: /4/ })).toBeVisible();
   await layout(page);
   const download = page.waitForEvent("download");
   await dialog.getByRole("button", { name: "Özgün belgeyi indir", exact: true }).click();
@@ -116,9 +124,12 @@ test("çok sayfalı Excel'de önizleme, satır ağırlıklı ortalama, sayfa kay
   await prepare(page, buffer, "hizmet-gelir.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
   await select(page, "Analiz tablosu", "hizmet-gelir.xlsx · Hizmetler");
 
-  // Hesaplamadan önce seçili Excel sayfasının sütunları ve küçük satır örneği incelenebilir.
+  // Hesaplamadan önce seçili Excel sayfasının sütunları, dosya satırları ve küçük satır örneği incelenebilir.
   await page.getByText("Tablo önizlemesi", { exact: true }).click();
   const preview = page.getByRole("table", { name: "Seçili tablodan örnek satırlar" });
+  await expect(preview.getByRole("columnheader", { name: "Dosya satırı", exact: true })).toBeVisible();
+  await expect(preview.getByRole("rowheader", { name: "2", exact: true })).toBeVisible();
+  await expect(preview.getByRole("rowheader", { name: "5", exact: true })).toBeVisible();
   await expect(preview).toContainText("Alfa");
   await expect(preview).toContainText("100");
   await expect(preview).not.toContainText("999999");

@@ -1199,5 +1199,8 @@
   "Boş satır etkisi": "Auswirkung leerer Zeilen",
   "Kayıtlı rapor dili": "Gespeicherte Berichtssprache",
   "Kapsam kaynağını incele": "Umfangsquelle prüfen",
-  "Birim": "Einheit"
+  "Birim": "Einheit",
+  "Dosya satırı": "Dateizeile",
+  "Kayıt sırası": "Datensatzfolge",
+  "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.": "Für diesen Datensatz konnte die ursprüngliche Dateizeile nicht zuverlässig ermittelt werden; angezeigt wird die Datensatzreihenfolge."
 }

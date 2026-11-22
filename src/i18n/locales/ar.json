@@ -1199,5 +1199,8 @@
   "Boş satır etkisi": "أثر الصفوف الفارغة",
   "Kayıtlı rapor dili": "لغة التقرير المحفوظة",
   "Kapsam kaynağını incele": "افحص مصدر النطاق",
-  "Birim": "الوحدة"
+  "Birim": "الوحدة",
+  "Dosya satırı": "سطر الملف",
+  "Kayıt sırası": "ترتيب السجل",
+  "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.": "يُعرض ترتيب سجلات البيانات لتعذر تحديد رقم السطر الفعلي الأصلي لهذا السجل بدقة."
 }

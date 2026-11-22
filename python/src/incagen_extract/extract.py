@@ -102,6 +102,118 @@ def table_chunks(source_id: str, values: list[list], locator: dict, row_start: i
              "table": {"columns": columns, "rows": rows[start:start + 250]}} for start in range(0, len(rows), 250)]
 
 
+def _detect_csv_delimiter(text: str) -> str:
+    """Detect a CSV delimiter consistently across plain, blank-line and multiline-quoted files."""
+    sample = "\n".join(line for line in text[:8192].splitlines() if line.strip())
+    if sample:
+        try:
+            return csv.Sniffer().sniff(sample, delimiters=",;\t").delimiter
+        except csv.Error:
+            pass
+    counts = {",": 0, ";": 0, "\t": 0}
+    quoted = False
+    index = 0
+    while index < len(text):
+        char = text[index]
+        if char == '"':
+            if quoted and index + 1 < len(text) and text[index + 1] == '"':
+                index += 1
+            else:
+                quoted = not quoted
+        elif not quoted and char == "\n":
+            if any(counts.values()) or text[:index].strip():
+                break
+        elif not quoted and char in counts:
+            counts[char] += 1
+        index += 1
+    best_delimiter, best_count = max(counts.items(), key=lambda item: item[1])
+    if best_count > 0:
+        return best_delimiter
+    # A single-column CSV has no delimiter to sniff; reject ambiguous body-only separators.
+    if any(candidate in text for candidate in ",;\t"):
+        raise ExtractionError("Ambiguous CSV delimiter.")
+    return ","
+
+
+def _parse_csv_with_lines(text: str, delimiter: str) -> tuple[list, list[tuple[int, list]]]:
+    """Read CSV/TSV records with their 1-based physical starting file line, keeping blank lines in place."""
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+    reader = csv.reader(io.StringIO(normalized, newline=""), delimiter=delimiter, strict=True)
+    header: list | None = None
+    width = 0
+    records: list[tuple[int, list]] = []
+    prev_line = 0
+    while True:
+        start_line = prev_line + 1
+        try:
+            row = next(reader)
+        except StopIteration:
+            break
+        prev_line = reader.line_num
+        is_blank = len(row) == 0
+        if header is None:
+            if is_blank:
+                continue
+            if len(row) > MAX_COLUMNS:
+                raise ExtractionError("Table exceeds extraction limits.")
+            header = row
+            width = len(header)
+            continue
+        if is_blank:
+            normalized_row: list = [None] * width
+        else:
+            if len(row) != width:
+                raise ExtractionError("Inconsistent table row width.")
+            normalized_row = row
+        if len(records) >= MAX_ROWS or (len(records) + 1) * max(1, width) > MAX_CELLS:
+            raise ExtractionError("Table exceeds extraction limits.")
+        records.append((start_line, normalized_row))
+    if header is None:
+        return [], []
+    return header, records
+
+
+def table_chunks_with_lines(source_id: str, header: list, records: list[tuple[int, list]], locator: dict) -> list[dict]:
+    """Build contiguous table chunks keyed by real physical file lines; split chunks on multiline jumps."""
+    if not header or not records:
+        return []
+    width = len(header)
+    if not 0 < width <= MAX_COLUMNS or len(records) > MAX_ROWS or len(records) * width > MAX_CELLS:
+        raise ExtractionError("Table exceeds extraction limits.")
+    columns, seen = [], set()
+    for index in range(width):
+        label = str(header[index] if header[index] is not None else "").strip() or f"Column {index + 1}"
+        candidate, suffix = label, 2
+        while candidate in seen:
+            candidate, suffix = f"{label} ({suffix})", suffix + 1
+        columns.append(candidate)
+        seen.add(candidate)
+    chunks: list[dict] = []
+    current_start: int | None = None
+    current_rows: list[list] = []
+
+    def flush() -> None:
+        if current_start is None or not current_rows:
+            return
+        chunks.append({
+            "id": f"{source_id}:table:{len(chunks) + 1:04}",
+            "kind": "table",
+            "locator": {**locator, "rowStart": current_start, "rowEnd": current_start + len(current_rows) - 1},
+            "table": {"columns": columns, "rows": current_rows},
+        })
+
+    for line_no, row in records:
+        normalized_row = [primitive(row[index]) if index < len(row) else None for index in range(width)]
+        if current_start is None or len(current_rows) >= 250 or line_no != current_start + len(current_rows):
+            flush()
+            current_start = line_no
+            current_rows = [normalized_row]
+        else:
+            current_rows.append(normalized_row)
+    flush()
+    return chunks
+
+
 def extract_document(path: str | Path, source_id: str = "file-0") -> dict:
     """Extract bounded source content into Incagen's existing version-1 document contract."""
     path = Path(path)
@@ -118,24 +230,11 @@ def extract_document(path: str | Path, source_id: str = "file-0") -> dict:
     try:
         if extension in ("csv", "tsv"):
             text = data.decode("utf-8-sig", errors="strict")
-            if extension == "tsv":
-                delimiter = "\t"
-            else:
-                try:
-                    delimiter = csv.Sniffer().sniff(text[:8192], delimiters=",;\t").delimiter
-                except csv.Error:
-                    # A single-column CSV has no delimiter to sniff; do not guess ambiguous separators.
-                    if any(candidate in text for candidate in ",;\t"):
-                        raise
-                    delimiter = ","
-            values = []
-            for row in csv.reader(io.StringIO(text), delimiter=delimiter, strict=True):
-                if len(values) > MAX_ROWS or len(row) > MAX_COLUMNS or (len(values) + 1) * max(1, len(row)) > MAX_CELLS + MAX_COLUMNS:
-                    raise ExtractionError("Table exceeds extraction limits.")
-                values.append(row)
-            if values and any(len(row) != len(values[0]) for row in values):
-                raise ExtractionError("Inconsistent table row width.")
-            chunks = table_chunks(source_id, values, {"section": "table"})
+            if "\x00" in text:
+                raise ExtractionError("Invalid null byte in text table.")
+            delimiter = "\t" if extension == "tsv" else _detect_csv_delimiter(text)
+            header, records = _parse_csv_with_lines(text, delimiter)
+            chunks = table_chunks_with_lines(source_id, header, records, {"section": "table"})
         elif extension in ("txt", "md"):
             chunks = text_chunks(source_id, data.decode("utf-8-sig", errors="strict"), {"section": "document"})
         elif extension == "xlsx":

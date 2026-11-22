@@ -142,3 +142,44 @@ def test_large_csv_chunks_keep_row_ranges(tmp_path):
     chunks = extract_document(path)["chunks"]
     assert [chunk["locator"]["rowStart"] for chunk in chunks] == [2, 252, 502]
     assert [chunk["locator"]["rowEnd"] for chunk in chunks] == [251, 501, 502]
+
+
+def test_csv_preserves_physical_lines_for_plain_blank_and_quoted_newline(tmp_path):
+    from incagen_extract.analyze import analyze_table
+
+    # 1. Düz CSV: başlık satır 1, veri kayıtları fiziksel satır 2 ve 3
+    plain = tmp_path / "plain.csv"
+    plain.write_text("Channel,Revenue\nWeb,0.10\nStore,0.20\n", encoding="utf-8")
+    plain_doc = extract_document(plain)
+    plain_res = analyze_table(plain_doc, {"sheet": None, "valueColumn": 1, "groupColumn": 0, "aggregation": "sum", "numberFormat": "plain", "unit": "USD"})
+    assert [a["locator"] for a in plain_res["metrics"][0]["evidence"]] == [{"section": "table", "rowStart": 2, "rowEnd": 3}]
+
+    # 2. Arada boş satır olan geçerli CSV: boş satır (satır 3) genişlik hatası vermez, fiziksel satır 2 ve 4 korunur
+    blank = tmp_path / "blank-line.csv"
+    blank.write_text("Channel,Revenue\nWeb,0.10\n\nStore,0.20\n", encoding="utf-8")
+    blank_doc = extract_document(blank)
+    blank_res = analyze_table(blank_doc, {"sheet": None, "valueColumn": 1, "groupColumn": 0, "aggregation": "sum", "numberFormat": "plain", "unit": "USD"})
+    assert blank_res["scope"]["rows"] == 2
+    assert blank_res["scope"]["emptyRows"] == 1
+    assert blank_res["metrics"][1]["value"] == 0.3
+    assert [a["locator"] for a in blank_res["metrics"][0]["evidence"]] == [
+        {"section": "table", "rowStart": 2, "rowEnd": 2},
+        {"section": "table", "rowStart": 4, "rowEnd": 4},
+    ]
+
+    # 3. Tırnak içinde satır sonu olan CSV: ilk kayıt 2-3. fiziksel satırlara yayılır, ikinci kayıt satır 4'ten başlar
+    multiline = tmp_path / "quoted-newline.csv"
+    multiline.write_text('Channel,Note,Revenue\nWeb,"First line\nSecond line",0.10\nStore,Single,0.20\n', encoding="utf-8")
+    multiline_doc = extract_document(multiline)
+    multiline_res = analyze_table(multiline_doc, {"sheet": None, "valueColumn": 2, "groupColumn": 0, "aggregation": "sum", "numberFormat": "plain", "unit": "USD"})
+    assert multiline_res["scope"]["rows"] == 2
+    assert multiline_res["scope"]["emptyRows"] == 0
+    assert multiline_res["metrics"][1]["value"] == 0.3
+    assert [a["locator"] for a in multiline_res["metrics"][0]["evidence"]] == [
+        {"section": "table", "rowStart": 2, "rowEnd": 2},
+        {"section": "table", "rowStart": 4, "rowEnd": 4},
+    ]
+    assert [chunk["locator"] for chunk in multiline_doc["chunks"]] == [
+        {"section": "table", "rowStart": 2, "rowEnd": 2},
+        {"section": "table", "rowStart": 4, "rowEnd": 4},
+    ]

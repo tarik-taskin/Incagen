@@ -133,6 +133,7 @@ function getValidationReason(selected: AnalysisTable | undefined, selection: Tab
 // Hesaplamadan önce seçili tablonun sütunlarını ve küçük satır örneğini gösterir; Python veya model çağrısı başlatmaz.
 function TablePreview({ table, label }: { table: AnalysisTable; label: string }) {
   const sampleRows = table.sampleRows ?? [];
+  const isFileLine = table.sampleRowNumbering === "file-line";
   return <details className="mt-4 rounded-xl border border-border/70 bg-background/60 text-xs">
     <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3.5 py-2 font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary [&::-webkit-details-marker]:hidden">
       <span className="inline-flex items-center gap-2"><Eye className="h-3.5 w-3.5 text-primary dark:text-secondary" aria-hidden="true" />{t("Tablo önizlemesi")}</span>
@@ -147,7 +148,7 @@ function TablePreview({ table, label }: { table: AnalysisTable; label: string })
             <caption className="sr-only">{t("Seçili tablodan örnek satırlar")}</caption>
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
-                <th scope="col" className="whitespace-nowrap border-b border-border/70 px-2.5 py-1.5 font-medium">{t("Satır")}</th>
+                <th scope="col" className="whitespace-nowrap border-b border-border/70 px-2.5 py-1.5 font-medium">{isFileLine ? t("Dosya satırı") : t("Kayıt sırası")}</th>
                 {table.columns.map((col, idx) => <th key={`${idx}-${col}`} scope="col" dir="auto" className="whitespace-nowrap border-b border-border/70 px-2.5 py-1.5 font-medium">{col}</th>)}
               </tr>
             </thead>
@@ -164,6 +165,7 @@ function TablePreview({ table, label }: { table: AnalysisTable; label: string })
           </table>
         </div>
         <p className="mt-2 text-[11px] leading-5 text-muted-foreground">{t("Yalnızca ilk {0} satır örnek olarak gösterilir; tüm veri satırlarının tam doğrulaması yerine geçmez. Hesaplama başlatıldığında seçilen tablonun tamamı doğrulanır.", sampleRows.length)}</p>
+        {!isFileLine && <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{t("Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.")}</p>}
       </> : <p className="mt-2 text-[11px] leading-5 text-muted-foreground">{t("Örnek satır önizlemesi bu kayıt için mevcut değil; sütun başlıklarını yukarıda inceleyebilirsiniz.")}</p>}
     </div>
   </details>;

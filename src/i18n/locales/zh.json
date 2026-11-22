@@ -1199,5 +1199,8 @@
   "Boş satır etkisi": "空白行影响",
   "Kayıtlı rapor dili": "已保存报告语言",
   "Kapsam kaynağını incele": "查看范围来源",
-  "Birim": "单位"
+  "Birim": "单位",
+  "Dosya satırı": "文件行号",
+  "Kayıt sırası": "记录序号",
+  "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.": "此记录无法可靠确定原始文件行号，因此显示数据记录序号。"
 }
