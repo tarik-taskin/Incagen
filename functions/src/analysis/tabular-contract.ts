@@ -30,8 +30,33 @@ export const workerResultSchema = z.object({
 export type TableSelection = z.infer<typeof tableSelectionSchema>;
 export type WorkerResult = z.infer<typeof workerResultSchema>;
 export type ResultLocale = z.infer<typeof resultLocaleSchema>;
-export interface AnalysisTable { sourceId: string; fileName: string; sheet: string | null; columns: string[]; rows: number }
-export type AnalysisFailure = "invalid-data" | "scope-limit" | "configuration" | "provider" | "provider-busy" | "validation" | "timeout";
+export type TableUnavailableReason = "empty-table" | "inconsistent-columns" | "unreadable-table" | "row-limit";
+export interface TableSampleRow { row: number; values: (string | number | boolean | null)[] }
+export interface AnalysisTable {
+  sourceId: string;
+  fileName: string;
+  sheet: string | null;
+  columns: string[];
+  rows: number;
+  nonEmptyRows?: number;
+  sampleRows?: TableSampleRow[];
+  unavailableReason?: TableUnavailableReason;
+}
+export type AnalysisFailure =
+  | "invalid-data"
+  | "invalid-number-format"
+  | "currency-precision"
+  | "invalid-measure"
+  | "invalid-group"
+  | "empty-table"
+  | "group-limit"
+  | "row-limit"
+  | "scope-limit"
+  | "configuration"
+  | "provider"
+  | "provider-busy"
+  | "validation"
+  | "timeout";
 export interface AiJob {
   status: "running" | "completed" | "failed";
   attemptId: string; attempts: number; startedAt: number; finishedAt?: number;

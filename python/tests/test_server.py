@@ -110,3 +110,22 @@ def test_real_isolated_child_returns_verified_result_and_exits(tmp_path):
         if process.is_alive():
             process.kill()
             process.join(timeout=5)
+
+
+def test_worker_cli_returns_safe_calculation_code_without_leaking_cells(monkeypatch, capsys):
+    """Emulator CLI bridge emits only fixed CalculationError codes, never cell contents or tracebacks."""
+    import base64
+    import io
+    import json
+    from incagen_extract import worker_cli
+
+    metadata = {"sourceId": "file-0", "fileName": "secret-cells.csv", "selection": {
+        "sheet": None, "valueColumn": 1, "groupColumn": None, "aggregation": "sum", "numberFormat": "plain", "unit": "TRY"}}
+    monkeypatch.setenv("INCAGEN_WORKER_METADATA", base64.b64encode(json.dumps(metadata).encode()).decode())
+    monkeypatch.setattr(worker_cli.sys, "stdin", io.TextIOWrapper(io.BytesIO(b"Channel,Revenue\nWeb,SECRET_RAW_CELL_VALUE\n")))
+    with pytest.raises(SystemExit) as exit_info:
+        worker_cli.main()
+    assert exit_info.value.code == 1
+    output = capsys.readouterr().out.strip()
+    assert json.loads(output) == {"error": "invalid-number-format"}
+    assert "SECRET_RAW_CELL_VALUE" not in output

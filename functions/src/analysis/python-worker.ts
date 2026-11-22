@@ -4,8 +4,41 @@ import { GoogleAuth } from "google-auth-library";
 import type { TableSelection, WorkerResult } from "./tabular-contract";
 import { workerResultSchema } from "./tabular-contract";
 
+export type WorkerFailureCode =
+  | "invalid-data"
+  | "invalid-number-format"
+  | "currency-precision"
+  | "invalid-measure"
+  | "invalid-group"
+  | "empty-table"
+  | "group-limit"
+  | "row-limit"
+  | "scope-limit"
+  | "configuration"
+  | "timeout";
+
 export class WorkerError extends Error {
-  constructor(readonly code: "invalid-data" | "scope-limit" | "configuration" | "timeout") { super(code); }
+  constructor(readonly code: WorkerFailureCode) { super(code); }
+}
+
+// Python işçi hata kodlarını yalnızca sabit, güvenli bir izin listesine indirger; ham veri veya stack trace taşımaz.
+export function mapWorkerFailure(reason: unknown): WorkerFailureCode {
+  const code = typeof reason === "string" ? reason : "";
+  switch (code) {
+    case "invalid-number-format": return "invalid-number-format";
+    case "currency-precision": return "currency-precision";
+    case "invalid-measure":
+    case "number-out-of-range":
+    case "number-precision": return "invalid-measure";
+    case "invalid-group": return "invalid-group";
+    case "empty-table": return "empty-table";
+    case "group-limit": return "group-limit";
+    case "analysis-row-limit": return "row-limit";
+    case "evidence-limit":
+    case "result-budget": return "scope-limit";
+    case "worker-timeout": return "timeout";
+    default: return "invalid-data";
+  }
 }
 
 // Üretim yetkileri ve sağlayıcı bağlantıları demo projesinin emülatörüne taşınmaz.
@@ -16,8 +49,7 @@ export function isAnalysisEmulator() {
 // Python hatalarını belge içeriği/ham servis yanıtı taşımayan sınırlı hata türlerine indirger.
 function unwrap(response: unknown): WorkerResult {
   if (response && typeof response === "object" && "error" in response) {
-    const reason = String(response.error);
-    throw new WorkerError(["analysis-row-limit", "group-limit", "evidence-limit", "result-budget"].includes(reason) ? "scope-limit" : reason === "worker-timeout" ? "timeout" : "invalid-data");
+    throw new WorkerError(mapWorkerFailure((response as { error?: unknown }).error));
   }
   try { return workerResultSchema.parse((response as { result: unknown }).result); }
   catch { throw new WorkerError("invalid-data"); }

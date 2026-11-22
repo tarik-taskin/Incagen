@@ -1,8 +1,8 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { httpsCallable } from "firebase/functions";
-import { ArrowRight, Check, Database, Layers, LoaderCircle, PieChart, RotateCcw, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
+import { ArrowRight, Check, Database, Eye, Layers, LoaderCircle, PieChart, RotateCcw, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
 import type { Analysis } from "../../../functions/src/contracts";
-import type { AnalysisTable, TableSelection } from "../../../functions/src/analysis/tabular-contract";
+import type { AnalysisFailure, AnalysisTable, TableSelection } from "../../../functions/src/analysis/tabular-contract";
 import type { AiArtifact } from "../../../functions/src/analysis/tabular-storage";
 import { getLocale, t, useLocale } from "../../i18n/runtime";
 import { getServices } from "../../lib/firebase";
@@ -16,8 +16,16 @@ import { useDeadlineReached } from "../../hooks/use-deadline-reached";
 const LiveAnalysisReport = lazy(() => import("./live-analysis-report"));
 const defaults: TableSelection = { sheet: null, valueColumn: null, groupColumn: null, aggregation: "sum", numberFormat: "plain", unit: "number" };
 const panel = "surface rounded-3xl border border-border bg-card p-5 shadow-sm sm:p-7";
-const errors = {
+const fallbackFailureMessage = "Bu işlemden henüz sonuç alınamadı. Seçiminizi kontrol edip yeniden deneyebilirsiniz.";
+const errors: Record<AnalysisFailure, string> = {
   "invalid-data": "Seçilen ölçümde boş, geçersiz veya biçimi uyuşmayan hücreler var. Tabloyu ve sayı biçimini kontrol edin.",
+  "invalid-number-format": "Seçilen sayı biçimi bu sütundaki değerlerle uyuşmuyor. Sayı biçimini (1234.56 / 1.234,56 / 1,234.56) değiştirip yeniden deneyin.",
+  "currency-precision": "Para birimi seçiminde ikiden fazla ondalık basamaklı hücreler bulundu. Birimi «Sayı» yapın veya belgeyi iki ondalıkla düzenleyin.",
+  "invalid-measure": "Seçilen ölçüm sütununda boş, metin veya geçersiz sayısal değerler var. Farklı bir ölçüm alanı seçin ya da «Kayıt sayısı» ile devam edin.",
+  "invalid-group": "Seçilen gruplama sütununda boş veya geçersiz değerler var. Başka bir gruplama alanı seçin ya da «Gruplama yok» ile devam edin.",
+  "empty-table": "Seçilen tabloda hesaplanabilecek dolu satır bulunamadı. Başka bir tablo veya sayfa seçin.",
+  "group-limit": "Seçilen gruplama sütunu en fazla 12 benzersiz grup sınırını aşıyor. Daha az kategori içeren bir alan seçin veya «Gruplama yok» ile devam edin.",
+  "row-limit": "Seçilen tablo 5.000 kayıt sınırını aşıyor. Daha küçük bir tablo veya sayfa seçin.",
   "scope-limit": "Bu tablo ilk analiz kapsamını aşıyor. Daha az kayıt veya grup içeren bir tablo seçin.",
   configuration: "Analiz servisine şu anda ulaşılamıyor. Hazırlanan belgeleriniz korunuyor; daha sonra yeniden deneyin.",
   provider: "Özet bu denemede tamamlanamadı. Aynı kapsamla yeniden deneyebilirsiniz.",
@@ -26,13 +34,73 @@ const errors = {
   timeout: "Analiz süresi doldu. Aynı kapsamla yeniden deneyebilirsiniz.",
 };
 
+// Sabit hata kodunu kullanıcı dostu yönlendirme metnine çevirir; eski veya bilinmeyen kodlarda genel açıklamayı korur.
+function getFailureMessage(code?: string) {
+  if (code && Object.prototype.hasOwnProperty.call(errors, code)) return errors[code as AnalysisFailure];
+  return fallbackFailureMessage;
+}
+
 // Gelişmiş ayrıntılar açılabilir kalır; seçili değer görünür, başlık gerçek label ile ilişkilidir.
 function Field({ id, label, value, onChange, options, placeholder, disabled }: { id: string; label: string; value: string; onChange: (value: string) => void; options: { value: string; label: string }[]; placeholder?: string; disabled?: boolean }) {
   return <div className="min-w-0"><label htmlFor={id} className="mb-2 block text-xs font-medium">{t(label)}</label><Select value={value} onValueChange={onChange} disabled={disabled}><SelectTrigger id={id} className="h-11"><SelectValue placeholder={placeholder ? t(placeholder) : undefined} /></SelectTrigger><SelectContent>{options.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent></Select></div>;
 }
 
+// Aynı adlı farklı belgeleri kaynak sırasıyla ayırt eder; tekil adlarda ve çok sayfalı XLSX'te kısa biçimi korur.
+function formatTableLabel(table: AnalysisTable, tables: readonly AnalysisTable[]) {
+  const sourceIdsForName: string[] = [];
+  for (const item of tables) {
+    if (item.fileName === table.fileName && !sourceIdsForName.includes(item.sourceId)) sourceIdsForName.push(item.sourceId);
+  }
+  const suffix = sourceIdsForName.length > 1 ? ` (${t("Belge {0}", sourceIdsForName.indexOf(table.sourceId) + 1)})` : "";
+  return `${table.fileName}${suffix}${table.sheet ? ` · ${table.sheet}` : ""}`;
+}
+
+// Tablo değiştiğinde yeni tabloda geçersiz kalan ölçüm veya gruplama sütununu temizler; geçerli ayarları korur.
+function reconcileSelectionForTable(current: TableSelection, prevTable: AnalysisTable | undefined, nextTable: AnalysisTable | undefined): TableSelection {
+  if (!nextTable) return { ...current, sheet: null, valueColumn: null, groupColumn: null };
+  const keepColumn = (index: number | null) => {
+    if (index === null || !Number.isInteger(index) || index < 0 || index >= nextTable.columns.length) return null;
+    if (prevTable && prevTable.columns[index] !== nextTable.columns[index]) return null;
+    return index;
+  };
+  const nextValue = current.aggregation === "count" ? null : keepColumn(current.valueColumn);
+  const rawGroup = keepColumn(current.groupColumn);
+  const nextGroup = rawGroup !== null && rawGroup === nextValue ? null : rawGroup;
+  return {
+    ...current,
+    sheet: nextTable.sheet,
+    valueColumn: nextValue,
+    groupColumn: nextGroup,
+    unit: current.aggregation === "count" ? "count" : current.unit === "count" ? "number" : current.unit,
+    numberFormat: current.aggregation === "count" ? "plain" : current.numberFormat,
+  };
+}
+
+// Gönderilen analiz ayarlarının özellikle kayıt sayımında devre dışı kontrollerle birebir tutarlı olmasını sağlar.
+function normalizeSelectionForSubmit(selection: TableSelection, sheet: string | null): TableSelection {
+  if (selection.aggregation === "count") {
+    return { ...selection, sheet, valueColumn: null, unit: "count", numberFormat: "plain" };
+  }
+  return { ...selection, sheet, unit: selection.unit === "count" ? "number" : selection.unit };
+}
+
+// Seçili tablonun hesaplamaya uygun olmama nedenini döndürür; uygunsa null verir.
+function getTableUnavailabilityReason(selected: AnalysisTable | undefined, limits: { rows: number }) {
+  if (!selected) return null;
+  if (selected.unavailableReason === "unreadable-table" || selected.unavailableReason === "inconsistent-columns" || selected.columns.length === 0) {
+    return t("Bu tablonun sütun yapısı tutarsız veya okunamadı. Başka bir tablo seçin veya belgeyi düzenleyip yeniden yükleyin.");
+  }
+  if (selected.unavailableReason === "empty-table" || selected.rows === 0 || selected.nonEmptyRows === 0) {
+    return t("Bu tabloda hesaplanabilecek veri satırı yok. Boş olmayan bir tablo seçin.");
+  }
+  if (selected.unavailableReason === "row-limit" || selected.rows > limits.rows) {
+    return t("Bu tablo kayıt sınırını aşıyor ({0}/{1}).", selected.rows, limits.rows);
+  }
+  return null;
+}
+
 // Seçili tablo ve alan ayarlarını tek bakışta anlaşılır kılan özet satırları üretir.
-function getScopeSummary(selected: AnalysisTable | undefined, selection: TableSelection) {
+function getScopeSummary(selected: AnalysisTable | undefined, tables: readonly AnalysisTable[], selection: TableSelection) {
   if (!selected) return null;
   const aggLabel = selection.aggregation === "count" ? t("Kayıt sayısı") : selection.aggregation === "mean" ? t("Ortalama") : t("Toplam");
   const measureLabel = selection.aggregation === "count"
@@ -44,7 +112,7 @@ function getScopeSummary(selected: AnalysisTable | undefined, selection: TableSe
   const unitLabel = selection.aggregation === "count" ? t("kayıt", 2) : (selection.unit === "number" ? t("Sayı") : selection.unit === "percent" ? "%" : selection.unit);
   const formatLabel = selection.numberFormat === "tr" ? "1.234,56" : selection.numberFormat === "en" ? "1,234.56" : "1234.56";
   return {
-    source: `${selected.fileName}${selected.sheet ? ` · ${selected.sheet}` : ""}`,
+    source: formatTableLabel(selected, tables),
     operation: `${aggLabel}: ${measureLabel}`,
     group: groupLabel,
     format: selection.aggregation === "count" ? unitLabel : `${formatLabel} (${unitLabel})`,
@@ -54,11 +122,51 @@ function getScopeSummary(selected: AnalysisTable | undefined, selection: TableSe
 // Seçim eksik veya geçersiz olduğunda kullanıcıya net, yerelleştirilmiş yönlendirme mesajı döndürür.
 function getValidationReason(selected: AnalysisTable | undefined, selection: TableSelection, limits: { rows: number }) {
   if (!selected) return t("Devam etmek için bir tablo seçin.");
-  if (selected.rows > limits.rows) return t("Bu tablo kayıt sınırını aşıyor ({0}/{1}).", selected.rows, limits.rows);
+  const tableIssue = getTableUnavailabilityReason(selected, limits);
+  if (tableIssue) return tableIssue;
   if (selection.aggregation !== "count" && (selection.valueColumn === null || !Number.isInteger(selection.valueColumn) || selection.valueColumn < 0 || selection.valueColumn >= selected.columns.length)) return t("Hesaplanacak ölçüm alanını seçin.");
   if (selection.groupColumn !== null && (!Number.isInteger(selection.groupColumn) || selection.groupColumn < 0 || selection.groupColumn >= selected.columns.length)) return t("Gruplama alanını yeniden seçin.");
   if (selection.valueColumn !== null && selection.valueColumn === selection.groupColumn) return t("Ölçüm ve gruplama için farklı alanlar seçin.");
   return null;
+}
+
+// Hesaplamadan önce seçili tablonun sütunlarını ve küçük satır örneğini gösterir; Python veya model çağrısı başlatmaz.
+function TablePreview({ table, label }: { table: AnalysisTable; label: string }) {
+  const sampleRows = table.sampleRows ?? [];
+  return <details className="mt-4 rounded-xl border border-border/70 bg-background/60 text-xs">
+    <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3.5 py-2 font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary [&::-webkit-details-marker]:hidden">
+      <span className="inline-flex items-center gap-2"><Eye className="h-3.5 w-3.5 text-primary dark:text-secondary" aria-hidden="true" />{t("Tablo önizlemesi")}</span>
+      <span className="text-[11px] font-normal text-muted-foreground">{sampleRows.length > 0 ? t("İlk {0} satır · {1} sütun", sampleRows.length, table.columns.length) : t("{0} sütun", table.columns.length)}</span>
+    </summary>
+    <div className="border-t border-border/60 px-3.5 py-3">
+      <p className="font-medium text-foreground" title={label}>{label}</p>
+      {table.columns.length > 0 && <div className="mt-2 flex flex-wrap gap-1.5" aria-label={t("Tablo sütunları")}>{table.columns.map((col, idx) => <span key={`${idx}-${col}`} dir="auto" className="rounded-md border border-border/70 bg-muted/50 px-2 py-0.5 text-[11px] text-foreground">{col}</span>)}</div>}
+      {sampleRows.length > 0 ? <>
+        <div className="mt-3 overflow-x-auto rounded-lg border border-border/70">
+          <table className="w-full border-collapse text-start text-[11px]">
+            <caption className="sr-only">{t("Seçili tablodan örnek satırlar")}</caption>
+            <thead className="bg-muted/50 text-muted-foreground">
+              <tr>
+                <th scope="col" className="whitespace-nowrap border-b border-border/70 px-2.5 py-1.5 font-medium">{t("Satır")}</th>
+                {table.columns.map((col, idx) => <th key={`${idx}-${col}`} scope="col" dir="auto" className="whitespace-nowrap border-b border-border/70 px-2.5 py-1.5 font-medium">{col}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {sampleRows.map(sample => <tr key={sample.row} className="border-t border-border/50">
+                <th scope="row" className="whitespace-nowrap px-2.5 py-1.5 font-normal tabular-nums text-muted-foreground">{sample.row}</th>
+                {table.columns.map((_col, idx) => {
+                  const raw = sample.values[idx];
+                  const display = raw === null || raw === undefined || String(raw).trim() === "" ? "—" : String(raw);
+                  return <td key={idx} dir="auto" className="max-w-[14rem] truncate whitespace-nowrap px-2.5 py-1.5 text-foreground" title={display}>{display}</td>;
+                })}
+              </tr>)}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-2 text-[11px] leading-5 text-muted-foreground">{t("Yalnızca ilk {0} satır örnek olarak gösterilir; tüm veri satırlarının tam doğrulaması yerine geçmez. Hesaplama başlatıldığında seçilen tablonun tamamı doğrulanır.", sampleRows.length)}</p>
+      </> : <p className="mt-2 text-[11px] leading-5 text-muted-foreground">{t("Örnek satır önizlemesi bu kayıt için mevcut değil; sütun başlıklarını yukarıda inceleyebilirsiniz.")}</p>}
+    </div>
+  </details>;
 }
 
 // Dosya/sayfa ikilisinin kimliği liste sırası değişse de sabittir; ayırıcı çakışması oluşturmaz.
@@ -112,22 +220,25 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
   }, [analysis.id, user, ready, job?.attemptId, refresh]);
   const savedTable = tables?.find(table => table.sourceId === job?.sourceId && table.sheet === job.selection.sheet);
   const selected = tableKey ? tables?.find(table => tableIdentity(table) === tableKey) : job ? savedTable : tables?.length === 1 ? tables[0] : undefined;
-  const validationReason = getValidationReason(selected, selection, limits);
+  const tableUnavailable = Boolean(getTableUnavailabilityReason(selected, limits));
+  const normalizedSelection = normalizeSelectionForSubmit(selection, selected?.sheet ?? selection.sheet);
+  const validationReason = getValidationReason(selected, normalizedSelection, limits);
   const valid = validationReason === null;
-  const summary = getScopeSummary(selected, selection);
+  const summary = tables ? getScopeSummary(selected, tables, normalizedSelection) : null;
   const exhausted = (job?.attempts ?? 0) >= (job?.maxAttempts ?? limits.attempts);
+  const jobFailureMessage = job?.error ? getFailureMessage(job.error) : "";
 
   // Kullanıcının açık seçimi gönderilir; başlık, kaynak yolu, metrik veya prompt istemciden üretilmez.
   async function start() {
     if (!selected || !valid || lifetime.current.starting || exhausted || cooling) return;
     lifetime.current.starting = true;
     setPending(true); setError("");
-    try { await httpsCallable(getServices().functions, "startAnalysis", { timeout: 190_000 })({ id: analysis.id, sourceId: selected.sourceId, selection: { ...selection, sheet: selected.sheet }, locale: job?.status === "running" ? job.locale : getLocale() }); }
+    try { await httpsCallable(getServices().functions, "startAnalysis", { timeout: 190_000 })({ id: analysis.id, sourceId: selected.sourceId, selection: normalizedSelection, locale: job?.status === "running" ? job.locale : getLocale() }); }
     catch (failure) {
       if (!lifetime.current.active) return;
       const details = (failure as { details?: { analysisFailure?: string } })?.details;
       const reason = details?.analysisFailure;
-      setError(reason && Object.prototype.hasOwnProperty.call(errors, reason) ? errors[reason as keyof typeof errors] : userError(failure));
+      setError(reason ? getFailureMessage(reason) : userError(failure));
     }
     finally { lifetime.current.starting = false; if (lifetime.current.active) setPending(false); }
   }
@@ -139,8 +250,8 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
     return <section className={`${panel} mt-7`} aria-labelledby="ai-progress-title" aria-busy="true"><div className="flex items-start gap-4"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:text-secondary"><Sparkles className="h-5 w-5" aria-hidden="true" /></span><div><h2 id="ai-progress-title" className="text-lg font-semibold">{t("Analiziniz hazırlanıyor")}</h2><p role="status" className="mt-2 text-sm text-muted-foreground">{t(stage === "calculating" ? "Tablo hesaplanıyor." : stage === "interpreting" ? "Kaynaklı özet hazırlanıyor." : "Rapor kaydediliyor.")}</p><p className="mt-2 text-xs leading-6 text-muted-foreground">{t("Bu sayfadan ayrılabilirsiniz. Sonucu geçmişinizden açabilirsiniz; aynı isteği tekrarlamak yeni analiz başlatmaz.")}</p></div></div><ol className="mt-6 grid grid-cols-3 gap-3" aria-label={t("Analiz aşamaları")}>{["Hesaplar", "Özet", "Kayıt"].map((label, position) => <li key={label} className={`border-t-2 pt-3 text-xs ${position <= activeIndex ? "border-primary font-medium text-primary dark:border-secondary dark:text-secondary" : "border-border text-muted-foreground"}`}><span className="inline-flex items-center gap-2">{position < activeIndex ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : position === activeIndex ? <LoaderCircle className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" aria-hidden="true" /> : null}{t(label)}</span></li>)}</ol></section>;
   }
   return <section className={`${panel} mt-7`} aria-labelledby="ai-setup-title"><div className="flex items-start gap-4"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:text-secondary"><Sparkles className="h-5 w-5" aria-hidden="true" /></span><div><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary dark:text-secondary">{t("Kaynaklı analiz")}</p><h2 id="ai-setup-title" className="mt-1 text-xl font-semibold tracking-tight">{t("Tablodan net bir özet.")}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{t("Bir tablo ve ölçüm seçin. Hesaplar kaynak satırlarıyla doğrulanır; özet, analiz hedefinize göre hazırlanır.")}</p></div></div>
-    {job && <p role="status" className="mt-5 flex items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-6"><TriangleAlert className="mt-1 h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300" aria-hidden="true" /><span>{t(exhausted ? "Bu çalışma için deneme sınırına ulaşıldı. Kaynaklarınız ve hazırlık özeti korunuyor." : job.error ? errors[job.error] : "Bu işlemden henüz sonuç alınamadı. Aynı kapsamla yeniden deneyebilirsiniz.")}{cooling && <span className="mt-1 block">{t("Yeniden deneme kısa bir süre sonra açılacak; işlem kendiliğinden başlamaz.")}</span>}</span></p>}
-    {error && !(job?.status === "failed" && job.error && error === errors[job.error]) && <p role="alert" className="mt-4 text-sm text-destructive">{t(error)}</p>}
+    {job && <p role="status" className="mt-5 flex items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-6"><TriangleAlert className="mt-1 h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300" aria-hidden="true" /><span>{t(exhausted ? "Bu çalışma için deneme sınırına ulaşıldı. Kaynaklarınız ve hazırlık özeti korunuyor." : jobFailureMessage || "Bu işlemden henüz sonuç alınamadı. Aynı kapsamla yeniden deneyebilirsiniz.")}{cooling && <span className="mt-1 block">{t("Yeniden deneme kısa bir süre sonra açılacak; işlem kendiliğinden başlamaz.")}</span>}</span></p>}
+    {error && !(job?.status === "failed" && jobFailureMessage && error === jobFailureMessage) && <p role="alert" className="mt-4 text-sm text-destructive">{t(error)}</p>}
     {tables === null ? <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">{error ? <Button variant="outline" onClick={() => setRefresh(value => value + 1)}>{t("Tabloları yeniden yükle")}</Button> : <><LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin motion-reduce:animate-none" />{t("Tablolar kontrol ediliyor…")}</>}</div> : tables.length === 0 ? <p className="mt-5 text-sm leading-6 text-muted-foreground">{t("Bu ilk analiz sürümü CSV ve XLSX tablolarını kullanır. Diğer belgelerinizin hazırlık özetini aşağıda inceleyebilirsiniz.")}</p> : <>
       <div className="mt-6 space-y-6">
         {/* Bölüm 1: Veri kaynağı */}
@@ -150,12 +261,13 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
             <span>{t("1. İncelenecek veri kaynağı")}</span>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field id="ai-table" label="Analiz tablosu" value={selected ? tableIdentity(selected) : ""} placeholder="Tablo seç" disabled={exhausted} onChange={value => { setTableKey(value); setSelection(defaults); setError(""); }} options={tables.map(table => ({ value: tableIdentity(table), label: `${table.fileName}${table.sheet ? ` · ${table.sheet}` : ""}` }))} />
+            <Field id="ai-table" label="Analiz tablosu" value={selected ? tableIdentity(selected) : ""} placeholder="Tablo seç" disabled={exhausted} onChange={value => { const nextTable = tables.find(table => tableIdentity(table) === value); setTableKey(value); setSelection(current => reconcileSelectionForTable(current, selected, nextTable)); setError(""); }} options={tables.map(table => ({ value: tableIdentity(table), label: formatTableLabel(table, tables) }))} />
             <div className="flex flex-col justify-end text-xs leading-5 text-muted-foreground">
               <p className="font-medium text-foreground">{selected ? t("{0} kayıt · {1} alan", selected.rows, selected.columns.length) : t("İncelemek istediğiniz tabloyu seçin.")}</p>
               <p className="mt-0.5 text-[11px]">{t("En fazla {0} kayıt ve {1} grup.", limits.rows, limits.groups)}</p>
             </div>
           </div>
+          {selected && selected.columns.length > 0 && <TablePreview table={selected} label={formatTableLabel(selected, tables)} />}
         </div>
 
         {/* Bölüm 2: Ne hesaplanacak */}
@@ -165,10 +277,10 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
             <span>{t("2. Hesaplama yöntemi ve ölçüm")}</span>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field id="ai-aggregation" label="Hesaplama" value={selection.aggregation} disabled={!selected || exhausted} onChange={value => setSelection(current => ({ ...current, aggregation: value as TableSelection["aggregation"], valueColumn: value === "count" ? null : current.valueColumn, unit: value === "count" ? "count" : current.unit === "count" ? "number" : current.unit }))} options={[{ value: "sum", label: t("Toplam") }, { value: "mean", label: t("Ortalama") }, { value: "count", label: t("Kayıt sayısı") }]} />
-            <Field id="ai-measure" label="Ölçüm alanı" value={selection.valueColumn === null ? "" : String(selection.valueColumn)} placeholder={selection.aggregation === "count" ? "Dolu kayıtlar" : "Alan seç"} disabled={!selected || exhausted || selection.aggregation === "count"} onChange={value => setSelection(current => ({ ...current, valueColumn: Number(value), groupColumn: current.groupColumn === Number(value) ? null : current.groupColumn }))} options={(selected?.columns ?? []).map((column, n) => ({ value: String(n), label: column }))} />
+            <Field id="ai-aggregation" label="Hesaplama" value={normalizedSelection.aggregation} disabled={!selected || tableUnavailable || exhausted} onChange={value => setSelection(current => ({ ...current, aggregation: value as TableSelection["aggregation"], valueColumn: value === "count" ? null : current.valueColumn, numberFormat: value === "count" ? "plain" : current.numberFormat, unit: value === "count" ? "count" : current.unit === "count" ? "number" : current.unit }))} options={[{ value: "sum", label: t("Toplam") }, { value: "mean", label: t("Ortalama") }, { value: "count", label: t("Kayıt sayısı") }]} />
+            <Field id="ai-measure" label="Ölçüm alanı" value={normalizedSelection.valueColumn === null ? "" : String(normalizedSelection.valueColumn)} placeholder={normalizedSelection.aggregation === "count" ? "Dolu kayıtlar" : "Alan seç"} disabled={!selected || tableUnavailable || exhausted || normalizedSelection.aggregation === "count"} onChange={value => setSelection(current => ({ ...current, valueColumn: Number(value), groupColumn: current.groupColumn === Number(value) ? null : current.groupColumn }))} options={(selected?.columns ?? []).map((column, n) => ({ value: String(n), label: column }))} />
           </div>
-          {selection.aggregation === "count" && <p className="mt-2.5 text-xs text-muted-foreground">{t("Kayıt sayısı seçildiğinde boş olmayan tüm satırlar sayılır; ölçüm sütunu seçilmez.")}</p>}
+          {normalizedSelection.aggregation === "count" && <p className="mt-2.5 text-xs text-muted-foreground">{t("Kayıt sayısı seçildiğinde boş olmayan tüm satırlar sayılır; ölçüm sütunu seçilmez.")}</p>}
         </div>
 
         {/* Bölüm 3: Kapsam ve biçim */}
@@ -178,9 +290,9 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
             <span>{t("3. Gruplama ve gösterim biçimi")}</span>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
-            <Field id="ai-group" label="Gruplama" value={selection.groupColumn === null ? "none" : String(selection.groupColumn)} disabled={!selected || exhausted} onChange={value => setSelection(current => ({ ...current, groupColumn: value === "none" ? null : Number(value) }))} options={[{ value: "none", label: t("Gruplama yok") }, ...(selected?.columns ?? []).map((column, n) => ({ value: String(n), label: column })).filter(option => Number(option.value) !== selection.valueColumn)]} />
-            <Field id="ai-number-format" label="Sayı biçimi" value={selection.numberFormat} disabled={!selected || exhausted || selection.aggregation === "count"} onChange={value => setSelection(current => ({ ...current, numberFormat: value as TableSelection["numberFormat"] }))} options={[{ value: "plain", label: "1234.56" }, { value: "tr", label: "1.234,56" }, { value: "en", label: "1,234.56" }]} />
-            <Field id="ai-unit" label="Birim" value={selection.unit} disabled={!selected || exhausted || selection.aggregation === "count"} onChange={value => setSelection(current => ({ ...current, unit: value as TableSelection["unit"] }))} options={[{ value: "number", label: t("Sayı") }, { value: "count", label: t("kayıt", 2) }, { value: "TRY", label: "TRY · ₺" }, { value: "USD", label: "USD · $" }, { value: "EUR", label: "EUR · €" }, { value: "percent", label: "%" }].filter(option => selection.aggregation === "count" || option.value !== "count")} />
+            <Field id="ai-group" label="Gruplama" value={normalizedSelection.groupColumn === null ? "none" : String(normalizedSelection.groupColumn)} disabled={!selected || tableUnavailable || exhausted} onChange={value => setSelection(current => ({ ...current, groupColumn: value === "none" ? null : Number(value) }))} options={[{ value: "none", label: t("Gruplama yok") }, ...(selected?.columns ?? []).map((column, n) => ({ value: String(n), label: column })).filter(option => Number(option.value) !== normalizedSelection.valueColumn)]} />
+            <Field id="ai-number-format" label="Sayı biçimi" value={normalizedSelection.numberFormat} disabled={!selected || tableUnavailable || exhausted || normalizedSelection.aggregation === "count"} onChange={value => setSelection(current => ({ ...current, numberFormat: value as TableSelection["numberFormat"] }))} options={[{ value: "plain", label: "1234.56" }, { value: "tr", label: "1.234,56" }, { value: "en", label: "1,234.56" }]} />
+            <Field id="ai-unit" label="Birim" value={normalizedSelection.unit} disabled={!selected || tableUnavailable || exhausted || normalizedSelection.aggregation === "count"} onChange={value => setSelection(current => ({ ...current, unit: value as TableSelection["unit"] }))} options={[{ value: "number", label: t("Sayı") }, { value: "count", label: t("kayıt", 2) }, { value: "TRY", label: "TRY · ₺" }, { value: "USD", label: "USD · $" }, { value: "EUR", label: "EUR · €" }, { value: "percent", label: "%" }].filter(option => normalizedSelection.aggregation === "count" || option.value !== "count")} />
           </div>
         </div>
       </div>
@@ -228,7 +340,6 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
           <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" />
         </Button>
       </div>
-      {selected && selected.rows > limits.rows && <p role="status" className="mt-3 text-xs text-amber-700 dark:text-amber-300">{t("Bu tablo kayıt sınırını aşıyor. Daha küçük bir tabloyla devam edin.")}</p>}
       <details className="mt-4 text-xs text-muted-foreground"><summary className="w-fit cursor-pointer rounded py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{t("Nasıl hesaplanır?")}</summary><div className="mt-2 max-w-3xl space-y-2 leading-6"><p className="flex items-start gap-2"><ShieldCheck className="mt-1 h-3.5 w-3.5 shrink-0" aria-hidden="true" />{t("Yalnız seçilen tablo işlenir. Ölçüm, birim ve sayı biçimi tahmin edilmez; eksik veya geçersiz ölçüm hücreleri hesaplamayı durdurur.")}</p><p>{t("Seçilen tablo ve doğrulanmış hesaplar yapay zekâ özetinde kullanılır. Diğer belgeler bu analizin kapsamına eklenmez.")}</p><p>{t("Parasal sonuçlar iki, diğer sonuçlar altı ondalık hanede yuvarlanır. Tamamen boş satırlar kayıt sayısına dahil edilmez.")}</p></div></details>
     </>}
   </section>;

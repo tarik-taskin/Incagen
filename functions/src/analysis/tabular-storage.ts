@@ -10,7 +10,68 @@ import type { ParsedDocument, Report } from "../contracts";
 import { AI_JOB_LIMITS, type AiJob, type AnalysisTable, type WorkerResult, type ResultLocale } from "./tabular-contract";
 
 const idRequest = z.object({ id: z.string().uuid() }).strict();
+const SAMPLE_ROW_LIMIT = 5;
+const SAMPLE_CELL_MAX_LENGTH = 120;
+const ANALYSIS_ROW_LIMIT = 5000;
 export interface AiArtifact { version: 1; result: AiResult; sources: ParsedDocument[]; scope: WorkerResult["scope"]; locale: ResultLocale }
+
+// Örnek satır hücresini tablo katalog boyutunu aşmayacak biçimde güvenli metin/sayı değerine indirger.
+function previewCell(cell: string | number | boolean | null | undefined): string | number | boolean | null {
+  if (cell === null || cell === undefined) return null;
+  if (typeof cell === "string" && cell.length > SAMPLE_CELL_MAX_LENGTH) return `${cell.slice(0, SAMPLE_CELL_MAX_LENGTH - 1)}…`;
+  return cell;
+}
+
+// Hazırlanan CSV/XLSX belgelerinden küçük satır örnekli, durum açıklamalı tablo kataloğu oluşturur; tam kopya üretmez.
+export async function buildAnalysisTables(
+  sources: Report["sources"],
+  loadDocument: (source: Report["sources"][number]) => Promise<ParsedDocument>,
+): Promise<AnalysisTable[]> {
+  const tables: AnalysisTable[] = [];
+  for (const source of sources.filter(item => /\.(csv|xlsx)$/i.test(item.name))) {
+    let document: ParsedDocument;
+    try {
+      document = await loadDocument(source);
+    } catch {
+      tables.push({ sourceId: source.id, fileName: source.name, sheet: null, columns: [], rows: 0, nonEmptyRows: 0, sampleRows: [], unavailableReason: "unreadable-table" });
+      continue;
+    }
+    const tableChunks = document.chunks.filter(chunk => chunk.kind === "table" && chunk.table);
+    if (tableChunks.length === 0) {
+      tables.push({ sourceId: source.id, fileName: source.name, sheet: null, columns: [], rows: 0, nonEmptyRows: 0, sampleRows: [], unavailableReason: "empty-table" });
+      continue;
+    }
+    for (const chunk of tableChunks) {
+      const sheet = chunk.locator.sheet ?? null;
+      const chunkRows = chunk.table!.rows;
+      const rowStart = chunk.locator.rowStart ?? 1;
+      let table = tables.find(item => item.sourceId === source.id && item.sheet === sheet);
+      if (!table) {
+        table = { sourceId: source.id, fileName: source.name, sheet, columns: chunk.table!.columns, rows: 0, nonEmptyRows: 0, sampleRows: [] };
+        tables.push(table);
+      } else if (JSON.stringify(table.columns) !== JSON.stringify(chunk.table!.columns)) {
+        table.unavailableReason = "inconsistent-columns";
+        continue;
+      }
+      table.rows += chunkRows.length;
+      for (let offset = 0; offset < chunkRows.length; offset++) {
+        const row = chunkRows[offset];
+        const hasContent = row.some(cell => cell !== null && cell !== undefined && String(cell).trim() !== "");
+        if (hasContent) table.nonEmptyRows = (table.nonEmptyRows ?? 0) + 1;
+        if ((table.sampleRows?.length ?? 0) < SAMPLE_ROW_LIMIT) {
+          table.sampleRows!.push({ row: rowStart + offset, values: row.map(previewCell) });
+        }
+      }
+    }
+  }
+  for (const table of tables) {
+    if (table.unavailableReason) continue;
+    if (table.columns.length === 0) table.unavailableReason = "unreadable-table";
+    else if (table.rows === 0 || (table.nonEmptyRows ?? 0) === 0) table.unavailableReason = "empty-table";
+    else if (table.rows > ANALYSIS_ROW_LIMIT) table.unavailableReason = "row-limit";
+  }
+  return tables;
+}
 
 // İstemciden dosya yolu alınmaz; yalnız oturum UID'sine ait tamamlanmış hazırlık kullanılabilir.
 export async function preparedAnalysis(uid: string | undefined, id: string) {
@@ -35,26 +96,18 @@ async function preparedDocument(uid: string, id: string, attempt: string, source
   return document;
 }
 
-// Katalog yalnız başlık/konum/adet döndürür; model veya Python çağrısı başlatmaz.
+// Katalog yalnız başlık/konum/adet ve en fazla 5 örnek satır döndürür; model veya Python çağrısı başlatmaz.
 export const getAnalysisTables = onCall({ region: "europe-west1", timeoutSeconds: 60, memory: "512MiB", maxInstances: 2, concurrency: 4 }, async request => {
   const parsed = idRequest.safeParse(request.data);
   if (!parsed.success) throw new HttpsError("invalid-argument", "Geçersiz analiz kimliği.");
   const { data } = await preparedAnalysis(request.auth?.uid, parsed.data.id);
-  const tables: AnalysisTable[] = [];
   try {
-    for (const source of data.report.sources.filter(source => /\.(csv|xlsx)$/i.test(source.name))) {
-      const document = await preparedDocument(request.auth!.uid, parsed.data.id, data.artifactAttempt, source);
-      for (const chunk of document.chunks.filter(chunk => chunk.kind === "table" && chunk.table)) {
-        const sheet = chunk.locator.sheet ?? null;
-        const table = tables.find(item => item.sourceId === source.id && item.sheet === sheet);
-        if (table) {
-          if (JSON.stringify(table.columns) !== JSON.stringify(chunk.table!.columns)) throw new Error();
-          table.rows += chunk.table!.rows.length;
-        } else tables.push({ sourceId: source.id, fileName: source.name, sheet, columns: chunk.table!.columns, rows: chunk.table!.rows.length });
-      }
-    }
+    const tables = await buildAnalysisTables(
+      data.report.sources,
+      source => preparedDocument(request.auth!.uid, parsed.data.id, data.artifactAttempt, source),
+    );
     if (tables.length > 20 || Buffer.byteLength(JSON.stringify(tables)) > 512 * 1024) throw new HttpsError("resource-exhausted", "Daha az tablo içeren bir çalışma seçin.");
-    return { tables, limits: { rows: 5000, groups: 12, attempts: AI_JOB_LIMITS.attempts } };
+    return { tables, limits: { rows: ANALYSIS_ROW_LIMIT, groups: 12, attempts: AI_JOB_LIMITS.attempts } };
   } catch (error) {
     if (error instanceof HttpsError) throw error;
     throw new HttpsError("failed-precondition", "Tablo bilgileri okunamadı. Yeniden deneyin.");

@@ -1,4 +1,5 @@
 import { Buffer } from "node:buffer";
+import { createRequire } from "node:module";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { chooseLanguage, setTheme } from "./ui-helpers";
@@ -9,8 +10,11 @@ import es from "../src/i18n/locales/es.json" with { type: "json" };
 import zh from "../src/i18n/locales/zh.json" with { type: "json" };
 import ar from "../src/i18n/locales/ar.json" with { type: "json" };
 
+const require = createRequire(new URL("../functions/package.json", import.meta.url));
+const ExcelJS = require("exceljs");
+
 // İzole demo hesabında gerçek yükleme ve Python hesabını kullanır; sağlayıcı çağrısı emülatörde açıkça taklittir.
-async function prepare(page: Page, body: string) {
+async function prepare(page: Page, body: string | Buffer, fileName = "gelir.csv", mimeType = "text/csv") {
   await page.goto("/app/new-analysis");
   await page.getByRole("button", { name: "Hesap oluştur", exact: true }).click();
   await page.getByLabel("E-posta", { exact: true }).fill(`tabular-${crypto.randomUUID()}@example.test`);
@@ -21,11 +25,11 @@ async function prepare(page: Page, body: string) {
   await page.getByLabel("İşletme adı", { exact: true }).fill("Sentetik Teknoloji");
   await page.getByLabel("Analiz başlığı", { exact: true }).fill("Gelir değerlendirmesi");
   await page.getByLabel("Analiz hedefi", { exact: true }).fill("Kanallara göre gelirleri değerlendir");
-  await page.getByLabel("Analiz edilecek dosyaları seç").setInputFiles({ name: "gelir.csv", mimeType: "text/csv", buffer: Buffer.from(body) });
+  await page.getByLabel("Analiz edilecek dosyaları seç").setInputFiles({ name: fileName, mimeType, buffer: typeof body === "string" ? Buffer.from(body) : body });
   await page.getByRole("button", { name: "Belgeleri ayrıştır", exact: true }).click();
   await expect(page).toHaveURL(/\/app\/analyses\//, { timeout: 30_000 });
   await expect(page.getByRole("heading", { name: "Tablodan net bir özet." })).toBeVisible();
-  await expect(page.getByLabel("Hesaplama", { exact: true })).toBeEnabled();
+  await expect(page.getByLabel("Analiz tablosu", { exact: true })).toBeEnabled();
 }
 
 // Radix seçimlerini klavyeyle erişilebilir etiketinden yapar.
@@ -91,7 +95,7 @@ test("kayıt sayımı ölçüm seçmeden çalışır; hatalı ölçümden kontro
   await prepare(page, "Channel,Revenue\nWeb,invalid\nStore,20\n");
   await select(page, "Ölçüm alanı", "Revenue");
   await page.getByRole("button", { name: "Analizi oluştur", exact: true }).click();
-  await expect(page.getByText("Seçilen ölçümde boş, geçersiz veya biçimi uyuşmayan hücreler var. Tabloyu ve sayı biçimini kontrol edin.", { exact: true })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText("Seçilen sayı biçimi bu sütundaki değerlerle uyuşmuyor. Sayı biçimini (1234.56 / 1.234,56 / 1,234.56) değiştirip yeniden deneyin.", { exact: true })).toBeVisible({ timeout: 30_000 });
   await select(page, "Hesaplama", "Kayıt sayısı");
   await expect(page.getByLabel("Ölçüm alanı", { exact: true })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Yeniden dene", exact: true })).toBeEnabled();
@@ -100,6 +104,63 @@ test("kayıt sayımı ölçüm seçmeden çalışır; hatalı ölçümden kontro
   await expect(report).toBeVisible({ timeout: 30_000 });
   await expect(report).toContainText("2 kayıt");
   await expect(report.locator("[data-testid^=chart-]")).toHaveCount(0);
+  await layout(page);
+});
+
+test("çok sayfalı Excel'de önizleme, satır ağırlıklı ortalama, sayfa kaynağı ve yenileme/geçmiş dönüşü korunur", async ({ page }, info) => {
+  const workbook = new ExcelJS.Workbook();
+  workbook.addWorksheet("Kapsam Dışı").addRows([["Ekip", "Gelir"], ["Disari", 999999]]);
+  workbook.addWorksheet("Hizmetler").addRows([["Ekip", "Gelir"], ["Alfa", 10], ["Alfa", 20], ["Alfa", 30], ["Beta", 100]]);
+  const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
+
+  await prepare(page, buffer, "hizmet-gelir.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  await select(page, "Analiz tablosu", "hizmet-gelir.xlsx · Hizmetler");
+
+  // Hesaplamadan önce seçili Excel sayfasının sütunları ve küçük satır örneği incelenebilir.
+  await page.getByText("Tablo önizlemesi", { exact: true }).click();
+  const preview = page.getByRole("table", { name: "Seçili tablodan örnek satırlar" });
+  await expect(preview).toContainText("Alfa");
+  await expect(preview).toContainText("100");
+  await expect(preview).not.toContainText("999999");
+
+  await select(page, "Hesaplama", "Ortalama");
+  await select(page, "Ölçüm alanı", "Gelir");
+  await select(page, "Gruplama", "Ekip");
+  await select(page, "Birim", "EUR · €");
+  await page.getByRole("button", { name: "Analizi oluştur", exact: true }).click();
+
+  // Gerçek satır ağırlıklı ortalama: (10 + 20 + 30 + 100) / 4 = 40,00 EUR (grup ortalamalarının ortalaması 60,00 değil).
+  const report = page.getByRole("region", { name: "Analiz raporu", exact: true });
+  await expect(report).toBeVisible({ timeout: 30_000 });
+  await expect(report).toContainText("40,00 EUR");
+  await expect(report).toContainText("Hizmetler");
+
+  await report.getByText("Veri tablosu", { exact: true }).click();
+  await expect(report.getByRole("table")).toContainText("100,00 EUR");
+  await expect(report.getByRole("table")).toContainText("20,00 EUR");
+  await report.getByRole("button", { name: "Alfa kaynağı", exact: true }).click();
+
+  const dialog = page.getByRole("dialog", { name: "Alfa", exact: true });
+  await expect(dialog).toContainText("Hizmetler");
+  const sourceTable = dialog.getByRole("table");
+  await expect(sourceTable).toContainText("10");
+  await expect(sourceTable).toContainText("20");
+  await expect(sourceTable).toContainText("30");
+  await expect(sourceTable).not.toContainText("Beta");
+  await expect(sourceTable).not.toContainText("999999");
+  await layout(page);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+
+  // Yenileme ve Geçmiş dönüşünde aynı doğrulanmış Excel sonucu korunur.
+  const url = page.url();
+  await page.reload();
+  await expect(report).toContainText("40,00 EUR");
+  const nav = page.getByRole("navigation", { name: info.project.name === "mobile-chromium" ? "Mobil navigasyon" : "Ana navigasyon", exact: true });
+  await nav.getByRole("link", { name: "Geçmiş", exact: true }).click();
+  await expect(page.getByText("Analiz hazır", { exact: true }).first()).toBeVisible();
+  await page.goto(url);
+  await expect(report).toContainText("40,00 EUR");
   await layout(page);
 });
 

@@ -164,7 +164,7 @@ describe("gerçek Python hesaplayıcısından altı dilli üretim rapor biçimin
     const xlsxSample = await fixture("xlsx");
     const wrongSheetRun = runPythonWorker(xlsxSample.bytes, xlsxSample.name, { ...xlsxSample.selection, sheet: "WrongSheet" });
     expect(wrongSheetRun.status).toBe(1);
-    expect(wrongSheetRun.body.error).toBe("invalid-data");
+    expect(wrongSheetRun.body.error).toBe("table-not-found");
     expect(() => workerResultSchema.parse(wrongSheetRun.body.result)).toThrow();
 
     const validRun = runPythonWorker(xlsxSample.bytes, xlsxSample.name, xlsxSample.selection);
