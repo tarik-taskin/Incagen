@@ -1186,5 +1186,18 @@
   "Tablo sütunları": "Tabellenspalten",
   "Seçili tablodan örnek satırlar": "Beispielzeilen aus der gewählten Tabelle",
   "Yalnızca ilk {0} satır örnek olarak gösterilir; tüm veri satırlarının tam doğrulaması yerine geçmez. Hesaplama başlatıldığında seçilen tablonun tamamı doğrulanır.": "Nur die ersten {0} Zeilen werden als Beispiel angezeigt; dies ersetzt keine vollständige Prüfung aller Datenzeilen. Beim Start der Berechnung wird die gesamte Tabelle geprüft.",
-  "Örnek satır önizlemesi bu kayıt için mevcut değil; sütun başlıklarını yukarıda inceleyebilirsiniz.": "Für diesen Eintrag ist keine Beispielzeilenvorschau verfügbar; Sie können die Spaltenüberschriften oben prüfen."
+  "Örnek satır önizlemesi bu kayıt için mevcut değil; sütun başlıklarını yukarıda inceleyebilirsiniz.": "Für diesen Eintrag ist keine Beispielzeilenvorschau verfügbar; Sie können die Spaltenüberschriften oben prüfen.",
+  "Model yorumu": "Modellkommentar",
+  "Doğrulanmış hesaplar": "Verifizierte Berechnungen",
+  "Kaynak satırlarından deterministik olarak hesaplanır; model metrik üretmez.": "Deterministisch aus den Quellzeilen berechnet; das Modell erfindet keine Kennzahlen.",
+  "Model yorumu · Kaynaklı özet": "Modellkommentar · Quellenbasierte Zusammenfassung",
+  "Doğrulanmış hesaplara dayalı yapay zekâ özeti": "KI-Zusammenfassung auf Basis verifizierter Berechnungen",
+  "Belirtilmedi": "Nicht angegeben",
+  "{0} ({1} grup)": "{0} ({1} Gruppen)",
+  "{0} boş satır hesaplama dışında bırakıldı": "{0} leere Zeile(n) von der Berechnung ausgeschlossen",
+  "0 boş satır; tüm satırlar kapsama dahil edildi": "0 leere Zeilen; alle Zeilen im Umfang enthalten",
+  "Boş satır etkisi": "Auswirkung leerer Zeilen",
+  "Kayıtlı rapor dili": "Gespeicherte Berichtssprache",
+  "Kapsam kaynağını incele": "Umfangsquelle prüfen",
+  "Birim": "Einheit"
 }

@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { createHash } from "node:crypto";
 import { buildAnalysisPacket, type AnalysisPacket } from "./input-packet";
 import { validateAiResult, type AiResult, type AiResultValidationContext } from "./result-contract";
 import { GEMINI_LIMITS, type GeminiGenerate } from "./gemini";
 import { tabularCopy, tabularMethod } from "./tabular-copy";
-import type { ResultLocale, TableSelection, WorkerResult } from "./tabular-contract";
+import type { ResultLocale, WorkerResult } from "./tabular-contract";
+export { analysisFingerprint } from "./tabular-storage";
 
 const safeText = z.string().trim().min(1).max(700).refine(value => !/\p{N}/u.test(value), "Numbers belong in verified metrics, not generated prose.");
 const metricIds = z.array(z.string().min(1).max(200)).min(1).max(14);
@@ -14,11 +14,6 @@ const narrativeSchema = z.object({
   recommendations: z.array(z.object({ id: z.string().regex(/^action-[1-3]$/), action: safeText, basisFindingIds: z.array(z.string()).min(1).max(5) }).strict()).max(3),
   limitations: z.array(safeText).min(1).max(3),
 }).strict();
-
-// Tekilleştirme anahtarı kaynak/ayar/dile bağlıdır; aynı istek yeni ücretli çağrı başlatmaz.
-export function analysisFingerprint(sourceHash: string, sourceId: string, selection: TableSelection, locale: ResultLocale) {
-  return createHash("sha256").update(JSON.stringify([sourceHash, sourceId, selection.sheet, selection.valueColumn, selection.groupColumn, selection.aggregation, selection.numberFormat, selection.unit, locale])).digest("hex");
-}
 
 // Python'un hesap defterini bağımsız kaynak kapısına bağlar; seçilmeyen belgeleri rapor kapsamına katmaz.
 export function createTabularPacket(id: string, objective: string, worker: WorkerResult, locale: ResultLocale) {

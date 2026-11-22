@@ -1186,5 +1186,18 @@
   "Tablo sütunları": "Columnas de la tabla",
   "Seçili tablodan örnek satırlar": "Filas de muestra de la tabla seleccionada",
   "Yalnızca ilk {0} satır örnek olarak gösterilir; tüm veri satırlarının tam doğrulaması yerine geçmez. Hesaplama başlatıldığında seçilen tablonun tamamı doğrulanır.": "Solo se muestran las primeras {0} filas como muestra; esto no sustituye la validación completa de los datos. Al iniciar el cálculo se verifica toda la tabla seleccionada.",
-  "Örnek satır önizlemesi bu kayıt için mevcut değil; sütun başlıklarını yukarıda inceleyebilirsiniz.": "La vista previa de filas de muestra no está disponible para este registro; puede revisar los encabezados de columna arriba."
+  "Örnek satır önizlemesi bu kayıt için mevcut değil; sütun başlıklarını yukarıda inceleyebilirsiniz.": "La vista previa de filas de muestra no está disponible para este registro; puede revisar los encabezados de columna arriba.",
+  "Model yorumu": "Comentario del modelo",
+  "Doğrulanmış hesaplar": "Cálculos verificados",
+  "Kaynak satırlarından deterministik olarak hesaplanır; model metrik üretmez.": "Calculado de forma determinista a partir de las filas fuente; el modelo no genera métricas.",
+  "Model yorumu · Kaynaklı özet": "Comentario del modelo · Resumen con fuentes",
+  "Doğrulanmış hesaplara dayalı yapay zekâ özeti": "Resumen de IA basado en cálculos verificados",
+  "Belirtilmedi": "No especificado",
+  "{0} ({1} grup)": "{0} ({1} grupos)",
+  "{0} boş satır hesaplama dışında bırakıldı": "{0} fila(s) vacía(s) excluida(s) del cálculo",
+  "0 boş satır; tüm satırlar kapsama dahil edildi": "0 filas vacías; todas las filas incluidas en el alcance",
+  "Boş satır etkisi": "Efecto de filas vacías",
+  "Kayıtlı rapor dili": "Idioma guardado del informe",
+  "Kapsam kaynağını incele": "Inspeccionar fuente del alcance",
+  "Birim": "Unidad"
 }

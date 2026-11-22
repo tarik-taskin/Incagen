@@ -1,6 +1,7 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { setLocale } from "../../i18n/runtime";
 import type { AiJob, TableSelection } from "../../../functions/src/analysis/tabular-contract";
 import type { AiArtifact } from "../../../functions/src/analysis/tabular-storage";
 import type { AiResult } from "../../../functions/src/analysis/result-contract";
@@ -69,6 +70,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  setLocale("tr");
   vi.restoreAllMocks();
 });
 
@@ -307,5 +309,75 @@ describe("LiveAnalysisReport - downloadSource oturum ve yaşam döngüsü koordi
     await act(async () => { finish(Uint8Array.from(hash.match(/../g)!, byte => parseInt(byte, 16)).buffer); });
     expect(mocks.createObjectURLMock).not.toHaveBeenCalled();
     expect(mocks.anchorClickMock).not.toHaveBeenCalled();
+  });
+
+  it("denetlenebilir kapsamı, kaynak penceresi açılışını, doğrulanmış hesap/model ayrımını ve kayıtlı dil değişmezliğini korur", async () => {
+    const user = userEvent.setup();
+    const hash = await computeSha256(sampleBytes);
+    const source: ReportSource = {
+      sourceId: "file-0",
+      fileName: "hizmetler.xlsx",
+      sha256: hash,
+      chunks: [{ id: "c1", locator: { sheet: "Gelir", rowStart: 2, rowEnd: 3 }, table: { columns: ["Ekip", "Tutar"], rows: [["Alfa", "10"], ["Beta", "20"]] } }],
+    };
+    const artifact = createTestArtifact(source);
+    artifact.locale = "de";
+    artifact.scope = {
+      rows: 2,
+      emptyRows: 3,
+      groups: 2,
+      sheet: "Gelir",
+      measure: "Tutar",
+      group: "Ekip",
+      selection: { sheet: "Gelir", valueColumn: 1, groupColumn: 0, aggregation: "mean", numberFormat: "tr", unit: "EUR" },
+    };
+    artifact.result.summary[0].text = "Gespeicherter deutscher Berichtstext.";
+    artifact.result.metrics[0].evidence[0].locator = { sheet: "Gelir", rowStart: 2, rowEnd: 3 };
+    artifact.result.summary[0].evidence[0].locator = { sheet: "Gelir", rowStart: 2, rowEnd: 3 };
+
+    // Eski kayıtta eksik süre/token ölçümleri varsa uydurma 0 değer üretilmez.
+    const legacyJob: AiJob = {
+      status: "completed",
+      attemptId: "legacy-1",
+      attempts: 1,
+      startedAt: 1000,
+      finishedAt: 2000,
+      leaseUntil: 10000,
+      maxAttempts: 3,
+      stage: "saving",
+      locale: "de",
+      sourceId: "file-0",
+      selection: artifact.scope.selection,
+    };
+
+    render(<LiveAnalysisReport artifact={artifact} job={legacyJob} analysisId="analysis-1" />);
+
+    expect(screen.getByText("Doğrulanmış hesaplar")).toBeVisible();
+    expect(screen.getByText("Model yorumu · Kaynaklı özet")).toBeVisible();
+    expect(screen.getByText("Gespeicherter deutscher Berichtstext.")).toHaveAttribute("lang", "de");
+
+    await user.click(screen.getByText("İşlem ayrıntıları"));
+    expect(screen.getByText("hizmetler.xlsx · Gelir")).toBeVisible();
+    expect(screen.getByText("Tutar")).toBeVisible();
+    expect(screen.getByText("EUR")).toBeVisible();
+    expect(screen.getByText("Ekip (2 grup)")).toBeVisible();
+    expect(screen.getByText("3 boş satır hesaplama dışında bırakıldı")).toBeVisible();
+    expect(screen.getByText("İşlem süresi").nextElementSibling).toHaveTextContent("—");
+    expect(screen.queryByText("Hesaplama süresi")).not.toBeInTheDocument();
+    expect(screen.queryByText("Özet süresi")).not.toBeInTheDocument();
+    expect(screen.queryByText("Model kullanımı")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Kapsam kaynağını incele" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveTextContent("hizmetler.xlsx · Gelir");
+    expect(dialog).toHaveTextContent("Alfa");
+    await user.click(screen.getByRole("button", { name: "Kaynak incelemesini kapat" }));
+
+    // Arayüz dili İngilizce'ye çevrilse de kayıtlı raporun dili (Almanca) ve içeriği değişmez.
+    act(() => setLocale("en"));
+    expect(screen.getByText("Report language: German")).toBeVisible();
+    expect(screen.getByText("Gespeicherter deutscher Berichtstext.")).toBeVisible();
+    expect(screen.getByText("Verified calculations")).toBeVisible();
+    expect(screen.getByText("Model commentary · Grounded summary")).toBeVisible();
   });
 });

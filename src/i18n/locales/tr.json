@@ -1186,5 +1186,18 @@
   "Tablo sütunları": "Tablo sütunları",
   "Seçili tablodan örnek satırlar": "Seçili tablodan örnek satırlar",
   "Yalnızca ilk {0} satır örnek olarak gösterilir; tüm veri satırlarının tam doğrulaması yerine geçmez. Hesaplama başlatıldığında seçilen tablonun tamamı doğrulanır.": "Yalnızca ilk {0} satır örnek olarak gösterilir; tüm veri satırlarının tam doğrulaması yerine geçmez. Hesaplama başlatıldığında seçilen tablonun tamamı doğrulanır.",
-  "Örnek satır önizlemesi bu kayıt için mevcut değil; sütun başlıklarını yukarıda inceleyebilirsiniz.": "Örnek satır önizlemesi bu kayıt için mevcut değil; sütun başlıklarını yukarıda inceleyebilirsiniz."
+  "Örnek satır önizlemesi bu kayıt için mevcut değil; sütun başlıklarını yukarıda inceleyebilirsiniz.": "Örnek satır önizlemesi bu kayıt için mevcut değil; sütun başlıklarını yukarıda inceleyebilirsiniz.",
+  "Model yorumu": "Model yorumu",
+  "Doğrulanmış hesaplar": "Doğrulanmış hesaplar",
+  "Kaynak satırlarından deterministik olarak hesaplanır; model metrik üretmez.": "Kaynak satırlarından deterministik olarak hesaplanır; model metrik üretmez.",
+  "Model yorumu · Kaynaklı özet": "Model yorumu · Kaynaklı özet",
+  "Doğrulanmış hesaplara dayalı yapay zekâ özeti": "Doğrulanmış hesaplara dayalı yapay zekâ özeti",
+  "Belirtilmedi": "Belirtilmedi",
+  "{0} ({1} grup)": "{0} ({1} grup)",
+  "{0} boş satır hesaplama dışında bırakıldı": "{0} boş satır hesaplama dışında bırakıldı",
+  "0 boş satır; tüm satırlar kapsama dahil edildi": "0 boş satır; tüm satırlar kapsama dahil edildi",
+  "Boş satır etkisi": "Boş satır etkisi",
+  "Kayıtlı rapor dili": "Kayıtlı rapor dili",
+  "Kapsam kaynağını incele": "Kapsam kaynağını incele",
+  "Birim": "Birim"
 }

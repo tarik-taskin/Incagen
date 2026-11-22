@@ -1186,5 +1186,18 @@
   "Tablo sütunları": "表格列标题",
   "Seçili tablodan örnek satırlar": "所选表格的示例行",
   "Yalnızca ilk {0} satır örnek olarak gösterilir; tüm veri satırlarının tam doğrulaması yerine geçmez. Hesaplama başlatıldığında seçilen tablonun tamamı doğrulanır.": "此处仅展示前 {0} 行作为示例，不代表对全部数据行的完整校验。启动计算时将验证所选表格的全部内容。",
-  "Örnek satır önizlemesi bu kayıt için mevcut değil; sütun başlıklarını yukarıda inceleyebilirsiniz.": "此记录暂无示例行预览；您可以在上方查看列标题。"
+  "Örnek satır önizlemesi bu kayıt için mevcut değil; sütun başlıklarını yukarıda inceleyebilirsiniz.": "此记录暂无示例行预览；您可以在上方查看列标题。",
+  "Model yorumu": "模型解读",
+  "Doğrulanmış hesaplar": "已验证计算",
+  "Kaynak satırlarından deterministik olarak hesaplanır; model metrik üretmez.": "由源数据行确定性计算得出；模型不生成指标数值。",
+  "Model yorumu · Kaynaklı özet": "模型解读 · 有据摘要",
+  "Doğrulanmış hesaplara dayalı yapay zekâ özeti": "基于已验证计算的 AI 摘要",
+  "Belirtilmedi": "未指定",
+  "{0} ({1} grup)": "{0}（{1} 组）",
+  "{0} boş satır hesaplama dışında bırakıldı": "已将 {0} 个空白行排除在计算之外",
+  "0 boş satır; tüm satırlar kapsama dahil edildi": "0 个空白行；所有行均已纳入范围",
+  "Boş satır etkisi": "空白行影响",
+  "Kayıtlı rapor dili": "已保存报告语言",
+  "Kapsam kaynağını incele": "查看范围来源",
+  "Birim": "单位"
 }

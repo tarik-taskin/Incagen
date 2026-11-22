@@ -7,7 +7,12 @@ import { z } from "zod";
 import { parsedDocumentSchema } from "./input-packet";
 import { aiResultSchema, type AiResult } from "./result-contract";
 import type { ParsedDocument, Report } from "../contracts";
-import { AI_JOB_LIMITS, type AiJob, type AnalysisTable, type WorkerResult, type ResultLocale } from "./tabular-contract";
+import { AI_JOB_LIMITS, resultLocaleSchema, workerResultSchema, type AiJob, type AnalysisTable, type ResultLocale, type TableSelection, type WorkerResult } from "./tabular-contract";
+
+// Tekilleştirme anahtarı kaynak/ayar/dile bağlıdır; aynı istek yeni ücretli çağrı başlatmaz.
+export function analysisFingerprint(sourceHash: string, sourceId: string, selection: TableSelection, locale: ResultLocale) {
+  return createHash("sha256").update(JSON.stringify([sourceHash, sourceId, selection.sheet, selection.valueColumn, selection.groupColumn, selection.aggregation, selection.numberFormat, selection.unit, locale])).digest("hex");
+}
 
 const idRequest = z.object({ id: z.string().uuid() }).strict();
 const SAMPLE_ROW_LIMIT = 5;
@@ -114,13 +119,79 @@ export const getAnalysisTables = onCall({ region: "europe-west1", timeoutSeconds
   }
 });
 
-// Yalnız sahibi tamamlanan, hash'i eşleşen sonuç artefaktını okuyabilir; ham Storage yolu istemciden alınmaz.
+// Kayıtlı iş seçimi ile artefakt kapsamındaki seçim alanlarının birebir eşleştiğini doğrular.
+function selectionsMatch(a: TableSelection, b: TableSelection) {
+  return a.sheet === b.sheet
+    && a.valueColumn === b.valueColumn
+    && a.groupColumn === b.groupColumn
+    && a.aggregation === b.aggregation
+    && a.numberFormat === b.numberFormat
+    && a.unit === b.unit;
+}
+
+// Saklanan v1 artefaktının kapsam, dil, kaynak kimliği/hash'i, iş seçimi ve dayanak bağlarıyla tutarlılığını doğrular.
+export function validateStoredArtifact(
+  rawArtifact: unknown,
+  expected: {
+    analysisId: string;
+    objective: string;
+    job: AiJob & { fingerprint?: string };
+    reportSource?: Report["sources"][number];
+  },
+): AiArtifact {
+  if (!rawArtifact || typeof rawArtifact !== "object") throw new Error("invalid-artifact");
+  const candidate = rawArtifact as Partial<AiArtifact>;
+  if (candidate.version !== 1) throw new Error("invalid-version");
+  const locale = resultLocaleSchema.parse(candidate.locale);
+  if (locale !== expected.job.locale) throw new Error("locale-mismatch");
+  const scope = workerResultSchema.shape.scope.parse(candidate.scope);
+  if (scope.sheet !== expected.job.selection.sheet || !selectionsMatch(scope.selection, expected.job.selection)) {
+    throw new Error("scope-mismatch");
+  }
+  const result = aiResultSchema.parse(candidate.result);
+  if (result.analysisId !== expected.analysisId || result.objective !== expected.objective) {
+    throw new Error("result-context-mismatch");
+  }
+  if (!Array.isArray(candidate.sources) || candidate.sources.length !== 1) {
+    throw new Error("sources-mismatch");
+  }
+  const source = parsedDocumentSchema.parse(candidate.sources[0]);
+  const reportSource = expected.reportSource;
+  if (!reportSource || source.sourceId !== expected.job.sourceId || source.sourceId !== reportSource.id
+    || source.sha256 !== reportSource.sha256 || source.fileName !== reportSource.name) {
+    throw new Error("source-integrity-mismatch");
+  }
+  const tableChunks = source.chunks.filter(chunk => chunk.kind === "table" && chunk.table);
+  if (tableChunks.length === 0 || tableChunks.some(chunk => (chunk.locator.sheet ?? null) !== expected.job.selection.sheet)) {
+    throw new Error("sheet-integrity-mismatch");
+  }
+  if (typeof expected.job.fingerprint === "string" && expected.job.fingerprint.length > 0) {
+    const computedFingerprint = analysisFingerprint(source.sha256, source.sourceId, scope.selection, locale);
+    if (computedFingerprint !== expected.job.fingerprint) throw new Error("fingerprint-mismatch");
+  }
+  const chunkIds = new Set(source.chunks.map(chunk => chunk.id));
+  const anchors = [
+    ...result.metrics.flatMap(metric => metric.evidence),
+    ...result.summary.flatMap(statement => statement.evidence),
+    ...result.findings.flatMap(finding => finding.statements.flatMap(statement => statement.evidence)),
+  ];
+  for (const anchor of anchors) {
+    if (anchor.sourceId !== source.sourceId || anchor.sha256 !== source.sha256
+      || !chunkIds.has(anchor.chunkId) || (anchor.locator.sheet ?? null) !== expected.job.selection.sheet) {
+      throw new Error("evidence-integrity-mismatch");
+    }
+  }
+  return { version: 1, result, sources: [source], scope, locale };
+}
+
+// Yalnız sahibi tamamlanan, hash'i ve kapsam/kaynak bağı eşleşen sonuç artefaktını okuyabilir; ham Storage yolu istemciden alınmaz.
 export const getAnalysisResult = onCall({ region: "europe-west1", timeoutSeconds: 60, memory: "512MiB", maxInstances: 2, concurrency: 4 }, async request => {
   const parsed = idRequest.safeParse(request.data);
   if (!parsed.success) throw new HttpsError("invalid-argument", "Geçersiz analiz kimliği.");
   const { data } = await preparedAnalysis(request.auth?.uid, parsed.data.id);
-  const ai = data.ai;
+  const ai = data.ai as (AiJob & { fingerprint?: string }) | undefined;
   if (ai?.status !== "completed" || !ai.artifactPath || !ai.artifactSha256 || ai.artifactPath !== `derived/${request.auth!.uid}/analyses/${parsed.data.id}/ai/${ai.attemptId}.json.gz`) throw new HttpsError("failed-precondition", "Analiz sonucu henüz hazır değil.");
+  const reportSource = data.report.sources.find(source => source.id === ai.sourceId);
   try {
     const file = getStorage().bucket().file(ai.artifactPath);
     const [metadata] = await file.getMetadata();
@@ -128,10 +199,11 @@ export const getAnalysisResult = onCall({ region: "europe-west1", timeoutSeconds
     const [encoded] = await file.download();
     const json = gunzipSync(encoded, { maxOutputLength: 4 * 1024 * 1024 });
     if (createHash("sha256").update(json).digest("hex") !== ai.artifactSha256) throw new Error();
-    const artifact = JSON.parse(json.toString("utf8")) as AiArtifact;
-    if (artifact.version !== 1 || artifact.result.analysisId !== parsed.data.id || artifact.result.objective !== data.objective) throw new Error();
-    aiResultSchema.parse(artifact.result);
-    artifact.sources.forEach(source => parsedDocumentSchema.parse(source));
-    return artifact;
+    return validateStoredArtifact(JSON.parse(json.toString("utf8")), {
+      analysisId: parsed.data.id,
+      objective: data.objective,
+      job: ai,
+      reportSource,
+    });
   } catch { throw new HttpsError("failed-precondition", "Analiz sonucu doğrulanamadı. Yeniden yükleyin."); }
 });

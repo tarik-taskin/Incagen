@@ -3,7 +3,9 @@ import { GeminiError } from "./gemini";
 import { AnalysisPacketBudgetError } from "./input-packet";
 import { mapWorkerFailure, WorkerError } from "./python-worker";
 import { failureCode } from "./tabular-jobs";
-import { buildAnalysisTables } from "./tabular-storage";
+import { buildAnalysisTables, validateStoredArtifact, type AiArtifact } from "./tabular-storage";
+import { analysisFingerprint } from "./tabular-result";
+import type { AiJob } from "./tabular-contract";
 import type { ParsedDocument, Report } from "../contracts";
 
 describe("AI iş yaşam döngüsü hata sınıflandırması", () => {
@@ -96,5 +98,111 @@ describe("buildAnalysisTables katalog ve önizleme sınırları", () => {
     expect(tables.find(item => item.sourceId === "file-1")?.unavailableReason).toBe("empty-table");
     expect(tables.find(item => item.sourceId === "file-2")?.unavailableReason).toBe("unreadable-table");
     expect(tables.find(item => item.sourceId === "file-3")?.unavailableReason).toBe("inconsistent-columns");
+  });
+});
+
+describe("validateStoredArtifact bütünlük bağı", () => {
+  const validSha = "b".repeat(64);
+  const selection = { sheet: "Services", valueColumn: 1, groupColumn: 0, aggregation: "mean" as const, numberFormat: "plain" as const, unit: "EUR" as const };
+  const reportSource: Report["sources"][number] = {
+    id: "file-0", name: "services.xlsx", category: "Tablo", size: 256,
+    contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    detectedMime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    sha256: validSha, status: "ready", chunkCount: 1, characterCount: 60, warnings: [],
+  };
+
+  function validV1Artifact(): AiArtifact {
+    const anchor = { sourceId: "file-0", sha256: validSha, chunkId: "chunk-1", locator: { sheet: "Services", rowStart: 2, rowEnd: 4 } };
+    return {
+      version: 1,
+      locale: "de",
+      scope: { rows: 3, emptyRows: 0, groups: 2, sheet: "Services", measure: "Revenue", group: "Team", selection },
+      sources: [{
+        version: 1, sourceId: "file-0", fileName: "services.xlsx", sha256: validSha, extension: "xlsx",
+        detectedMime: reportSource.detectedMime, category: "Tablo", metadata: {}, warnings: [], parserVersion: "1.0.0",
+        chunks: [{ id: "chunk-1", kind: "table", locator: { sheet: "Services", rowStart: 2, rowEnd: 4 }, table: { columns: ["Team", "Revenue"], rows: [["A", 10], ["A", 20], ["B", 90]] } }],
+      }],
+      result: {
+        schemaVersion: 1,
+        analysisId: "11111111-1111-4111-8111-111111111111",
+        objective: "Compare team averages",
+        summary: [{ text: "Verified summary.", metricIds: ["aggregate"], evidence: [anchor] }],
+        metrics: [
+          { id: "rows", label: "Records", status: "available", value: 3, unit: "count", method: "Count", evidence: [anchor] },
+          { id: "aggregate", label: "Mean", status: "available", value: 40, unit: "EUR", method: "Row-weighted mean", evidence: [anchor] },
+        ],
+        datasets: [],
+        charts: [],
+        findings: [{ id: "f1", title: "Team spread", kind: "observation", statements: [{ text: "Observed from rows.", metricIds: ["aggregate"], evidence: [anchor] }] }],
+        recommendations: [],
+        limitations: ["Only selected sheet is included."],
+      },
+    };
+  }
+
+  function validJob(withFingerprint = true): AiJob & { fingerprint?: string } {
+    return {
+      status: "completed",
+      attemptId: "22222222-2222-4222-8222-222222222222",
+      attempts: 1,
+      startedAt: 1000,
+      finishedAt: 2000,
+      leaseUntil: 10000,
+      maxAttempts: 3,
+      stage: "saving",
+      locale: "de",
+      sourceId: "file-0",
+      selection,
+      ...(withFingerprint ? { fingerprint: analysisFingerprint(validSha, "file-0", selection, "de") } : {}),
+    };
+  }
+
+  it("geçerli eski v1 raporunu opsiyonel fingerprint olmadan da açar", () => {
+    const artifact = validV1Artifact();
+    const verified = validateStoredArtifact(artifact, {
+      analysisId: "11111111-1111-4111-8111-111111111111",
+      objective: "Compare team averages",
+      job: validJob(false),
+      reportSource,
+    });
+    expect(verified.locale).toBe("de");
+    expect(verified.scope.sheet).toBe("Services");
+    expect(verified.sources[0].sha256).toBe(validSha);
+  });
+
+  it("dil, kapsam, kaynak kimliği/hash'i, sayfa, fingerprint veya dayanak bağı uyuşmayan kaydı reddeder", () => {
+    const baseExpected = { analysisId: "11111111-1111-4111-8111-111111111111", objective: "Compare team averages", job: validJob(true), reportSource };
+
+    // Dil uyuşmazlığı
+    const wrongLocale = validV1Artifact();
+    wrongLocale.locale = "en";
+    expect(() => validateStoredArtifact(wrongLocale, baseExpected)).toThrow("locale-mismatch");
+
+    // Kapsam / seçim uyuşmazlığı
+    const wrongScope = validV1Artifact();
+    wrongScope.scope.selection = { ...selection, unit: "USD" };
+    expect(() => validateStoredArtifact(wrongScope, baseExpected)).toThrow("scope-mismatch");
+
+    // Kaynak hash uyuşmazlığı
+    const wrongSourceHash = validV1Artifact();
+    wrongSourceHash.sources[0].sha256 = "c".repeat(64);
+    expect(() => validateStoredArtifact(wrongSourceHash, baseExpected)).toThrow("source-integrity-mismatch");
+
+    // Başka sayfa chunk'ı
+    const wrongSheetChunk = validV1Artifact();
+    wrongSheetChunk.sources[0].chunks[0].locator.sheet = "Out of scope";
+    expect(() => validateStoredArtifact(wrongSheetChunk, baseExpected)).toThrow("sheet-integrity-mismatch");
+
+    // Fingerprint uyuşmazlığı
+    expect(() => validateStoredArtifact(validV1Artifact(), { ...baseExpected, job: { ...validJob(true), fingerprint: "tampered-fingerprint" } })).toThrow("fingerprint-mismatch");
+
+    // Dayanak çapa (evidence) sayfa veya hash uyuşmazlığı
+    const wrongEvidence = validV1Artifact();
+    wrongEvidence.result.metrics[0].evidence[0].locator.sheet = "Out of scope";
+    expect(() => validateStoredArtifact(wrongEvidence, baseExpected)).toThrow("evidence-integrity-mismatch");
+
+    const wrongEvidenceChunk = validV1Artifact();
+    wrongEvidenceChunk.result.summary[0].evidence[0].chunkId = "foreign-chunk";
+    expect(() => validateStoredArtifact(wrongEvidenceChunk, baseExpected)).toThrow("evidence-integrity-mismatch");
   });
 });

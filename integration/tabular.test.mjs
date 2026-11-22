@@ -137,6 +137,13 @@ test("XLSX çalışma sayfası seçimi ve satır ağırlıklı ortalama tam deft
     assert.ok(artifact.sources[0].chunks.every(chunk => chunk.locator.sheet === "Services"));
     assert.equal(artifact.locale, "de");
     assert.equal(artifact.result.metrics.find(metric => metric.id === "aggregate").unit, "EUR");
+    // Saklanan iş meta verisi artefaktla uyuşmaz hale getirilirse getAnalysisResult kaydı reddeder.
+    const db = getFirestore();
+    const docRef = db.doc(`users/${own.auth.currentUser.uid}/analyses/${id}`);
+    await docRef.update({ "ai.locale": "en" });
+    await assert.rejects(own.call("getAnalysisResult", { id }), { code: "functions/failed-precondition" });
+    await docRef.update({ "ai.locale": "de" });
+    assert.equal((await own.call("getAnalysisResult", { id })).data.locale, "de");
   } finally {
     if (id) await own.call("deleteAnalysis", { id });
     await deleteApp(own.app);

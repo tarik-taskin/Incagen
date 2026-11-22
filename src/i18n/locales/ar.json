@@ -1186,5 +1186,18 @@
   "Tablo sütunları": "أعمدة الجدول",
   "Seçili tablodan örnek satırlar": "صفوف عينة من الجدول المختار",
   "Yalnızca ilk {0} satır örnek olarak gösterilir; tüm veri satırlarının tam doğrulaması yerine geçmez. Hesaplama başlatıldığında seçilen tablonun tamamı doğrulanır.": "تُعرض أول {0} صفوف كعينة فقط؛ ولا يحل ذلك محل التحقق الكامل من جميع الصفوف. يتم التحقق من كامل الجدول المختار عند بدء الحساب.",
-  "Örnek satır önizlemesi bu kayıt için mevcut değil; sütun başlıklarını yukarıda inceleyebilirsiniz.": "معاينة صفوف العينة غير متاحة لهذا السجل؛ يمكنك مراجعة عناوين الأعمدة أعلاه."
+  "Örnek satır önizlemesi bu kayıt için mevcut değil; sütun başlıklarını yukarıda inceleyebilirsiniz.": "معاينة صفوف العينة غير متاحة لهذا السجل؛ يمكنك مراجعة عناوين الأعمدة أعلاه.",
+  "Model yorumu": "تفسير النموذج",
+  "Doğrulanmış hesaplar": "حسابات موثّقة",
+  "Kaynak satırlarından deterministik olarak hesaplanır; model metrik üretmez.": "تُحسب حتميًا من صفوف المصدر؛ لا ينشئ النموذج مقاييس من تلقاء نفسه.",
+  "Model yorumu · Kaynaklı özet": "تفسير النموذج · ملخص مرتبط بالمصادر",
+  "Doğrulanmış hesaplara dayalı yapay zekâ özeti": "ملخص ذكاء اصطناعي مستند إلى حسابات موثّقة",
+  "Belirtilmedi": "غير محدد",
+  "{0} ({1} grup)": "{0} ({1} مجموعات)",
+  "{0} boş satır hesaplama dışında bırakıldı": "تم استبعاد {0} صف(وف) فارغة من الحساب",
+  "0 boş satır; tüm satırlar kapsama dahil edildi": "0 صفوف فارغة؛ تم تضمين جميع الصفوف في النطاق",
+  "Boş satır etkisi": "أثر الصفوف الفارغة",
+  "Kayıtlı rapor dili": "لغة التقرير المحفوظة",
+  "Kapsam kaynağını incele": "افحص مصدر النطاق",
+  "Birim": "الوحدة"
 }
