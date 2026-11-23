@@ -9,6 +9,7 @@ import { getServices } from "../../lib/firebase";
 import { useAuth } from "../../lib/auth-context";
 import { userError } from "../../lib/errors";
 import { Button } from "../../components/ui/button";
+import { Table } from "../../components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { PageLoading } from "../../components/page-loading";
 import { useDeadlineReached } from "../../hooks/use-deadline-reached";
@@ -87,10 +88,13 @@ function normalizeSelectionForSubmit(selection: TableSelection, sheet: string | 
 // Seçili tablonun hesaplamaya uygun olmama nedenini döndürür; uygunsa null verir.
 function getTableUnavailabilityReason(selected: AnalysisTable | undefined, limits: { rows: number }) {
   if (!selected) return null;
+  if (selected.unavailableReason === "empty-table") {
+    return t("Bu tabloda hesaplanabilecek veri satırı yok. Boş olmayan bir tablo seçin.");
+  }
   if (selected.unavailableReason === "unreadable-table" || selected.unavailableReason === "inconsistent-columns" || selected.columns.length === 0) {
     return t("Bu tablonun sütun yapısı tutarsız veya okunamadı. Başka bir tablo seçin veya belgeyi düzenleyip yeniden yükleyin.");
   }
-  if (selected.unavailableReason === "empty-table" || selected.rows === 0 || selected.nonEmptyRows === 0) {
+  if (selected.rows === 0 || selected.nonEmptyRows === 0) {
     return t("Bu tabloda hesaplanabilecek veri satırı yok. Boş olmayan bir tablo seçin.");
   }
   if (selected.unavailableReason === "row-limit" || selected.rows > limits.rows) {
@@ -134,17 +138,16 @@ function getValidationReason(selected: AnalysisTable | undefined, selection: Tab
 function TablePreview({ table, label }: { table: AnalysisTable; label: string }) {
   const sampleRows = table.sampleRows ?? [];
   const isFileLine = table.sampleRowNumbering === "file-line";
-  return <details className="mt-4 rounded-xl border border-border/70 bg-background/60 text-xs">
+  return <details className="mt-4 min-w-0 rounded-xl border border-border/70 bg-background/60 text-xs">
     <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-3.5 py-2 font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary [&::-webkit-details-marker]:hidden">
       <span className="inline-flex items-center gap-2"><Eye className="h-3.5 w-3.5 text-primary dark:text-secondary" aria-hidden="true" />{t("Tablo önizlemesi")}</span>
       <span className="text-[11px] font-normal text-muted-foreground">{sampleRows.length > 0 ? t("İlk {0} satır · {1} sütun", sampleRows.length, table.columns.length) : t("{0} sütun", table.columns.length)}</span>
     </summary>
     <div className="border-t border-border/60 px-3.5 py-3">
-      <p className="font-medium text-foreground" title={label}>{label}</p>
-      {table.columns.length > 0 && <div className="mt-2 flex flex-wrap gap-1.5" aria-label={t("Tablo sütunları")}>{table.columns.map((col, idx) => <span key={`${idx}-${col}`} dir="auto" className="rounded-md border border-border/70 bg-muted/50 px-2 py-0.5 text-[11px] text-foreground">{col}</span>)}</div>}
+      <p className="font-medium text-foreground [overflow-wrap:anywhere]" title={label}>{label}</p>
+      {table.columns.length > 0 && <div className="mt-2 flex flex-wrap gap-1.5" aria-label={t("Tablo sütunları")}>{table.columns.map((col, idx) => <span key={`${idx}-${col}`} dir="auto" className="min-w-0 max-w-full rounded-md border border-border/70 bg-muted/50 px-2 py-0.5 text-[11px] text-foreground [overflow-wrap:anywhere]">{col}</span>)}</div>}
       {sampleRows.length > 0 ? <>
-        <div className="mt-3 overflow-x-auto rounded-lg border border-border/70">
-          <table className="w-full border-collapse text-start text-[11px]">
+          <Table scrollLabel={t("Seçili tablodan örnek satırlar")} containerClassName="mt-3 rounded-lg border border-border/70" className="border-collapse text-start text-[11px]">
             <caption className="sr-only">{t("Seçili tablodan örnek satırlar")}</caption>
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
@@ -162,8 +165,7 @@ function TablePreview({ table, label }: { table: AnalysisTable; label: string })
                 })}
               </tr>)}
             </tbody>
-          </table>
-        </div>
+          </Table>
         <p className="mt-2 text-[11px] leading-5 text-muted-foreground">{t("Yalnızca ilk {0} satır örnek olarak gösterilir; tüm veri satırlarının tam doğrulaması yerine geçmez. Hesaplama başlatıldığında seçilen tablonun tamamı doğrulanır.", sampleRows.length)}</p>
         {!isFileLine && <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{t("Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.")}</p>}
       </> : <p className="mt-2 text-[11px] leading-5 text-muted-foreground">{t("Örnek satır önizlemesi bu kayıt için mevcut değil; sütun başlıklarını yukarıda inceleyebilirsiniz.")}</p>}
@@ -193,7 +195,7 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
   const [pending, setPending] = useState(false);
   const [refresh, setRefresh] = useState(0);
   const [artifact, setArtifact] = useState<AiArtifact | null>(null);
-  const lifetime = useRef({ active: true, starting: false });
+  const lifetime = useRef({ active: true, starting: false, reloading: false });
   useEffect(() => {
     const current = lifetime.current;
     current.active = true;
@@ -209,7 +211,8 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
     let active = true;
     httpsCallable<{ id: string }, { tables: AnalysisTable[]; limits: typeof limits }>(getServices().functions, "getAnalysisTables")({ id: analysis.id })
       .then(response => { if (active) { setTables(response.data.tables); setLimits(response.data.limits); setError(""); } })
-      .catch(failure => { if (active) setError(userError(failure)); });
+      .catch(failure => { if (active) setError(userError(failure)); })
+      .finally(() => { if (active) lifetime.current.reloading = false; });
     return () => { active = false; };
   }, [analysis.id, user, ready, running, refresh]);
   useEffect(() => {
@@ -217,7 +220,8 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
     let active = true;
     httpsCallable<{ id: string }, AiArtifact>(getServices().functions, "getAnalysisResult")({ id: analysis.id })
       .then(response => { if (active) { setArtifact(response.data); setError(""); } })
-      .catch(failure => { if (active) setError(userError(failure)); });
+      .catch(failure => { if (active) setError(userError(failure)); })
+      .finally(() => { if (active) lifetime.current.reloading = false; });
     return () => { active = false; };
   }, [analysis.id, user, ready, job?.attemptId, refresh]);
   const savedTable = tables?.find(table => table.sourceId === job?.sourceId && table.sheet === job.selection.sheet);
@@ -245,7 +249,15 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
     finally { lifetime.current.starting = false; if (lifetime.current.active) setPending(false); }
   }
 
-  if (ready) return <div className="mt-7">{error ? <section className={panel}><p role="alert" className="text-sm text-destructive">{t(error)}</p><Button className="mt-4" variant="outline" onClick={() => setRefresh(value => value + 1)}>{t("Yeniden yükle")}</Button></section> : artifact ? <Suspense fallback={<PageLoading label="Analiz yükleniyor…" />}><LiveAnalysisReport artifact={artifact} job={job!} analysisId={analysis.id} /></Suspense> : <PageLoading label="Analiz yükleniyor…" />}</div>;
+  // Tek yeniden yükleme isteği açar ve eski hatayı bekleme durumuyla değiştirir.
+  function reload() {
+    if (lifetime.current.reloading) return;
+    lifetime.current.reloading = true;
+    setError("");
+    setRefresh(value => value + 1);
+  }
+
+  if (ready) return <div className="mt-7">{error ? <section className={panel}><p role="alert" className="text-sm text-destructive">{t(error)}</p><Button className="mt-4" variant="outline" onClick={reload}>{t("Yeniden yükle")}</Button></section> : artifact ? <Suspense fallback={<PageLoading label="Analiz yükleniyor…" />}><LiveAnalysisReport artifact={artifact} job={job!} analysisId={analysis.id} /></Suspense> : <PageLoading label="Analiz yükleniyor…" />}</div>;
   if (running || pending) {
     const stage = job?.stage ?? "calculating", stages = ["calculating", "interpreting", "saving"];
     const activeIndex = stages.indexOf(stage);
@@ -254,7 +266,7 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
   return <section className={`${panel} mt-7`} aria-labelledby="ai-setup-title"><div className="flex items-start gap-4"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:text-secondary"><Sparkles className="h-5 w-5" aria-hidden="true" /></span><div><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary dark:text-secondary">{t("Kaynaklı analiz")}</p><h2 id="ai-setup-title" className="mt-1 text-xl font-semibold tracking-tight">{t("Tablodan net bir özet.")}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{t("Bir tablo ve ölçüm seçin. Hesaplar kaynak satırlarıyla doğrulanır; özet, analiz hedefinize göre hazırlanır.")}</p></div></div>
     {job && <p role="status" className="mt-5 flex items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-6"><TriangleAlert className="mt-1 h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300" aria-hidden="true" /><span>{t(exhausted ? "Bu çalışma için deneme sınırına ulaşıldı. Kaynaklarınız ve hazırlık özeti korunuyor." : jobFailureMessage || "Bu işlemden henüz sonuç alınamadı. Aynı kapsamla yeniden deneyebilirsiniz.")}{cooling && <span className="mt-1 block">{t("Yeniden deneme kısa bir süre sonra açılacak; işlem kendiliğinden başlamaz.")}</span>}</span></p>}
     {error && !(job?.status === "failed" && jobFailureMessage && error === jobFailureMessage) && <p role="alert" className="mt-4 text-sm text-destructive">{t(error)}</p>}
-    {tables === null ? <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">{error ? <Button variant="outline" onClick={() => setRefresh(value => value + 1)}>{t("Tabloları yeniden yükle")}</Button> : <><LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin motion-reduce:animate-none" />{t("Tablolar kontrol ediliyor…")}</>}</div> : tables.length === 0 ? <p className="mt-5 text-sm leading-6 text-muted-foreground">{t("Bu ilk analiz sürümü CSV ve XLSX tablolarını kullanır. Diğer belgelerinizin hazırlık özetini aşağıda inceleyebilirsiniz.")}</p> : <>
+    {tables === null ? <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">{error ? <Button variant="outline" onClick={reload}>{t("Tabloları yeniden yükle")}</Button> : <span role="status" className="inline-flex items-center gap-3"><LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin motion-reduce:animate-none" />{t("Tablolar kontrol ediliyor…")}</span>}</div> : tables.length === 0 ? <p className="mt-5 text-sm leading-6 text-muted-foreground">{t("Bu ilk analiz sürümü CSV ve XLSX tablolarını kullanır. Diğer belgelerinizin hazırlık özetini aşağıda inceleyebilirsiniz.")}</p> : <>
       <div className="mt-6 space-y-6">
         {/* Bölüm 1: Veri kaynağı */}
         <div className="rounded-2xl border border-border/70 bg-card/40 p-4 sm:p-5">

@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -56,7 +56,12 @@ describe("App routes", () => {
 
   it("iç sayfalar arasında dosya seçimini korur", async () => {
     const user = userEvent.setup();
-    renderApp("/app/new-analysis");
+    // Taslak senaryosu, lazy modüllerin soğuk derleme süresinden bağımsız çalışır.
+    await Promise.all([
+      import("./components/require-auth"), import("./components/layout/app-shell"),
+      import("./pages/new-analysis-page"), import("./pages/history-page"),
+    ]);
+    await act(async () => { renderApp("/app/new-analysis"); });
     await user.upload(await screen.findByLabelText("Analiz edilecek dosyaları seç"), new File(["test"], "rapor.pdf", { type: "application/pdf" }));
     await user.type(screen.getByLabelText("Analiz hedefi"), "Korunacak özgün hedef");
     await user.click(screen.getByRole("button", { name: "Satış değişimi" }));

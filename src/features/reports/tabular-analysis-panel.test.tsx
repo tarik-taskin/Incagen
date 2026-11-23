@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TabularAnalysisPanel } from "./tabular-analysis-panel";
@@ -290,13 +290,23 @@ describe("TabularAnalysisPanel - Görev 2 kapsam ve düzen kontrolleri", () => {
   });
 
   it("tutarsız saklanan raporda getAnalysisResult reddedildiğinde kontrollü hata ve yeniden yükleme düğmesi gösterir", async () => {
-    mocks.getResult.mockRejectedValueOnce(Object.assign(new Error("Analiz sonucu doğrulanamadı. Yeniden yükleyin."), { code: "functions/failed-precondition" }));
+    const loadError = Object.assign(new Error("Analiz sonucu doğrulanamadı. Yeniden yükleyin."), { code: "functions/failed-precondition" });
+    let rejectRetry!: (reason: Error) => void;
+    const retry = new Promise<never>((_resolve, reject) => { rejectRetry = reject; });
+    mocks.getResult.mockRejectedValueOnce(loadError).mockReturnValueOnce(retry);
     const baseSelection = { sheet: null, valueColumn: 1, groupColumn: 0, aggregation: "sum" as const, numberFormat: "plain" as const, unit: "TRY" as const };
     render(<TabularAnalysisPanel analysis={{
       id: "corrupt-1", title: "Bozuk", business: "Test", status: "completed", createdAt: 1, updatedAt: 1,
       ai: { status: "completed", attemptId: "a1", attempts: 1, maxAttempts: 3, startedAt: 1, finishedAt: 2, leaseUntil: 10, stage: "saving", locale: "tr", sourceId: "file-0", selection: baseSelection },
     } as Analysis} />);
     expect(await screen.findByRole("alert")).toHaveTextContent("Analiz sonucu doğrulanamadı. Yeniden yükleyin.");
-    expect(screen.getByRole("button", { name: "Yeniden yükle" })).toBeEnabled();
+    const button = screen.getByRole("button", { name: "Yeniden yükle" });
+    fireEvent.click(button);
+    fireEvent.click(button);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Analiz yükleniyor…");
+    expect(mocks.getResult).toHaveBeenCalledTimes(2);
+    rejectRetry(loadError);
+    expect(await screen.findByRole("button", { name: "Yeniden yükle" })).toBeEnabled();
   });
 });

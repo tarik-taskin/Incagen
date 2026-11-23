@@ -9,6 +9,22 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
+### 2026-11-23 — Furkan / Codex: tablo hazırlığı ve kaynak doğruluğu
+
+- [x] Sahip: Furkan — 1. Hazırlık, önizleme ve Python için ilk anlamlı CSV başlığından aynı ayraç seçimini uygula.
+- [x] Sahip: Furkan — 2. Fiziksel satır önizlemesinde hazırlığın kullandığı CSV ayrıştırıcısını kullan ve tırnaklı yeni satırları koru.
+- [x] Sahip: Furkan — 3. Önizlemede kayıt uzunluğu, sütun genişliği, satır ve hücre sınırlarını uygula.
+- [x] Sahip: Furkan — 4. CSV ve Excel sütun adlarını boş/yinelenen başlıklar ve mevcut soneklerde tutarlı ve benzersiz yap.
+- [x] Sahip: Furkan — 5. Eski CSV önizlemesinde fiziksel numara yerine gerçek veri kaydı sırasını göster.
+- [x] Sahip: Furkan — 6. 512 KiB bütçesine katalog yanıtının tamamını dahil et.
+- [x] Sahip: Furkan — 7. Boş, okunamayan ve tutarsız tabloların kullanıcıya doğru nedenle sunulduğunu doğrula.
+- [x] Sahip: Furkan — 8. Geniş tablo önizlemesini klavye ile kaydırılabilir yap.
+- [x] Sahip: Furkan — 9. Uzun dosya ve sütun adlarını mobilde önizleme içinde tut.
+- [~] Sahip: Furkan — 10. GitHub Quality, Netlify ve canlı paket eşliğini doğrula. CSV/XLSX masaüstü ve mobil hedefli kabul, lint, 257 arayüz / 153 Functions / 66 script testi, 51 pytest + 3 Python-rapor testi, derlemeler ve 13 entegrasyon testi geçti. Son yayın kanıtı yerel TASK-0002 handoff kaydında tutulur.
+- [x] Sahip: Furkan — 11. Saklanan raporun dolu/boş satır adetlerini kayıtlı kaynakla doğrula.
+- [x] Sahip: Furkan — 12. Saklanan rapordaki ölçüm ve gruplama adlarını seçilen kaynak sütunlarına bağla.
+- [x] Sahip: Furkan — 13. Tablo kataloğu ve rapor yeniden yüklenirken çift isteği önle ve bekleme durumunu göster.
+
 ### 2026-11-22 — Furkan / Antigravity: 8589c2b kapanış paketi (4 iş)
 
 - [x] Sahip: Furkan — Kapanış 1 (CSV önizleme ve gerçek rapor satır tutarlılığı): Önce mevcut `8589c2b` üzerinde boş satırlı CSV’nin Python’da `Inconsistent table row width` hatası verdiği ve düz CSV önizlemesinin `1–2` vs Python `2–3` ayrıştığı yakalandı; [extract.py](python/src/incagen_extract/extract.py) (`_detect_csv_delimiter`, `_parse_csv_with_lines`, `table_chunks_with_lines`) ve [tabular-storage.ts](functions/src/analysis/tabular-storage.ts) (`parseCsvTablePreview`, `verifiedRawCsv`) ile düz CSV, arada boş satır ve tırnak içinde satır sonu vakalarında gerçek 1-tabanlı dosya satırı korundu; fiziksel konumu belirlenemeyen eski kayıtlarda [tabular-analysis-panel.tsx](src/features/reports/tabular-analysis-panel.tsx) altı dilde açıkça `Kayıt sırası` gösterdi; eski raporlar ve XLSX sayfa/satır eşliği masaüstü/mobilde doğrulandı (`51` pytest + `2` Python-rapor, `101` tarayıcı / `3` mevcut platform atlaması).

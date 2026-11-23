@@ -118,7 +118,12 @@ test("kayıt sayımı ölçüm seçmeden çalışır; hatalı ölçümden kontro
 test("çok sayfalı Excel'de önizleme, satır ağırlıklı ortalama, sayfa kaynağı ve yenileme/geçmiş dönüşü korunur", async ({ page }, info) => {
   const workbook = new ExcelJS.Workbook();
   workbook.addWorksheet("Kapsam Dışı").addRows([["Ekip", "Gelir"], ["Disari", 999999]]);
-  workbook.addWorksheet("Hizmetler").addRows([["Ekip", "Gelir"], ["Alfa", 10], ["Alfa", 20], ["Alfa", 30], ["Beta", 100]]);
+  const longColumn = "Açıklama".repeat(16);
+  workbook.addWorksheet("Hizmetler").addRows([
+    ["Ekip", "Gelir", "Gelir", "Gelir (2)", longColumn],
+    ["Alfa", 10, 1, 2, "Birinci"],
+    ["Alfa", 20], ["Alfa", 30], ["Beta", 100],
+  ]);
   const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
 
   await prepare(page, buffer, "hizmet-gelir.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -127,6 +132,12 @@ test("çok sayfalı Excel'de önizleme, satır ağırlıklı ortalama, sayfa kay
   // Hesaplamadan önce seçili Excel sayfasının sütunları, dosya satırları ve küçük satır örneği incelenebilir.
   await page.getByText("Tablo önizlemesi", { exact: true }).click();
   const preview = page.getByRole("table", { name: "Seçili tablodan örnek satırlar" });
+  const scrollArea = page.getByRole("region", { name: "Seçili tablodan örnek satırlar" });
+  await scrollArea.focus();
+  await expect(scrollArea).toBeFocused();
+  await expect(preview.getByRole("columnheader", { name: "Gelir (2) (2)", exact: true })).toBeVisible();
+  await expect(preview.getByRole("columnheader", { name: longColumn, exact: true })).toBeVisible();
+  await layout(page);
   await expect(preview.getByRole("columnheader", { name: "Dosya satırı", exact: true })).toBeVisible();
   await expect(preview.getByRole("rowheader", { name: "2", exact: true })).toBeVisible();
   await expect(preview.getByRole("rowheader", { name: "5", exact: true })).toBeVisible();
