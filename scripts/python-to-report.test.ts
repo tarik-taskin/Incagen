@@ -6,6 +6,8 @@ import { render, cleanup } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createTabularPacket, interpretTable } from "../functions/src/analysis/tabular-result";
 import { workerResultSchema, type ResultLocale, type TableSelection, type WorkerResult } from "../functions/src/analysis/tabular-contract";
+import { parseCsvTablePreview } from "../functions/src/analysis/tabular-storage";
+import { parseDocument } from "../functions/src/parsing";
 import { AdaptiveReport } from "../src/features/reports/result-sections";
 import { reportNumber } from "../src/features/reports/report-format";
 import { setLocale } from "../src/i18n/runtime";
@@ -102,6 +104,26 @@ afterEach(() => {
 });
 
 describe("gerçek Python hesaplayıcısından altı dilli üretim rapor biçimine uçtan uca akış", () => {
+  it("hazırlık, önizleme ve Python baştaki boş satırda, ayraçta ve yinelenen başlıklarda anlaşır", async () => {
+    const sourceId = "file-0";
+    const fileName = "gelir.csv";
+    const data = Buffer.from('\r\n"Ekip; adı";Gelir;Gelir;Gelir (2);\r\n"Alfa\r\nekip";2;3;4;a\r\n\r\nBeta;4;5;6;b\r\n');
+    const prepared = await parseDocument({ sourceId, fileName, contentType: "text/csv", data });
+    const preview = parseCsvTablePreview(data, { id: sourceId, name: fileName });
+    const selection = { sheet: null, valueColumn: 1, groupColumn: null, aggregation: "sum", numberFormat: "plain", unit: "number" } as const;
+    const { status, body } = runPythonWorker(data, fileName, selection);
+    expect(status).toBe(0);
+    const worker = workerResultSchema.parse(body.result);
+    const columns = ["Ekip; adı", "Gelir", "Gelir (2)", "Gelir (2) (2)", "Sütun 5"];
+    expect(prepared.chunks[0].table?.columns).toEqual(columns);
+    expect(preview.columns).toEqual(columns);
+    expect(worker.document.chunks[0].table?.columns).toEqual(columns);
+    expect(preview.sampleRows?.map(row => row.row)).toEqual([3, 5, 6]);
+    const metric = worker.metrics.find(item => item.id === "aggregate")!;
+    expect(metric.value).toBe(6);
+    expect(collectPhysicalRows(metric.evidence, worker.document.sha256, null)).toEqual([3, 6]);
+  });
+
   it("CSV ve çok sayfalı XLSX vakalarını Python işçisi, createTabularPacket, interpretTable ve üretim biçimleyicisinden altı dilde geçirir", async () => {
     for (const kind of ["csv", "xlsx"] as const) {
       const sample = await fixture(kind);

@@ -82,12 +82,14 @@ export function createTableChunks(sourceId: string, columns: string[], rows: Par
 
 // Boş veya yinelenen başlıkları kararlı ve benzersiz sütun adlarına dönüştürür.
 export function normalizeColumns(values: ParsedCell[], width: number) {
-  const seen = new Map<string, number>();
+  const used = new Set<string>();
   return Array.from({ length: width }, (_, index) => {
     const base = String(values[index] ?? "").trim() || `Sütun ${index + 1}`;
-    const count = (seen.get(base) ?? 0) + 1;
-    seen.set(base, count);
-    return count === 1 ? base : `${base} (${count})`;
+    let label = base;
+    let suffix = 2;
+    while (used.has(label)) label = `${base} (${suffix++})`;
+    used.add(label);
+    return label;
   });
 }
 

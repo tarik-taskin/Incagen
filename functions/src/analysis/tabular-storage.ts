@@ -1,5 +1,6 @@
 import { gunzipSync } from "node:zlib";
 import { createHash } from "node:crypto";
+import { parse } from "csv-parse/sync";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
@@ -7,6 +8,8 @@ import { z } from "zod";
 import { parsedDocumentSchema } from "./input-packet";
 import { aiResultSchema, validateAiResult, type AiResult } from "./result-contract";
 import { PARSING_LIMITS, type ParsedDocument, type Report } from "../contracts";
+import { decodeUtf8, normalizeColumns } from "../parsing/common";
+import { detectCsvDelimiter, MAX_DELIMITED_RECORD_SIZE } from "../parsing/delimited";
 import { AI_JOB_LIMITS, resultLocaleSchema, workerResultSchema, type AiJob, type AnalysisTable, type ResultLocale, type TableSelection, type WorkerResult } from "./tabular-contract";
 
 // Tekilleştirme anahtarı kaynak/ayar/dile bağlıdır; aynı istek yeni ücretli çağrı başlatmaz.
@@ -49,174 +52,68 @@ function previewCell(cell: string | number | boolean | null | undefined, maxChar
   return cell;
 }
 
+// Python str.strip() ile aynı boşluk kümesini kullanarak rapor ve önizlemede dolu satırı belirler.
+function hasCellValue(cell: unknown) {
+  // eslint-disable-next-line no-control-regex -- Python also strips the four ASCII separators.
+  return cell !== null && cell !== undefined && /[^\p{White_Space}\u001c-\u001f]/u.test(String(cell));
+}
+
 // JSON çıktısının gerçek UTF-8 bayt boyutunu hesaplar (çok baytlı karakterler dahil).
 function jsonUtf8Bytes(value: unknown): number {
   return Buffer.byteLength(JSON.stringify(value), "utf8");
 }
 
-// CSV ilk mantıksal satırında tırnak dışındaki ayraçları sayarak Python ve TS ile tutarlı ayraç seçer.
-function detectCsvDelimiter(text: string): string {
-  const counts = new Map([[",", 0], [";", 0], ["\t", 0]]);
-  let quoted = false;
-  for (let index = 0; index < text.length; index += 1) {
-    const ch = text[index];
-    if (ch === '"') {
-      if (quoted && text[index + 1] === '"') index += 1;
-      else quoted = !quoted;
-    } else if (!quoted && ch === "\n") {
-      if ([...counts.values()].some(count => count > 0) || text.slice(0, index).trim().length > 0) break;
-    } else if (!quoted && counts.has(ch)) {
-      counts.set(ch, counts.get(ch)! + 1);
-    }
-  }
-  const best = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
-  return best && best[1] > 0 ? best[0] : ",";
-}
-
-// Boş veya yinelenen başlıkları kararlı ve benzersiz sütun adlarına dönüştürür.
-function normalizePreviewColumns(header: string[]): string[] {
-  const seen = new Map<string, number>();
-  return header.map((raw, index) => {
-    const base = raw.trim() || `Sütun ${index + 1}`;
-    const count = (seen.get(base) ?? 0) + 1;
-    seen.set(base, count);
-    return count === 1 ? base : `${base} (${count})`;
-  });
-}
-
-// Ham CSV baytlarından gerçek 1-tabanlı fiziksel dosya satırı numaralarıyla önizleme kataloğu çıkarır.
+// Hazırlığın CSV ayrıştırıcısıyla fiziksel dosya satırını ve sınırlı örnekleri çıkarır.
 export function parseCsvTablePreview(data: Buffer, source: Pick<Report["sources"][number], "id" | "name">): AnalysisTable {
-  const unreadable = (reason: AnalysisTable["unavailableReason"] = "unreadable-table"): AnalysisTable => ({
-    sourceId: source.id,
-    fileName: source.name,
-    sheet: null,
-    columns: [],
-    rows: 0,
-    nonEmptyRows: 0,
-    sampleRows: [],
-    sampleRowNumbering: "file-line",
-    unavailableReason: reason,
-  });
-  let text: string;
-  try {
-    text = new TextDecoder("utf-8", { fatal: true }).decode(data);
-    if (text.includes("\0")) return unreadable();
-    text = text.replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n");
-  } catch {
-    return unreadable();
-  }
-  const delimiter = detectCsvDelimiter(text);
-  let index = 0;
-  let line = 1;
-  let header: string[] | null = null;
-  let width = 0;
-  let rows = 0;
-  let nonEmptyRows = 0;
-  const sampleRows: NonNullable<AnalysisTable["sampleRows"]> = [];
-
-  while (index < text.length) {
-    const startLine = line;
-    if (text[index] === "\n") {
-      index += 1;
-      line += 1;
-      if (header !== null) {
-        rows += 1;
-        if (sampleRows.length < SAMPLE_ROW_LIMIT) {
-          sampleRows.push({ row: startLine, values: Array.from({ length: width }, () => null) });
-        }
-      }
-      continue;
-    }
-
-    const fields: string[] = [];
-    while (true) {
-      if (text[index] === '"') {
-        index += 1;
-        let value = "";
-        let closed = false;
-        while (index < text.length) {
-          const ch = text[index];
-          if (ch === '"') {
-            if (text[index + 1] === '"') {
-              value += '"';
-              index += 2;
-            } else {
-              index += 1;
-              closed = true;
-              break;
-            }
-          } else {
-            if (ch === "\n") line += 1;
-            value += ch;
-            index += 1;
-          }
-        }
-        if (!closed) return unreadable();
-        fields.push(value);
-        if (index >= text.length) break;
-        if (text[index] === delimiter) {
-          index += 1;
-          continue;
-        }
-        if (text[index] === "\n") {
-          index += 1;
-          line += 1;
-          break;
-        }
-        return unreadable();
-      }
-
-      let value = "";
-      while (index < text.length && text[index] !== delimiter && text[index] !== "\n") {
-        if (text[index] === '"') return unreadable();
-        value += text[index];
-        index += 1;
-      }
-      fields.push(value);
-      if (index >= text.length) break;
-      if (text[index] === delimiter) {
-        index += 1;
-        continue;
-      }
-      if (text[index] === "\n") {
-        index += 1;
-        line += 1;
-        break;
-      }
-    }
-
-    if (header === null) {
-      if (fields.length === 0 || fields.length > PARSING_LIMITS.tableColumns) return unreadable();
-      header = fields;
-      width = header.length;
-      continue;
-    }
-    if (fields.length !== width) return unreadable("inconsistent-columns");
-    rows += 1;
-    if (fields.some(cell => cell.trim() !== "")) nonEmptyRows += 1;
-    if (sampleRows.length < SAMPLE_ROW_LIMIT) {
-      sampleRows.push({ row: startLine, values: fields.map(cell => previewCell(cell)) });
-    }
-  }
-
-  if (header === null) return unreadable("empty-table");
-  const columns = normalizePreviewColumns(header);
-  let unavailableReason: AnalysisTable["unavailableReason"];
-  if (columns.length === 0) unavailableReason = "unreadable-table";
-  else if (rows === 0 || nonEmptyRows === 0) unavailableReason = "empty-table";
-  else if (rows > ANALYSIS_ROW_LIMIT) unavailableReason = "row-limit";
-
-  return {
-    sourceId: source.id,
-    fileName: source.name,
-    sheet: null,
-    columns,
-    rows,
-    nonEmptyRows,
-    sampleRows,
-    sampleRowNumbering: "file-line",
-    ...(unavailableReason ? { unavailableReason } : {}),
+  const table: AnalysisTable = {
+    sourceId: source.id, fileName: source.name, sheet: null, columns: [],
+    rows: 0, nonEmptyRows: 0, sampleRows: [], sampleRowNumbering: "file-line",
   };
+  let lastLine = 0;
+  let problem: AnalysisTable["unavailableReason"];
+
+  try {
+    const text = decodeUtf8(data);
+    parse(text, {
+      delimiter: detectCsvDelimiter(text),
+      raw: true,
+      relax_column_count: true,
+      max_record_size: MAX_DELIMITED_RECORD_SIZE,
+      on_record(value: unknown, context) {
+        // csv-parse wraps the record when its raw option is enabled.
+        const entry = value as { record: string[]; raw: string };
+        const startLine = lastLine + 1;
+        lastLine = context.lines;
+        const blank = entry.raw === "\n";
+        if (!table.columns.length) {
+          if (blank) return null;
+          if (entry.record.length > PARSING_LIMITS.tableColumns) throw new Error("column-limit");
+          table.columns = normalizeColumns(entry.record, entry.record.length);
+          return null;
+        }
+
+        const width = table.columns.length;
+        if (!blank && entry.record.length !== width) {
+          problem = "inconsistent-columns";
+          throw new Error(problem);
+        }
+        table.rows += 1;
+        if (table.rows > PARSING_LIMITS.tableRows || table.rows * width > PARSING_LIMITS.tableCells) throw new Error("table-limit");
+        if (!blank && entry.record.some(hasCellValue)) table.nonEmptyRows! += 1;
+        if (table.sampleRows!.length < SAMPLE_ROW_LIMIT) {
+          const values = blank ? Array<null>(width).fill(null) : entry.record.map(cell => previewCell(cell));
+          table.sampleRows!.push({ row: startLine, values });
+        }
+        return null;
+      },
+    });
+  } catch {
+    return { ...table, sampleRows: [], unavailableReason: problem ?? "unreadable-table" };
+  }
+
+  if (table.nonEmptyRows === 0) table.unavailableReason = "empty-table";
+  else if (table.rows > ANALYSIS_ROW_LIMIT) table.unavailableReason = "row-limit";
+  return table;
 }
 
 // Katalog JSON bayt boyutu 512 KiB bütçesini aşarsa tablo ve sütun bilgisini koruyarak örnekleri kademeli daraltır.

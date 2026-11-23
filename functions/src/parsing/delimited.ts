@@ -2,11 +2,14 @@ import { parse } from "csv-parse/sync";
 import { PARSING_LIMITS, type ParsedCell } from "../contracts";
 import { createParsedDocument, createTableChunks, decodeUtf8, DocumentParseError, normalizeColumns, type ParserInput } from "./common";
 
-// CSV'nin ilk mantıksal satırında tırnak dışındaki ayraçları sayarak kararlı bir ayraç seçer.
-function detectCsvDelimiter(text: string) {
+export const MAX_DELIMITED_RECORD_SIZE = 100_000;
+
+// İlk boş olmayan mantıksal başlıkta tırnak dışındaki ayraçları sayar.
+export function detectCsvDelimiter(text: string) {
   const counts = new Map([[",", 0], [";", 0], ["\t", 0]]);
   let quoted = false;
-  for (let index = 0; index < text.length; index += 1) {
+  const start = text.search(/[^\n]/);
+  for (let index = start; index >= 0 && index < text.length; index += 1) {
     const character = text[index];
     if (character === '"') {
       if (quoted && text[index + 1] === '"') index += 1;
@@ -14,7 +17,7 @@ function detectCsvDelimiter(text: string) {
     } else if (!quoted && character === "\n") break;
     else if (!quoted && counts.has(character)) counts.set(character, counts.get(character)! + 1);
   }
-  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[1] ? [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0] : ",";
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
 }
 
 // CSV/TSV içeriğini satır ve sütun sınırlarıyla tablo parçalarına dönüştürür.
@@ -28,7 +31,7 @@ export function parseDelimitedDocument(input: ParserInput) {
       delimiter,
       skip_empty_lines: true,
       relax_column_count: false,
-      max_record_size: 100_000,
+      max_record_size: MAX_DELIMITED_RECORD_SIZE,
       cast: false,
     });
   } catch {

@@ -81,6 +81,21 @@ def text_chunks(source_id: str, text: str, locator: dict) -> list[dict]:
             for offset in range(0, len(text), CHUNK_CHARACTERS)]
 
 
+def normalize_table_columns(header: list, width: int) -> list[str]:
+    """Match preparation labels, including collisions with an explicit suffix."""
+    columns, seen = [], set()
+    for index in range(width):
+        value = header[index] if index < len(header) else None
+        label = (str(value).lower() if isinstance(value, bool) else str(value if value is not None else "")).strip()
+        base = label or f"Sütun {index + 1}"
+        candidate, suffix = base, 2
+        while candidate in seen:
+            candidate, suffix = f"{base} ({suffix})", suffix + 1
+        columns.append(candidate)
+        seen.add(candidate)
+    return columns
+
+
 def table_chunks(source_id: str, values: list[list], locator: dict, row_start: int = 2) -> list[dict]:
     """Normalize header labels; preserve physical row ranges including blank rows."""
     if not values:
@@ -88,14 +103,7 @@ def table_chunks(source_id: str, values: list[list], locator: dict, row_start: i
     width = max(map(len, values))
     if not 0 < width <= MAX_COLUMNS or len(values) - 1 > MAX_ROWS or (len(values) - 1) * width > MAX_CELLS:
         raise ExtractionError("Table exceeds extraction limits.")
-    columns, seen = [], set()
-    for index in range(width):
-        label = str(values[0][index] if index < len(values[0]) and values[0][index] is not None else "").strip() or f"Column {index + 1}"
-        candidate, suffix = label, 2
-        while candidate in seen:
-            candidate, suffix = f"{label} ({suffix})", suffix + 1
-        columns.append(candidate)
-        seen.add(candidate)
+    columns = normalize_table_columns(values[0], width)
     rows = [[primitive(row[index]) if index < len(row) else None for index in range(width)] for row in values[1:]]
     return [{"id": f"{source_id}:table:{start // 250 + 1:04}", "kind": "table",
              "locator": {**locator, "rowStart": row_start + start, "rowEnd": row_start + start + len(rows[start:start + 250]) - 1},
@@ -103,15 +111,10 @@ def table_chunks(source_id: str, values: list[list], locator: dict, row_start: i
 
 
 def _detect_csv_delimiter(text: str) -> str:
-    """Detect a CSV delimiter consistently across plain, blank-line and multiline-quoted files."""
-    sample = "\n".join(line for line in text[:8192].splitlines() if line.strip())
-    if sample:
-        try:
-            return csv.Sniffer().sniff(sample, delimiters=",;\t").delimiter
-        except csv.Error:
-            pass
+    """Count unquoted separators in the first nonempty logical header."""
     counts = {",": 0, ";": 0, "\t": 0}
     quoted = False
+    text = text.lstrip("\n")
     index = 0
     while index < len(text):
         char = text[index]
@@ -121,24 +124,16 @@ def _detect_csv_delimiter(text: str) -> str:
             else:
                 quoted = not quoted
         elif not quoted and char == "\n":
-            if any(counts.values()) or text[:index].strip():
-                break
+            break
         elif not quoted and char in counts:
             counts[char] += 1
         index += 1
-    best_delimiter, best_count = max(counts.items(), key=lambda item: item[1])
-    if best_count > 0:
-        return best_delimiter
-    # A single-column CSV has no delimiter to sniff; reject ambiguous body-only separators.
-    if any(candidate in text for candidate in ",;\t"):
-        raise ExtractionError("Ambiguous CSV delimiter.")
-    return ","
+    return max(counts, key=counts.__getitem__)
 
 
 def _parse_csv_with_lines(text: str, delimiter: str) -> tuple[list, list[tuple[int, list]]]:
     """Read CSV/TSV records with their 1-based physical starting file line, keeping blank lines in place."""
-    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
-    reader = csv.reader(io.StringIO(normalized, newline=""), delimiter=delimiter, strict=True)
+    reader = csv.reader(io.StringIO(text, newline=""), delimiter=delimiter, strict=True)
     header: list | None = None
     width = 0
     records: list[tuple[int, list]] = []
@@ -180,14 +175,7 @@ def table_chunks_with_lines(source_id: str, header: list, records: list[tuple[in
     width = len(header)
     if not 0 < width <= MAX_COLUMNS or len(records) > MAX_ROWS or len(records) * width > MAX_CELLS:
         raise ExtractionError("Table exceeds extraction limits.")
-    columns, seen = [], set()
-    for index in range(width):
-        label = str(header[index] if header[index] is not None else "").strip() or f"Column {index + 1}"
-        candidate, suffix = label, 2
-        while candidate in seen:
-            candidate, suffix = f"{label} ({suffix})", suffix + 1
-        columns.append(candidate)
-        seen.add(candidate)
+    columns = normalize_table_columns(header, width)
     chunks: list[dict] = []
     current_start: int | None = None
     current_rows: list[list] = []
@@ -229,7 +217,7 @@ def extract_document(path: str | Path, source_id: str = "file-0") -> dict:
     chunks, warnings, metadata = [], [], {}
     try:
         if extension in ("csv", "tsv"):
-            text = data.decode("utf-8-sig", errors="strict")
+            text = data.decode("utf-8-sig", errors="strict").replace("\r\n", "\n").replace("\r", "\n")
             if "\x00" in text:
                 raise ExtractionError("Invalid null byte in text table.")
             delimiter = "\t" if extension == "tsv" else _detect_csv_delimiter(text)

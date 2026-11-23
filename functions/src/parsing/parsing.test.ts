@@ -45,6 +45,15 @@ describe("ortak belge ayrıştırıcıları", () => {
     expect(tsv.chunks[0]?.table?.rows[0]).toEqual(["Kalem", "12"]);
   });
 
+  it("başındaki boş satırı atlayıp CSV başlığındaki ayıracı ve benzersiz sütunları korur", async () => {
+    const data = Buffer.from('\r\n"Ekip; adı";Gelir;Gelir;Gelir (2);\r\nAlfa;1;2;3;x');
+    const parsed = await parseDocument(input("satis.csv", "text/csv", data));
+    expect(parsed.chunks[0].table).toEqual({
+      columns: ["Ekip; adı", "Gelir", "Gelir (2)", "Gelir (2) (2)", "Sütun 5"],
+      rows: [["Alfa", "1", "2", "3", "x"]],
+    });
+  });
+
   it("XLSX sayfalarını ve önceden hesaplanmış formül sonuçlarını okur", async () => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet("Satış");
