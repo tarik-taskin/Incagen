@@ -22,6 +22,7 @@ const SAMPLE_ROW_LIMIT = 5;
 const SAMPLE_CELL_MAX_LENGTH = 120;
 const SAMPLE_CELL_MAX_BYTES = 180;
 const ANALYSIS_ROW_LIMIT = 5000;
+const ANALYSIS_TABLE_LIMITS = { rows: ANALYSIS_ROW_LIMIT, groups: 12, attempts: AI_JOB_LIMITS.attempts };
 const RAW_SOURCE_MAX_BYTES = 25 * 1024 * 1024;
 export const ANALYSIS_TABLES_MAX_BYTES = 512 * 1024;
 export interface AiArtifact { version: 1; result: AiResult; sources: ParsedDocument[]; scope: WorkerResult["scope"]; locale: ResultLocale }
@@ -58,9 +59,9 @@ function hasCellValue(cell: unknown) {
   return cell !== null && cell !== undefined && /[^\p{White_Space}\u001c-\u001f]/u.test(String(cell));
 }
 
-// JSON çıktısının gerçek UTF-8 bayt boyutunu hesaplar (çok baytlı karakterler dahil).
-function jsonUtf8Bytes(value: unknown): number {
-  return Buffer.byteLength(JSON.stringify(value), "utf8");
+// Callable zarfı ve limitler dahil katalog yanıtının gerçek UTF-8 boyutunu ölçer.
+function catalogBytes(tables: AnalysisTable[]): number {
+  return Buffer.byteLength(JSON.stringify({ result: { tables, limits: ANALYSIS_TABLE_LIMITS } }), "utf8");
 }
 
 // Hazırlığın CSV ayrıştırıcısıyla fiziksel dosya satırını ve sınırlı örnekleri çıkarır.
@@ -118,7 +119,7 @@ export function parseCsvTablePreview(data: Buffer, source: Pick<Report["sources"
 
 // Katalog JSON bayt boyutu 512 KiB bütçesini aşarsa tablo ve sütun bilgisini koruyarak örnekleri kademeli daraltır.
 export function fitAnalysisTablesBudget(tables: AnalysisTable[], maxBytes = ANALYSIS_TABLES_MAX_BYTES): AnalysisTable[] {
-  if (jsonUtf8Bytes(tables) <= maxBytes) return tables;
+  if (catalogBytes(tables) <= maxBytes) return tables;
 
   let current = tables.map(table => ({ ...table, sampleRows: table.sampleRows ? [...table.sampleRows] : undefined }));
 
@@ -129,7 +130,7 @@ export function fitAnalysisTablesBudget(tables: AnalysisTable[], maxBytes = ANAL
         ? { ...table, sampleRows: table.sampleRows.slice(0, rowLimit) }
         : table
     ));
-    if (jsonUtf8Bytes(current) <= maxBytes) return current;
+    if (catalogBytes(current) <= maxBytes) return current;
   }
 
   // 2. Aşama: Tek örnek satır hâlâ bütçeyi aşıyorsa hücre metin uzunluğunu ve UTF-8 baytını daralt.
@@ -145,7 +146,7 @@ export function fitAnalysisTablesBudget(tables: AnalysisTable[], maxBytes = ANAL
         }
         : table
     ));
-    if (jsonUtf8Bytes(current) <= maxBytes) return current;
+    if (catalogBytes(current) <= maxBytes) return current;
   }
 
   // 3. Aşama: Örnekler bütçeye sığmıyorsa örnekleri kaldırıp tablo ve sütun katalog bilgisini koru.
@@ -179,9 +180,10 @@ export async function buildAnalysisTables(
       tables.push({ sourceId: source.id, fileName: source.name, sheet: null, columns: [], rows: 0, nonEmptyRows: 0, sampleRows: [], unavailableReason: "unreadable-table" });
       continue;
     }
-    const isPhysicalLine = document.extension === "xlsx" || document.parserVersion.startsWith("incagen-python/");
-    const sampleRowNumbering = isPhysicalLine ? "file-line" : "record";
     const tableChunks = document.chunks.filter(chunk => chunk.kind === "table" && chunk.table);
+    // Legacy CSV locators lack a reliable physical line contract.
+    const sampleRowNumbering = document.extension === "xlsx" && tableChunks.every(chunk => chunk.locator.rowStart !== undefined)
+      ? "file-line" : "record";
     if (tableChunks.length === 0) {
       tables.push({ sourceId: source.id, fileName: source.name, sheet: null, columns: [], rows: 0, nonEmptyRows: 0, sampleRows: [], sampleRowNumbering, unavailableReason: "empty-table" });
       continue;
@@ -189,7 +191,6 @@ export async function buildAnalysisTables(
     for (const chunk of tableChunks) {
       const sheet = chunk.locator.sheet ?? null;
       const chunkRows = chunk.table!.rows;
-      const rowStart = chunk.locator.rowStart ?? 1;
       let table = tables.find(item => item.sourceId === source.id && item.sheet === sheet);
       if (!table) {
         table = { sourceId: source.id, fileName: source.name, sheet, columns: chunk.table!.columns, rows: 0, nonEmptyRows: 0, sampleRows: [], sampleRowNumbering };
@@ -198,10 +199,11 @@ export async function buildAnalysisTables(
         table.unavailableReason = "inconsistent-columns";
         continue;
       }
+      const rowStart = sampleRowNumbering === "file-line" ? chunk.locator.rowStart! : table.rows + 1;
       table.rows += chunkRows.length;
       for (let offset = 0; offset < chunkRows.length; offset++) {
         const row = chunkRows[offset];
-        const hasContent = row.some(cell => cell !== null && cell !== undefined && String(cell).trim() !== "");
+        const hasContent = row.some(hasCellValue);
         if (hasContent) table.nonEmptyRows = (table.nonEmptyRows ?? 0) + 1;
         if ((table.sampleRows?.length ?? 0) < SAMPLE_ROW_LIMIT) {
           table.sampleRows!.push({ row: rowStart + offset, values: row.map(cell => previewCell(cell)) });
@@ -267,8 +269,8 @@ export const getAnalysisTables = onCall({ region: "europe-west1", timeoutSeconds
       source => preparedDocument(request.auth!.uid, parsed.data.id, data.artifactAttempt, source),
       source => verifiedRawCsv(request.auth!.uid, parsed.data.id, source),
     );
-    if (tables.length > 20 || jsonUtf8Bytes(tables) > ANALYSIS_TABLES_MAX_BYTES) throw new HttpsError("resource-exhausted", "Daha az tablo içeren bir çalışma seçin.");
-    return { tables, limits: { rows: ANALYSIS_ROW_LIMIT, groups: 12, attempts: AI_JOB_LIMITS.attempts } };
+    if (tables.length > 20 || catalogBytes(tables) > ANALYSIS_TABLES_MAX_BYTES) throw new HttpsError("resource-exhausted", "Daha az tablo içeren bir çalışma seçin.");
+    return { tables, limits: ANALYSIS_TABLE_LIMITS };
   } catch (error) {
     if (error instanceof HttpsError) throw error;
     throw new HttpsError("failed-precondition", "Tablo bilgileri okunamadı. Yeniden deneyin.");
@@ -283,6 +285,30 @@ function selectionsMatch(a: TableSelection, b: TableSelection) {
     && a.aggregation === b.aggregation
     && a.numberFormat === b.numberFormat
     && a.unit === b.unit;
+}
+
+// Raporun ölçüm/gruplama adlarını ve dolu/boş satır sayılarını saklanan tabloyla karşılaştırır.
+function validateStoredScope(scope: AiArtifact["scope"], source: ParsedDocument) {
+  const columns = source.chunks[0].table!.columns;
+  const { valueColumn, groupColumn } = scope.selection;
+  if ((valueColumn === null ? null : columns[valueColumn]) !== scope.measure
+    || (groupColumn === null ? null : columns[groupColumn]) !== scope.group) {
+    throw new Error("scope-columns-mismatch");
+  }
+  let rows = 0;
+  let emptyRows = 0;
+  for (const chunk of source.chunks) {
+    const table = chunk.table!;
+    if (table.columns.length !== columns.length || table.columns.some((column, index) => column !== columns[index])) {
+      throw new Error("scope-columns-mismatch");
+    }
+    for (const row of table.rows) {
+      if (row.length !== columns.length) throw new Error("scope-columns-mismatch");
+      if (row.some(hasCellValue)) rows += 1;
+      else emptyRows += 1;
+    }
+  }
+  if (rows !== scope.rows || emptyRows !== scope.emptyRows) throw new Error("scope-row-count-mismatch");
 }
 
 // Saklanan v1 artefaktının kapsam, dil, kaynak kimliği/hash'i, parça satır/sayfa bağları ile grafik/veri kümesi referanslarını doğrular (yapısal bütünlük kontrolüdür; model kalite kabulü değildir).
@@ -320,6 +346,7 @@ export function validateStoredArtifact(
   if (source.chunks.length === 0 || source.chunks.some(chunk => chunk.kind !== "table" || !chunk.table || (chunk.locator.sheet ?? null) !== expected.job.selection.sheet)) {
     throw new Error("sheet-integrity-mismatch");
   }
+  validateStoredScope(scope, source);
   if (typeof expected.job.fingerprint === "string" && expected.job.fingerprint.length > 0) {
     const computedFingerprint = analysisFingerprint(source.sha256, source.sourceId, scope.selection, locale);
     if (computedFingerprint !== expected.job.fingerprint) throw new Error("fingerprint-mismatch");

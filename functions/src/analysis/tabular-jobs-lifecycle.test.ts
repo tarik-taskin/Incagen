@@ -139,9 +139,22 @@ describe("buildAnalysisTables katalog ve önizleme sınırları", () => {
     const legacyDoc = baseDoc("file-legacy", "legacy.csv", [
       { id: "c1", kind: "table", locator: { section: "tablo", rowStart: 1, rowEnd: 2 }, table: { columns: ["Channel", "Revenue"], rows: [["Web", "0.10"], ["Store", "0.20"]] } },
     ]);
+    legacyDoc.parserVersion = "incagen-python/0.1.0";
+    legacyDoc.chunks[0].locator = { section: "table", rowStart: 3, rowEnd: 4 };
     const [legacyTable] = await buildAnalysisTables([legacySource], async () => legacyDoc, async () => null);
     expect(legacyTable.sampleRowNumbering).toBe("record");
     expect(legacyTable.sampleRows?.map(r => r.row)).toEqual([1, 2]);
+  });
+
+  it("ayırt edilebilir olmayan CSV'lere örnek döndürmez ve büyük kayıtları sınırlar", () => {
+    const source = { id: "file-0", name: "data.csv" };
+    expect(parseCsvTablePreview(Buffer.from("\n\n"), source).unavailableReason).toBe("empty-table");
+    expect(parseCsvTablePreview(Buffer.from("A,B\nx,1\ny\n"), source)).toMatchObject({
+      unavailableReason: "inconsistent-columns", sampleRows: [],
+    });
+    expect(parseCsvTablePreview(Buffer.from(`A,B\n${"x".repeat(100_001)},1\n`), source)).toMatchObject({
+      unavailableReason: "unreadable-table", sampleRows: [],
+    });
   });
 
   it("5 geçerli geniş CSV ve çok baytlı UTF-8 hücrelerle 512 KiB JSON byte bütçesini aşmadan tablo ve sütunları döndürür", async () => {
@@ -174,7 +187,8 @@ describe("buildAnalysisTables katalog ve önizleme sınırları", () => {
     const multibyteDocs = Object.fromEntries(multibyteSources.map(s => [s.id, makeWideDoc(s.id, s.name, "ğşçİÖÜ中ع🚀".repeat(16))]));
     const multibyteTables = await buildAnalysisTables(multibyteSources, async source => multibyteDocs[source.id]);
     expect(multibyteTables).toHaveLength(5);
-    expect(Buffer.byteLength(JSON.stringify(multibyteTables), "utf8")).toBeLessThanOrEqual(512 * 1024);
+    const response = { result: { tables: multibyteTables, limits: { rows: 5000, groups: 12, attempts: 3 } } };
+    expect(Buffer.byteLength(JSON.stringify(response), "utf8")).toBeLessThanOrEqual(512 * 1024);
     for (const table of multibyteTables) {
       expect(table.columns).toHaveLength(columnCount);
       expect(table.rows).toBe(5);
@@ -254,6 +268,24 @@ describe("validateStoredArtifact bütünlük bağı", () => {
     expect(verified.locale).toBe("de");
     expect(verified.scope.sheet).toBe("Services");
     expect(verified.sources[0].sha256).toBe(validSha);
+  });
+
+  it("saklanan ölçüm adı veya boş satır adedi kaynakla uyuşmadığında raporu reddeder", () => {
+    const expected = {
+      analysisId: "11111111-1111-4111-8111-111111111111",
+      objective: "Compare team averages",
+      job: validJob(false),
+      reportSource,
+    };
+    const artifact = validV1Artifact();
+    artifact.scope.measure = "Team";
+    expect(() => validateStoredArtifact(artifact, expected)).toThrow("scope-columns-mismatch");
+    artifact.scope.measure = "Revenue";
+    artifact.scope.emptyRows = 1;
+    expect(() => validateStoredArtifact(artifact, expected)).toThrow("scope-row-count-mismatch");
+    artifact.sources[0].chunks[0].table!.rows.push([null, null]);
+    artifact.sources[0].chunks[0].locator.rowEnd = 5;
+    expect(validateStoredArtifact(artifact, expected).scope.emptyRows).toBe(1);
   });
 
   it("dil, kapsam, kaynak kimliği/hash'i, sayfa, fingerprint veya dayanak bağı uyuşmayan kaydı reddeder", () => {
