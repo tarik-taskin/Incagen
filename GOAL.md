@@ -9,6 +9,20 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
+### 2026-11-25 — Furkan / Codex: kaynaklı metrik CSV dışa aktarımı
+
+- [x] Sahip: Furkan — 1. Doğrulanmış rapor metriklerini tek satır/tek metrik sözleşmesiyle CSV’ye aktar.
+- [x] Sahip: Furkan — 2. UTF-8, satır sonu, tırnak ve ayraç karakterlerinin taşınmasını doğrula.
+- [x] Sahip: Furkan — 3. Metin alanlarının hesap tablosunda formül olarak değerlendirilmesini engelle.
+- [x] Sahip: Furkan — 4. Metriğin dosya, sayfa ve özgün satır kanıtını mevcut kaynak doğrulamasına bağla.
+- [~] Sahip: Furkan — 5. Eksik değeri sıfıra çevirmeden durum ve açıklamasını, geçerli değeri yerelleştirmeden dışa aktar.
+- [~] Sahip: Furkan — 6. Tamamlanmış gerçek raporda yalnız etkin sahibi için CSV indirme eylemi sun.
+- [~] Sahip: Furkan — 7. Müşteri deneyimi örneğinde ham yorum indirmesine ek olarak hesap CSV’sini göster.
+- [~] Sahip: Furkan — 8. İki rapor görünümünde eylemi ve güvenli indirme hatasını altı dilde erişilebilir sun.
+- [~] Sahip: Furkan — 9. Özgün kaynak ve metrik indirmesinde tarayıcı dosya URL’sini ortak yardımcıyla temizle.
+- [~] Sahip: Furkan — 10. Gerçek dosyanın içeriğini masaüstü/mobil tarayıcıda ve rapor regresyonlarında doğrula.
+- [~] Sahip: Furkan — 11. CSV kapsamını belgeleyip son GitHub ve Netlify sürümünü doğrula.
+
 ### 2026-11-25 — Furkan / Codex: davetli beta ve çağrısız canlı ön kontrol
 
 - [x] Sahip: Furkan — 1. Genel kapatma bayrağı ile davetli hesap claim’ini sunucuda birlikte zorunlu tut.
