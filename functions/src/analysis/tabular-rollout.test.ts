@@ -1,26 +1,34 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { tabularRolloutEnabled } from "./tabular-rollout";
+import { tabularAnalysisAccess } from "./tabular-rollout";
 
 afterEach(() => vi.unstubAllEnvs());
 
-it("keeps live paid generation closed unless the server explicitly enables it", () => {
-  vi.stubEnv("GCLOUD_PROJECT", "incagen-eeef4"); vi.stubEnv("FUNCTIONS_EMULATOR", "false");
+it("requires the exact production flag and an explicit beta claim", () => {
+  vi.stubEnv("GCLOUD_PROJECT", "incagen-eeef4");
+  vi.stubEnv("FUNCTIONS_EMULATOR", "false");
   for (const value of ["", "false", "1", "TRUE"]) {
     vi.stubEnv("INCAGEN_TABULAR_ANALYSIS_ENABLED", value);
-    expect(tabularRolloutEnabled()).toBe(false);
+    expect(tabularAnalysisAccess(true)).toBe("closed");
   }
   vi.stubEnv("INCAGEN_TABULAR_ANALYSIS_ENABLED", "true");
-  expect(tabularRolloutEnabled()).toBe(true);
+  for (const claim of [undefined, null, false, "true", 1, { incagenDeveloper: true }]) {
+    expect(tabularAnalysisAccess(claim)).toBe("invite-required");
+  }
+  expect(tabularAnalysisAccess(true)).toBe("available");
 });
 
-it("does not treat a real project as an isolated demo when an emulator flag leaks", () => {
-  vi.stubEnv("GCLOUD_PROJECT", "incagen-eeef4"); vi.stubEnv("FUNCTIONS_EMULATOR", "true");
+it("applies real access policy if an emulator flag leaks into production", () => {
+  vi.stubEnv("GCLOUD_PROJECT", "incagen-eeef4");
+  vi.stubEnv("FUNCTIONS_EMULATOR", "true");
   vi.stubEnv("INCAGEN_TABULAR_ANALYSIS_ENABLED", "false");
-  expect(tabularRolloutEnabled()).toBe(false);
+  expect(tabularAnalysisAccess(true)).toBe("closed");
+  vi.stubEnv("INCAGEN_TABULAR_ANALYSIS_ENABLED", "true");
+  expect(tabularAnalysisAccess()).toBe("invite-required");
 });
 
-it("allows the isolated demo flow without exposing a cloud provider", () => {
-  vi.stubEnv("GCLOUD_PROJECT", "demo-incagen"); vi.stubEnv("FUNCTIONS_EMULATOR", "true");
+it("keeps the isolated demo usable with no real beta claim or provider", () => {
+  vi.stubEnv("GCLOUD_PROJECT", "demo-incagen");
+  vi.stubEnv("FUNCTIONS_EMULATOR", "true");
   vi.stubEnv("INCAGEN_TABULAR_ANALYSIS_ENABLED", "false");
-  expect(tabularRolloutEnabled()).toBe(true);
+  expect(tabularAnalysisAccess()).toBe("available");
 });

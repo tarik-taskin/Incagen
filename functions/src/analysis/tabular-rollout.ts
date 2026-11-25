@@ -1,6 +1,9 @@
 import { isAnalysisEmulator } from "./python-worker";
+import type { AnalysisAccess } from "./tabular-contract";
 
-// Canlı ücretli analiz ancak açık sunucu onayıyla açılır; yalnız izole demo testleri bu kapıyı aşabilir.
-export function tabularRolloutEnabled() {
-  return isAnalysisEmulator() || process.env.INCAGEN_TABULAR_ANALYSIS_ENABLED === "true";
+// Ücretli analiz hem sunucu bayrağını hem doğrulanmış Firebase kimliğindeki beta davetini gerektirir.
+export function tabularAnalysisAccess(invited: unknown = undefined): AnalysisAccess {
+  if (isAnalysisEmulator()) return "available";
+  if (process.env.INCAGEN_TABULAR_ANALYSIS_ENABLED !== "true") return "closed";
+  return invited === true ? "available" : "invite-required";
 }

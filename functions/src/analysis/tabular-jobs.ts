@@ -10,8 +10,8 @@ import { AnalysisPacketBudgetError } from "./input-packet";
 import { preparedAnalysis, type AiArtifact } from "./tabular-storage";
 import { computeTable, isAnalysisEmulator, WorkerError } from "./python-worker";
 import { analysisFingerprint, createTabularPacket, interpretTable } from "./tabular-result";
-import { AI_JOB_LIMITS, startAnalysisSchema, type AiJob, type AnalysisFailure } from "./tabular-contract";
-import { tabularRolloutEnabled } from "./tabular-rollout";
+import { AI_JOB_LIMITS, startAnalysisSchema, type AiJob, type AnalysisAccess, type AnalysisFailure } from "./tabular-contract";
+import { tabularAnalysisAccess } from "./tabular-rollout";
 
 // Atomik kabul hem tekrar çağrıyı tekilleştirir hem kullanıcı/proje maliyet sınırını sunucuda uygular.
 export async function reserveAnalysis(uid: string, input: ReturnType<typeof startAnalysisSchema.parse>, fingerprint: string, now = Date.now()) {
@@ -83,7 +83,7 @@ async function advanceAnalysis(uid: string, id: string, attemptId: string, stage
 }
 
 export interface StartAnalysisOptions {
-  rolloutEnabled?: () => boolean;
+  access?: AnalysisAccess;
   generate?: GeminiGenerate;
   readKey?: () => Promise<string>;
 }
@@ -94,8 +94,9 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
   if (!parsed.success) throw new HttpsError("invalid-argument", "Analiz kapsamını kontrol edin.");
   const input = parsed.data;
   const { data, ref } = await preparedAnalysis(uid, input.id);
-  const enabled = (options.rolloutEnabled ?? tabularRolloutEnabled)();
-  if (!enabled) throw new HttpsError("failed-precondition", "Analiz servisi şu anda kullanılamıyor.", { analysisFailure: "configuration" });
+  const access = options.access ?? tabularAnalysisAccess();
+  if (access === "closed") throw new HttpsError("failed-precondition", "Analiz servisi şu anda kullanılamıyor.", { analysisFailure: "configuration" });
+  if (access === "invite-required") throw new HttpsError("permission-denied", "Bu hesap tablo analizi betasına dahil değil.", { analysisAccess: access });
   const source = data.report.sources.find(source => source.id === input.sourceId && /\.(csv|xlsx)$/i.test(source.name));
   if (!source || !data.objective?.trim()) throw new HttpsError("failed-precondition", "Analiz için CSV veya XLSX tablosu ve bir hedef seçin.");
   const fingerprint = analysisFingerprint(source.sha256, source.id, input.selection, input.locale);
@@ -159,5 +160,5 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
 
 // Kullanıcı onayıyla tek tabloyu hesaplar ve yorumlar; otomatik ücretli retry veya metrik tahmini yapmaz.
 export const startAnalysis = onCall({ region: "europe-west1", timeoutSeconds: 180, memory: "1GiB", maxInstances: 2, concurrency: 1 }, async request => {
-  return executeStartAnalysis(request.auth?.uid, request.data);
+  return executeStartAnalysis(request.auth?.uid, request.data, { access: tabularAnalysisAccess(request.auth?.token.incagenTabularBeta) });
 });

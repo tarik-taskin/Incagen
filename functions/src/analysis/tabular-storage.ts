@@ -10,7 +10,8 @@ import { aiResultSchema, validateAiResult, type AiResult } from "./result-contra
 import { PARSING_LIMITS, type ParsedDocument, type Report } from "../contracts";
 import { decodeUtf8, normalizeColumns } from "../parsing/common";
 import { detectCsvDelimiter, MAX_DELIMITED_RECORD_SIZE } from "../parsing/delimited";
-import { AI_JOB_LIMITS, resultLocaleSchema, workerResultSchema, type AiJob, type AnalysisTable, type ResultLocale, type TableSelection, type WorkerResult } from "./tabular-contract";
+import { AI_JOB_LIMITS, resultLocaleSchema, workerResultSchema, type AiJob, type AnalysisAccess, type AnalysisTable, type ResultLocale, type TableSelection, type WorkerResult } from "./tabular-contract";
+import { tabularAnalysisAccess } from "./tabular-rollout";
 
 // Tekilleştirme anahtarı kaynak/ayar/dile bağlıdır; aynı istek yeni ücretli çağrı başlatmaz.
 export function analysisFingerprint(sourceHash: string, sourceId: string, selection: TableSelection, locale: ResultLocale) {
@@ -60,8 +61,8 @@ function hasCellValue(cell: unknown) {
 }
 
 // Callable zarfı ve limitler dahil katalog yanıtının gerçek UTF-8 boyutunu ölçer.
-function catalogBytes(tables: AnalysisTable[]): number {
-  return Buffer.byteLength(JSON.stringify({ result: { tables, limits: ANALYSIS_TABLE_LIMITS } }), "utf8");
+function catalogBytes(tables: AnalysisTable[], access: AnalysisAccess = "invite-required"): number {
+  return Buffer.byteLength(JSON.stringify({ result: { tables, limits: ANALYSIS_TABLE_LIMITS, access } }), "utf8");
 }
 
 // Hazırlığın CSV ayrıştırıcısıyla fiziksel dosya satırını ve sınırlı örnekleri çıkarır.
@@ -269,8 +270,9 @@ export const getAnalysisTables = onCall({ region: "europe-west1", timeoutSeconds
       source => preparedDocument(request.auth!.uid, parsed.data.id, data.artifactAttempt, source),
       source => verifiedRawCsv(request.auth!.uid, parsed.data.id, source),
     );
-    if (tables.length > 20 || catalogBytes(tables) > ANALYSIS_TABLES_MAX_BYTES) throw new HttpsError("resource-exhausted", "Daha az tablo içeren bir çalışma seçin.");
-    return { tables, limits: ANALYSIS_TABLE_LIMITS };
+    const access = tabularAnalysisAccess(request.auth?.token.incagenTabularBeta);
+    if (tables.length > 20 || catalogBytes(tables, access) > ANALYSIS_TABLES_MAX_BYTES) throw new HttpsError("resource-exhausted", "Daha az tablo içeren bir çalışma seçin.");
+    return { tables, limits: ANALYSIS_TABLE_LIMITS, access };
   } catch (error) {
     if (error instanceof HttpsError) throw error;
     throw new HttpsError("failed-precondition", "Tablo bilgileri okunamadı. Yeniden deneyin.");

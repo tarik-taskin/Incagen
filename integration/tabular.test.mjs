@@ -34,6 +34,7 @@ test("gerçek Python hesabı, kaynaklı rapor, tekrar/yenileme, izolasyon ve tem
   try {
     const id = await create(), record = db.doc(`users/${own.auth.currentUser.uid}/analyses/${id}`);
     const previewCatalog = (await own.call("getAnalysisTables", { id })).data;
+    assert.equal(previewCatalog.access, "available");
     assert.equal(previewCatalog.tables[0].rows, 2);
     assert.equal(previewCatalog.tables[0].sampleRowNumbering, "file-line");
     assert.deepEqual(previewCatalog.tables[0].sampleRows.map(item => item.row), [2, 3]);
@@ -308,7 +309,7 @@ test("analiz kapalıyken belge hazırlama ve yeniden açma çalışır; AI işi,
         uid,
         { id, sourceId: "file-0", selection, locale: "tr" },
         {
-          rolloutEnabled: () => false,
+          access: "closed",
           generate: async () => {
             modelCalls += 1;
             throw new GeminiError("unavailable");
@@ -370,7 +371,7 @@ test("provider-busy ve timeout sonrası deterministik toparlanma, bekleme süres
 
     // 1. Deneme: provider-busy döner, retryAfter (~30 sn) saklanır ve hazırlanan dosya korunur.
     await assert.rejects(
-      executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, { rolloutEnabled: () => true, generate: busyGenerator }),
+      executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, { access: "available", generate: busyGenerator }),
       { code: "failed-precondition", details: { analysisFailure: "provider-busy" } }
     );
     let docData = (await recordRef.get()).data();
@@ -383,7 +384,7 @@ test("provider-busy ve timeout sonrası deterministik toparlanma, bekleme süres
 
     // Bekleme süresi dolmadan tekrar deneme modeli çağırmadan reddedilir.
     await assert.rejects(
-      executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, { rolloutEnabled: () => true, generate: busyGenerator }),
+      executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, { access: "available", generate: busyGenerator }),
       { code: "resource-exhausted" }
     );
     assert.equal(modelCalls, 1);
@@ -392,7 +393,7 @@ test("provider-busy ve timeout sonrası deterministik toparlanma, bekleme süres
     await recordRef.update({ "ai.retryAfter": Date.now() - 1 });
     await assert.rejects(
       executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, {
-        rolloutEnabled: () => true,
+        access: "available",
         generate: async () => {
           modelCalls += 1;
           throw new GeminiError("timeout");
@@ -409,7 +410,7 @@ test("provider-busy ve timeout sonrası deterministik toparlanma, bekleme süres
     // 3. Deneme: Bekleme sonrası başarılı manuel yeniden deneme raporu kaydeder.
     await recordRef.update({ "ai.retryAfter": Date.now() - 1 });
     const done = await executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, {
-      rolloutEnabled: () => true,
+      access: "available",
       generate: async () => {
         modelCalls += 1;
         return JSON.stringify({

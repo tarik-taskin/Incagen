@@ -44,6 +44,8 @@ export interface AnalysisTable {
   sampleRowNumbering?: SampleRowNumbering;
   unavailableReason?: TableUnavailableReason;
 }
+export type AnalysisAccess = "available" | "closed" | "invite-required";
+
 export type AnalysisFailure =
   | "invalid-data"
   | "invalid-number-format"
