@@ -1,4 +1,5 @@
 import { Buffer } from "node:buffer";
+import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
@@ -12,6 +13,20 @@ import ar from "../src/i18n/locales/ar.json" with { type: "json" };
 
 const require = createRequire(new URL("../functions/package.json", import.meta.url));
 const ExcelJS = require("exceljs");
+const { parse: parseCsv } = require("csv-parse/sync") as {
+  parse(csv: string, options: { bom: boolean; columns: boolean }): Record<string, string>[];
+};
+
+// Chromium’un gerçekten indirdiği rapor CSV’sini tekrar ayrıştırır.
+async function downloadMetrics(page: Page, fileName: string) {
+  const button = page.getByRole("button", { name: "Hesapları CSV olarak indir", exact: true });
+  await expect(button).toBeVisible();
+  const event = page.waitForEvent("download");
+  await button.press("Enter");
+  const download = await event;
+  expect(download.suggestedFilename()).toBe(fileName);
+  return parseCsv(await readFile(await download.path(), "utf8"), { bom: true, columns: true });
+}
 
 // İzole demo hesabında gerçek yükleme ve Python hesabını kullanır; sağlayıcı çağrısı emülatörde açıkça taklittir.
 async function prepare(page: Page, body: string | Buffer, fileName = "gelir.csv", mimeType = "text/csv") {
@@ -69,6 +84,13 @@ test("gerçek hesap → kaynaklı rapor → geçmiş/yenileme; altı dil ve özg
   const report = page.getByRole("region", { name: "Analiz raporu", exact: true });
   await expect(report).toBeVisible({ timeout: 30_000 });
   await expect(report).toContainText("0,30 USD");
+  const metrics = await downloadMetrics(page, "incagen-analysis-metrics.csv");
+  expect(metrics.find(row => row.metric_id === "aggregate")).toMatchObject({ value: "0.3", unit: "USD" });
+  const store = metrics.find(row => row.label === "Store");
+  expect(store).toMatchObject({ value: "0.2", unit: "USD" });
+  expect(JSON.parse(store!.source_locations)).toContainEqual(expect.objectContaining({
+    file_name: "gelir.csv", row_start: 4, row_end: 4,
+  }));
   await report.getByText("Veri tablosu", { exact: true }).click();
   await expect(report.getByRole("table")).toContainText("0,20 USD");
   await report.getByRole("button", { name: "Store kaynağı", exact: true }).click();
@@ -155,6 +177,12 @@ test("çok sayfalı Excel'de önizleme, satır ağırlıklı ortalama, sayfa kay
   const report = page.getByRole("region", { name: "Analiz raporu", exact: true });
   await expect(report).toBeVisible({ timeout: 30_000 });
   await expect(report).toContainText("40,00 EUR");
+  const metrics = await downloadMetrics(page, "incagen-analysis-metrics.csv");
+  const aggregate = metrics.find(row => row.metric_id === "aggregate");
+  expect(aggregate).toMatchObject({ value: "40", unit: "EUR" });
+  expect(JSON.parse(aggregate!.source_locations)).toContainEqual(expect.objectContaining({
+    file_name: "hizmet-gelir.xlsx", sheet: "Hizmetler", row_start: 2, row_end: 5,
+  }));
   await expect(report).toContainText("Hizmetler");
 
   await report.getByText("Veri tablosu", { exact: true }).click();
@@ -229,4 +257,14 @@ test("davet erişimi yenilenirken tablo kapsamı korunur ve analiz kendiliğinde
   await expect(page.getByLabel("Ölçüm alanı", { exact: true })).toContainText("Revenue");
   await expect(preview).toBeVisible();
   expect(startCalls).toBe(0);
+});
+
+
+test("herkese açık müşteri deneyimi örneği boş değeri koruyan hesap CSV’si sunar", async ({ page }) => {
+  await page.goto("/ornek-rapor/musteri-deneyimi");
+  const rows = await downloadMetrics(page, "incagen-example-feedback-metrics.csv");
+  expect(rows.find(row => row.metric_id === "comments")).toMatchObject({ value: "32", status: "available" });
+  expect(rows.find(row => row.metric_id === "csat")).toMatchObject({ value: "", status: "unavailable" });
+  await expect(page.getByRole("link", { name: "Örnek yorumları indir" })).toBeVisible();
+  await layout(page);
 });

@@ -56,6 +56,8 @@ Tablo seçimi kaynak ve çalışma sayfası kimliğini korur; aynı adlı belgel
 
 Oturumlu özgün belge indirmesi seçili belge kimliği/hash'ine bağlıdır. Aynı bekleyen indirme tekrar tıklanamaz; hata yalnız kısa, yerelleştirilmiş açıklamadır ve açıkça yeniden denenebilir. Belge değiştiğinde önceki isteğin geç gelen sonucu yeni belgenin bekleme/hata durumunu değiştirmez. Panel kapanınca eski yanıt state yazmaz. Bu davranış sistem indirme penceresinin dosyayı diske kaydettiğini iddia etmez; statik örnek dosyaların native indirme bağlantıları korunur.
 
+Tamamlanmış tablo raporunda etkin hesap, **Hesapları CSV olarak indir** ile açık raporun metriklerini ve kaynak konumlarını alabilir. Müşteri deneyimi örneği de aynı biçimi sunar. Her metrik bir satırdır. Eksik değer boş hücre ve durum açıklamasıyla temsil edilir. Birimler ayrı sütunda kalır. CSV, ham belge satırları veya model anlatısı içermeden tarayıcıda üretilir. Özgün belge indirmesi ayrı eylemdir.
+
 ## Free ve Premium
 
 Ürün limitlerinin belge kaynağı bu tablodur. Frontend plan bilgileri merkezi plan kurallarında, backend uygulanmış Free sınırları ortak analiz sözleşmesinde tutulur; değişiklikte üçü birlikte doğrulanır.

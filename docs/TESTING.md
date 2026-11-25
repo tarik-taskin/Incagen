@@ -143,6 +143,12 @@ node scripts/build-feedback-example.cjs --check
 
 2 Kasım 2026 üretim denetiminde kök paket ağacı 0 uyarı, Functions ağacı 9 orta önem kaydı verdi; yüksek/kritik kayıt yok. Orta kayıtlar Office arşivleme zincirindeki `glob`/`minimatch` ve bir `google-gax` alt zincirine aittir. CI eşiği değiştirilmedi; uyumsuz Office ana sürümü düşürme veya zorlanmış override uygulanmadı. Önceki 29 Ekim 0 uyarı kaydı kendi tarihindeki durumdur.
 
+### Rapor metriklerini CSV olarak indirme
+
+CSV, UTF-8 BOM, virgül, CRLF ve sabit İngilizce alan adları kullanır. Sayılar binlik ayırıcı olmadan noktalı ondalıklarla aktarılır. `source_locations` sütunu dosya adı, kaynak kimliği ve varsa sayfa, sayfa adı ve satır aralığını içeren JSON listesidir. Bir metriğin birden fazla dayanağı aynı hücrede tutulur. Formül gibi yorumlanabilecek metinler içe aktarımda düz metin olarak korunur.
+
+`metrics-csv.test.ts` gerçek CSV ayrıştırıcısıyla kodlama, tırnak, hassasiyet, boş değer, kaynak bağı ve formül korumasını doğrular. `live-analysis-download.test.tsx` etkin oturum, kaynak uyuşması ve ağ isteği yapılmamasını sınar. `e2e/tabular-analysis.spec.ts` masaüstü ve mobil Chromium’da CSV, XLSX ve müşteriye açık örnekten indirilen dosya içeriklerini kontrol eder.
+
 ### İlk gerçek tablo analizi kontrolleri
 
 `integration/tabular.test.mjs`, demo projesinde gerçek Python hesabını; CSV ondalık toplamı, seçili XLSX sayfasında satır ağırlıklı ortalamayı, kapalı analiz bayrağında AI iş/kota/model çağrısı oluşmadığını, `provider-busy`/`timeout` bekleme süresini ve tekrar/yeniden deneme/yetki/silme yarışını doğrular. Model yanıtı emülatörde sabit taklittir. `scripts/python-to-report.test.ts` (`npm run test:python` içinde ve Quality Python adımında) sentetik CSV ve çok sayfalı XLSX vakalarını gerçek Python işçisi (`incagen_extract.worker_cli`), `createTabularPacket`/`interpretTable` ve üretim ön yüz biçimleyicisinden (`AdaptiveReport`/`reportNumber`) kontrollü altı dilli anlatımla geçirir; seçilen sayfa dışı veriyi, yanlış sayfayı ve bozulmuş kanıt bağını reddeder. `e2e/tabular-analysis.spec.ts` gerçek upload → rapor → kaynak/indirme → geçmiş/yenileme, hatalı ölçümden sayım ile devam, RTL/Glass ve iki örneğin klavye rehberini kontrol eder. Canlı Python/Gemini kalite kabulünün yerine geçmez. [Kapsam ve yayın kapısı](TABULAR-ANALYSIS.md).

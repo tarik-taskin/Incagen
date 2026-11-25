@@ -9,6 +9,7 @@ import { t, useLocale, languages, localeTag } from "../../i18n/runtime";
 import { Button } from "../../components/ui/button";
 import { AdaptiveReport, ReportDetails } from "./result-sections";
 import { reportDuration } from "./report-format";
+import { downloadBlob } from "./download-blob";
 import { DownloadError, verifySourceIntegrity } from "./source-integrity";
 
 // Gerçek raporun hesap kapsamını kısa tutar; yöntem ve performans ayrıntıları açılır bölümde kalır.
@@ -64,25 +65,7 @@ export default function LiveAnalysisReport({ artifact, job, analysisId }: { arti
       throw new DownloadError("integrity_failed", "İndirilen dosya bütünlük kontrolünü geçemedi.");
     }
 
-    let url: string | null = null;
-    try {
-      url = URL.createObjectURL(new Blob([bytes]));
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = source.fileName;
-      anchor.click();
-    } finally {
-      if (url) {
-        const objectUrl = url;
-        setTimeout(() => {
-          try {
-            URL.revokeObjectURL(objectUrl);
-          } catch {
-            // sessiz temizleme
-          }
-        }, 1000);
-      }
-    }
+    downloadBlob(new Blob([bytes]), source.fileName);
   }
 
   const numberFormatter = new Intl.NumberFormat(localeTag());

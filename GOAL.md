@@ -19,9 +19,11 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 6. Tamamlanmış gerçek raporda yalnız etkin sahibi için CSV indirme eylemi sun.
 - [x] Sahip: Furkan — 7. Müşteri deneyimi örneğinde ham yorum indirmesine ek olarak hesap CSV’sini göster.
 - [x] Sahip: Furkan — 8. İki rapor görünümünde eylemi ve güvenli indirme hatasını altı dilde erişilebilir sun.
-- [~] Sahip: Furkan — 9. Özgün kaynak ve metrik indirmesinde tarayıcı dosya URL’sini ortak yardımcıyla temizle.
-- [~] Sahip: Furkan — 10. Gerçek dosyanın içeriğini masaüstü/mobil tarayıcıda ve rapor regresyonlarında doğrula.
-- [~] Sahip: Furkan — 11. CSV kapsamını belgeleyip son GitHub ve Netlify sürümünü doğrula.
+- [x] Sahip: Furkan — 9. Özgün kaynak ve metrik indirmesinde tarayıcı dosya URL’sini ortak yardımcıyla temizle.
+- [x] Sahip: Furkan — 10. Gerçek dosyanın içeriğini masaüstü/mobil tarayıcıda ve rapor regresyonlarında doğrula.
+- [x] Sahip: Furkan — 11. CSV kapsamını, dışa aktarım sözleşmesini ve yayın doğrulamasını belgeye bağla.
+
+CSV sözleşmesi ve test kapsamı [test rehberinde](docs/TESTING.md#rapor-metriklerini-csv-olarak-indirme). İzole emülatörle masaüstü CSV sonucu, mobil XLSX sonucu ve herkese açık müşteri deneyimi örneğinin gerçek indirme içerikleri doğrulandı. GitHub ve Netlify kanıtı TASK-0005 devir kaydında tutulur.
 
 ### 2026-11-25 — Furkan / Codex: davetli beta ve çağrısız canlı ön kontrol
 
