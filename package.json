@@ -26,6 +26,7 @@
     "test:functions": "vitest run --config vitest.functions.config.ts",
     "test:release": "node scripts/verify-release.test.mjs",
     "evaluate:offline": "npm run build:functions && node scripts/evaluate-analysis-offline.mjs",
+    "acceptance:check": "node scripts/check-beta-evidence.mjs",
     "usage:summarize": "node scripts/summarize-usage-acceptance.mjs",
     "test:e2e": "playwright test",
     "build:functions": "npm --prefix functions run build",

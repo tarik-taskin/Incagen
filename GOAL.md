@@ -15,10 +15,10 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 2. Kanıt biçimini ve koşu moduna göre zorunlu dosyaları doğrula.
 - [x] Sahip: Furkan — 3. Rapor özeti, rapor kimliği ve kanıt dosyalarının tekilliğini doğrula.
 - [x] Sahip: Furkan — 4. Koşu kaydını beklenen Gemini modeliyle eşleştir.
-- [~] Sahip: Furkan — 5. İnsan kararının şema sürümünü ve ölçütlerini doğrula.
-- [~] Sahip: Furkan — 6. Ret kararını tamamlanmış ölçütler, açıklama ve geçerli tarihle bağla.
-- [~] Sahip: Furkan — 7. Altı dil için inceleme durumunu güvenli ve okunabilir bir liste olarak sun.
-- [~] Sahip: Furkan — 8. Beklenen Git SHA’yı aynı komutla zorunlu tutabilen çevrimdışı denetim ekle.
+- [x] Sahip: Furkan — 5. İnsan kararının şema sürümünü ve ölçütlerini doğrula.
+- [x] Sahip: Furkan — 6. Ret kararını tamamlanmış ölçütler, açıklama ve geçerli tarihle bağla.
+- [x] Sahip: Furkan — 7. Altı dil için inceleme durumunu güvenli ve okunabilir bir liste olarak sun.
+- [x] Sahip: Furkan — 8. Beklenen Git SHA’yı aynı komutla zorunlu tutabilen çevrimdışı denetim ekle.
 - [~] Sahip: Furkan — 9. Kapalı, smoke ve tam koşu kanıtlarının hazır olma anlamını ayır.
 - [~] Sahip: Furkan — 10. Süre ve token kullanımını doğrulanmış koşuların her birinde denetle.
 - [~] Sahip: Furkan — 11. Tek komutta paket kabul durumunu hesapla ve yayıma otomatik müdahale etme.

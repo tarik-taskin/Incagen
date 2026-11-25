@@ -342,3 +342,74 @@ test("keeps human review pending separately from mechanical checks and binds app
     assert.equal(validateHumanReviewDecision({ ...fullApproval, reviewedAt: badDate }, binding).valid, false);
   }
 });
+
+test("requires complete, dated criteria for a final human decision and a reason for rejection", () => {
+  const binding = { reportId: "synthetic-review", reportSha256: "1".repeat(64), sourceSha256: "2".repeat(64),
+    gitCommit: "3".repeat(40), locale: "en" };
+  const pending = createHumanReviewRecord(binding);
+  assert.equal(validateHumanReviewDecision({ ...pending, schemaVersion: 2 }, binding).valid, false);
+  const reviewedAt = "2026-11-25T08:00:00Z";
+  assert.equal(validateHumanReviewDecision({ ...pending, reviewedAt }, binding).valid, false);
+  const passed = Object.fromEntries(Object.keys(pending.criteria).map(key => [key, "pass"]));
+  const rejected = { ...pending, decision: "rejected", reviewedAt,
+    criteria: { ...passed, sourceRowSupport: "fail" }, reviewerNote: "The cited row omits the selected group." };
+  assert.equal(validateHumanReviewDecision(rejected, binding).status, "rejected");
+  for (const invalid of [
+    { ...rejected, reviewerNote: "" },
+    { ...rejected, reviewerNote: "x".repeat(2001) },
+    { ...rejected, reviewedAt: null },
+    { ...rejected, criteria: { ...rejected.criteria, languageQuality: "pending" } },
+    { ...rejected, criteria: passed },
+    { ...rejected, decision: "approved" },
+  ]) assert.equal(validateHumanReviewDecision(invalid, binding).valid, false);
+});
+
+// Canlı hizmete bağlanmadan gerçek manifest yazıcısıyla çevrimdışı denetim girdisi oluşturur.
+async function reviewEvidence(t, mode) {
+  const directory = mkdtempSync(join(tmpdir(), "incagen-beta-review-"));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const gitCommit = "d".repeat(40);
+  const reports = [];
+  const results = [];
+  for (const spec of expectedAcceptanceCases(mode)) {
+    const { expected, artifact, record } = await example(spec.format);
+    const reportId = `synthetic-${spec.locale}`;
+    const result = { ...artifact.result, analysisId: reportId };
+    const report = writeVerifiedReportFile(directory, `${spec.locale}-result.json`, result);
+    const binding = { reportId, reportSha256: report.reportSha256, gitCommit, locale: spec.locale,
+      sourceSha256: createHash("sha256").update(expected.bytes).digest("hex") };
+    const review = writePendingHumanReviewFile(directory, `${spec.locale}-review.json`, binding);
+    const entry = { ...spec, ...binding, ...report, humanReviewFile: review.humanReviewFile,
+      runId: `run-${spec.locale}`, status: "completed" };
+    reports.push(entry);
+    results.push(usageRecord({ ...entry, job: record.ai, passed: true }));
+  }
+  const finalized = finalizeAcceptanceEvidence({ outputDirectory: directory, gitCommit, mode, results, reports, cleanupStatus: "verified" });
+  assert.equal(finalized.verification.verified, true);
+  return { directory, gitCommit, reports, results };
+}
+
+// Aynı komut girişini gerçek CLI üzerinden çağırır ve yerel çıktıyı verir.
+function checkEvidenceCli(directory, ...args) {
+  const cli = spawnSync(process.execPath, ["scripts/check-beta-evidence.mjs", "--input", directory, ...args], { encoding: "utf8" });
+  return { exitCode: cli.status, output: cli.stdout ? JSON.parse(cli.stdout) : null, stderr: cli.stderr };
+}
+
+test("lists report review states without exposing contents and can pin the Git revision", async t => {
+  const { directory, gitCommit, reports } = await reviewEvidence(t, "full");
+  const reviewPath = join(directory, reports[0].humanReviewFile);
+  const review = JSON.parse(readFileSync(reviewPath, "utf8"));
+  writePrivateJson(reviewPath, { ...review, reviewerNote: "Local-only review note" });
+  const { output, exitCode } = checkEvidenceCli(directory, "--expected-commit", gitCommit);
+  assert.equal(exitCode, 0);
+  assert.equal(output.mechanicalVerified, true);
+  assert.equal(output.commitMatched, true);
+  assert.deepEqual(output.reviews.map(review => [review.locale, review.status]), ["tr", "en", "de", "es", "zh", "ar"].map(locale => [locale, "pending"]));
+  assert.ok(!JSON.stringify(output).includes("Local-only review note"));
+  const mismatch = checkEvidenceCli(directory, "--expected-commit", "1".repeat(40));
+  assert.equal(mismatch.exitCode, 1);
+  assert.equal(mismatch.output.commitMatched, false);
+  assert.deepEqual(mismatch.output.reviews, []);
+  assert.equal(checkEvidenceCli(directory, "--expected-commit", "short-sha").exitCode, 1);
+  assert.equal(checkEvidenceCli(directory, "--unknown").exitCode, 1);
+});

@@ -235,7 +235,7 @@ export function createHumanReviewRecord({ reportId, reportSha256, sourceSha256, 
 
 // İnsan kararının otomatik doğrulamadan ayrı, geçerli rapor/kaynak hash, commit, dil ve tarihe bağlı olduğunu denetler.
 export function validateHumanReviewDecision(record, expectedBinding) {
-  if (!record || record.kind !== "human-review-decision") {
+  if (record?.schemaVersion !== 1 || record.kind !== "human-review-decision") {
     return { valid: false, status: "invalid", reason: "Geçersiz insan inceleme kaydı türü." };
   }
   if (!expectedBinding
@@ -250,22 +250,31 @@ export function validateHumanReviewDecision(record, expectedBinding) {
   if (!["pending", "approved", "rejected"].includes(record.decision)) {
     return { valid: false, status: "invalid", reason: "Geçersiz insan karar durumu." };
   }
+  if (typeof record.reviewerNote !== "string" || record.reviewerNote.length > 2000) {
+    return { valid: false, status: "invalid", reason: "İnceleme notu en fazla 2000 karakter olmalıdır." };
+  }
   for (const key of HUMAN_REVIEW_CRITERIA) {
     if (!["pending", "pass", "fail"].includes(record.criteria?.[key])) {
       return { valid: false, status: "invalid", reason: `Eksik veya geçersiz inceleme ölçütü: ${key}.` };
     }
   }
   if (record.decision === "pending") {
+    if (record.reviewedAt !== null) {
+      return { valid: false, status: "invalid", reason: "Bekleyen kayıtta tamamlanma tarihi bulunamaz." };
+    }
     return { valid: true, status: "pending", approved: false, reason: "Gerçek insan incelemesi henüz beklemede." };
   }
-  if (record.decision === "approved") {
-    const allPass = HUMAN_REVIEW_CRITERIA.every(key => record.criteria[key] === "pass");
-    if (!allPass || !isValidIsoReviewTimestamp(record.reviewedAt)) {
-      return { valid: false, status: "invalid", approved: false, reason: "Altı ölçütün tamamı pass ve geçerli ISO inceleme tarihi olmadan onay verilemez." };
-    }
-    return { valid: true, status: "approved", approved: true };
+  if (!isValidIsoReviewTimestamp(record.reviewedAt) || HUMAN_REVIEW_CRITERIA.some(key => record.criteria[key] === "pending")) {
+    return { valid: false, status: "invalid", reason: "Son karar için altı ölçütü tamamlayın ve geçerli ISO inceleme tarihi girin." };
   }
-  return { valid: true, status: "rejected", approved: false };
+  const allPass = HUMAN_REVIEW_CRITERIA.every(key => record.criteria[key] === "pass");
+  if (record.decision === "approved" && !allPass) {
+    return { valid: false, status: "invalid", reason: "Altı ölçütün tamamı pass olduğunda onay verilebilir." };
+  }
+  if (record.decision === "rejected" && (allPass || !record.reviewerNote.trim())) {
+    return { valid: false, status: "invalid", reason: "Ret için en az bir başarısız ölçüt ve açıklama gerekir." };
+  }
+  return { valid: true, status: record.decision, approved: record.decision === "approved" };
 }
 
 // Sentetik kabul raporunun bekleyen insan incelemesi kaydını özel kanıt dizinine yazar.
