@@ -19,10 +19,13 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 6. Ret kararını tamamlanmış ölçütler, açıklama ve geçerli tarihle bağla.
 - [x] Sahip: Furkan — 7. Altı dil için inceleme durumunu güvenli ve okunabilir bir liste olarak sun.
 - [x] Sahip: Furkan — 8. Beklenen Git SHA’yı aynı komutla zorunlu tutabilen çevrimdışı denetim ekle.
-- [~] Sahip: Furkan — 9. Kapalı, smoke ve tam koşu kanıtlarının hazır olma anlamını ayır.
-- [~] Sahip: Furkan — 10. Süre ve token kullanımını doğrulanmış koşuların her birinde denetle.
-- [~] Sahip: Furkan — 11. Tek komutta paket kabul durumunu hesapla ve yayıma otomatik müdahale etme.
-- [~] Sahip: Furkan — 12. Yerel kabul senaryolarını, GitHub Quality ve aynı Netlify paketini doğrula.
+- [x] Sahip: Furkan — 9. Kapalı, smoke ve tam koşu kanıtlarının hazır olma anlamını ayır.
+- [x] Sahip: Furkan — 10. Süre ve token kullanımını doğrulanmış koşuların her birinde denetle.
+- [x] Sahip: Furkan — 11. Tek komutta paket kabul durumunu hesapla ve yayıma otomatik müdahale etme.
+- [x] Sahip: Furkan — 12. Bozuk kanıt, eksik ölçüm, yanlış Git revizyonu ve altı geçerli insan kararı için yerel CLI regresyonlarını doğrula.
+- [x] Sahip: Furkan — 13. Canlı kabulün kaynağını, koşu başlamadan temiz Git revizyonuna bağla.
+
+Komut ve kabul koşulları [test rehberinde](docs/TESTING.md#yerel-beta-kanıtını-kontrol-etme). GitHub ve Netlify yayın kanıtı yerel TASK-0003 devir kaydında tutulur. Gerçek Gemini kabulü ve backend dağıtımı [beta planında](docs/BETA-ACCEPTANCE.md#ilk-beta-için-kalan-kabul) açık.
 
 ### 2026-11-23 — Furkan / Codex: tablo hazırlığı ve kaynak doğruluğu
 
@@ -35,7 +38,7 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 7. Boş, okunamayan ve tutarsız tabloların kullanıcıya doğru nedenle sunulduğunu doğrula.
 - [x] Sahip: Furkan — 8. Geniş tablo önizlemesini klavye ile kaydırılabilir yap.
 - [x] Sahip: Furkan — 9. Uzun dosya ve sütun adlarını mobilde önizleme içinde tut.
-- [~] Sahip: Furkan — 10. GitHub Quality, Netlify ve canlı paket eşliğini doğrula. CSV/XLSX masaüstü ve mobil hedefli kabul, lint, 257 arayüz / 153 Functions / 66 script testi, 51 pytest + 3 Python-rapor testi, derlemeler ve 13 entegrasyon testi geçti. Son yayın kanıtı yerel TASK-0002 handoff kaydında tutulur.
+- [x] Sahip: Furkan — 10. GitHub Quality, Netlify ve canlı paket eşliğini doğrula. CSV/XLSX masaüstü ve mobil hedefli kabul, lint, 257 arayüz / 153 Functions / 66 script testi, 51 pytest + 3 Python-rapor testi, derlemeler ve 13 entegrasyon testi geçti. Son yayın kanıtı yerel TASK-0002 handoff kaydında tutulur.
 - [x] Sahip: Furkan — 11. Saklanan raporun dolu/boş satır adetlerini kayıtlı kaynakla doğrula.
 - [x] Sahip: Furkan — 12. Saklanan rapordaki ölçüm ve gruplama adlarını seçilen kaynak sütunlarına bağla.
 - [x] Sahip: Furkan — 13. Tablo kataloğu ve rapor yeniden yüklenirken çift isteği önle ve bekleme durumunu göster.

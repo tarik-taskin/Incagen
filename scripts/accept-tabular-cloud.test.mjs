@@ -12,6 +12,7 @@ import {
   expectedAcceptanceCases,
   finalizeAcceptanceEvidence,
   fixture,
+  resolveAcceptanceGitCommit,
   usageRecord,
   validateHumanReviewDecision,
   verifyAcceptanceEvidence,
@@ -412,4 +413,79 @@ test("lists report review states without exposing contents and can pin the Git r
   assert.deepEqual(mismatch.output.reviews, []);
   assert.equal(checkEvidenceCli(directory, "--expected-commit", "short-sha").exitCode, 1);
   assert.equal(checkEvidenceCli(directory, "--unknown").exitCode, 1);
+});
+
+// Kabul fixture’ında operatörün tamamladığı ölçütleri ve karar dosyasını temsil eder.
+function completeReview(directory, entry, { rejected = false } = {}) {
+  const path = join(directory, entry.humanReviewFile);
+  const record = JSON.parse(readFileSync(path, "utf8"));
+  const criteria = Object.fromEntries(Object.keys(record.criteria).map(key => [key, "pass"]));
+  if (rejected) criteria.languageQuality = "fail";
+  writePrivateJson(path, { ...record, criteria,
+    decision: rejected ? "rejected" : "approved",
+    reviewerNote: rejected ? "Terminology must be corrected." : "",
+    reviewedAt: "2026-11-25T08:00:00Z" });
+}
+
+test("closed and smoke evidence cannot qualify for the full beta evidence gate", async t => {
+  for (const mode of ["closed", "smoke"]) {
+    const { directory, gitCommit, reports } = await reviewEvidence(t, mode);
+    for (const report of reports) completeReview(directory, report);
+    const result = checkEvidenceCli(directory, "--expected-commit", gitCommit, "--require-ready");
+    assert.equal(result.exitCode, 1);
+    assert.equal(result.output.mechanicalVerified, true);
+    assert.deepEqual(result.output.blockers, ["full-run-required"]);
+  }
+});
+
+test("strict evidence gate requires all six reviews, complete positive usage and the expected revision", async t => {
+  const { directory, gitCommit, reports, results } = await reviewEvidence(t, "full");
+  const gate = () => checkEvidenceCli(directory, "--expected-commit", gitCommit, "--require-ready");
+  assert.deepEqual(gate().output.blockers, ["pending-human-review"]);
+  for (const report of reports) completeReview(directory, report);
+  completeReview(directory, reports[5], { rejected: true });
+  assert.deepEqual(gate().output.blockers, ["rejected-human-review"]);
+  completeReview(directory, reports[5]);
+
+  const runsPath = join(directory, "runs.json");
+  const altered = structuredClone(results);
+  delete altered[0].usage;
+  altered[1].durationMs = 6;
+  altered[2].pythonMs = 0;
+  altered[3].usage = { promptTokens: 20, outputTokens: 0, totalTokens: 20 };
+  writePrivateJson(runsPath, altered);
+  const incomplete = gate();
+  assert.equal(incomplete.exitCode, 1);
+  assert.equal(incomplete.output.mechanicalVerified, true);
+  assert.deepEqual(incomplete.output.blockers, ["incomplete-usage-measurements"]);
+  assert.deepEqual(incomplete.output.usage, { measuredCases: 2, totalDurationMs: { median: 30, max: 30 }, totalTokens: { median: 30, max: 30 } });
+  assert.deepEqual(incomplete.output.reviews.map(review => review.usageMeasured), [false, false, false, false, true, true]);
+
+  writePrivateJson(runsPath, results);
+  const unpinned = checkEvidenceCli(directory, "--require-ready");
+  assert.equal(unpinned.exitCode, 1);
+  assert.deepEqual(unpinned.output.blockers, ["expected-commit-required"]);
+  const ready = gate();
+  assert.equal(ready.exitCode, 0);
+  assert.equal(ready.output.evidenceReady, true);
+  assert.equal(ready.output.usage.measuredCases, 6);
+  assert.deepEqual(ready.output.blockers, []);
+  assert.equal(checkEvidenceCli(directory, "--expected-commit", gitCommit, "--expected-commit", gitCommit).exitCode, 1);
+});
+
+
+test("pins live acceptance to a clean Git revision before creating evidence", t => {
+  const cwd = mkdtempSync(join(tmpdir(), "incagen-beta-git-"));
+  t.after(() => rmSync(cwd, { recursive: true, force: true }));
+  const git = (...args) => {
+    const result = spawnSync("git", args, { cwd, encoding: "utf8" });
+    assert.equal(result.status, 0, result.stderr);
+    return result.stdout.trim();
+  };
+  assert.throws(() => resolveAcceptanceGitCommit({ cwd }), /Git çalışma ağacı/);
+  git("init", "-q");
+  git("-c", "user.name=Incagen Test", "-c", "user.email=synthetic@example.test", "commit", "--allow-empty", "-m", "Initialize test repo");
+  assert.equal(resolveAcceptanceGitCommit({ cwd }), git("rev-parse", "HEAD"));
+  writeFileSync(join(cwd, "local-change.txt"), "synthetic");
+  assert.throws(() => resolveAcceptanceGitCommit({ cwd }), /Git çalışma ağacı/);
 });

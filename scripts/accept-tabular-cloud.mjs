@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createAcceptanceJournal, writePrivateJson } from "./acceptance-resources.mjs";
 import { tabularFixture } from "./tabular-synthetic-fixtures.mjs";
-import { execSync } from "node:child_process";
+import { verifyGitStatus } from "./verify-release.mjs";
 import { existsSync, lstatSync, mkdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -169,14 +169,11 @@ function isValidIsoReviewTimestamp(value) {
   return dateCheck.getUTCFullYear() === year && dateCheck.getUTCMonth() === month - 1 && dateCheck.getUTCDate() === day;
 }
 
-// Koşu kapsamındaki mevcut Git HEAD SHA bilgisini alır; hata olursa "unknown" döner.
-export function resolveAcceptanceGitCommit(explicitCommit) {
-  if (explicitCommit) return explicitCommit;
-  try {
-    return execSync("git rev-parse HEAD", { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
-  } catch {
-    return "unknown";
-  }
+// Canlı kanıtın revizyonunu temiz çalışma ağacından, sentetik kaynak oluşturmadan önce alır.
+export function resolveAcceptanceGitCommit({ cwd } = {}) {
+  const { commit } = verifyGitStatus({ cwd });
+  assert.ok(GIT_SHA.test(commit), "Canlı kabul için tam Git SHA gerekli.");
+  return commit;
 }
 
 // Sentetik kabul raporunu koşuya özel kanıt dizinine yazar ve tam SHA-256 özetini döner.
@@ -508,8 +505,9 @@ async function checkBrowser(account, id, baseURL, { closed, outputDirectory }) {
 // Tek sınama ya da altı dil çalışır. İlk hatada durur ve yalnız koşunun hesaplarını temizler.
 async function main(args) {
   const mode = acceptanceMode(args);
-  const config = configuration(), accounts = [], results = [], reports = [], cleanupErrors = [];
+  const config = configuration();
   const gitCommit = resolveAcceptanceGitCommit();
+  const accounts = [], results = [], reports = [], cleanupErrors = [];
   const journal = createAcceptanceJournal("tabular");
   const outputDirectory = journal.path.replace(/\.json$/, "-evidence");
   mkdirSync(outputDirectory, { mode: 0o700 });
