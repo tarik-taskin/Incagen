@@ -154,9 +154,10 @@ test("verifies linked full, smoke, and closed evidence, rejects zero-report/dupl
     for (const spec of expectedAcceptanceCases("full")) {
       const sample = spec.format === "csv" ? csvEx : xlsxEx;
       const sourceSha = spec.format === "csv" ? csvSha : xlsxSha;
-      const rep = writeVerifiedReportFile(fullDir, `${spec.locale}-${spec.format}-result.json`, sample.artifact.result);
+      const result = { ...sample.artifact.result, analysisId: `synthetic-${spec.locale}` };
+      const rep = writeVerifiedReportFile(fullDir, `${spec.locale}-${spec.format}-result.json`, result);
       const rev = writePendingHumanReviewFile(fullDir, `human-review-${spec.locale}-${spec.format}.json`, {
-        reportId: sample.artifact.result.analysisId, reportSha256: rep.reportSha256, sourceSha256: sourceSha, locale: spec.locale, gitCommit,
+        reportId: result.analysisId, reportSha256: rep.reportSha256, sourceSha256: sourceSha, locale: spec.locale, gitCommit,
       });
       const runId = `run-${spec.locale}-${spec.format}`;
       fullRuns.push(usageRecord({
@@ -165,7 +166,7 @@ test("verifies linked full, smoke, and closed evidence, rejects zero-report/dupl
       }));
       fullReports.push({
         runId, gitCommit, caseId: spec.caseId, format: spec.format, locale: spec.locale, sourceSha256: sourceSha,
-        reportId: sample.artifact.result.analysisId, reportFile: rep.reportFile, reportSha256: rep.reportSha256,
+        reportId: result.analysisId, reportFile: rep.reportFile, reportSha256: rep.reportSha256,
         humanReviewFile: rev.humanReviewFile, status: "completed",
       });
     }
@@ -265,6 +266,41 @@ test("verifies linked full, smoke, and closed evidence, rejects zero-report/dupl
     const leaked = verifyAcceptanceEvidence(secretDir);
     assert.equal(leaked.verified, false);
     assert.match(leaked.errors.join(" "), /gizli veri/);
+
+    // Kapalı koşu dahil her v2 kanıtında runs.json bulunmalı.
+    rmSync(join(closedDir, "runs.json"));
+    assert.match(verifyAcceptanceEvidence(closedDir).errors.join(" "), /runs.json eksik/);
+
+    // Geçersiz JSON ve desteklenmeyen sürüm kontrollü hataya dönüşür.
+    const manifestPath = join(smokeDir, "acceptance.json");
+    writeFileSync(manifestPath, "{");
+    assert.match(verifyAcceptanceEvidence(smokeDir).errors.join(" "), /geçerli JSON değil/);
+    writePrivateJson(manifestPath, { ...smokeFinal.acceptance, schemaVersion: 3 });
+    assert.match(verifyAcceptanceEvidence(smokeDir).errors.join(" "), /sürümü/);
+    writePrivateJson(manifestPath, { ...smokeFinal.acceptance, humanReviewRequired: false });
+    assert.match(verifyAcceptanceEvidence(smokeDir).errors.join(" "), /incelemesi gerekliliği/);
+    writePrivateJson(manifestPath, smokeFinal.acceptance);
+
+    // Manifest ve insan kararı aynı anda değişse de rapor kimliği bu iddiayı doğrulamalı.
+    const wrongId = "another-synthetic-analysis";
+    writePrivateJson(manifestPath, { ...smokeFinal.acceptance, reports: [{ ...smokeFinal.acceptance.reports[0], reportId: wrongId }] });
+    writePrivateJson(join(smokeDir, smokeReview.humanReviewFile), { ...smokeReview.record, reportId: wrongId });
+    assert.match(verifyAcceptanceEvidence(smokeDir).errors.join(" "), /Rapor kimliği/);
+    writePrivateJson(manifestPath, smokeFinal.acceptance);
+    writePrivateJson(join(smokeDir, smokeReview.humanReviewFile), smokeReview.record);
+
+    writePrivateJson(join(smokeDir, "runs.json"), [{ ...smokeRun, model: "unknown-model" }]);
+    assert.match(verifyAcceptanceEvidence(smokeDir).errors.join(" "), /model/);
+    writePrivateJson(join(smokeDir, "runs.json"), [smokeRun]);
+    const reviewPath = join(smokeDir, smokeReview.humanReviewFile);
+    rmSync(reviewPath);
+    fsModule.symlinkSync(join(fullDir, fullReports[0].humanReviewFile), reviewPath);
+    assert.match(verifyAcceptanceEvidence(smokeDir).errors.join(" "), /normal dosya değil/);
+
+    const duplicateFileReports = structuredClone(fullReports);
+    duplicateFileReports[1].humanReviewFile = duplicateFileReports[0].humanReviewFile;
+    writePrivateJson(join(fullDir, "acceptance.json"), { ...fullFinal.acceptance, reports: duplicateFileReports });
+    assert.match(verifyAcceptanceEvidence(fullDir).errors.join(" "), /tekrar kullanılmış/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

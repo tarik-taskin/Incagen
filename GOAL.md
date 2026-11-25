@@ -9,6 +9,21 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
+### 2026-11-25 — Furkan / Codex: beta kanıtı ve insan incelemesi
+
+- [x] Sahip: Furkan — 1. Bozuk veya eksik kanıt JSON’u için kontrollü doğrulama sonucu döndür.
+- [x] Sahip: Furkan — 2. Kanıt biçimini ve koşu moduna göre zorunlu dosyaları doğrula.
+- [x] Sahip: Furkan — 3. Rapor özeti, rapor kimliği ve kanıt dosyalarının tekilliğini doğrula.
+- [x] Sahip: Furkan — 4. Koşu kaydını beklenen Gemini modeliyle eşleştir.
+- [~] Sahip: Furkan — 5. İnsan kararının şema sürümünü ve ölçütlerini doğrula.
+- [~] Sahip: Furkan — 6. Ret kararını tamamlanmış ölçütler, açıklama ve geçerli tarihle bağla.
+- [~] Sahip: Furkan — 7. Altı dil için inceleme durumunu güvenli ve okunabilir bir liste olarak sun.
+- [~] Sahip: Furkan — 8. Beklenen Git SHA’yı aynı komutla zorunlu tutabilen çevrimdışı denetim ekle.
+- [~] Sahip: Furkan — 9. Kapalı, smoke ve tam koşu kanıtlarının hazır olma anlamını ayır.
+- [~] Sahip: Furkan — 10. Süre ve token kullanımını doğrulanmış koşuların her birinde denetle.
+- [~] Sahip: Furkan — 11. Tek komutta paket kabul durumunu hesapla ve yayıma otomatik müdahale etme.
+- [~] Sahip: Furkan — 12. Yerel kabul senaryolarını, GitHub Quality ve aynı Netlify paketini doğrula.
+
 ### 2026-11-23 — Furkan / Codex: tablo hazırlığı ve kaynak doğruluğu
 
 - [x] Sahip: Furkan — 1. Hazırlık, önizleme ve Python için ilk anlamlı CSV başlığından aynı ayraç seçimini uygula.
