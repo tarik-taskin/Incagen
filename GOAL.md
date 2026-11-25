@@ -19,13 +19,13 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 6. Erişim yanıtı eksik/eski olduğunda yeni analizi engelle, hazırlanan tabloyu göster.
 - [x] Sahip: Furkan — 7. Başlatma anındaki erişim değişikliğini yakala ve tekrar ücretli isteği durdur.
 - [x] Sahip: Furkan — 8. Erişim kontrolünü, alınmış sonuçları okuma ve yeniden açma akışından bağımsız tut.
-- [~] Sahip: Furkan — 9. Analiz callable’ına yalnızca başlangıç şartlarını okuyan kontrol ekle.
-- [~] Sahip: Furkan — 10. Kapalı canlı kabulü yanlış yapılandırmada bile çağrı başlatamayacak kontrole geçir.
-- [~] Sahip: Furkan — 11. Gerçek smoke/tam kabulden önce kapı ve kapsamın doğrulanmasını zorunlu tut.
+- [x] Sahip: Furkan — 9. Analiz callable’ına yalnızca başlangıç şartlarını okuyan kontrol ekle.
+- [x] Sahip: Furkan — 10. Kapalı canlı kabulü yanlış yapılandırmada bile çağrı başlatamayacak kontrole geçir.
+- [x] Sahip: Furkan — 11. Gerçek smoke/tam kabulden önce kapı ve kapsamın doğrulanmasını zorunlu tut.
 - [~] Sahip: Furkan — 12. Davetli kabul için claim’i yalnız koşuda oluşturulmuş ve doğrulanmış sentetik hesaba ver.
 - [~] Sahip: Furkan — 13. Sentetik hesap claim yenilemesini ve hata halinde temizliği mevcut günlüğe bağla.
 - [~] Sahip: Furkan — 14. Sunucu kapısı, kabul modu ve claim işlemlerini çağrısız regresyon testleriyle doğrula.
-- [~] Sahip: Furkan — 15. Yerel entegrasyonda davetsiz istek ve davetli ön kontrolün iş/kota/dosya oluşturmadığını doğrula.
+- [x] Sahip: Furkan — 15. Yerel entegrasyonda davetsiz istek ve davetli ön kontrolün iş/kota/dosya oluşturmadığını doğrula.
 - [~] Sahip: Furkan — 16. Beta işletim adımlarını, kapatma yolunu ve GitHub/Netlify sürüm kabulünü kaydet.
 
 ### 2026-11-25 — Furkan / Codex: beta kanıtı ve insan incelemesi

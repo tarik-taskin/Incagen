@@ -41,6 +41,11 @@ test("gerçek Python hesabı, kaynaklı rapor, tekrar/yenileme, izolasyon ve tem
     for (const name of ["getAnalysisTables", "getAnalysisResult", "startAnalysis"]) await assert.rejects(other.call(name, name === "startAnalysis" ? { id, sourceId: "file-0", selection, locale: "en" } : { id }), { code: "functions/not-found" });
     await assert.rejects(own.call("startAnalysis", { id, sourceId: "file-0", selection: { ...selection, currencyGuess: true }, locale: "en" }), { code: "functions/invalid-argument" });
     const input = { id, sourceId: "file-0", selection, locale: "en" };
+    assert.deepEqual((await own.call("startAnalysis", { ...input, checkOnly: true })).data,
+      { id, status: "available", checkOnly: true });
+    assert.equal((await record.get()).data().ai, undefined);
+    await assert.rejects(own.call("startAnalysis", { ...input, sourceId: "file-99", checkOnly: true }), { code: "functions/failed-precondition" });
+    await assert.rejects(other.call("startAnalysis", { ...input, checkOnly: true }), { code: "functions/not-found" });
     await Promise.all([own.call("startAnalysis", input), own.call("startAnalysis", input)]);
     const completed = (await record.get()).data();
     assert.equal(completed.ai.status, "completed"); assert.equal(completed.ai.attempts, 1); assert.equal(completed.ai.model, "emulator");
@@ -318,6 +323,14 @@ test("analiz kapalıyken belge hazırlama ve yeniden açma çalışır; AI işi,
       ),
       { code: "failed-precondition", details: { analysisFailure: "configuration" } }
     );
+
+    // Aynı hazırlanmış belgeye sahip davetsiz kullanıcı iş açamaz. Davetli ön kontrol de yazım yapmaz.
+    const input = { id, sourceId: "file-0", selection, locale: "tr" };
+    const unexpectedModel = async () => { modelCalls += 1; throw new Error("Unexpected generation"); };
+    await assert.rejects(executeStartAnalysis(uid, input, { access: "invite-required", generate: unexpectedModel }),
+      { code: "permission-denied", details: { analysisAccess: "invite-required" } });
+    assert.deepEqual(await executeStartAnalysis(uid, { ...input, checkOnly: true }, { access: "available", generate: unexpectedModel }),
+      { id, status: "available", checkOnly: true });
 
     assert.equal(modelCalls, 0);
     const afterClosed = (await recordRef.get()).data();

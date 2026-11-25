@@ -99,6 +99,7 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
   if (access === "invite-required") throw new HttpsError("permission-denied", "Bu hesap tablo analizi betasına dahil değil.", { analysisAccess: access });
   const source = data.report.sources.find(source => source.id === input.sourceId && /\.(csv|xlsx)$/i.test(source.name));
   if (!source || !data.objective?.trim()) throw new HttpsError("failed-precondition", "Analiz için CSV veya XLSX tablosu ve bir hedef seçin.");
+  if (input.checkOnly) return { id: input.id, status: "available" as const, checkOnly: true };
   const fingerprint = analysisFingerprint(source.sha256, source.id, input.selection, input.locale);
   const reservation = await reserveAnalysis(uid!, input, fingerprint);
   if (reservation.state !== "started") return { id: input.id, status: reservation.state, reused: true };

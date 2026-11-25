@@ -7,7 +7,9 @@ import { join } from "node:path";
 import test from "node:test";
 import {
   acceptanceMode,
+  checkAdmission,
   checkResult,
+  configuration,
   createHumanReviewRecord,
   expectedAcceptanceCases,
   finalizeAcceptanceEvidence,
@@ -488,4 +490,52 @@ test("pins live acceptance to a clean Git revision before creating evidence", t 
   assert.equal(resolveAcceptanceGitCommit({ cwd }), git("rev-parse", "HEAD"));
   writeFileSync(join(cwd, "local-change.txt"), "synthetic");
   assert.throws(() => resolveAcceptanceGitCommit({ cwd }), /Git çalışma ağacı/);
+});
+
+test("requires mode-specific opt-ins and keeps paid acceptance away from the primary public site", () => {
+  const buildConfig = () => "VITE_FIREBASE_PROJECT_ID=incagen-eeef4\n";
+  const closed = { INCAGEN_CLOUD_CLOSED_ACCEPTANCE: "1", INCAGEN_ACCEPTANCE_URL: "https://incagen.netlify.app" };
+  assert.equal(configuration("closed", closed, buildConfig).url, closed.INCAGEN_ACCEPTANCE_URL);
+  assert.throws(() => configuration("full", closed, buildConfig), /opt-in/);
+
+  const smoke = { INCAGEN_LIVE_MODEL_ACCEPTANCE: "1", INCAGEN_ACCEPTANCE_URL: "http://127.0.0.1:4177" };
+  assert.equal(configuration("smoke", smoke, buildConfig).url, smoke.INCAGEN_ACCEPTANCE_URL);
+  assert.throws(() => configuration("closed", smoke, buildConfig), /opt-in/);
+  for (const INCAGEN_ACCEPTANCE_URL of ["https://incagen.netlify.app", "https://example.test", "http://fake@127.0.0.1"]) {
+    assert.throws(() => configuration("smoke", { ...smoke, INCAGEN_ACCEPTANCE_URL }, buildConfig), /Unexpected acceptance URL/);
+  }
+  assert.equal(configuration("full", { ...smoke, INCAGEN_ACCEPTANCE_URL: "https://deadbeef--incagen.netlify.app" }, buildConfig).firebase.projectId, "incagen-eeef4");
+  assert.throws(() => configuration("closed", { ...closed, FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9099" }, buildConfig), /emulator configuration/);
+});
+
+test("closed verification and paid preflight can only issue an explicit read-only admission request", async () => {
+  const input = { id: "synthetic", sourceId: "file-0" };
+  let attempts = 0;
+  const recordCheck = data => {
+    attempts += 1;
+    assert.deepEqual(data, { ...input, checkOnly: true });
+  };
+  await assert.rejects(checkAdmission("closed", "available", input, recordCheck), /Catalog access/);
+  await assert.rejects(checkAdmission("closed", undefined, input, recordCheck), /Catalog access/);
+  await assert.rejects(checkAdmission("smoke", "invite-required", input, recordCheck), /Catalog access/);
+  assert.equal(attempts, 0);
+
+  await checkAdmission("closed", "closed", input, async data => {
+    recordCheck(data);
+    throw Object.assign(new Error(), { code: "functions/failed-precondition", details: { analysisFailure: "configuration" } });
+  });
+  await assert.rejects(checkAdmission("closed", "closed", input, async data => {
+    recordCheck(data);
+    return { id: input.id, status: "available", checkOnly: true };
+  }), /Missing expected rejection/);
+
+  await checkAdmission("smoke", "available", input, async data => {
+    recordCheck(data);
+    return { id: input.id, status: "available", checkOnly: true };
+  });
+  await assert.rejects(checkAdmission("full", "available", input, async data => {
+    recordCheck(data);
+    return { id: input.id, status: "available" };
+  }));
+  assert.equal(attempts, 4);
 });

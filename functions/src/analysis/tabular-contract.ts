@@ -18,6 +18,7 @@ export const tableSelectionSchema = z.object({
 export const startAnalysisSchema = z.object({
   id: z.string().uuid(), sourceId: z.string().regex(/^file-\d+$/), selection: tableSelectionSchema,
   locale: resultLocaleSchema,
+  checkOnly: z.literal(true).optional(),
 }).strict();
 const anchor = z.object({ sourceId: z.string(), sha256: z.string().regex(/^[a-f0-9]{64}$/), chunkId: z.string(), locator: sourceLocatorSchema }).strict();
 export const workerResultSchema = z.object({

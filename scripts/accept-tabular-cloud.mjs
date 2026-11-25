@@ -18,14 +18,20 @@ const locales = ["tr", "en", "de", "es", "zh", "ar"];
 const analysisFailures = new Set(["invalid-data", "scope-limit", "configuration", "provider", "provider-busy", "validation", "timeout"]);
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-// Canlı ücretli kabul yalnız açık opt-in ve bilinen proje/arayüz adresiyle çalışabilir; sağlayıcı anahtarı okunmaz.
-function configuration() {
-  assert.equal(process.env.INCAGEN_LIVE_MODEL_ACCEPTANCE, "1", "Explicit live-model acceptance opt-in required.");
-  const url = new URL(process.env.INCAGEN_ACCEPTANCE_URL || "");
-  assert.ok((url.protocol === "http:" && url.hostname === "127.0.0.1") || (url.protocol === "https:" && (url.hostname === "incagen.netlify.app" || /^[a-f0-9]+--incagen\.netlify\.app$/.test(url.hostname))), "Unexpected acceptance URL.");
-  const values = Object.fromEntries(readFileSync(".env.cloud-preview.local", "utf8").split(/\r?\n/).filter(line => /^VITE_FIREBASE_/.test(line)).map(line => { const at = line.indexOf("="); return [line.slice(0, at), line.slice(at + 1).trim().replace(/^['"]|['"]$/g, "")]; }));
+// Kapalı ve ücretli kabul ayrı opt-in gerektirir. Ücretli koşu yalnız yerel arayüz veya dağıtım önizlemesini kabul eder.
+export function configuration(mode, env = process.env, readEnvFile = () => readFileSync(".env.cloud-preview.local", "utf8")) {
+  assert.ok(["closed", "smoke", "full"].includes(mode), "Unexpected acceptance mode.");
+  const optIn = mode === "closed" ? env.INCAGEN_CLOUD_CLOSED_ACCEPTANCE : env.INCAGEN_LIVE_MODEL_ACCEPTANCE;
+  assert.equal(optIn, "1", "Explicit opt-in required for the selected acceptance mode.");
+  assert.ok(!env.FUNCTIONS_EMULATOR && !env.FIRESTORE_EMULATOR_HOST && !env.FIREBASE_AUTH_EMULATOR_HOST
+    && !env.FIREBASE_STORAGE_EMULATOR_HOST && !env.STORAGE_EMULATOR_HOST, "Cloud acceptance cannot use emulator configuration.");
+  const url = new URL(env.INCAGEN_ACCEPTANCE_URL || "");
+  const local = url.protocol === "http:" && url.hostname === "127.0.0.1";
+  const deployed = url.protocol === "https:" && (/^[a-f0-9]+--incagen\.netlify\.app$/.test(url.hostname)
+    || (mode === "closed" && url.hostname === "incagen.netlify.app"));
+  assert.ok((local || deployed) && !url.username && !url.password, "Unexpected acceptance URL.");
+  const values = Object.fromEntries(readEnvFile().split(/\r?\n/).filter(line => /^VITE_FIREBASE_/.test(line)).map(line => { const at = line.indexOf("="); return [line.slice(0, at), line.slice(at + 1).trim().replace(/^['"]|['"]$/g, "")]; }));
   assert.equal(values.VITE_FIREBASE_PROJECT_ID, PROJECT);
-  assert.ok(!process.env.FUNCTIONS_EMULATOR && !process.env.FIRESTORE_EMULATOR_HOST);
   return { url: url.origin, firebase: { apiKey: values.VITE_FIREBASE_API_KEY, authDomain: values.VITE_FIREBASE_AUTH_DOMAIN, projectId: PROJECT, storageBucket: values.VITE_FIREBASE_STORAGE_BUCKET, appId: values.VITE_FIREBASE_APP_ID } };
 }
 
@@ -35,6 +41,19 @@ export function acceptanceMode(args) {
   if (args.length === 1 && args[0] === "--verify-closed") return "closed";
   if (args.length === 1 && args[0] === "--smoke") return "smoke";
   throw new Error("Yalnız --smoke veya --verify-closed bayraklarından biri kullanılabilir.");
+}
+
+// Canlı kabul, aynı erişim kuralını salt okunur istekle doğrular. Yanlış durum gerçek modele ilerlemez.
+export async function checkAdmission(mode, access, request, checkStart) {
+  assert.ok(["closed", "smoke", "full"].includes(mode), "Unexpected acceptance mode.");
+  const closed = mode === "closed";
+  assert.equal(access, closed ? "closed" : "available", "Catalog access does not match acceptance mode.");
+  const check = () => checkStart({ ...request, checkOnly: true });
+  if (closed) {
+    await assert.rejects(check, { code: "functions/failed-precondition", details: { analysisFailure: "configuration" } });
+    return;
+  }
+  assert.deepEqual(await check(), { id: request.id, status: "available", checkOnly: true });
 }
 
 // Kaynak baytlarını ve bağımsız beklenen sayfa, grup, metrik ve fiziksel satırları üretir.
@@ -505,7 +524,7 @@ async function checkBrowser(account, id, baseURL, { closed, outputDirectory }) {
 // Tek sınama ya da altı dil çalışır. İlk hatada durur ve yalnız koşunun hesaplarını temizler.
 async function main(args) {
   const mode = acceptanceMode(args);
-  const config = configuration();
+  const config = configuration(mode);
   const gitCommit = resolveAcceptanceGitCommit();
   const accounts = [], results = [], reports = [], cleanupErrors = [];
   const journal = createAcceptanceJournal("tabular");
@@ -537,8 +556,8 @@ async function main(args) {
       const catalog = (await call(account, "getAnalysisTables", { id: created.id })).data;
       assert.ok(catalog.tables.some(table => table.sheet === input.selection.sheet && table.rows === input.rows));
       const request = { id: created.id, sourceId: "file-0", selection: input.selection, locale };
+      await checkAdmission(mode, catalog.access, request, async data => (await call(account, "startAnalysis", data)).data);
       if (closed) {
-        await assert.rejects(call(account, "startAnalysis", request), { code: "functions/failed-precondition", details: { analysisFailure: "configuration" } });
         const record = (await getDoc(doc(getFirestore(account.app), `users/${account.uid}/analyses/${created.id}`))).data();
         assert.equal(record.ai, undefined, "Closed rollout must not reserve a paid job.");
         await checkBrowser(account, created.id, config.url, { closed, outputDirectory });
