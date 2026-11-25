@@ -540,6 +540,11 @@ async function main(args) {
       const account = { app, email, password, ids: [] }; accounts.push(account);
       const created = await createUserWithEmailAndPassword(getAuth(app), email, password); account.uid = created.user.uid;
       journal.account(account.uid);
+      if (!closed) {
+        await journal.grantTabularBeta(account.uid, email);
+        const refreshed = await created.user.getIdTokenResult(true);
+        assert.equal(refreshed.claims.incagenTabularBeta, true, "Synthetic beta token did not refresh.");
+      }
     }
     for (let index = 0; index < cases.length; index++) {
       const accountIndex = Math.floor(index / 2);

@@ -157,10 +157,18 @@ Gerçek Gemini analiz denemeleri `503 / capacity` ile durdu; en küçük sabit b
 ### Canlı analiz kabul kayıtları
 
 ```bash
-INCAGEN_LIVE_MODEL_ACCEPTANCE=1 INCAGEN_ACCEPTANCE_URL=http://127.0.0.1:4177 node scripts/accept-tabular-cloud.mjs --verify-closed
+INCAGEN_CLOUD_CLOSED_ACCEPTANCE=1 INCAGEN_ACCEPTANCE_URL=https://incagen.netlify.app node scripts/accept-tabular-cloud.mjs --verify-closed
 ```
 
-Canlı kabul komutu kaynak oluşturmadan önce temiz Git ağacından koşunun tam commit SHA’sını alır. Kapalı kabul, tek sentetik hazırlıktan sonra iş ayırmadan analiz isteğinin reddedildiğini doğrular. Onaylı test penceresinde sunucu ve yerel arayüz kapısı açıkken `--smoke` tek Türkçe CSV analiz isteği gönderir. Bayraksız koşu altı dilde CSV/XLSX kabulü yapar ve tamamlanan sonucun tekrar isteğinde kullanıldığını doğrular. İlk hata koşuyu durdurur. Mekanik kabul bütün altı dilin insan kalite incelemesiyle tamamlanır.
+Canlı kabul komutu kaynak oluşturmadan önce temiz Git ağacından koşunun tam commit SHA’sını alır. Kapalı kabul, tek sentetik hazırlığın ardından katalogdan `closed` bekler ve `startAnalysis` çağrısını yalnız `checkOnly: true` ile yapar. Kod kapalı bayrağı doğrular ve rezervasyona ilerlemez. Eksik erişim alanı, beklenmedik açık kapı veya ön kontrol yanıtı koşuyu durdurur. Bu kontrolü yeni callable sürümü canlıya dağıtıldıktan sonra çalıştırın.
+
+Onaylı sentetik test penceresinde yerel arayüzü `VITE_AUTH_ONLY_PREVIEW=false VITE_TABULAR_ANALYSIS_ENABLED=true npm run dev -- --host 127.0.0.1 --port 4177` ile açın. Ücretli kabul ana Netlify URL’sinde çalışmaz. Smoke tek Türkçe CSV çağrısı yapar. Tam kabul için aynı komutun `--smoke` bayrağını kaldırın.
+
+```bash
+INCAGEN_LIVE_MODEL_ACCEPTANCE=1 INCAGEN_ACCEPTANCE_URL=http://127.0.0.1:4177 node scripts/accept-tabular-cloud.mjs --smoke
+```
+
+Script yalnız kendi yeni sentetik hesabını Auth kaydı ve yerel günlükle eşledikten sonra beta daveti verir. Yeni token doğrulanmadan dosya hazırlığına geçilmez. Her vaka, ücretli istekten önce sahiplik, katalog erişimi ve çağrısız kapsam denetiminden geçer. Tam koşu altı dilde CSV/XLSX kabulü ve tamamlanan sonucun tekrar istekte kullanılması kontrolünü içerir. İlk hatada durur ve sentetik kaynakları mevcut temizlik akışıyla doğrular. [Canlı beta koşulları](TABULAR-ANALYSIS.md#yayın-kapısı-ve-canlı-kabul).
 
 Araç, her çağrılışta `.incagen-local/` altında ayrı temizlik günlüğü ve özel kanıt dizini açar. `acceptance.json` (`schemaVersion: 2`), `full` modunda altı benzersiz beklenen vaka, `smoke` modunda tek beklenen vaka ve `closed` modunda sıfır model sonucu sözleşmesini (`expectedAcceptanceCases`), Git commit SHA’sı, vaka kimliği, formatı, dili, kaynak/sonuç SHA-256 hash bağlantıları, kabul modu, tamamlanan rapor sayısı ve doğrulanmış temizlik durumunu taşır; normal kabul sonunda `finalizeAcceptanceEvidence` bekleyen insan inceleme dosyalarını (`human-review-*.json`) da yazıp `verifyAcceptanceEvidence` ile sıfır rapor, yinelenen vaka, uyuşmayan `runs.json` kaydı, değişmiş/eksik dosya, doğrulanmamış temizlik ve gizli veri sızıntısı denetimini çalıştırır, eski kayıtlarda eksik alanları varsayarak doğrulandı işareti vermez. İnsan onayı (`validateHumanReviewDecision`) otomatik mekanik kabulden ayrı olarak `reportId`, `reportSha256`, `sourceSha256`, `gitCommit`, `locale` ve geçerli ISO inceleme tarihine (`reviewedAt`) bağlanır. Ücretli analiz denemesi olursa `runs.json` başarılı ve başarısız koşuların ölçülmüş alanlarını kaydeder. Başarılı mekanik sonuçların metinleri ayrı sentetik rapor dosyalarında kalır. Kullanım için `npm run usage:summarize -- --input <koşu-dizini>/runs.json` çalıştırılır. Başarısız ve yarım koşular tek tek görünür, ortalamalar geçerli başarılı koşuları kapsar. Eksik fiyat girdisi ölçülen kullanımı sıfır maliyet olarak göstermez.
 

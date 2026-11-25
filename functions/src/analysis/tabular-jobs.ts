@@ -8,10 +8,10 @@ import { createGeminiGenerate, GEMINI_MODEL, GeminiError, type GeminiGenerate } 
 import { readGeminiKey } from "./gemini-secret";
 import { AnalysisPacketBudgetError } from "./input-packet";
 import { preparedAnalysis, type AiArtifact } from "./tabular-storage";
-import { computeTable, isAnalysisEmulator, WorkerError } from "./python-worker";
+import { computeTable, WorkerError } from "./python-worker";
 import { analysisFingerprint, createTabularPacket, interpretTable } from "./tabular-result";
 import { AI_JOB_LIMITS, startAnalysisSchema, type AiJob, type AnalysisAccess, type AnalysisFailure } from "./tabular-contract";
-import { tabularAnalysisAccess } from "./tabular-rollout";
+import { isAnalysisEmulator, tabularAnalysisAccess } from "./tabular-rollout";
 
 // Atomik kabul hem tekrar çağrıyı tekilleştirir hem kullanıcı/proje maliyet sınırını sunucuda uygular.
 export async function reserveAnalysis(uid: string, input: ReturnType<typeof startAnalysisSchema.parse>, fingerprint: string, now = Date.now()) {

@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { GoogleAuth } from "google-auth-library";
 import type { TableSelection, WorkerResult } from "./tabular-contract";
 import { workerResultSchema } from "./tabular-contract";
+import { isAnalysisEmulator } from "./tabular-rollout";
 
 export type WorkerFailureCode =
   | "invalid-data"
@@ -39,11 +40,6 @@ export function mapWorkerFailure(reason: unknown): WorkerFailureCode {
     case "worker-timeout": return "timeout";
     default: return "invalid-data";
   }
-}
-
-// Üretim yetkileri ve sağlayıcı bağlantıları demo projesinin emülatörüne taşınmaz.
-export function isAnalysisEmulator() {
-  return process.env.FUNCTIONS_EMULATOR === "true" && (process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT || "").startsWith("demo-");
 }
 
 // Python hatalarını belge içeriği/ham servis yanıtı taşımayan sınırlı hata türlerine indirger.

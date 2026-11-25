@@ -202,3 +202,31 @@ test("iki örnek raporda kısa keşif rehberi isteğe bağlı ve klavyeyle eriş
     await chooseLanguage(page, "tr");
   }
 });
+
+test("davet erişimi yenilenirken tablo kapsamı korunur ve analiz kendiliğinden başlamaz", async ({ page }) => {
+  let access = "invite-required";
+  let startCalls = 0;
+  page.on("request", request => {
+    if (new URL(request.url()).pathname.endsWith("/startAnalysis")) startCalls += 1;
+  });
+  await page.route("**/getAnalysisTables", async route => {
+    const response = await route.fetch();
+    const data = await response.json();
+    await route.fulfill({ response, json: { ...data, result: { ...data.result, access } } });
+  });
+  await prepare(page, "Channel,Revenue\nWeb,1.50\nStore,2.50\n");
+  await select(page, "Ölçüm alanı", "Revenue");
+  await expect(page.getByText(/Bu hesap tablo analizi betasına dahil değil/)).toBeVisible();
+  const start = page.getByRole("button", { name: "Analizi oluştur", exact: true });
+  await expect(start).toBeDisabled();
+  await page.getByText("Tablo önizlemesi", { exact: true }).click();
+  const preview = page.getByRole("table", { name: "Seçili tablodan örnek satırlar" });
+  await expect(preview).toContainText("1.50");
+
+  access = "available";
+  await page.getByRole("button", { name: "Erişimi kontrol et" }).click();
+  await expect(start).toBeEnabled();
+  await expect(page.getByLabel("Ölçüm alanı", { exact: true })).toContainText("Revenue");
+  await expect(preview).toBeVisible();
+  expect(startCalls).toBe(0);
+});

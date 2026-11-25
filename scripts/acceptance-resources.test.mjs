@@ -59,3 +59,52 @@ test("wrong project, empty scope and symlink journals are rejected", async t => 
   const linked = join(dir, "linked"); symlinkSync(dir, linked);
   assert.throws(() => createAcceptanceJournal("tabular", linked));
 });
+
+test("updates beta claims only for the freshly journaled synthetic account", async t => {
+  const journal = createAcceptanceJournal("tabular", directory(t));
+  const email = `table-${id}@example.test`;
+  const calls = [];
+  const admin = async (url, options) => {
+    const payload = JSON.parse(options.body);
+    calls.push([new URL(url).pathname, payload]);
+    if (url.endsWith(":lookup")) {
+      return new Response(JSON.stringify({ users: [{ localId: uid, email }] }));
+    }
+    return new Response("{}");
+  };
+  await assert.rejects(journal.grantTabularBeta(uid, email, admin), /Invalid synthetic beta scope/);
+  journal.account(uid);
+  await assert.rejects(journal.grantTabularBeta(uid, "someone@example.test", admin), /Invalid synthetic beta scope/);
+  assert.equal(calls.length, 0);
+  await journal.grantTabularBeta(uid, email, admin);
+  assert.deepEqual(calls, [
+    ["/v1/projects/incagen-eeef4/accounts:lookup", { localId: [uid] }],
+    ["/v1/projects/incagen-eeef4/accounts:update", { localId: uid, customAttributes: JSON.stringify({ incagenTabularBeta: true }) }],
+  ]);
+  const saved = JSON.parse(readFileSync(journal.path, "utf8"));
+  assert.deepEqual(saved.accounts, [{ uid, ids: [], tabularBetaGrant: "granted" }]);
+  await assert.rejects(journal.grantTabularBeta(uid, email, admin), /Invalid synthetic beta scope/);
+  await journal.verifyClean(config, empty);
+  assert.equal(JSON.parse(readFileSync(journal.path)).status, "verified-clean");
+});
+
+test("refuses to replace existing claims or update an account that does not match the synthetic journal", async t => {
+  const email = `table-${id}@example.test`;
+  for (const record of [
+    { localId: uid, email: "somebody@example.test" },
+    { localId: uid, email, disabled: true },
+    { localId: uid, email, customAttributes: JSON.stringify({ incagenDeveloper: true }) },
+  ]) {
+    const journal = createAcceptanceJournal("tabular", directory(t));
+    journal.account(uid);
+    let calls = 0;
+    await assert.rejects(journal.grantTabularBeta(uid, email, async url => {
+      calls += 1;
+      assert.ok(url.endsWith(":lookup"));
+      return new Response(JSON.stringify({ users: [record] }));
+    }));
+    assert.equal(calls, 1);
+    const saved = JSON.parse(readFileSync(journal.path, "utf8"));
+    assert.deepEqual(saved.accounts, [{ uid, ids: [], tabularBetaGrant: "attempted" }]);
+  }
+});
