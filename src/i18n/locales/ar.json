@@ -1206,5 +1206,7 @@
   "Bu hesap tablo analizi betasına dahil değil. Hazırlanan belgeleri inceleyebilirsiniz.": "هذا الحساب غير مشترك في الإصدار التجريبي لتحليل الجداول. يمكنك مراجعة مستنداتك المُجهّزة.",
   "Tablo analizi şu anda kapalı. Hazırlanan belgeleri inceleyebilirsiniz.": "تحليل الجداول غير متاح حاليًا. يمكنك مراجعة مستنداتك المُجهّزة.",
   "Tablo analizi erişimi kontrol ediliyor…": "جارٍ التحقق من إمكانية الوصول إلى تحليل الجداول…",
-  "Erişimi kontrol et": "التحقق من إمكانية الوصول"
+  "Erişimi kontrol et": "التحقق من إمكانية الوصول",
+  "Hesapları CSV olarak indir": "تنزيل المؤشرات بصيغة CSV",
+  "CSV hazırlanamadı. Raporu yeniden açıp deneyin.": "تعذّر إنشاء ملف CSV. أعد فتح التقرير وحاول مجددًا."
 }

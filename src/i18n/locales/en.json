@@ -1206,5 +1206,7 @@
   "Bu hesap tablo analizi betasına dahil değil. Hazırlanan belgeleri inceleyebilirsiniz.": "This account is not enrolled in the table analysis beta. You can review your prepared documents.",
   "Tablo analizi şu anda kapalı. Hazırlanan belgeleri inceleyebilirsiniz.": "Table analysis is currently unavailable. You can review your prepared documents.",
   "Tablo analizi erişimi kontrol ediliyor…": "Checking table analysis access…",
-  "Erişimi kontrol et": "Check access"
+  "Erişimi kontrol et": "Check access",
+  "Hesapları CSV olarak indir": "Download metrics as CSV",
+  "CSV hazırlanamadı. Raporu yeniden açıp deneyin.": "Could not create the CSV. Reopen the report and try again."
 }

@@ -33,7 +33,8 @@ describe("uyarlanabilir sonuç sunumu", () => {
     const result = structuredClone(example.result) as AiResult;
     result.metrics = []; result.datasets = []; result.charts = [];
     for (const statement of [...result.summary, ...result.findings.flatMap(item => item.statements)]) statement.metricIds = [];
-    render(<AdaptiveReport result={result} sources={example.sources} />);
+    render(<AdaptiveReport result={result} sources={example.sources} metricsCsv={{ fileName: "metrics.csv" }} />);
+    expect(screen.queryByRole("button", { name: "Hesapları CSV olarak indir" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Öne çıkan metrikler")).not.toBeInTheDocument();
     expect(screen.queryByTestId("adaptive-chart")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Özetleri ve önerileri netleştirin" })).toBeVisible();

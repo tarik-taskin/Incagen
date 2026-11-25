@@ -1206,5 +1206,7 @@
   "Bu hesap tablo analizi betasına dahil değil. Hazırlanan belgeleri inceleyebilirsiniz.": "Esta cuenta no participa en la beta de análisis de tablas. Puedes consultar tus documentos preparados.",
   "Tablo analizi şu anda kapalı. Hazırlanan belgeleri inceleyebilirsiniz.": "El análisis de tablas no está disponible en este momento. Puedes consultar tus documentos preparados.",
   "Tablo analizi erişimi kontrol ediliyor…": "Comprobando el acceso al análisis de tablas…",
-  "Erişimi kontrol et": "Comprobar acceso"
+  "Erişimi kontrol et": "Comprobar acceso",
+  "Hesapları CSV olarak indir": "Descargar métricas en CSV",
+  "CSV hazırlanamadı. Raporu yeniden açıp deneyin.": "No se pudo crear el CSV. Vuelve a abrir el informe e inténtalo de nuevo."
 }

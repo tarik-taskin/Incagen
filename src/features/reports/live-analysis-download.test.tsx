@@ -2,6 +2,8 @@ import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { setLocale } from "../../i18n/runtime";
+import { AuthContext } from "../../lib/auth-context";
+import type { User } from "firebase/auth";
 import type { AiJob, TableSelection } from "../../../functions/src/analysis/tabular-contract";
 import type { AiArtifact } from "../../../functions/src/analysis/tabular-storage";
 import type { AiResult } from "../../../functions/src/analysis/result-contract";
@@ -379,5 +381,49 @@ describe("LiveAnalysisReport - downloadSource oturum ve yaşam döngüsü koordi
     expect(screen.getByText("Gespeicherter deutscher Berichtstext.")).toBeVisible();
     expect(screen.getByText("Verified calculations")).toBeVisible();
     expect(screen.getByText("Model commentary · Grounded summary")).toBeVisible();
+  });
+});
+
+describe("report metric export", () => {
+  const source: ReportSource = {
+    sourceId: "file-0", fileName: "test.csv", sha256: "a".repeat(64),
+    chunks: [{ id: "c1", locator: {}, table: { columns: ["Team", "Revenue"], rows: [["A", 10]] } }],
+  };
+
+  // Raporun ilk oturumunu görünür tutarak tıklama anındaki Firebase kullanıcısını ayrı sınar.
+  function showForOwner(artifact = createTestArtifact(source)) {
+    return render(<AuthContext.Provider value={{ user: { uid: "user-123" } as User, loading: false, error: "" }}>
+      <LiveAnalysisReport artifact={artifact} job={createJob(source.sourceId)} analysisId="analysis-1" />
+    </AuthContext.Provider>);
+  }
+
+  it.each([null, { uid: "another-user" }])("rejects export after the report's owner session changed (%j)", async session => {
+    const user = userEvent.setup();
+    showForOwner();
+    mocks.currentUser = session;
+    await user.click(screen.getByRole("button", { name: "Hesapları CSV olarak indir" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("CSV hazırlanamadı");
+    expect(mocks.createObjectURLMock).not.toHaveBeenCalled();
+    expect(mocks.getBytesMock).not.toHaveBeenCalled();
+  });
+
+  it("creates a CSV from the authorized open report without fetching any source bytes", async () => {
+    const user = userEvent.setup();
+    showForOwner();
+    await user.click(screen.getByRole("button", { name: "Hesapları CSV olarak indir" }));
+    expect(mocks.createObjectURLMock).toHaveBeenCalledWith(expect.objectContaining({ type: "text/csv;charset=utf-8" }));
+    expect(mocks.anchorClickMock).toHaveBeenCalledOnce();
+    expect(mocks.getBytesMock).not.toHaveBeenCalled();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("reports a broken evidence link without handing an incomplete export to the browser", async () => {
+    const user = userEvent.setup();
+    const artifact = createTestArtifact(source);
+    artifact.result.metrics[0].evidence[0].sha256 = "b".repeat(64);
+    showForOwner(artifact);
+    await user.click(screen.getByRole("button", { name: "Hesapları CSV olarak indir" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("CSV hazırlanamadı");
+    expect(mocks.anchorClickMock).not.toHaveBeenCalled();
   });
 });

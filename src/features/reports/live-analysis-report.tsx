@@ -14,7 +14,7 @@ import { DownloadError, verifySourceIntegrity } from "./source-integrity";
 // Gerçek raporun hesap kapsamını kısa tutar; yöntem ve performans ayrıntıları açılır bölümde kalır.
 export default function LiveAnalysisReport({ artifact, job, analysisId }: { artifact: AiArtifact; job: AiJob; analysisId: string }) {
   useLocale();
-  useAuth();
+  const { user } = useAuth();
   const scope = artifact.scope;
   const language = languages.find(item => item.code === artifact.locale)?.name ?? artifact.locale;
 
@@ -111,6 +111,10 @@ export default function LiveAnalysisReport({ artifact, job, analysisId }: { arti
       result={artifact.result}
       sources={artifact.sources}
       featuredMetricIds={["aggregate", "rows"]}
+      metricsCsv={user && artifact.result.analysisId === analysisId ? {
+        fileName: "incagen-analysis-metrics.csv",
+        canDownload: () => getServices().auth.currentUser?.uid === user.uid,
+      } : undefined}
       translateContent={false}
       compactMetrics={false}
       verifiedBoundary

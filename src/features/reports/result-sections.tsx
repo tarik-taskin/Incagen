@@ -8,6 +8,7 @@ import type { AiResult } from "../../../functions/src/analysis/result-contract";
 import { ReportReveal } from "./report-primitives";
 import { ReportChart } from "./report-chart";
 import { reportNumber } from "./report-format";
+import { MetricsCsvDownload, type MetricsCsvAction } from "./metrics-csv-download";
 import { SourceDialog, type ReportSource, type SourceSelection } from "./source-dialog";
 
 export const reportPanel = "surface min-w-0 rounded-3xl border border-border/75 bg-card shadow-[0_8px_30px_-22px_rgba(70,35,110,0.22)]";
@@ -46,6 +47,7 @@ type AdaptiveReportProps = {
   result: AiResult;
   sources: ReportSource[];
   featuredMetricIds?: string[];
+  metricsCsv?: MetricsCsvAction;
   children?: ReactNode;
   renderDetails?: (openSource: (selection: SourceSelection) => void) => ReactNode;
   translateContent?: boolean;
@@ -61,7 +63,7 @@ export function AdaptiveReport(props: AdaptiveReportProps) {
 }
 
 // Aynı rapordaki metrik, grafik ve bulgular tek bir kaynak seçimini paylaşır.
-function ReportSession({ result, sources, featuredMetricIds, children, renderDetails, translateContent = true, compactMetrics = true, verifiedBoundary = false, contentLocale, onDownloadSource }: AdaptiveReportProps) {
+function ReportSession({ result, sources, featuredMetricIds, metricsCsv, children, renderDetails, translateContent = true, compactMetrics = true, verifiedBoundary = false, contentLocale, onDownloadSource }: AdaptiveReportProps) {
   useLocale();
   const { theme } = useTheme();
   const colors = reportColors(theme);
@@ -71,6 +73,7 @@ function ReportSession({ result, sources, featuredMetricIds, children, renderDet
   const featured = featuredMetricIds ? featuredMetricIds.map(id => result.metrics.find(item => item.id === id)).filter(item => item !== undefined) : result.metrics.slice(0, 4);
   const openMetric = (id: string) => { const metric = result.metrics.find(item => item.id === id); if (metric) setSelection({ title: metric.label, evidence: metric.evidence, method: metric.method }); };
   return <>
+    {metricsCsv && <MetricsCsvDownload {...metricsCsv} metrics={result.metrics} sources={sources} />}
     {featured.length > 0 && <section aria-label={t("Öne çıkan metrikler")}>
       {verifiedBoundary && <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs">
         <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-800 dark:text-emerald-300"><ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />{t("Doğrulanmış hesaplar")}</span>
