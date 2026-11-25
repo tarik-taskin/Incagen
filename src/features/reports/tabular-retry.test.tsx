@@ -10,7 +10,7 @@ vi.mock("../../lib/firebase", () => ({ getServices: () => ({ functions: {} }) })
 vi.mock("firebase/functions", () => ({ httpsCallable: (...args: unknown[]) => {
   mocks.calls(args[1]);
   if (args[1] === "startAnalysis") return mocks.start;
-  return async () => ({ data: { tables: [{ sourceId: "file-0", fileName: "test.csv", sheet: null, columns: ["Team", "Amount"], rows: 2 }], limits: { rows: 5000, groups: 12, attempts: 3 } } });
+  return async () => ({ data: { access: "available", tables: [{ sourceId: "file-0", fileName: "test.csv", sheet: null, columns: ["Team", "Amount"], rows: 2 }], limits: { rows: 5000, groups: 12, attempts: 3 } } });
 } }));
 afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); mocks.calls.mockClear(); mocks.start.mockReset(); });
 

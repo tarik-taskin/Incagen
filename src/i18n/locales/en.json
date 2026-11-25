@@ -1202,5 +1202,9 @@
   "Birim": "Unit",
   "Dosya satırı": "File line",
   "Kayıt sırası": "Record order",
-  "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.": "Data record order is shown because original file line numbers could not be determined for this record."
+  "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.": "Data record order is shown because original file line numbers could not be determined for this record.",
+  "Bu hesap tablo analizi betasına dahil değil. Hazırlanan belgeleri inceleyebilirsiniz.": "This account is not enrolled in the table analysis beta. You can review your prepared documents.",
+  "Tablo analizi şu anda kapalı. Hazırlanan belgeleri inceleyebilirsiniz.": "Table analysis is currently unavailable. You can review your prepared documents.",
+  "Tablo analizi erişimi kontrol ediliyor…": "Checking table analysis access…",
+  "Erişimi kontrol et": "Check access"
 }

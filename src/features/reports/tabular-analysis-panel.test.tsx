@@ -14,7 +14,8 @@ beforeEach(() => {
 });
 
 const mocks = vi.hoisted(() => ({
-  user: { uid: "test-user" },
+  user: { uid: "test-user", getIdToken: vi.fn() },
+  access: "available" as import("../../../functions/src/analysis/tabular-contract").AnalysisAccess | undefined,
   start: vi.fn(),
   getResult: vi.fn(),
   tables: [
@@ -32,6 +33,7 @@ vi.mock("firebase/functions", () => ({
     return async () => ({
       data: {
         tables: mocks.tables,
+        access: mocks.access,
         limits: { rows: 5000, groups: 12, attempts: 3 },
       },
     });
@@ -40,6 +42,8 @@ vi.mock("firebase/functions", () => ({
 
 afterEach(() => {
   mocks.start.mockReset();
+  mocks.access = "available";
+  mocks.user.getIdToken.mockReset();
   mocks.getResult.mockReset();
   mocks.tables = [
     { sourceId: "file-1", fileName: "satislar.xlsx", sheet: "Q1", columns: ["Kategori", "Tutar", "Adet"], rows: 150 },
@@ -309,4 +313,55 @@ describe("TabularAnalysisPanel - Görev 2 kapsam ve düzen kontrolleri", () => {
     rejectRetry(loadError);
     expect(await screen.findByRole("button", { name: "Yeniden yükle" })).toBeEnabled();
   });
+});
+
+// Kayıtlı kapsam geçerli olduğundan düğmenin durumu yalnız sunucunun erişim kararına bağlıdır.
+const retryable = {
+  id: "test-analysis", status: "completed", ai: { status: "failed", attempts: 1,
+    sourceId: "file-1", selection: { sheet: "Q1", valueColumn: 1, groupColumn: null,
+      aggregation: "sum", numberFormat: "plain", unit: "USD" } },
+} as Analysis;
+
+it.each([
+  ["invite-required", "Bu hesap tablo analizi betasına dahil değil."],
+  ["closed", "Tablo analizi şu anda kapalı."],
+  [undefined, "Tablo analizi şu anda kapalı."],
+] as const)("preserves the table while blocking generation for access %s", async (access, message) => {
+  mocks.access = access;
+  render(<TabularAnalysisPanel analysis={retryable} />);
+  const button = await screen.findByRole("button", { name: "Yeniden dene" });
+  expect(button).toBeDisabled();
+  expect(screen.getByText(new RegExp(message))).toBeVisible();
+  expect(screen.getByRole("combobox", { name: "Analiz tablosu" })).toHaveTextContent("satislar.xlsx");
+  expect(screen.queryByText("Analiz oluşturulmaya hazır.")).not.toBeInTheDocument();
+  expect(mocks.start).not.toHaveBeenCalled();
+});
+
+it("refreshes the signed-in Firebase token and reloads access without starting an analysis", async () => {
+  mocks.access = "invite-required";
+  let completeRefresh!: () => void;
+  mocks.user.getIdToken.mockReturnValue(new Promise<void>(resolve => { completeRefresh = resolve; }));
+  const user = userEvent.setup();
+  render(<TabularAnalysisPanel analysis={retryable} />);
+  const recheck = await screen.findByRole("button", { name: "Erişimi kontrol et" });
+  await user.click(recheck);
+  expect(recheck).toBeDisabled();
+  expect(screen.getByText("Tablo analizi erişimi kontrol ediliyor…")).toBeVisible();
+  expect(mocks.user.getIdToken).toHaveBeenCalledExactlyOnceWith(true);
+  mocks.access = "available";
+  completeRefresh();
+  expect(await screen.findByText("Analiz oluşturulmaya hazır.")).toBeVisible();
+  expect(screen.getByRole("button", { name: "Yeniden dene" })).toBeEnabled();
+  expect(mocks.start).not.toHaveBeenCalled();
+});
+
+it("disables generation after the server denies admission with a newer access decision", async () => {
+  mocks.start.mockRejectedValue({ code: "functions/permission-denied", details: { analysisAccess: "invite-required" } });
+  const user = userEvent.setup();
+  render(<TabularAnalysisPanel analysis={retryable} />);
+  const button = await screen.findByRole("button", { name: "Yeniden dene" });
+  await user.click(button);
+  expect(await screen.findByText(/Bu hesap tablo analizi betasına dahil değil/)).toBeVisible();
+  await user.click(screen.getByRole("button", { name: "Yeniden dene" }));
+  expect(mocks.start).toHaveBeenCalledTimes(1);
 });

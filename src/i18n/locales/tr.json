@@ -1202,5 +1202,9 @@
   "Birim": "Birim",
   "Dosya satırı": "Dosya satırı",
   "Kayıt sırası": "Kayıt sırası",
-  "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.": "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir."
+  "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.": "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.",
+  "Bu hesap tablo analizi betasına dahil değil. Hazırlanan belgeleri inceleyebilirsiniz.": "Bu hesap tablo analizi betasına dahil değil. Hazırlanan belgeleri inceleyebilirsiniz.",
+  "Tablo analizi şu anda kapalı. Hazırlanan belgeleri inceleyebilirsiniz.": "Tablo analizi şu anda kapalı. Hazırlanan belgeleri inceleyebilirsiniz.",
+  "Tablo analizi erişimi kontrol ediliyor…": "Tablo analizi erişimi kontrol ediliyor…",
+  "Erişimi kontrol et": "Erişimi kontrol et"
 }

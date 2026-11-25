@@ -1202,5 +1202,9 @@
   "Birim": "Unidad",
   "Dosya satırı": "Línea de archivo",
   "Kayıt sırası": "Orden de registro",
-  "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.": "Se muestra el orden de registro de datos porque no se pudo determinar la línea física original de este registro."
+  "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.": "Se muestra el orden de registro de datos porque no se pudo determinar la línea física original de este registro.",
+  "Bu hesap tablo analizi betasına dahil değil. Hazırlanan belgeleri inceleyebilirsiniz.": "Esta cuenta no participa en la beta de análisis de tablas. Puedes consultar tus documentos preparados.",
+  "Tablo analizi şu anda kapalı. Hazırlanan belgeleri inceleyebilirsiniz.": "El análisis de tablas no está disponible en este momento. Puedes consultar tus documentos preparados.",
+  "Tablo analizi erişimi kontrol ediliyor…": "Comprobando el acceso al análisis de tablas…",
+  "Erişimi kontrol et": "Comprobar acceso"
 }

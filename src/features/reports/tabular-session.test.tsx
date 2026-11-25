@@ -20,7 +20,7 @@ const analysis = { id: "analysis-a", status: "completed", createdAt: 1, updatedA
 
 beforeEach(() => {
   mocks.user = { uid: "owner-a" }; mocks.tables.mockReset(); mocks.result.mockReset(); mocks.start.mockReset();
-  mocks.tables.mockResolvedValue({ data: { tables: [sourceA, sourceB], limits } });
+  mocks.tables.mockResolvedValue({ data: { access: "available", tables: [sourceA, sourceB], limits } });
   HTMLElement.prototype.hasPointerCapture = () => false;
   HTMLElement.prototype.setPointerCapture = () => {};
   HTMLElement.prototype.releasePointerCapture = () => {};
@@ -35,12 +35,12 @@ async function choose(label: string, option: string) {
 }
 
 it.each([sourceB, { ...sourceA, sheet: "Q2" }])("keeps $fileName / $sheet when a refreshed table list changes order", async table => {
-  mocks.tables.mockResolvedValue({ data: { tables: [sourceA, table], limits } });
+  mocks.tables.mockResolvedValue({ data: { access: "available", tables: [sourceA, table], limits } });
   const view = render(<TabularAnalysisPanel analysis={{ ...analysis, ai: failed }} />);
   await choose("Analiz tablosu", `${table.fileName} · ${table.sheet}`);
   await choose("Hesaplama", "Kayıt sayısı");
   view.rerender(<TabularAnalysisPanel analysis={{ ...analysis, ai: { ...failed, status: "running", leaseUntil: Date.now() + 10000 } }} />);
-  mocks.tables.mockResolvedValue({ data: { tables: [table, sourceA], limits } });
+  mocks.tables.mockResolvedValue({ data: { access: "available", tables: [table, sourceA], limits } });
   view.rerender(<TabularAnalysisPanel analysis={{ ...analysis, ai: failed }} />);
   await waitFor(() => expect(mocks.tables).toHaveBeenCalledTimes(2));
   await userEvent.click(await screen.findByRole("button", { name: "Yeniden dene" }));
@@ -52,7 +52,7 @@ it("does not silently select a different source when the selected source disappe
   await choose("Analiz tablosu", "costs.xlsx · Q1");
   await choose("Hesaplama", "Kayıt sayısı");
   view.rerender(<TabularAnalysisPanel analysis={{ ...analysis, ai: { ...failed, status: "running", leaseUntil: Date.now() + 10000 } }} />);
-  mocks.tables.mockResolvedValue({ data: { tables: [sourceA], limits } });
+  mocks.tables.mockResolvedValue({ data: { access: "available", tables: [sourceA], limits } });
   view.rerender(<TabularAnalysisPanel analysis={{ ...analysis, ai: failed }} />);
   await waitFor(() => expect(mocks.tables).toHaveBeenCalledTimes(2));
   await waitFor(() => expect(screen.getByRole("button", { name: "Yeniden dene" })).toBeDisabled());

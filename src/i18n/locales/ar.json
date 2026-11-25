@@ -1202,5 +1202,9 @@
   "Birim": "الوحدة",
   "Dosya satırı": "سطر الملف",
   "Kayıt sırası": "ترتيب السجل",
-  "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.": "يُعرض ترتيب سجلات البيانات لتعذر تحديد رقم السطر الفعلي الأصلي لهذا السجل بدقة."
+  "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.": "يُعرض ترتيب سجلات البيانات لتعذر تحديد رقم السطر الفعلي الأصلي لهذا السجل بدقة.",
+  "Bu hesap tablo analizi betasına dahil değil. Hazırlanan belgeleri inceleyebilirsiniz.": "هذا الحساب غير مشترك في الإصدار التجريبي لتحليل الجداول. يمكنك مراجعة مستنداتك المُجهّزة.",
+  "Tablo analizi şu anda kapalı. Hazırlanan belgeleri inceleyebilirsiniz.": "تحليل الجداول غير متاح حاليًا. يمكنك مراجعة مستنداتك المُجهّزة.",
+  "Tablo analizi erişimi kontrol ediliyor…": "جارٍ التحقق من إمكانية الوصول إلى تحليل الجداول…",
+  "Erişimi kontrol et": "التحقق من إمكانية الوصول"
 }

@@ -15,10 +15,10 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 2. İzole demo akışını koru ve gerçek projedeki emülatör bayrağı sızıntısını reddet.
 - [x] Sahip: Furkan — 3. Davet reddini ücretli rezervasyon, kota ve model sınırından önce uygula.
 - [x] Sahip: Furkan — 4. Tablo kataloğunda yetkili hesaba başlangıç durumunu dön ve yanıt bütçesine dahil et.
-- [~] Sahip: Furkan — 5. Kapalı ve davetsiz hesaplara altı dilde ayrı erişim durumu göster.
-- [~] Sahip: Furkan — 6. Erişim yanıtı eksik/eski olduğunda yeni analizi engelle, hazırlanan tabloyu göster.
-- [~] Sahip: Furkan — 7. Başlatma anındaki erişim değişikliğini yakala ve tekrar ücretli isteği durdur.
-- [~] Sahip: Furkan — 8. Erişim kontrolünü, alınmış sonuçları okuma ve yeniden açma akışından bağımsız tut.
+- [x] Sahip: Furkan — 5. Kapalı ve davetsiz hesaplara altı dilde ayrı erişim durumu göster.
+- [x] Sahip: Furkan — 6. Erişim yanıtı eksik/eski olduğunda yeni analizi engelle, hazırlanan tabloyu göster.
+- [x] Sahip: Furkan — 7. Başlatma anındaki erişim değişikliğini yakala ve tekrar ücretli isteği durdur.
+- [x] Sahip: Furkan — 8. Erişim kontrolünü, alınmış sonuçları okuma ve yeniden açma akışından bağımsız tut.
 - [~] Sahip: Furkan — 9. Analiz callable’ına yalnızca başlangıç şartlarını okuyan kontrol ekle.
 - [~] Sahip: Furkan — 10. Kapalı canlı kabulü yanlış yapılandırmada bile çağrı başlatamayacak kontrole geçir.
 - [~] Sahip: Furkan — 11. Gerçek smoke/tam kabulden önce kapı ve kapsamın doğrulanmasını zorunlu tut.

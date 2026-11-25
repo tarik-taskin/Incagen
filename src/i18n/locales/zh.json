@@ -1202,5 +1202,9 @@
   "Birim": "单位",
   "Dosya satırı": "文件行号",
   "Kayıt sırası": "记录序号",
-  "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.": "此记录无法可靠确定原始文件行号，因此显示数据记录序号。"
+  "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.": "此记录无法可靠确定原始文件行号，因此显示数据记录序号。",
+  "Bu hesap tablo analizi betasına dahil değil. Hazırlanan belgeleri inceleyebilirsiniz.": "此账号尚未加入表格分析测试版。你仍可查看已准备的文档。",
+  "Tablo analizi şu anda kapalı. Hazırlanan belgeleri inceleyebilirsiniz.": "表格分析暂不可用。你仍可查看已准备的文档。",
+  "Tablo analizi erişimi kontrol ediliyor…": "正在检查表格分析权限…",
+  "Erişimi kontrol et": "检查权限"
 }

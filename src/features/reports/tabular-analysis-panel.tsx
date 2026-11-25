@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { ArrowRight, Check, Database, Eye, Layers, LoaderCircle, PieChart, RotateCcw, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
 import type { Analysis } from "../../../functions/src/contracts";
-import type { AnalysisFailure, AnalysisTable, TableSelection } from "../../../functions/src/analysis/tabular-contract";
+import type { AnalysisAccess, AnalysisFailure, AnalysisTable, TableSelection } from "../../../functions/src/analysis/tabular-contract";
 import type { AiArtifact } from "../../../functions/src/analysis/tabular-storage";
 import { getLocale, t, useLocale } from "../../i18n/runtime";
 import { getServices } from "../../lib/firebase";
@@ -189,6 +189,8 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
   const job = analysis.ai;
   const [selection, setSelection] = useState<TableSelection>(job?.selection ?? defaults);
   const [tableKey, setTableKey] = useState("");
+  const [access, setAccess] = useState<AnalysisAccess>("closed");
+  const [checkingAccess, setCheckingAccess] = useState(false);
   const [tables, setTables] = useState<AnalysisTable[] | null>(null);
   const [limits, setLimits] = useState({ rows: 5000, groups: 12, attempts: 3 });
   const [error, setError] = useState("");
@@ -209,10 +211,24 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
   useEffect(() => {
     if (!user || ready || running) return;
     let active = true;
-    httpsCallable<{ id: string }, { tables: AnalysisTable[]; limits: typeof limits }>(getServices().functions, "getAnalysisTables")({ id: analysis.id })
-      .then(response => { if (active) { setTables(response.data.tables); setLimits(response.data.limits); setError(""); } })
-      .catch(failure => { if (active) setError(userError(failure)); })
-      .finally(() => { if (active) lifetime.current.reloading = false; });
+    httpsCallable<{ id: string }, { tables: AnalysisTable[]; limits: typeof limits; access?: AnalysisAccess }>(getServices().functions, "getAnalysisTables")({ id: analysis.id })
+      .then(({ data }) => {
+        if (!active) return;
+        setTables(data.tables);
+        setLimits(data.limits);
+        setAccess(data.access === "available" || data.access === "invite-required" ? data.access : "closed");
+        setError("");
+      })
+      .catch(failure => {
+        if (!active) return;
+        setAccess("closed");
+        setError(userError(failure));
+      })
+      .finally(() => {
+        if (!active) return;
+        lifetime.current.reloading = false;
+        setCheckingAccess(false);
+      });
     return () => { active = false; };
   }, [analysis.id, user, ready, running, refresh]);
   useEffect(() => {
@@ -230,20 +246,26 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
   const normalizedSelection = normalizeSelectionForSubmit(selection, selected?.sheet ?? selection.sheet);
   const validationReason = getValidationReason(selected, normalizedSelection, limits);
   const valid = validationReason === null;
+  const canStart = access === "available" && !checkingAccess;
   const summary = tables ? getScopeSummary(selected, tables, normalizedSelection) : null;
   const exhausted = (job?.attempts ?? 0) >= (job?.maxAttempts ?? limits.attempts);
   const jobFailureMessage = job?.error ? getFailureMessage(job.error) : "";
 
   // Kullanıcının açık seçimi gönderilir; başlık, kaynak yolu, metrik veya prompt istemciden üretilmez.
   async function start() {
-    if (!selected || !valid || lifetime.current.starting || exhausted || cooling) return;
+    if (!canStart || !selected || !valid || lifetime.current.starting || exhausted || cooling) return;
     lifetime.current.starting = true;
     setPending(true); setError("");
     try { await httpsCallable(getServices().functions, "startAnalysis", { timeout: 190_000 })({ id: analysis.id, sourceId: selected.sourceId, selection: normalizedSelection, locale: job?.status === "running" ? job.locale : getLocale() }); }
     catch (failure) {
       if (!lifetime.current.active) return;
-      const details = (failure as { details?: { analysisFailure?: string } })?.details;
+      const details = (failure as { details?: { analysisFailure?: string; analysisAccess?: string } })?.details;
       const reason = details?.analysisFailure;
+      if (details?.analysisAccess === "invite-required") {
+        setAccess("invite-required");
+        return;
+      }
+      if (reason === "configuration") setAccess("closed");
       setError(reason ? getFailureMessage(reason) : userError(failure));
     }
     finally { lifetime.current.starting = false; if (lifetime.current.active) setPending(false); }
@@ -257,6 +279,23 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
     setRefresh(value => value + 1);
   }
 
+  // Yeni davet varsa Firebase oturum bilgisini tazeler ve ücretli iş oluşturmadan tekrar tablo erişimini okur.
+  async function recheckAccess() {
+    if (!user || lifetime.current.reloading) return;
+    lifetime.current.reloading = true;
+    setCheckingAccess(true);
+    setError("");
+    try {
+      await user.getIdToken(true);
+      if (lifetime.current.active) setRefresh(value => value + 1);
+    } catch (failure) {
+      if (!lifetime.current.active) return;
+      lifetime.current.reloading = false;
+      setCheckingAccess(false);
+      setError(userError(failure));
+    }
+  }
+
   if (ready) return <div className="mt-7">{error ? <section className={panel}><p role="alert" className="text-sm text-destructive">{t(error)}</p><Button className="mt-4" variant="outline" onClick={reload}>{t("Yeniden yükle")}</Button></section> : artifact ? <Suspense fallback={<PageLoading label="Analiz yükleniyor…" />}><LiveAnalysisReport artifact={artifact} job={job!} analysisId={analysis.id} /></Suspense> : <PageLoading label="Analiz yükleniyor…" />}</div>;
   if (running || pending) {
     const stage = job?.stage ?? "calculating", stages = ["calculating", "interpreting", "saving"];
@@ -266,6 +305,14 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
   return <section className={`${panel} mt-7`} aria-labelledby="ai-setup-title"><div className="flex items-start gap-4"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:text-secondary"><Sparkles className="h-5 w-5" aria-hidden="true" /></span><div><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary dark:text-secondary">{t("Kaynaklı analiz")}</p><h2 id="ai-setup-title" className="mt-1 text-xl font-semibold tracking-tight">{t("Tablodan net bir özet.")}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{t("Bir tablo ve ölçüm seçin. Hesaplar kaynak satırlarıyla doğrulanır; özet, analiz hedefinize göre hazırlanır.")}</p></div></div>
     {job && <p role="status" className="mt-5 flex items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-6"><TriangleAlert className="mt-1 h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300" aria-hidden="true" /><span>{t(exhausted ? "Bu çalışma için deneme sınırına ulaşıldı. Kaynaklarınız ve hazırlık özeti korunuyor." : jobFailureMessage || "Bu işlemden henüz sonuç alınamadı. Aynı kapsamla yeniden deneyebilirsiniz.")}{cooling && <span className="mt-1 block">{t("Yeniden deneme kısa bir süre sonra açılacak; işlem kendiliğinden başlamaz.")}</span>}</span></p>}
     {error && !(job?.status === "failed" && jobFailureMessage && error === jobFailureMessage) && <p role="alert" className="mt-4 text-sm text-destructive">{t(error)}</p>}
+    {tables !== null && !canStart && <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-muted/40 p-4">
+      <p id="table-access-status" role="status" className="text-sm leading-6 text-muted-foreground">
+        {checkingAccess ? t("Tablo analizi erişimi kontrol ediliyor…") : access === "invite-required"
+          ? t("Bu hesap tablo analizi betasına dahil değil. Hazırlanan belgeleri inceleyebilirsiniz.")
+          : t("Tablo analizi şu anda kapalı. Hazırlanan belgeleri inceleyebilirsiniz.")}
+      </p>
+      <Button variant="outline" onClick={recheckAccess} disabled={checkingAccess}>{t("Erişimi kontrol et")}</Button>
+    </div>}
     {tables === null ? <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">{error ? <Button variant="outline" onClick={reload}>{t("Tabloları yeniden yükle")}</Button> : <span role="status" className="inline-flex items-center gap-3"><LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin motion-reduce:animate-none" />{t("Tablolar kontrol ediliyor…")}</span>}</div> : tables.length === 0 ? <p className="mt-5 text-sm leading-6 text-muted-foreground">{t("Bu ilk analiz sürümü CSV ve XLSX tablolarını kullanır. Diğer belgelerinizin hazırlık özetini aşağıda inceleyebilirsiniz.")}</p> : <>
       <div className="mt-6 space-y-6">
         {/* Bölüm 1: Veri kaynağı */}
@@ -339,16 +386,16 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
       {/* Alt Eylem ve Durum Çubuğu */}
       <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-5">
         <div className="text-xs leading-6 text-muted-foreground">
-          {validationReason && !exhausted && !cooling ? (
+          {canStart && (validationReason && !exhausted && !cooling ? (
             <p className="flex items-center gap-1.5 text-amber-700 dark:text-amber-300">
               <TriangleAlert className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
               <span>{validationReason}</span>
             </p>
           ) : (
             <p className="text-muted-foreground">{valid ? t("Analiz oluşturulmaya hazır.") : t("Seçimlerinizi tamamlayın.")}</p>
-          )}
+          ))}
         </div>
-        <Button onClick={start} disabled={!valid || exhausted || cooling} className="min-h-11 gap-2">
+        <Button onClick={start} disabled={!canStart || !valid || exhausted || cooling} aria-describedby={canStart ? undefined : "table-access-status"} className="min-h-11 gap-2">
           {job ? <RotateCcw className="h-4 w-4" aria-hidden="true" /> : <Sparkles className="h-4 w-4" aria-hidden="true" />}
           {cooling ? t("Kısa bir süre bekleyin") : job ? t("Yeniden dene") : t("Analizi oluştur")}
           <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" />

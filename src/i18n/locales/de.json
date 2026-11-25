@@ -1202,5 +1202,9 @@
   "Birim": "Einheit",
   "Dosya satırı": "Dateizeile",
   "Kayıt sırası": "Datensatzfolge",
-  "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.": "Für diesen Datensatz konnte die ursprüngliche Dateizeile nicht zuverlässig ermittelt werden; angezeigt wird die Datensatzreihenfolge."
+  "Bu kayıtta özgün dosya satır numarası belirlenemediği için veri kaydı sırası gösterilir.": "Für diesen Datensatz konnte die ursprüngliche Dateizeile nicht zuverlässig ermittelt werden; angezeigt wird die Datensatzreihenfolge.",
+  "Bu hesap tablo analizi betasına dahil değil. Hazırlanan belgeleri inceleyebilirsiniz.": "Dieses Konto nimmt nicht an der Beta für Tabellenanalysen teil. Sie können Ihre vorbereiteten Dokumente ansehen.",
+  "Tablo analizi şu anda kapalı. Hazırlanan belgeleri inceleyebilirsiniz.": "Die Tabellenanalyse ist derzeit nicht verfügbar. Sie können Ihre vorbereiteten Dokumente ansehen.",
+  "Tablo analizi erişimi kontrol ediliyor…": "Zugriff auf die Tabellenanalyse wird geprüft…",
+  "Erişimi kontrol et": "Zugriff prüfen"
 }
