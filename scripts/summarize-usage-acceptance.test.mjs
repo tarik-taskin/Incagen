@@ -1,10 +1,37 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
-import { summarizeSingleRun, summarizeUsageAcceptance } from "./summarize-usage-acceptance.mjs";
+import { summarizeSingleRun, summarizeUsageAcceptance, validatePricingInput } from "./summarize-usage-acceptance.mjs";
+
+test("accepts real calendar pricing dates and rejects malformed tariffs", () => {
+  const pricing = { model: "gemini-3.8-flash", effectiveDate: "2028-02-29", currency: "USD", inputPer1MTokens: 0, outputPer1MTokens: 1 };
+  assert.deepEqual(validatePricingInput(pricing), pricing);
+  for (const effectiveDate of ["2026-02-29", "2028-02-30", "2026-04-31", "2026-13-01", "2026-01-01\n"]) {
+    assert.throws(() => validatePricingInput({ ...pricing, effectiveDate }), /Fiyat tarifesi/);
+  }
+  assert.throws(() => validatePricingInput(false), /Geçersiz fiyat tarifesi/);
+});
+
+test("blocks unknown, repeated and incomplete CLI arguments before producing output", t => {
+  const directory = mkdtempSync(join(tmpdir(), "incagen-usage-args-"));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const input = join(directory, "runs.json");
+  const output = join(directory, "summary.json");
+  writeFileSync(input, JSON.stringify([{ status: "completed", runId: "one" }]));
+  for (const extras of [["--pricing"], ["--price", "other.json"], ["--input", input], ["--output", "  "], ["extra"]]) {
+    const cli = spawnSync(process.execPath, ["scripts/summarize-usage-acceptance.mjs", "--input", input, "--output", output, ...extras], { encoding: "utf8" });
+    assert.equal(cli.status, 1);
+    assert.equal(cli.stdout, "");
+    assert.equal(existsSync(output), false);
+  }
+  const valid = spawnSync(process.execPath, ["scripts/summarize-usage-acceptance.mjs", "--input", input, "--output", output], { encoding: "utf8" });
+  assert.equal(valid.status, 0);
+  assert.equal(JSON.parse(valid.stdout).overallStatus, "partial");
+  assert.equal(existsSync(output), true);
+});
 
 test("distinguishes real zero measurements from unmeasured fields and avoids inventing prices", () => {
   const zeroRun = {

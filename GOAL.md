@@ -27,9 +27,9 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 14. Rapor kabulünde ölçüm durumunu dosya ve vaka kimliğine bağla.
 - [x] Sahip: Furkan — 15. Kanıt dosyalarına boyut sınırı ve geçerli UTF-8 kontrolü uygula.
 - [x] Sahip: Furkan — 16. Önceki kanıt sürümlerini ve bekleyen insan kararlarını güvenli biçimde okunabilir tut.
-- [~] Sahip: Furkan — 17. Kullanım özetinin fiyat tarifesinde gerçek takvim tarihini doğrula.
-- [~] Sahip: Furkan — 18. Geçersiz CLI argümanlarının eksik veya yanıltıcı kullanım özeti üretmesini engelle.
-- [~] Sahip: Furkan — 19. CSV/XLSX ve dil bazlı eksik ölçüm nedenlerini beta denetiminde görünür kıl.
+- [x] Sahip: Furkan — 17. Kullanım özetinin fiyat tarifesinde gerçek takvim tarihini doğrula.
+- [x] Sahip: Furkan — 18. Geçersiz CLI argümanlarının eksik veya yanıltıcı kullanım özeti üretmesini engelle.
+- [x] Sahip: Furkan — 19. CSV/XLSX ve dil bazlı eksik ölçüm nedenlerini beta denetiminde görünür kıl.
 - [~] Sahip: Furkan — 20. Canlı kapalı kabulü yeni sürümde çalıştır ve kanıt dosyasını çevrimdışı yeniden doğrula.
 - [~] Sahip: Furkan — 21. Kalite kapıları ile aynı GitHub ve Netlify üretim paketini doğrula.
 - [~] Sahip: Furkan — 22. Kapanan operasyon kanıtını, model kalite kabulünü ve ekip kararlarını yol haritasında güncelle.

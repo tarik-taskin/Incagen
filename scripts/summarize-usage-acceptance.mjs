@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { parseArgs } from "node:util";
 
 // Değerin geçerli, negatif olmayan sonlu bir süre ölçümü (gerçek 0 dahil) olup olmadığını kontrol eder.
 function readValidDuration(value) {
@@ -15,13 +16,15 @@ function readValidTokenCount(value) {
 
 // Açık fiyat tarifesinin zorunlu kimlik, tarih, para birimi ve birim fiyat alanlarını doğrular.
 export function validatePricingInput(pricing) {
-  if (!pricing) return null;
+  if (pricing === undefined || pricing === null) return null;
   if (typeof pricing !== "object" || Array.isArray(pricing)) {
     throw new Error("Geçersiz fiyat tarifesi nesnesi.");
   }
   const { model, effectiveDate, currency, inputPer1MTokens, outputPer1MTokens } = pricing;
+  const effectiveTime = typeof effectiveDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(effectiveDate)
+    ? Date.parse(`${effectiveDate}T00:00:00.000Z`) : NaN;
   if (typeof model !== "string" || !model.trim()
-    || typeof effectiveDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(effectiveDate)
+    || !Number.isFinite(effectiveTime) || new Date(effectiveTime).toISOString().slice(0, 10) !== effectiveDate
     || typeof currency !== "string" || !/^[A-Z]{3}$/.test(currency)
     || typeof inputPer1MTokens !== "number" || !Number.isFinite(inputPer1MTokens) || inputPer1MTokens < 0
     || typeof outputPer1MTokens !== "number" || !Number.isFinite(outputPer1MTokens) || outputPer1MTokens < 0) {
@@ -260,22 +263,22 @@ export function summarizeUsageAcceptance(runs, options = {}) {
   };
 }
 
-function parseArgs(argv) {
-  const args = {};
-  for (let i = 0; i < argv.length; i += 1) {
-    if (argv[i].startsWith("--") && i + 1 < argv.length) {
-      args[argv[i].slice(2)] = argv[i + 1];
-      i += 1;
-    }
-  }
-  return args;
+// Fiyat veya çıktı argümanı eksik ya da yinelenmişse kullanım özeti oluşturulmaz.
+function usageArgs(argv) {
+  const { values, tokens } = parseArgs({
+    args: argv, tokens: true, options: {
+      input: { type: "string" }, pricing: { type: "string" }, output: { type: "string" },
+    },
+  });
+  if (!values.input?.trim() || Object.values(values).some(value => !value.trim())
+    || tokens.length !== new Set(tokens.map(token => token.name)).size) throw new Error("Invalid usage arguments.");
+  return values;
 }
 
 const isDirectRun = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 if (isDirectRun) {
-  const args = parseArgs(process.argv.slice(2));
   try {
-    if (!args.input) throw new Error("Missing input");
+    const args = usageArgs(process.argv.slice(2));
     const runs = JSON.parse(readFileSync(args.input, "utf8"));
     const pricing = args.pricing ? JSON.parse(readFileSync(args.pricing, "utf8")) : undefined;
     const report = summarizeUsageAcceptance(runs, { pricing });

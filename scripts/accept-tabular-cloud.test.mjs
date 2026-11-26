@@ -536,6 +536,11 @@ test("strict evidence gate requires all six reviews, complete positive usage and
   assert.deepEqual(incomplete.output.blockers, ["incomplete-usage-measurements"]);
   assert.deepEqual(incomplete.output.usage, { measuredCases: 2, totalDurationMs: { median: 30, max: 30 }, totalTokens: { median: 30, max: 30 } });
   assert.deepEqual(incomplete.output.reviews.map(review => review.usageMeasured), [false, false, false, false, true, true]);
+  const [missing, invalid, zeroTime, zeroTokens] = incomplete.output.reviews;
+  assert.deepEqual([missing.format, missing.locale, missing.measurement.missing], ["csv", "tr", ["usage"]]);
+  assert.deepEqual([invalid.format, invalid.locale, invalid.measurement.invalid.length], ["xlsx", "en", 1]);
+  assert.deepEqual(zeroTime.measurement.zero, ["pythonMs"]);
+  assert.deepEqual(zeroTokens.measurement.zero, ["outputTokens"]);
 
   writePrivateJson(runsPath, results);
   const unpinned = checkEvidenceCli(directory, "--require-ready");

@@ -3,24 +3,32 @@ import { parseArgs } from "node:util";
 import { verifyAcceptanceEvidence } from "./accept-tabular-cloud.mjs";
 import { summarizeSingleRun, summarizeUsageAcceptance } from "./summarize-usage-acceptance.mjs";
 
-// Canlı koşunun pozitif süre ve token ölçümü gereksinimini kayıtlı her vakaya uygular.
-function hasMeasuredUsage(run) {
-  return run.measurementStatus === "measured"
-    && [run.calculationMs, run.modelMs, run.totalDurationMs, run.usage?.promptTokens, run.usage?.outputTokens]
-      .every(value => value > 0);
+// Her vaka için eksik, tutarsız ve gerçekten sıfır ölçümleri birbirinden ayırır.
+function inspectMeasurement(run) {
+  const usage = summarizeSingleRun(run);
+  const zero = Object.entries({ pythonMs: usage.calculationMs, modelMs: usage.modelMs, durationMs: usage.totalDurationMs,
+    promptTokens: usage.usage?.promptTokens, outputTokens: usage.usage?.outputTokens })
+    .filter(([, value]) => value === 0).map(([name]) => name);
+  return {
+    ready: usage.measurementStatus === "measured" && zero.length === 0,
+    missing: usage.unmeasuredFields,
+    invalid: usage.measurementErrors,
+    zero,
+  };
 }
 
 // Dosya bütünlüğü, insan kararı ve ölçüm durumunu birleştirir. Yayın veya sağlayıcı işlemi yapmaz.
 function inspectEvidence(directory, expectedCommit) {
   const evidence = verifyAcceptanceEvidence(directory, { expectedCommit });
   const commitMatched = evidence.verified && expectedCommit !== undefined;
-  const measured = (evidence.runs ?? []).map(run => ({ run, usageMeasured: hasMeasuredUsage(summarizeSingleRun(run)) }));
-  const measurementByCase = new Map(measured.map(item => [item.run.caseId, item.usageMeasured]));
-  const measuredRuns = measured.filter(item => item.usageMeasured).map(item => item.run);
+  const runs = evidence.runs ?? [];
+  const measurementByCase = new Map(runs.map(run => [run.caseId, inspectMeasurement(run)]));
+  const measuredRuns = runs.filter(run => measurementByCase.get(run.caseId).ready);
   const usage = measuredRuns.length > 0 ? summarizeUsageAcceptance(measuredRuns) : null;
   const reviews = evidence.verified ? evidence.reviews.map(review => ({
     ...review,
-    usageMeasured: measurementByCase.get(review.caseId) === true,
+    usageMeasured: measurementByCase.get(review.caseId)?.ready === true,
+    measurement: measurementByCase.get(review.caseId),
   })) : [];
   const blockers = [];
   if (!evidence.verified) blockers.push("invalid-evidence");
