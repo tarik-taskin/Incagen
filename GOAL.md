@@ -16,11 +16,11 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 3. Cloud Run çalışma kimliği, digest, kaynak sınırları ve hazır revizyonu doğrula.
 - [x] Sahip: Furkan — 4. Worker servis ve proje IAM durumunu salt okunur denetle, eksik kanıtı kabul etme.
 - [~] Sahip: Furkan — 5. Cloud Run yenilemesini mevcut kaynaklara ve açık komut kapsamına sınırla.
-- [~] Sahip: Furkan — 6. Python build arşivini temiz Git ağacındaki izinli kaynaklardan tekrarlanabilir üret.
+- [x] Sahip: Furkan — 6. Python build arşivini temiz Git ağacındaki izinli kaynaklardan tekrarlanabilir üret.
 - [~] Sahip: Furkan — 7. Cloud Build çıktısını arşiv kaynağı, build kimliği ve image digest ile bağla.
 - [~] Sahip: Furkan — 8. Yenilemede IAM, servis hesabı ve yerel ortam dosyası değişikliğini engelle.
-- [~] Sahip: Furkan — 9. Cloud Build Linux kabulünde gerçek CSV ondalık toplamı ve fiziksel satırları doğrula.
-- [~] Sahip: Furkan — 10. Aynı Linux imajında seçili Excel sayfası ve doğrulanmış hesap için sentetik kontrol ekle.
+- [x] Sahip: Furkan — 9. Cloud Build Linux kabulüne gerçek CSV ondalık toplamı ve fiziksel satır kontrolleri ekle.
+- [x] Sahip: Furkan — 10. Aynı Linux imajında seçili Excel sayfası ve doğrulanmış hesap için sentetik kontrol ekle.
 - [~] Sahip: Furkan — 11. Cloud Run yenilemesinde önceki revizyonu ve yeni trafik hedefini kaydet.
 - [~] Sahip: Furkan — 12. Worker güncellemesini GitHub ve sunucu dağıtımından bağımsız geri dönüş kanıtına bağla.
 - [~] Sahip: Furkan — 13. Süresi dolan analiz denemesinin sonraki aşamaya geçmesini veya sonucu kaydetmesini engelle.
