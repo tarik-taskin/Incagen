@@ -193,6 +193,10 @@ test("lease dolumu, eski denemenin yeni denemeyi ezmemesi ve aynı gün kota kur
     assert.equal(duplicateWhileActive.state, "running");
     assert.equal(duplicateWhileActive.job.attemptId, first.job.attemptId);
 
+    // Süresi biten deneme henüz değiştirilmemiş olsa bile sonucu yayınlayamaz.
+    assert.equal(await completeAnalysis(uid, id, first.job.attemptId, { ...first.job, status: "completed" }), false);
+    assert.equal((await record.get()).data().ai.status, "running");
+
     // 3. Lease süresi dolunca kullanıcı yeni kontrollü denemeyi başlatabilir (same day -> ownQuota artmaz)
     const afterLease = t0 + AI_JOB_LIMITS.leaseMs + 1;
     const second = await reserveAnalysis(uid, input, "fp-1", afterLease);

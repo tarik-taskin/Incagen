@@ -70,3 +70,14 @@ export interface AiJob {
   artifactPath?: string; artifactSha256?: string; model?: string; durationMs?: number; inputBytes?: number; pythonMs?: number; modelMs?: number;
   usage?: { promptTokens: number; outputTokens: number; totalTokens: number };
 }
+
+
+// Eski kayıtların başlangıç süresini korur; saklanan son tarih süreyi uzatamaz.
+export function hasActiveAnalysisLease(job: Pick<AiJob, "status" | "startedAt"> & Partial<Pick<AiJob, "leaseUntil">> | undefined, now: number) {
+  if (job?.status !== "running" || !Number.isFinite(job.startedAt)) return false;
+  const hardDeadline = job.startedAt + AI_JOB_LIMITS.leaseMs;
+  const deadline = typeof job.leaseUntil === "number" && Number.isFinite(job.leaseUntil)
+    ? Math.min(hardDeadline, job.leaseUntil)
+    : hardDeadline;
+  return now < deadline;
+}

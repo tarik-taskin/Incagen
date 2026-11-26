@@ -23,10 +23,10 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 10. Aynı Linux imajında seçili Excel sayfası ve doğrulanmış hesap için sentetik kontrol ekle.
 - [x] Sahip: Furkan — 11. Cloud Run yenilemesinde önceki revizyonu ve yeni trafik hedefini kaydet.
 - [~] Sahip: Furkan — 12. Worker güncellemesini GitHub ve sunucu dağıtımından bağımsız geri dönüş kanıtına bağla.
-- [~] Sahip: Furkan — 13. Süresi dolan analiz denemesinin sonraki aşamaya geçmesini veya sonucu kaydetmesini engelle.
-- [~] Sahip: Furkan — 14. Eski ve yeni analiz denemelerini aynı lease kuralıyla ayır.
-- [~] Sahip: Furkan — 15. Geç gelen sonucun özgün hatasını, geçici artefakt temizliği hatasıyla ezme.
-- [~] Sahip: Furkan — 16. Lease, deneme değişimi ve artefakt temizliği davranışını regresyonlarla doğrula.
+- [x] Sahip: Furkan — 13. Süresi dolan analiz denemesinin sonraki aşamaya geçmesini veya sonucu kaydetmesini engelle.
+- [x] Sahip: Furkan — 14. Eski ve yeni analiz denemelerini aynı lease kuralıyla ayır.
+- [x] Sahip: Furkan — 15. Geç gelen sonucun özgün hatasını, geçici artefakt temizliği hatasıyla ezme.
+- [x] Sahip: Furkan — 16. Lease, deneme değişimi ve artefakt temizliği davranışını regresyonlarla doğrula.
 - [~] Sahip: Furkan — 17. Emülatörde kapalı analiz ve mevcut belge hazırlığını son paketle doğrula.
 - [~] Sahip: Furkan — 18. Güncel özel Python işçisini kontrollü Cloud Build ve Cloud Run hattından geçir.
 - [~] Sahip: Furkan — 19. Güncel tablo Functions uçlarını analiz kapalıyken dar kapsamda dağıt.

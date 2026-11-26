@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { GeminiError } from "./gemini";
 import { AnalysisPacketBudgetError } from "./input-packet";
 import { mapWorkerFailure, WorkerError } from "./python-worker";
-import { failureCode } from "./tabular-jobs";
+import { failureCode, failureDisposition } from "./tabular-jobs";
 import { buildAnalysisTables, fitAnalysisTablesBudget, parseCsvTablePreview, validateStoredArtifact, type AiArtifact } from "./tabular-storage";
 import { analysisFingerprint } from "./tabular-result";
-import type { AiJob } from "./tabular-contract";
+import { AI_JOB_LIMITS, hasActiveAnalysisLease, type AiJob } from "./tabular-contract";
 import type { ParsedDocument, Report } from "../contracts";
 
 describe("AI iş yaşam döngüsü hata sınıflandırması", () => {
@@ -358,5 +358,36 @@ describe("validateStoredArtifact bütünlük bağı", () => {
     const verifiedWithChart = validateStoredArtifact(validWithChart, { ...baseExpected, job: validJob(false) });
     expect(verifiedWithChart.result.charts).toHaveLength(1);
     expect(verifiedWithChart.result.datasets[0].points[0].value).toBe(15);
+  });
+});
+
+describe("attempt ownership and artifact finalization", () => {
+  it("uses the earliest deadline and ends ownership exactly at expiry", () => {
+    const startedAt = 1000;
+    const hardDeadline = startedAt + AI_JOB_LIMITS.leaseMs;
+    const previous = { status: "running" as const, startedAt };
+    expect(hasActiveAnalysisLease(previous, hardDeadline - 1)).toBe(true);
+    expect(hasActiveAnalysisLease(previous, hardDeadline)).toBe(false);
+    expect(hasActiveAnalysisLease({ ...previous, leaseUntil: hardDeadline + 1000 }, hardDeadline)).toBe(false);
+    expect(hasActiveAnalysisLease({ ...previous, leaseUntil: 2000 }, 2000)).toBe(false);
+    expect(hasActiveAnalysisLease({ ...previous, startedAt: Number.NaN }, 0)).toBe(false);
+    expect(hasActiveAnalysisLease({ ...previous, status: "failed" }, 0)).toBe(false);
+  });
+
+  it("recovers a confirmed publication and preserves any still-referenced object", () => {
+    const digest = "a".repeat(64);
+    const path = "derived/synthetic/analyses/test/ai/attempt.json.gz";
+    const ai = { status: "completed" as const, attemptId: "attempt", artifactPath: path, artifactSha256: digest };
+    expect(failureDisposition({ status: "completed", ai }, "attempt", path, digest)).toBe("published");
+    expect(failureDisposition({ status: "deleting", ai }, "attempt", path, digest)).toBe("preserve");
+    expect(failureDisposition({ status: "completed", ai }, "attempt", path, "other-digest")).toBe("preserve");
+    expect(failureDisposition({ status: "completed", ai }, "attempt", path)).toBe("preserve");
+  });
+
+  it("only marks the current running attempt failed and recognizes unreferenced candidates", () => {
+    const attempt = { status: "running" as const, attemptId: "attempt" };
+    expect(failureDisposition({ status: "completed", ai: attempt }, "attempt", "candidate")).toBe("fail");
+    expect(failureDisposition({ status: "completed", ai: attempt }, "old-attempt", "candidate")).toBe("unreferenced");
+    expect(failureDisposition(undefined, "attempt", "candidate")).toBe("unreferenced");
   });
 });

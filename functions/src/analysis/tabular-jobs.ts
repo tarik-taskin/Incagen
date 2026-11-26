@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { gzipSync } from "node:zlib";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
+import { warn } from "firebase-functions/logger";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { getQuotaDay } from "../contracts";
 import { createGeminiGenerate, GEMINI_MODEL, GeminiError, type GeminiGenerate } from "./gemini";
@@ -10,7 +11,7 @@ import { AnalysisPacketBudgetError } from "./input-packet";
 import { preparedAnalysis, type AiArtifact } from "./tabular-storage";
 import { computeTable, WorkerError } from "./python-worker";
 import { analysisFingerprint, createTabularPacket, interpretTable } from "./tabular-result";
-import { AI_JOB_LIMITS, startAnalysisSchema, type AiJob, type AnalysisAccess, type AnalysisFailure } from "./tabular-contract";
+import { AI_JOB_LIMITS, hasActiveAnalysisLease, startAnalysisSchema, type AiJob, type AnalysisAccess, type AnalysisFailure } from "./tabular-contract";
 import { isAnalysisEmulator, tabularAnalysisAccess } from "./tabular-rollout";
 
 // Atomik kabul hem tekrar çağrıyı tekilleştirir hem kullanıcı/proje maliyet sınırını sunucuda uygular.
@@ -26,7 +27,7 @@ export async function reserveAnalysis(uid: string, input: ReturnType<typeof star
       if (previous.fingerprint !== fingerprint) throw new HttpsError("failed-precondition", "Tamamlanan analiz korunur. Farklı bir kapsam için yeni çalışma oluşturun.");
       return { state: "completed" as const, job: previous };
     }
-    if (previous?.status === "running" && now - previous.startedAt < AI_JOB_LIMITS.leaseMs) {
+    if (previous && hasActiveAnalysisLease(previous, now)) {
       if (previous.fingerprint !== fingerprint) throw new HttpsError("failed-precondition", "Devam eden analizin kapsamı değiştirilemez.");
       return { state: "running" as const, job: previous };
     }
@@ -65,8 +66,9 @@ export async function completeAnalysis(uid: string, id: string, attemptId: strin
   const db = getFirestore(), ref = db.doc(`users/${uid}/analyses/${id}`);
   return db.runTransaction(async tx => {
     const [owner, current] = await Promise.all([tx.get(db.doc(`users/${uid}`)), tx.get(ref)]);
-    if (!current.exists || owner.data()?.deletingAccount || current.data()?.status !== "completed" || current.data()?.ai?.attemptId !== attemptId || current.data()?.ai?.status !== "running") return false;
-    tx.update(ref, { ai: completed, updatedAt: Date.now() });
+    const data = current.data(), now = Date.now();
+    if (owner.data()?.deletingAccount || data?.status !== "completed" || data.ai?.attemptId !== attemptId || !hasActiveAnalysisLease(data.ai, now)) return false;
+    tx.update(ref, { ai: completed, updatedAt: now });
     return true;
   });
 }
@@ -76,10 +78,24 @@ async function advanceAnalysis(uid: string, id: string, attemptId: string, stage
   const db = getFirestore(), ref = db.doc(`users/${uid}/analyses/${id}`);
   const valid = await db.runTransaction(async tx => {
     const [owner, current] = await Promise.all([tx.get(db.doc(`users/${uid}`)), tx.get(ref)]);
-    if (!current.exists || owner.data()?.deletingAccount || current.data()?.status !== "completed" || current.data()?.ai?.attemptId !== attemptId || current.data()?.ai?.status !== "running") return false;
+    const data = current.data();
+    if (owner.data()?.deletingAccount || data?.status !== "completed" || data.ai?.attemptId !== attemptId || data.ai.status !== "running") return false;
+    if (!hasActiveAnalysisLease(data.ai, Date.now())) throw new WorkerError("timeout");
     tx.update(ref, { "ai.stage": stage }); return true;
   });
   if (!valid) throw new HttpsError("aborted", "Çalışma değişti veya silindi; işlem durduruldu.");
+}
+
+// Kararsız commit yanıtında yayındaki nesneyi silmeden önce kayıt bağlantısını tekrar denetler.
+export function failureDisposition(record: { status?: string; ai?: Partial<AiJob> } | undefined, attemptId: string, path: string, savedHash?: string) {
+  const job = record?.ai;
+  if (job?.artifactPath === path) {
+    if (record?.status === "completed" && job.attemptId === attemptId && job.status === "completed"
+      && savedHash !== undefined && job.artifactSha256 === savedHash) return "published";
+    return "preserve";
+  }
+  if (record?.status === "completed" && job?.attemptId === attemptId && job.status === "running") return "fail";
+  return "unreferenced";
 }
 
 export interface StartAnalysisOptions {
@@ -105,7 +121,7 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
   if (reservation.state !== "started") return { id: input.id, status: reservation.state, reused: true };
   const job = reservation.job, bucket = getStorage().bucket(), startedAt = Date.now();
   const artifactPath = `derived/${uid}/analyses/${input.id}/ai/${job.attemptId}.json.gz`;
-  let saved = false, committed = false;
+  let savedHash: string | undefined;
   try {
     const [metadata] = await bucket.file(`users/${uid}/analyses/${input.id}/${source.id}`).getMetadata();
     if (Number(metadata.size) !== source.size || source.size > 25 * 1024 * 1024) throw new WorkerError("invalid-data");
@@ -139,23 +155,35 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
     const encoded = Buffer.from(JSON.stringify(artifact));
     await bucket.file(artifactPath).save(gzipSync(encoded), { resumable: false, preconditionOpts: { ifGenerationMatch: 0 },
       metadata: { contentType: "application/gzip", cacheControl: "private, no-store" } });
-    saved = true;
-    const completed: AiJob = { ...job, stage: "saving", status: "completed", finishedAt: Date.now(), artifactPath, artifactSha256: createHash("sha256").update(encoded).digest("hex"),
+    savedHash = createHash("sha256").update(encoded).digest("hex");
+    const completed: AiJob = { ...job, stage: "saving", status: "completed", finishedAt: Date.now(), artifactPath, artifactSha256: savedHash,
         model: emulator ? "emulator" : GEMINI_MODEL, durationMs: Date.now() - startedAt, inputBytes: packet.usage.utf8Bytes, pythonMs, modelMs, ...(usage ? { usage } : {}) };
-    committed = await completeAnalysis(uid!, input.id, job.attemptId, completed);
-    if (!committed) throw new HttpsError("aborted", "Çalışma değişti veya silindi; sonuç kaydedilmedi.");
+    const committed = await completeAnalysis(uid!, input.id, job.attemptId, completed);
+    if (!committed) {
+      if (!hasActiveAnalysisLease(job, Date.now())) throw new WorkerError("timeout");
+      throw new HttpsError("aborted", "Çalışma değişti veya silindi; sonuç kaydedilmedi.");
+    }
     return { id: input.id, status: "completed", reused: false };
   } catch (error) {
     const failure = failureCode(error), finishedAt = Date.now();
-    await getFirestore().runTransaction(async tx => {
+    const disposition = await getFirestore().runTransaction(async tx => {
       const current = await tx.get(ref);
-      if (current.exists && current.data()?.status === "completed" && current.data()?.ai?.attemptId === job.attemptId && current.data()?.ai?.status === "running") tx.update(ref, { ai: { ...job, status: "failed", finishedAt, error: failure, durationMs: finishedAt - startedAt,
+      const next = failureDisposition(current.data(), job.attemptId, artifactPath, savedHash);
+      if (next === "fail") tx.update(ref, { ai: { ...job, status: "failed", finishedAt, error: failure, durationMs: finishedAt - startedAt,
         ...(["provider-busy", "timeout"].includes(failure) ? { retryAfter: finishedAt + AI_JOB_LIMITS.retryDelayMs } : {}) }, updatedAt: finishedAt });
+      return next;
+    }).catch(() => {
+      warn("analysis-finalization-unconfirmed", { failure });
+      return "preserve" as const;
     });
+    if (disposition === "published") return { id: input.id, status: "completed", reused: false };
+    if (savedHash && (disposition === "fail" || disposition === "unreferenced")) {
+      await bucket.file(artifactPath).delete({ ignoreNotFound: true }).catch(() => {
+        warn("analysis-artifact-cleanup-failed", { failure });
+      });
+    }
     if (error instanceof HttpsError) throw error;
     throw new HttpsError("failed-precondition", "Analiz tamamlanamadı. Kaynakları ve analiz kapsamını kontrol edip yeniden deneyin.", { analysisFailure: failure });
-  } finally {
-    if (saved && !committed) await bucket.file(artifactPath).delete({ ignoreNotFound: true });
   }
 }
 
