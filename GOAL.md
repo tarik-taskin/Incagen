@@ -9,10 +9,25 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
+### 2026-11-27 — Furkan / Codex: model veri sınırı ve tablo ön kontrolü
+
+- [x] Sahip: Furkan — 1. Gemini tablo isteminden ham hücreleri ve kaynak satırlarının içeriğini çıkar.
+- [x] Sahip: Furkan — 2. Dosya adı, kullanıcı çalışma kimliği, kaynak özeti ve dayanak konumlarını sunucu tarafında tut.
+- [x] Sahip: Furkan — 3. Altı rapor dili için modele açık dil adı ve seçili ölçüm kapsamı ver.
+- [x] Sahip: Furkan — 4. Modele gönderilen JSON’un UTF-8 boyutunu ölç ve kaydet.
+- [x] Sahip: Furkan — 5. Yanıt şemasını doğrulanmış metrik kimlikleriyle ve en fazla üç model bulgusuyla sınırla.
+- [x] Sahip: Furkan — 6. Davetli checkOnly isteğinde hazırlanan kaynakta gerçek sayfayı ve sütunları doğrula.
+- [x] Sahip: Furkan — 7. Eksik sayfa, geçersiz sütun ve okunamayan kaynak için güvenli, ayrıştırılabilir ön kontrol sonucu döndür.
+- [x] Sahip: Furkan — 8. Geçersiz ve yetkisiz ön kontrollerde Python, Gemini, iş ve kota oluşmadığını entegrasyonda doğrula.
+- [x] Sahip: Furkan — 9. Ham tablo büyük olsa bile kısa model isteminden kaynaklı rapor üretildiğini regresyonla doğrula.
+- [~] Sahip: Furkan — 10. Model veri sınırını belgele, GitHub/Netlify paketini ve kapalı Firebase yayınını doğrula.
+
+Yerel veri sınırı ve ön kontrol testleri geçti. Bu paketin kesin SHA’sı ve GitHub, Netlify ve kapalı Firebase yayın kanıtları TASK-0008 devir kaydında takip edilir. [Tablo analizi sözleşmesi](docs/TABULAR-ANALYSIS.md).
+
 ### 2026-11-26 — Furkan / Codex: beta erişim ve kabul kanıtı
 
 - [x] Sahip: Furkan — 1. Kapalı canlı Functions ve worker sürümünü sağlayıcı denemesi öncesinde doğrula.
-- [~] Sahip: Furkan — 2. Canlı Gemini 3.8 Flash yanıtı ve süreyi doğrula. 26 Kasım ilk denemelerde 504 / timeout ve 503 / capacity görüldü. Yalnız geliştirici teşhisinde sağlayıcının varsayılan üretim ayarı ile ayrı, sınırlı süreyi dene. Geçerli sabit JSON ve doğrulanmış temizlik kabul koşuludur.
+- [!] Sahip: Furkan — 2. Canlı Gemini 3.8 Flash yanıtı ve süreyi doğrula. Standard `generateContent` 504, Standard Interactions 503, Priority Interactions 429 döndü. Onaylı 3.6 Flash karşılaştırması da 503 döndü. Geçici kaynaklar temizlendi. Kabul için 3.8 Flash’tan geçerli sabit JSON gerekiyor. [Teşhis kaydı](docs/GEMINI.md).
 - [x] Sahip: Furkan — 3. Teşhis hesabı, geçici claim ve kaynak günlüğü temizliğini doğrula.
 - [x] Sahip: Furkan — 4. Bulut bütçe, alarm ve saklama durumunu salt okunur veriyle yeniden değerlendir.
 - [x] Sahip: Furkan — 5. Canlı kabulün oluşturduğu e-posta ile sentetik davet doğrulayıcısının sözleşmesini birleştir.
@@ -31,7 +46,7 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 18. Geçersiz CLI argümanlarının eksik veya yanıltıcı kullanım özeti üretmesini engelle.
 - [x] Sahip: Furkan — 19. CSV/XLSX ve dil bazlı eksik ölçüm nedenlerini beta denetiminde görünür kıl.
 - [x] Sahip: Furkan — 20. Canlı kapalı kabulü yeni sürümde çalıştır ve kanıt dosyasını çevrimdışı yeniden doğrula.
-- [~] Sahip: Furkan — 21. Kalite kapıları ile aynı GitHub ve Netlify üretim paketini doğrula.
+- [x] Sahip: Furkan — 21. Kalite kapıları ile aynı GitHub ve Netlify üretim paketini doğrula (`582fcb3`).
 - [x] Sahip: Furkan — 22. Kapanan operasyon kanıtını, model kalite kabulünü ve ekip kararlarını yol haritasında güncelle.
 
 Canlı kapalı kabul, CSV ve iki sayfalı XLSX için `5346048` üzerinde geçti. İki hazırlık tarayıcıda açıldı, sıfır ücretli iş ve sıfır model çağrısı kaydedildi. Son GitHub/Netlify yayın kanıtı TASK-0007 devir kaydında sonuçlandırılır. [Operasyon durumu](docs/BETA-ACCEPTANCE.md#sınırlı-beta-operasyon-durumu-ve-ekip-karar-matrisi).

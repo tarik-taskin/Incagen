@@ -8,7 +8,7 @@ import { getQuotaDay } from "../contracts";
 import { createGeminiGenerate, GEMINI_MODEL, GeminiError, type GeminiGenerate } from "./gemini";
 import { readGeminiKey } from "./gemini-secret";
 import { AnalysisPacketBudgetError } from "./input-packet";
-import { preparedAnalysis, type AiArtifact } from "./tabular-storage";
+import { preparedAnalysis, verifyPreparedSelection, type AiArtifact } from "./tabular-storage";
 import { computeTable, WorkerError } from "./python-worker";
 import { analysisFingerprint, createTabularPacket, interpretTable } from "./tabular-result";
 import { AI_JOB_LIMITS, hasActiveAnalysisLease, startAnalysisSchema, type AiJob, type AnalysisAccess, type AnalysisFailure } from "./tabular-contract";
@@ -115,7 +115,10 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
   if (access === "invite-required") throw new HttpsError("permission-denied", "Bu hesap tablo analizi betasına dahil değil.", { analysisAccess: access });
   const source = data.report.sources.find(source => source.id === input.sourceId && /\.(csv|xlsx)$/i.test(source.name));
   if (!source || !data.objective?.trim()) throw new HttpsError("failed-precondition", "Analiz için CSV veya XLSX tablosu ve bir hedef seçin.");
-  if (input.checkOnly) return { id: input.id, status: "available" as const, checkOnly: true };
+  if (input.checkOnly) {
+    await verifyPreparedSelection(uid!, input.id, data.artifactAttempt, source, input.selection);
+    return { id: input.id, status: "available" as const, checkOnly: true };
+  }
   const fingerprint = analysisFingerprint(source.sha256, source.id, input.selection, input.locale);
   const reservation = await reserveAnalysis(uid!, input, fingerprint);
   if (reservation.state !== "started") return { id: input.id, status: reservation.state, reused: true };

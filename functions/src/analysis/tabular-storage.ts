@@ -244,6 +244,24 @@ async function preparedDocument(uid: string, id: string, attempt: string, source
   return document;
 }
 
+// Salt okunur ön kontrol yalnız seçilen hazırlanmış kaynağa bakar ve katı kapsam hatasını döndürür.
+export async function verifyPreparedSelection(uid: string, id: string, attempt: string, source: Report["sources"][number], selection: TableSelection) {
+  const tables = await buildAnalysisTables([source], selected => preparedDocument(uid, id, attempt, selected));
+  const table = tables.find(item => item.sheet === selection.sheet);
+  const reason = table?.unavailableReason;
+  if (!table || reason) {
+    throw new HttpsError("failed-precondition", "Seçilen hazırlanmış tablo okunamadı.", {
+      analysisFailure: reason === "row-limit" || reason === "empty-table" ? reason : "invalid-data",
+    });
+  }
+  if (selection.valueColumn !== null && selection.valueColumn >= table.columns.length) {
+    throw new HttpsError("failed-precondition", "Ölçüm sütunu seçilen tabloda yok.", { analysisFailure: "invalid-measure" });
+  }
+  if (selection.groupColumn !== null && selection.groupColumn >= table.columns.length) {
+    throw new HttpsError("failed-precondition", "Gruplama sütunu seçilen tabloda yok.", { analysisFailure: "invalid-group" });
+  }
+}
+
 // CSV önizlemesi için özgün yüklenen dosyayı boyut ve SHA-256 kontrolüyle okur; erişilemezse eski kayıt yoluna düşer.
 async function verifiedRawCsv(uid: string, id: string, source: Report["sources"][number]): Promise<Buffer | null> {
   if (!/\.csv$/i.test(source.name) || source.size <= 0 || source.size > RAW_SOURCE_MAX_BYTES) return null;

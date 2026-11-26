@@ -49,6 +49,7 @@ test("gerçek Python hesabı, kaynaklı rapor, tekrar/yenileme, izolasyon ve tem
     await Promise.all([own.call("startAnalysis", input), own.call("startAnalysis", input)]);
     const completed = (await record.get()).data();
     assert.equal(completed.ai.status, "completed"); assert.equal(completed.ai.attempts, 1); assert.equal(completed.ai.model, "emulator");
+    assert.equal(completed.ai.inputBytes, undefined);
     const report = (await own.call("getAnalysisResult", { id })).data;
     assert.equal(report.result.metrics.find(metric => metric.id === "aggregate").value, 0.3);
     assert.equal(report.result.charts.length, 1); assert.equal(report.sources[0].fileName, "revenue.csv");
@@ -139,7 +140,12 @@ test("XLSX çalışma sayfası seçimi ve satır ağırlıklı ortalama tam deft
     const catalog = (await own.call("getAnalysisTables", { id })).data;
     assert.equal(catalog.tables.length, 2);
     assert.equal(catalog.tables.find(table => table.sheet === "Services").rows, 3);
-    await own.call("startAnalysis", { id, sourceId: "file-0", locale: "de", selection: { sheet: "Services", valueColumn: 1, groupColumn: 0, aggregation: "mean", numberFormat: "plain", unit: "EUR" } });
+    const input = { id, sourceId: "file-0", locale: "de", selection: { sheet: "Services", valueColumn: 1, groupColumn: 0, aggregation: "mean", numberFormat: "plain", unit: "EUR" } };
+    assert.deepEqual((await own.call("startAnalysis", { ...input, checkOnly: true })).data,
+      { id, status: "available", checkOnly: true });
+    await assert.rejects(own.call("startAnalysis", { ...input, selection: { ...input.selection, sheet: null }, checkOnly: true }),
+      error => error.code === "functions/failed-precondition" && error.details?.analysisFailure === "invalid-data");
+    await own.call("startAnalysis", input);
     const artifact = (await own.call("getAnalysisResult", { id })).data;
     assert.equal(artifact.result.metrics.find(metric => metric.id === "aggregate").value, 40);
     assert.deepEqual(artifact.result.datasets[0].points.map(point => [point.label, point.value]), [["B", 90], ["A", 15]]);
@@ -336,6 +342,23 @@ test("analiz kapalıyken belge hazırlama ve yeniden açma çalışır; AI işi,
     assert.deepEqual(await executeStartAnalysis(uid, { ...input, checkOnly: true }, { access: "available", generate: unexpectedModel }),
       { id, status: "available", checkOnly: true });
 
+    for (const [override, analysisFailure] of [
+      [{ sheet: "Missing sheet" }, "invalid-data"],
+      [{ valueColumn: 2 }, "invalid-measure"],
+      [{ groupColumn: 2 }, "invalid-group"],
+    ]) {
+      await assert.rejects(executeStartAnalysis(uid, { ...input, selection: { ...selection, ...override }, checkOnly: true },
+        { access: "available", generate: unexpectedModel }), { code: "failed-precondition", details: { analysisFailure } });
+    }
+
+    await recordRef.update({ artifactAttempt: crypto.randomUUID() });
+    try {
+      await assert.rejects(executeStartAnalysis(uid, { ...input, checkOnly: true }, { access: "available", generate: unexpectedModel }),
+        { code: "failed-precondition", details: { analysisFailure: "invalid-data" } });
+    } finally {
+      await recordRef.update({ artifactAttempt: prepared.artifactAttempt });
+    }
+
     assert.equal(modelCalls, 0);
     const afterClosed = (await recordRef.get()).data();
     assert.equal(afterClosed.ai, undefined);
@@ -426,10 +449,12 @@ test("provider-busy ve timeout sonrası deterministik toparlanma, bekleme süres
 
     // 3. Deneme: Bekleme sonrası başarılı manuel yeniden deneme raporu kaydeder.
     await recordRef.update({ "ai.retryAfter": Date.now() - 1 });
+    let sentBytes;
     const done = await executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, {
       access: "available",
-      generate: async () => {
+      generate: async ({ prompt }) => {
         modelCalls += 1;
+        sentBytes = Buffer.byteLength(prompt, "utf8");
         return JSON.stringify({
           summary: [{ text: "Kanallar arası toplam net gelir özetlendi.", metricIds: ["aggregate"] }],
           findings: [{ id: "finding-1", title: "Gelir dağılımı", text: "Mağaza ve web kaynak satırlarından doğrulandı.", metricIds: ["aggregate"] }],
@@ -443,6 +468,8 @@ test("provider-busy ve timeout sonrası deterministik toparlanma, bekleme süres
     assert.equal(docData.ai.status, "completed");
     assert.equal(docData.ai.attempts, 3);
     assert.equal(modelCalls, 3);
+    assert.ok(sentBytes > 0);
+    assert.equal(docData.ai.inputBytes, sentBytes);
   } finally {
     if (prevEmu === undefined) delete process.env.FUNCTIONS_EMULATOR;
     else process.env.FUNCTIONS_EMULATOR = prevEmu;

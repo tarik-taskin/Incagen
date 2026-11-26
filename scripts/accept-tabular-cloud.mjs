@@ -16,7 +16,7 @@ const PROJECT = "incagen-eeef4";
 const ACCEPTANCE_MODEL = "gemini-3.8-flash";
 const locales = ["tr", "en", "de", "es", "zh", "ar"];
 const closedFormats = ["csv", "xlsx"];
-const analysisFailures = new Set(["invalid-data", "scope-limit", "configuration", "provider", "provider-busy", "validation", "timeout"]);
+const analysisFailures = new Set(["invalid-data", "invalid-measure", "invalid-group", "empty-table", "row-limit", "scope-limit", "configuration", "provider", "provider-busy", "validation", "timeout"]);
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 // Kapalı ve ücretli kabul ayrı opt-in gerektirir. Ücretli koşu yalnız yerel arayüz veya dağıtım önizlemesini kabul eder.
