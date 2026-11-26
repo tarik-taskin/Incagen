@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createTabularPacket, interpretTable, analysisFingerprint } from "./tabular-result";
 import type { WorkerResult, TableSelection } from "./tabular-contract";
 
@@ -20,6 +20,51 @@ describe("real table result boundary", () => {
     expect(result.summary[0].evidence).toEqual(evidence);
     expect(result.charts).toHaveLength(1);
     expect(result.findings.at(-1)?.kind).toBe("observation");
+  });
+  it.each([["tr", "Turkish"], ["en", "English"], ["de", "German"], ["es", "Spanish"], ["zh", "Simplified Chinese"], ["ar", "Arabic"]] as const)(
+    "sends the explicit language and a compact, measured data projection for %s", async (locale, language) => {
+      const table = structuredClone(worker);
+      table.document.chunks[0].table!.rows[0][0] = "PRIVATE RAW CELL";
+      const packet = createTabularPacket("private-analysis-id", "收入和服务", table, locale);
+      const generate = vi.fn(async (_request: { prompt: string }) => JSON.stringify(narrative));
+      const result = await interpretTable(packet, locale, generate);
+      const prompt = generate.mock.calls[0][0].prompt;
+      expect(JSON.parse(prompt)).toMatchObject({ language, objective: "收入和服务", scope: {
+        measure: "Amount", group: "Channel", rows: 2, emptyRows: 0, aggregation: "sum", unit: "USD",
+      } });
+      expect(prompt).not.toMatch(/PRIVATE RAW CELL|sales\.csv|private-analysis-id|file-0|rowStart/);
+      expect(prompt).not.toContain(worker.document.sha256);
+      expect(packet.inputBytes).toBe(Buffer.byteLength(prompt, "utf8"));
+      expect(packet.inputBytes).toBeGreaterThan(prompt.length);
+      expect(result.summary[0].evidence).toEqual(evidence);
+    },
+  );
+  it("accepts a source larger than the old prompt cap without sending its cells", async () => {
+    const table = structuredClone(worker);
+    const rows = Array.from({ length: 600 }, () => ["敏".repeat(180), "150.20"]);
+    table.document.chunks[0].table!.rows = rows;
+    const chunk = table.document.chunks[0];
+    chunk.locator = { ...chunk.locator, rowEnd: rows.length + 1 };
+    table.scope.rows = rows.length;
+    table.metrics[0].value = rows.length;
+    expect(Buffer.byteLength(JSON.stringify(rows))).toBeGreaterThan(256 * 1024);
+    const packet = createTabularPacket("a", "Review the computed measure", table, "en");
+    expect(packet.inputBytes).toBeLessThan(2048);
+    expect(packet.prompt).not.toContain("敏");
+    const result = await interpretTable(packet, "en", async () => JSON.stringify(narrative));
+    expect(result.metrics[0].value).toBe(rows.length);
+    expect(result.summary[0].evidence).toEqual(evidence);
+  });
+  it("limits the provider and local narrative to verified metric IDs and three model findings", async () => {
+    const packet = createTabularPacket("a", "Compare", worker, "en");
+    const generate = vi.fn(async (_request: { schema: unknown }) => JSON.stringify(narrative));
+    await interpretTable(packet, "en", generate);
+    const schema = JSON.stringify(generate.mock.calls[0][0].schema);
+    expect(schema).toContain('"enum":["rows","aggregate","group-1","group-2"]');
+    const findings = [1, 2, 3, 4].map(index => ({ ...narrative.findings[0], id: `finding-${index}` }));
+    await expect(interpretTable(packet, "en", async () => JSON.stringify({ ...narrative, findings }))).rejects.toThrow();
+    await expect(interpretTable(packet, "de", generate)).rejects.toThrow("Mismatched report locale");
+    expect(generate).toHaveBeenCalledTimes(1);
   });
   it.each(["The total is 999 dollars.", "الإجمالي ٩٩٩", "There are ２ records."])("rejects unverified numeric prose: %s", async text => {
     await expect(interpretTable(createTabularPacket("a", "Compare", worker, "en"), "en", async () => JSON.stringify({ ...narrative, summary: [{ text, metricIds: ["aggregate"] }] }))).rejects.toThrow();

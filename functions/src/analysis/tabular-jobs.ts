@@ -157,7 +157,8 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
       metadata: { contentType: "application/gzip", cacheControl: "private, no-store" } });
     savedHash = createHash("sha256").update(encoded).digest("hex");
     const completed: AiJob = { ...job, stage: "saving", status: "completed", finishedAt: Date.now(), artifactPath, artifactSha256: savedHash,
-        model: emulator ? "emulator" : GEMINI_MODEL, durationMs: Date.now() - startedAt, inputBytes: packet.usage.utf8Bytes, pythonMs, modelMs, ...(usage ? { usage } : {}) };
+        model: emulator ? "emulator" : GEMINI_MODEL, durationMs: Date.now() - startedAt, pythonMs, modelMs,
+        ...(!useFixedEmulatorText ? { inputBytes: packet.inputBytes } : {}), ...(usage ? { usage } : {}) };
     const committed = await completeAnalysis(uid!, input.id, job.attemptId, completed);
     if (!committed) {
       if (!hasActiveAnalysisLease(job, Date.now())) throw new WorkerError("timeout");
