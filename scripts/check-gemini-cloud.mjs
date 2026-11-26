@@ -32,6 +32,7 @@ export function formatDiagnosticSummary({
   stages,
   cleanup,
   transport,
+  serviceTier,
 }) {
   const summary = {
     probe: "cloud-connectivity",
@@ -40,7 +41,8 @@ export function formatDiagnosticSummary({
     callAttempted: Boolean(callAttempted),
     durationMs: Math.max(0, Math.round(Number(durationMs) || 0)),
     ...(model === "gemini-3.8-flash" ? { model } : {}),
-    ...(transport === "interactions" ? { transport } : {}),
+    ...(transport === "interactions" || transport === "interactions-priority" ? { transport } : {}),
+    ...(serviceTier === "standard" || serviceTier === "priority" ? { serviceTier } : {}),
     ...(code ? { code: safeCode(code) } : {}),
     ...(ALLOWED_REASONS.has(reason) ? { reason } : {}),
     stages,
@@ -155,12 +157,13 @@ export async function runCloudProbe(deps = {}) {
   let failureCode;
   let failureReason;
   let model;
+  let serviceTier;
   let probeStatePath;
   const transport = (deps.env ?? process.env).INCAGEN_CLOUD_DIAGNOSTIC_TRANSPORT;
 
   const configStarted = now();
   try {
-    assert.ok(transport === undefined || transport === "interactions", "Unexpected diagnostic transport.");
+    assert.ok(transport === undefined || transport === "interactions" || transport === "interactions-priority", "Unexpected diagnostic transport.");
     config = (deps.loadConfig ?? loadCloudDiagnosticConfig)();
     admin = deps.adminClient ? await deps.adminClient() : await defaultAdminClient();
     journal = (deps.createJournal ?? createAcceptanceJournal)("connectivity");
@@ -228,11 +231,12 @@ export async function runCloudProbe(deps = {}) {
     stages.callable.callAttempted = true;
     try {
       const callable = sdk.httpsCallable(sdk.getFunctions(app, "europe-west1"), "checkGemini", { timeout: CALLABLE_TIMEOUT_MS });
-      const result = await callable(transport === "interactions" ? { transport } : {});
+      const result = await callable(transport ? { transport } : {});
       assert.equal(result?.data?.status, "ok");
       assert.equal(result?.data?.model, "gemini-3.8-flash");
       assert.equal(result?.data?.transport, transport);
       model = result.data.model;
+      serviceTier = result.data.serviceTier;
       stages.callable = { status: "passed", durationMs: now() - callableStarted, callAttempted: true };
       failedStage = "cleanup";
     } catch (error) {
@@ -321,6 +325,7 @@ export async function runCloudProbe(deps = {}) {
     reason: allPassed ? undefined : failureReason,
     model,
     transport,
+    serviceTier,
     durationMs: now() - probeStart,
     stages,
     cleanup,

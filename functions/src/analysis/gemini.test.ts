@@ -49,6 +49,13 @@ describe("Gemini backend boundary", () => {
     }), { timeout_ms: 300000, retries: { strategy: "none" } });
     expect(sdk.generate).not.toHaveBeenCalled();
   });
+  it("requests Priority explicitly and reports the service tier actually used", async () => {
+    sdk.interact.mockResolvedValue({ status: "completed", model: GEMINI_MODEL, output_text: '{"status":"ok","service":"incagen"}',
+      sdkHttpResponse: { headers: { "x-gemini-service-tier": "standard" } } });
+    await expect(checkGeminiInteractions("synthetic-key", true)).resolves.toEqual({ status: "ok", model: GEMINI_MODEL, serviceTier: "standard" });
+    expect(sdk.interact).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ service_tier: "priority", store: false }),
+      expect.objectContaining({ retries: { strategy: "none" } }));
+  });
   it.each([
     { status: "incomplete", output_text: '{"status":"ok","service":"incagen"}' },
     { status: "completed", model: "other", output_text: '{"status":"ok","service":"incagen"}' },

@@ -4,11 +4,13 @@ import { z } from "zod";
 import { checkGeminiConnection, checkGeminiInteractions, createGeminiGenerate, GeminiError, GEMINI_LIMITS } from "./gemini";
 import { readGeminiKey } from "./gemini-secret";
 
+const diagnosticInput = z.object({ transport: z.enum(["interactions", "interactions-priority"]).optional() }).strict();
+
 // Maliyetli kontrol normal kullanıcılara kapalıdır; son giriş, UID ve geliştirici claim'i zorunludur.
 export function requireGeminiDeveloper(auth: { uid: string; token: Record<string, unknown> } | undefined, data: unknown, now = Date.now()) {
   if (!auth) throw new HttpsError("unauthenticated", "Giriş gerekli.");
   if (auth.token.incagenDeveloper !== true) throw new HttpsError("permission-denied", "Geliştirici yetkisi gerekli.");
-  if (!z.object({ transport: z.literal("interactions").optional() }).strict().safeParse(data).success) {
+  if (!diagnosticInput.safeParse(data).success) {
     throw new HttpsError("invalid-argument", "Bu kontrol belge veya serbest istem kabul etmez.");
   }
   const age = now / 1000 - Number(auth.token.auth_time ?? 0);
@@ -16,8 +18,8 @@ export function requireGeminiDeveloper(auth: { uid: string; token: Record<string
   return auth.uid;
 }
 
-// UID başına dakikada bir, proje genelinde günde 20 çağrı; eşzamanlı istekler transaction ile sınırlanır.
-export async function reserveGeminiDiagnostic(uid: string, now = Date.now()) {
+// UID başına dakikada bir ve proje genelinde günde 20 çağrı. Priority bunların en fazla birini kullanabilir.
+export async function reserveGeminiDiagnostic(uid: string, now = Date.now(), priority = false) {
   const db = getFirestore();
   await db.runTransaction(async tx => {
     const account = db.doc(`users/${uid}`);
@@ -25,22 +27,28 @@ export async function reserveGeminiDiagnostic(uid: string, now = Date.now()) {
     const global = db.doc("internalDiagnostics/gemini");
     const [user, last, total] = await Promise.all([tx.get(account), tx.get(own), tx.get(global)]);
     const day = new Date(now).toISOString().slice(0, 10);
-    const count = total.data()?.day === day ? Number(total.data()?.count ?? 0) : 0;
+    const current = total.data();
+    const count = current?.day === day ? Number(current?.count ?? 0) : 0;
+    const priorityUsed = current?.day === day && current.priorityUsed === true;
     if (user.data()?.deletingAccount) throw new HttpsError("failed-precondition", "Hesap siliniyor.");
-    if (now - Number(last.data()?.at ?? 0) < 60_000 || count >= 20) throw new HttpsError("resource-exhausted", "Bağlantı kontrolü sınırına ulaşıldı.");
-    tx.set(own, { at: now }); tx.set(global, { day, count: count + 1 });
+    if (now - Number(last.data()?.at ?? 0) < 60_000 || count >= 20 || (priority && priorityUsed)) {
+      throw new HttpsError("resource-exhausted", "Bağlantı kontrolü sınırına ulaşıldı.");
+    }
+    tx.set(own, { at: now }); tx.set(global, { day, count: count + 1, ...(priority || priorityUsed ? { priorityUsed: true } : {}) });
   });
 }
 
 // Üretimde kapalı bir geliştirici smoke testi sunar; hazırlama kotasını ve kullanıcı raporlarını değiştirmez.
-export const checkGemini = onCall({ region: "europe-west1", timeoutSeconds: GEMINI_LIMITS.diagnosticTimeoutMs / 1000 + 30,
+export const checkGemini = onCall<z.infer<typeof diagnosticInput>>({ region: "europe-west1", timeoutSeconds: GEMINI_LIMITS.diagnosticTimeoutMs / 1000 + 30,
   memory: "256MiB", maxInstances: 1, concurrency: 1 }, async request => {
   const uid = requireGeminiDeveloper(request.auth, request.data);
+  const { transport } = request.data;
+  const priority = transport === "interactions-priority";
   try {
     const key = await readGeminiKey();
-    await reserveGeminiDiagnostic(uid);
-    if (request.data.transport === "interactions") {
-      return { ...await checkGeminiInteractions(key), transport: "interactions" as const };
+    await reserveGeminiDiagnostic(uid, Date.now(), priority);
+    if (transport) {
+      return { ...await checkGeminiInteractions(key, priority), transport };
     }
     return await checkGeminiConnection(createGeminiGenerate(key));
   } catch (error) {

@@ -33,6 +33,12 @@ test("Gemini geliştirici sınırı, eksik anahtar ve atomik maliyet sınırı",
     const attempts = await Promise.allSettled([reserveGeminiDiagnostic(uid), reserveGeminiDiagnostic(uid)]);
     assert.equal(attempts.filter(result => result.status === "fulfilled").length, 1);
     assert.equal((await db.doc("internalDiagnostics/gemini").get()).data().count, 1);
+    const now = Date.now();
+    const priorityAttempts = await Promise.allSettled([reserveGeminiDiagnostic("priority-developer-one", now, true), reserveGeminiDiagnostic("priority-developer-two", now, true)]);
+    assert.equal(priorityAttempts.filter(result => result.status === "fulfilled").length, 1);
+    await reserveGeminiDiagnostic("standard-developer", now);
+    assert.equal((await db.doc("internalDiagnostics/gemini").get()).data().priorityUsed, true);
+    await assert.rejects(reserveGeminiDiagnostic("other-priority-developer", now, true), { code: "resource-exhausted" });
     await db.doc("internalDiagnostics/gemini").set({ day: new Date().toISOString().slice(0, 10), count: 20 });
     await assert.rejects(reserveGeminiDiagnostic("another-developer"), { code: "resource-exhausted" });
     await db.doc("internalDiagnostics/gemini").delete();

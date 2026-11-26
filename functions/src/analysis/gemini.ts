@@ -72,7 +72,11 @@ const diagnosticRequest = {
 
 // Bağlantı testinde yalnız sabit sentetik veri gönderilir; serbest prompt ve müşteri belgesi kabul edilmez.
 export async function checkGeminiConnection(generate: GeminiGenerate) {
-  const text = await generate(diagnosticRequest);
+  return validateDiagnosticOutput(await generate(diagnosticRequest));
+}
+
+// Sağlayıcının başarılı durumuna ek olarak sabit yanıt sözleşmesini yerelde doğrular.
+function validateDiagnosticOutput(text: string) {
   try {
     const result = JSON.parse(text);
     if (Object.keys(result).sort().join() !== "service,status" || result.status !== "ok" || result.service !== "incagen") throw new Error();
@@ -81,22 +85,22 @@ export async function checkGeminiConnection(generate: GeminiGenerate) {
 }
 
 // Aynı sabit JSON’u, geliştirici teşhisinde depolamasız ve tek Interactions isteğiyle doğrular.
-export async function checkGeminiInteractions(apiKey: string) {
+export async function checkGeminiInteractions(apiKey: string, priority = false) {
   if (!apiKey.trim()) throw new GeminiError("not-configured");
   const client = new GoogleGenAI({ apiKey });
-  return checkGeminiConnection(async () => {
-    try {
-      const response = await client.interactions.create({
-        api_version: "v1", model: GEMINI_MODEL, input: diagnosticRequest.prompt, system_instruction: diagnosticRequest.system,
-        store: false, automatic_continuation: false,
-        generation_config: { thinking_level: "low", max_output_tokens: diagnosticRequest.maxOutputTokens },
-        response_format: { type: "text", mime_type: "application/json", schema: diagnosticRequest.schema },
-      }, { timeout_ms: GEMINI_LIMITS.diagnosticTimeoutMs, retries: { strategy: "none" } });
-      if (response.status !== "completed" || !response.output_text || Buffer.byteLength(response.output_text) > GEMINI_LIMITS.outputBytes
-        || (response.model && response.model !== GEMINI_MODEL)) throw new GeminiError("invalid-response");
-      return response.output_text;
-    } catch (error) { throw classifyGeminiError(error); }
-  });
+  try {
+    const response = await client.interactions.create({
+      api_version: "v1", model: GEMINI_MODEL, input: diagnosticRequest.prompt, system_instruction: diagnosticRequest.system,
+      store: false, automatic_continuation: false, ...(priority ? { service_tier: "priority" } : {}),
+      generation_config: { thinking_level: "low", max_output_tokens: diagnosticRequest.maxOutputTokens },
+      response_format: { type: "text", mime_type: "application/json", schema: diagnosticRequest.schema },
+    }, { timeout_ms: GEMINI_LIMITS.diagnosticTimeoutMs, retries: { strategy: "none" } });
+    if (response.status !== "completed" || !response.output_text || Buffer.byteLength(response.output_text) > GEMINI_LIMITS.outputBytes
+      || (response.model && response.model !== GEMINI_MODEL)) throw new GeminiError("invalid-response");
+    const tier = response.sdkHttpResponse?.headers?.["x-gemini-service-tier"] ?? response.service_tier;
+    return { ...validateDiagnosticOutput(response.output_text),
+      ...(tier === "standard" || tier === "priority" ? { serviceTier: tier } : {}) };
+  } catch (error) { throw classifyGeminiError(error); }
 }
 
 // Gelecek analiz hattı için adaptör: kaynakları talimat saymaz; sonuç ancak güvenilir bağlam kapısından geçer.
