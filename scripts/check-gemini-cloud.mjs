@@ -9,6 +9,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } f
 import { getFunctions, httpsCallable } from "firebase/functions";
 
 const PROJECT = "incagen-eeef4";
+const CALLABLE_TIMEOUT_MS = 340_000;
 const DEFAULT_PROBE_STATE_FILE = "/tmp/incagen-cloud-probe-resources.json";
 const ALLOWED_REASONS = new Set(["not-configured", "unavailable", "busy", "timeout", "invalid-response", "invalid-input"]);
 const SAFE_CODE = /^(auth|functions)\/[a-z0-9-]+$|^(configuration-error|client-auth-failed|claim-assign-failed|token-refresh-failed|callable-failed|cleanup-failed|validation|diagnostic-failed)$/;
@@ -222,7 +223,7 @@ export async function runCloudProbe(deps = {}) {
     const callableStarted = now();
     stages.callable.callAttempted = true;
     try {
-      const callable = sdk.httpsCallable(sdk.getFunctions(app, "europe-west1"), "checkGemini", { timeout: 125000 });
+      const callable = sdk.httpsCallable(sdk.getFunctions(app, "europe-west1"), "checkGemini", { timeout: CALLABLE_TIMEOUT_MS });
       const result = await callable({});
       assert.equal(result?.data?.status, "ok");
       assert.equal(result?.data?.model, "gemini-3.8-flash");

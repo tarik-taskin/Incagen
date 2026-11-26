@@ -36,8 +36,9 @@ function mockDeps(overrides = {}) {
     }),
     signInWithEmailAndPassword: async () => ({}),
     getFunctions: () => ({}),
-    httpsCallable: (_functions, name) => async () => {
+    httpsCallable: (_functions, name, options) => async () => {
       if (name === "checkGemini") {
+        assert.deepEqual(options, { timeout: 340_000 });
         calls.callable += 1;
         return { data: { status: "ok", model: "gemini-3.8-flash" } };
       }

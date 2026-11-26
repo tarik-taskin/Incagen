@@ -21,8 +21,9 @@ describe("Gemini backend boundary", () => {
     sdk.generate.mockResolvedValue({ text: '{"status":"ok","service":"incagen"}', candidates: [{ finishReason: "STOP" }] });
     expect(await checkGeminiConnection(createGeminiGenerate("synthetic-key"))).toEqual({ status: "ok", model: GEMINI_MODEL });
     expect(sdk.constructor).toHaveBeenCalledWith({ apiKey: "synthetic-key", httpOptions: { timeout: 45000, retryOptions: { attempts: 1 } } });
-    expect(sdk.generate.mock.calls[0][0]).toMatchObject({ model: GEMINI_MODEL, config: { maxOutputTokens: 2048, responseMimeType: "application/json", temperature: 0,
-      thinkingConfig: { thinkingLevel: "LOW" }, httpOptions: { timeout: 90000, retryOptions: { attempts: 1 } } } });
+    expect(sdk.generate.mock.calls[0][0]).toMatchObject({ model: GEMINI_MODEL, config: { maxOutputTokens: 2048, responseMimeType: "application/json",
+      thinkingConfig: { thinkingLevel: "LOW" }, httpOptions: { timeout: 300000, retryOptions: { attempts: 1 } } } });
+    expect(sdk.generate.mock.calls[0][0].config).not.toHaveProperty("temperature");
     expect(sdk.generate.mock.calls[0][0].contents).not.toContain("Revenue");
     expect(sdk.generate.mock.calls[0][0].config.tools).toBeUndefined();
   });
@@ -31,6 +32,7 @@ describe("Gemini backend boundary", () => {
     const usage = vi.fn();
     await createGeminiGenerate("synthetic-key", usage)({ prompt: "test", system: "test", schema: {}, maxOutputTokens: 4096, thinkingLevel: "low", timeoutMs: 90000 });
     expect(sdk.generate.mock.calls[0][0].config.thinkingConfig).toEqual({ thinkingLevel: "LOW" });
+    expect(sdk.generate.mock.calls[0][0].config.temperature).toBe(0);
     expect(sdk.generate.mock.calls[0][0].config.httpOptions).toEqual({ timeout: 90000, retryOptions: { attempts: 1 } });
     expect(usage).toHaveBeenCalledWith({ promptTokens: 120, outputTokens: 60, totalTokens: 180 });
   });

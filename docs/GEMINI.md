@@ -51,7 +51,7 @@ Resmî kaynaklar: [SDK ve başlangıç](https://ai.google.dev/gemini-api/docs/ge
 
 ## Kullanıcı tablosuyla kaynaklı analiz
 
-5 Kasım geliştirmesi, `startAnalysis` üzerinden seçilen tek CSV/XLSX tablosunun doğrulanmış Python hesaplarını modelin kısa yorumuyla birleştirir. Metrik/grafik değerleri modelden alınmaz; anahtar mevcut sunucu secret okuyucusunda kalır. Bu iş akışının limitleri geliştiriciye özel `checkGemini` limitlerinden ayrıdır. Özel worker/callable uçları dağıtıldı. Analiz ve güncel bağlantı kontrolü 90 saniye ile sınırlıdır; otomatik tekrar yoktur. Gerçek analiz denemeleri `503 / capacity` aldı; minimal bağlantı kontrolü de başarısızdı. Altı dilde canlı model kalite kabulü tamamlanmadığından backend ve arayüz yayın kapıları kapalıdır. Bu durum anahtarın eksik olduğu anlamına gelmez; anahtar değeri teşhis için yerel ortama alınmadı. Güncel kapsam ve onay planı [tablo analizi rehberindedir](TABULAR-ANALYSIS.md).
+5 Kasım geliştirmesi, `startAnalysis` üzerinden seçilen tek CSV/XLSX tablosunun doğrulanmış Python hesaplarını modelin kısa yorumuyla birleştirir. Metrik/grafik değerleri modelden alınmaz; anahtar mevcut sunucu secret okuyucusunda kalır. Bu iş akışının limitleri geliştiriciye özel `checkGemini` limitlerinden ayrıdır. Özel worker/callable uçları dağıtıldı. Kullanıcı analizi 90 saniye ile sınırlıdır. Otomatik tekrar yoktur. Gerçek analiz denemeleri `503 / capacity` aldı; minimal bağlantı kontrolü de başarısızdı. Altı dilde canlı model kalite kabulü tamamlanmadığından backend ve arayüz yayın kapıları kapalıdır. Bu durum anahtarın eksik olduğu anlamına gelmez; anahtar değeri teşhis için yerel ortama alınmadı. Güncel kapsam ve onay planı [tablo analizi rehberindedir](TABULAR-ANALYSIS.md).
 
 
 ## Sır indirmeden bulut teşhisi
@@ -61,6 +61,8 @@ INCAGEN_CLOUD_DIAGNOSTIC=1 node scripts/check-gemini-cloud.mjs
 ```
 
 Komut mevcut Firebase CLI oturumunu ve yalnız public Firebase web yapılandırmasını kullanır. `incagen-eeef4` dışında çalışmaz; sağlayıcı anahtarını okumaz. Yeni UUID içeren sentetik Auth hesabına yalnız test süresince geliştirici claim'i verir, tek sabit backend isteği gönderir, sonra claim'i kaldırır ve hesabı siler. Silindiği Auth metadata üzerinden doğrulanır. `/tmp/incagen-cloud-probe-resources.json` yalnız proje/UID/temizlik durumudur; e-posta, parola ve token içermez. Model veya temizleme hatasında başarılı çıkış verilmez; global maliyet sayacı korunur.
+
+Geliştirici teşhisinin sağlayıcı süresi 300 saniye, Functions süresi 330 saniye ve istemci süresi 340 saniyedir. Sentetik çağrıda Gemini 3.8 Flash için `LOW` düşünme seviyesi ve sağlayıcının varsayılan sıcaklığı kullanılır. Yalnız `checkGemini` revizyonunu yayınlamak için `INCAGEN_CLOSED_FUNCTIONS_DEPLOY=1 npm run backend:functions:deploy -- --diagnostic-only` komutu kullanılır. [Google sorun giderme rehberi](https://ai.google.dev/gemini-api/docs/troubleshooting).
 
 6 Kasım devamında ilk iki 45 saniyelik kontrol doğrulanamadı; yeni güvenli sınıflama bunlardan ikincisini `timeout` olarak ayırdı. Analizle aynı `LOW`/90 saniye ayarıyla yapılan son kontrol `busy` yanıtı aldı. Hesaplar ve geçici yetkiler temizlendi. Gerçek analiz kalite kabulü hâlâ tamamlanmadı; açılış anahtarları kapalı kalır. [Resmî thinking seçenekleri](https://aistudio.google.com/docs/thinking?generate-content=true).
 

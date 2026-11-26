@@ -1,7 +1,7 @@
 import { getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { z } from "zod";
-import { checkGeminiConnection, createGeminiGenerate, GeminiError } from "./gemini";
+import { checkGeminiConnection, createGeminiGenerate, GeminiError, GEMINI_LIMITS } from "./gemini";
 import { readGeminiKey } from "./gemini-secret";
 
 // Maliyetli kontrol normal kullanıcılara kapalıdır; son giriş, UID ve geliştirici claim'i zorunludur.
@@ -31,7 +31,8 @@ export async function reserveGeminiDiagnostic(uid: string, now = Date.now()) {
 }
 
 // Üretimde kapalı bir geliştirici smoke testi sunar; hazırlama kotasını ve kullanıcı raporlarını değiştirmez.
-export const checkGemini = onCall({ region: "europe-west1", timeoutSeconds: 120, memory: "256MiB", maxInstances: 1, concurrency: 1 }, async request => {
+export const checkGemini = onCall({ region: "europe-west1", timeoutSeconds: GEMINI_LIMITS.diagnosticTimeoutMs / 1000 + 30,
+  memory: "256MiB", maxInstances: 1, concurrency: 1 }, async request => {
   const uid = requireGeminiDeveloper(request.auth, request.data);
   try {
     const key = await readGeminiKey();

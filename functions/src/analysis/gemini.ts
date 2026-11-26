@@ -3,14 +3,19 @@ import type { AnalysisPacket } from "./input-packet";
 import { aiResultJsonSchema, validateAiResult } from "./result-contract";
 
 export const GEMINI_MODEL = "gemini-3.8-flash";
-export const GEMINI_LIMITS = { timeoutMs: 45_000, analysisTimeoutMs: 90_000, inputBytes: 256 * 1024, outputBytes: 64 * 1024 } as const;
+export const GEMINI_LIMITS = { timeoutMs: 45_000, analysisTimeoutMs: 90_000, diagnosticTimeoutMs: 300_000, inputBytes: 256 * 1024, outputBytes: 64 * 1024 } as const;
 export type GeminiFailureCode = "not-configured" | "unavailable" | "busy" | "timeout" | "invalid-response" | "invalid-input";
 
 // Sağlayıcının ham hata/metinlerini ve anahtarı istemciye veya loglara taşımayan kontrollü hata.
 export class GeminiError extends Error {
   constructor(readonly code: GeminiFailureCode) { super(`Gemini: ${code}`); this.name = "GeminiError"; }
 }
-export interface GeminiRequest { prompt: string; system: string; schema: unknown; maxOutputTokens: number; thinkingLevel?: "low" | "medium"; timeoutMs?: 45_000 | 90_000 }
+export interface GeminiRequest {
+  prompt: string; system: string; schema: unknown; maxOutputTokens: number;
+  thinkingLevel?: "low" | "medium";
+  timeoutMs?: 45_000 | 90_000 | 300_000;
+  useDefaultTemperature?: true;
+}
 export type GeminiGenerate = (request: GeminiRequest) => Promise<string>;
 
 // Resmî SDK yalnız backend'de çalışır; otomatik ücretli retry, araç ve kod yürütme açılmaz.
@@ -22,7 +27,7 @@ export function createGeminiGenerate(apiKey: string, onUsage?: (usage: { promptT
     try {
       const response = await client.models.generateContent({
         model: GEMINI_MODEL, contents: request.prompt,
-        config: { systemInstruction: request.system, temperature: 0, maxOutputTokens: request.maxOutputTokens,
+        config: { systemInstruction: request.system, ...(request.useDefaultTemperature ? {} : { temperature: 0 }), maxOutputTokens: request.maxOutputTokens,
           responseMimeType: "application/json", responseJsonSchema: request.schema,
           ...(request.thinkingLevel ? { thinkingConfig: { thinkingLevel: request.thinkingLevel === "low" ? ThinkingLevel.LOW : ThinkingLevel.MEDIUM } } : {}),
           ...(request.timeoutMs ? { httpOptions: { timeout, retryOptions: { attempts: 1 } } } : {}),
@@ -55,7 +60,8 @@ export function createGeminiGenerate(apiKey: string, onUsage?: (usage: { promptT
 // Bağlantı testinde yalnız sabit sentetik veri gönderilir; serbest prompt ve müşteri belgesi kabul edilmez.
 export async function checkGeminiConnection(generate: GeminiGenerate) {
   const text = await generate({ prompt: 'Return exactly {"status":"ok","service":"incagen"}.',
-    system: "This is a connectivity test. Return only the requested JSON.", maxOutputTokens: 2048, thinkingLevel: "low", timeoutMs: GEMINI_LIMITS.analysisTimeoutMs,
+    system: "This is a connectivity test. Return only the requested JSON.", maxOutputTokens: 2048, thinkingLevel: "low",
+    useDefaultTemperature: true, timeoutMs: GEMINI_LIMITS.diagnosticTimeoutMs,
     schema: { type: "object", properties: { status: { type: "string", enum: ["ok"] }, service: { type: "string", enum: ["incagen"] } }, required: ["status", "service"], additionalProperties: false } });
   try {
     const result = JSON.parse(text);

@@ -12,7 +12,7 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 ### 2026-11-26 — Furkan / Codex: beta erişim ve kabul kanıtı
 
 - [x] Sahip: Furkan — 1. Kapalı canlı Functions ve worker sürümünü sağlayıcı denemesi öncesinde doğrula.
-- [!] Sahip: Furkan — 2. Tek gerçek sentetik Gemini isteğinin sonucu `functions/unavailable / timeout` (95.401 ms). Sağlayıcıdan geçerli yanıt bekleniyor. Hesap ve claim temizliği doğrulandı; analiz kapıları kapalı.
+- [~] Sahip: Furkan — 2. Canlı Gemini 3.8 Flash yanıtı ve süreyi doğrula. 26 Kasım ilk denemelerde 504 / timeout ve 503 / capacity görüldü. Yalnız geliştirici teşhisinde sağlayıcının varsayılan üretim ayarı ile ayrı, sınırlı süreyi dene. Geçerli sabit JSON ve doğrulanmış temizlik kabul koşuludur.
 - [x] Sahip: Furkan — 3. Teşhis hesabı, geçici claim ve kaynak günlüğü temizliğini doğrula.
 - [x] Sahip: Furkan — 4. Bulut bütçe, alarm ve saklama durumunu salt okunur veriyle yeniden değerlendir.
 - [x] Sahip: Furkan — 5. Canlı kabulün oluşturduğu e-posta ile sentetik davet doğrulayıcısının sözleşmesini birleştir.
