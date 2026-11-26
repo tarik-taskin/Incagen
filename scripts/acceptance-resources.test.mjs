@@ -3,7 +3,7 @@ import test from "node:test";
 import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createAcceptanceJournal, verifyAcceptanceCleanup } from "./acceptance-resources.mjs";
+import { createAcceptanceJournal, createTabularAcceptanceEmail, verifyAcceptanceCleanup } from "./acceptance-resources.mjs";
 const uid = "synthetic-user-00000000001", id = "11111111-2222-4333-8444-555555555555";
 const config = { projectId: "incagen-eeef4", storageBucket: "incagen-eeef4.firebasestorage.app" };
 // Gerçek servis yerine yalnız belirli metadata yanıtlarını döndürür; hiçbir hesap oluşturmaz.
@@ -62,7 +62,8 @@ test("wrong project, empty scope and symlink journals are rejected", async t => 
 
 test("updates beta claims only for the freshly journaled synthetic account", async t => {
   const journal = createAcceptanceJournal("tabular", directory(t));
-  const email = `table-${id}@example.test`;
+  const email = createTabularAcceptanceEmail();
+  assert.notEqual(email, createTabularAcceptanceEmail());
   const calls = [];
   const admin = async (url, options) => {
     const payload = JSON.parse(options.body);
@@ -92,6 +93,7 @@ test("refuses to replace existing claims or update an account that does not matc
   const email = `table-${id}@example.test`;
   for (const record of [
     { localId: uid, email: "somebody@example.test" },
+    { localId: "different-test-user-000001", email },
     { localId: uid, email, disabled: true },
     { localId: uid, email, customAttributes: JSON.stringify({ incagenDeveloper: true }) },
   ]) {

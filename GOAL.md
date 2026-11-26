@@ -9,6 +9,31 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
+### 2026-11-26 — Furkan / Codex: beta erişim ve kabul kanıtı
+
+- [~] Sahip: Furkan — 1. Kapalı canlı Functions ve worker sürümünü sağlayıcı denemesi öncesinde doğrula.
+- [~] Sahip: Furkan — 2. Mevcut geliştirici teşhisinden tek gerçek sentetik Gemini yanıtı ve süre kaydet.
+- [~] Sahip: Furkan — 3. Teşhis hesabı, geçici claim ve kaynak günlüğü temizliğini doğrula.
+- [~] Sahip: Furkan — 4. Bulut bütçe, alarm ve saklama durumunu salt okunur veriyle yeniden değerlendir.
+- [x] Sahip: Furkan — 5. Canlı kabulün oluşturduğu e-posta ile sentetik davet doğrulayıcısının sözleşmesini birleştir.
+- [x] Sahip: Furkan — 6. Sentetik davet öncesinde Auth kimliği, hesap durumu ve önceki claim’leri doğrulamayı koru.
+- [x] Sahip: Furkan — 7. Canlı kabul ortamında emülatör ve güvenli olmayan önizleme URL’lerini reddet.
+- [x] Sahip: Furkan — 8. Canlı model koşusunun ön kontrolünü ve yerel sentetik bağlam regresyonunu doğrula.
+- [~] Sahip: Furkan — 9. Kapalı kabulde aynı sentetik hesapla CSV ve çok sayfalı XLSX hazırlığını denetle.
+- [~] Sahip: Furkan — 10. Seçili sayfa, sütunlar ve örneklerin fiziksel kaynak satırlarını doğrula.
+- [~] Sahip: Furkan — 11. Her iki formatta checkOnly reddini, iş rezervasyonu olmamasını ve kapsamlı sentetik temizliği doğrula.
+- [~] Sahip: Furkan — 12. Kapalı koşunun makine kanıtına doğrulanmış vaka sayısı, format ve güvenli durumları bağla.
+- [~] Sahip: Furkan — 13. Rapor kabulünde kaynak SHA’sını ilgili sabit CSV/XLSX örneğiyle eşleştir.
+- [~] Sahip: Furkan — 14. Rapor kabulünde ölçüm durumunu dosya ve vaka kimliğine bağla.
+- [~] Sahip: Furkan — 15. Kanıt dosyalarına boyut sınırı ve geçerli UTF-8 kontrolü uygula.
+- [~] Sahip: Furkan — 16. Önceki kanıt sürümlerini ve bekleyen insan kararlarını güvenli biçimde okunabilir tut.
+- [~] Sahip: Furkan — 17. Kullanım özetinin fiyat tarifesinde gerçek takvim tarihini doğrula.
+- [~] Sahip: Furkan — 18. Geçersiz CLI argümanlarının eksik veya yanıltıcı kullanım özeti üretmesini engelle.
+- [~] Sahip: Furkan — 19. CSV/XLSX ve dil bazlı eksik ölçüm nedenlerini beta denetiminde görünür kıl.
+- [~] Sahip: Furkan — 20. Canlı kapalı kabulü yeni sürümde çalıştır ve kanıt dosyasını çevrimdışı yeniden doğrula.
+- [~] Sahip: Furkan — 21. Kalite kapıları ile aynı GitHub ve Netlify üretim paketini doğrula.
+- [~] Sahip: Furkan — 22. Kapanan operasyon kanıtını, model kalite kabulünü ve ekip kararlarını yol haritasında güncelle.
+
 ### 2026-11-26 — Furkan / Codex: kapalı backend yayını ve analiz iş güvenilirliği
 
 - [x] Sahip: Furkan — 1. Temiz Git revizyonuna bağlı, sır yazdırmayan kapalı backend yayın planı oluştur.

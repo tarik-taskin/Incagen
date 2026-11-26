@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createAcceptanceJournal, writePrivateJson } from "./acceptance-resources.mjs";
+import { createAcceptanceJournal, createTabularAcceptanceEmail, writePrivateJson } from "./acceptance-resources.mjs";
 import { tabularFixture } from "./tabular-synthetic-fixtures.mjs";
 import { verifyGitStatus } from "./verify-release.mjs";
 import { existsSync, lstatSync, mkdirSync, readFileSync } from "node:fs";
@@ -27,9 +27,10 @@ export function configuration(mode, env = process.env, readEnvFile = () => readF
     && !env.FIREBASE_STORAGE_EMULATOR_HOST && !env.STORAGE_EMULATOR_HOST, "Cloud acceptance cannot use emulator configuration.");
   const url = new URL(env.INCAGEN_ACCEPTANCE_URL || "");
   const local = url.protocol === "http:" && url.hostname === "127.0.0.1";
-  const deployed = url.protocol === "https:" && (/^[a-f0-9]+--incagen\.netlify\.app$/.test(url.hostname)
+  const deployed = url.protocol === "https:" && !url.port && (/^[a-f0-9]+--incagen\.netlify\.app$/.test(url.hostname)
     || (mode === "closed" && url.hostname === "incagen.netlify.app"));
-  assert.ok((local || deployed) && !url.username && !url.password, "Unexpected acceptance URL.");
+  assert.ok((local || deployed) && !url.username && !url.password && url.pathname === "/" && !url.search && !url.hash,
+    "Unexpected acceptance URL.");
   const values = Object.fromEntries(readEnvFile().split(/\r?\n/).filter(line => /^VITE_FIREBASE_/.test(line)).map(line => { const at = line.indexOf("="); return [line.slice(0, at), line.slice(at + 1).trim().replace(/^['"]|['"]$/g, "")]; }));
   assert.equal(values.VITE_FIREBASE_PROJECT_ID, PROJECT);
   return { url: url.origin, firebase: { apiKey: values.VITE_FIREBASE_API_KEY, authDomain: values.VITE_FIREBASE_AUTH_DOMAIN, projectId: PROJECT, storageBucket: values.VITE_FIREBASE_STORAGE_BUCKET, appId: values.VITE_FIREBASE_APP_ID } };
@@ -488,7 +489,9 @@ async function checkBrowser(account, id, baseURL, { closed, outputDirectory }) {
   try {
     const page = await browser.newPage({ reducedMotion: "reduce" });
     await page.goto(baseURL);
+    assert.equal(new URL(page.url()).origin, baseURL, "Acceptance site redirected outside the configured origin.");
     await page.getByRole("button", { name: "Analize başla", exact: true }).click();
+    assert.equal(new URL(page.url()).origin, baseURL, "Acceptance sign-in redirected outside the configured origin.");
     await page.getByLabel("E-posta", { exact: true }).fill(account.email);
     await page.getByLabel("Parola", { exact: true }).fill(account.password);
     await page.getByRole("button", { name: "Giriş yap", exact: true }).click();
@@ -536,7 +539,9 @@ async function main(args) {
   console.log(JSON.stringify({ phase: "start", mode, gitCommit, caseCount: cases.length, outputDirectory, journal: journal.path }));
   try {
     for (let index = 0; index < Math.ceil(cases.length / 2); index++) {
-      const app = initializeApp(config.firebase, `live-table-${randomUUID()}`), email = `table-acceptance-${randomUUID()}@example.test`, password = `Synthetic-${randomUUID()}!`;
+      const app = initializeApp(config.firebase, `live-table-${randomUUID()}`);
+      const email = createTabularAcceptanceEmail();
+      const password = `Synthetic-${randomUUID()}!`;
       const account = { app, email, password, ids: [] }; accounts.push(account);
       const created = await createUserWithEmailAndPassword(getAuth(app), email, password); account.uid = created.user.uid;
       journal.account(account.uid);

@@ -6,8 +6,19 @@ import { createRequire } from "node:module";
 
 const PROJECT = "incagen-eeef4";
 const UID = /^[a-zA-Z0-9_-]{20,128}$/;
-const TABULAR_TEST_EMAIL = /^table-[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}@example\.test$/;
 const ID = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
+const tabularEmailPrefix = "table-";
+const tabularEmailDomain = "@example.test";
+
+// Canlı tabular kabul ve geçici beta daveti aynı sentetik adres biçimini kullanır.
+export function createTabularAcceptanceEmail() {
+  return `${tabularEmailPrefix}${randomUUID()}${tabularEmailDomain}`;
+}
+
+function isTabularAcceptanceEmail(email) {
+  return typeof email === "string" && email.startsWith(tabularEmailPrefix) && email.endsWith(tabularEmailDomain)
+    && ID.test(email.slice(tabularEmailPrefix.length, -tabularEmailDomain.length));
+}
 
 // Özel JSON'u aynı dizinde atomik olarak değiştirir.
 export function writePrivateJson(path, data) {
@@ -50,7 +61,7 @@ export function createAcceptanceJournal(purpose, directory = resolve(".incagen-l
       assert.equal(state.purpose, "tabular");
       assert.equal(state.status, "pending");
       const account = state.accounts.find(item => item.uid === uid);
-      assert.ok(account && !account.tabularBetaGrant && TABULAR_TEST_EMAIL.test(email), "Invalid synthetic beta scope.");
+      assert.ok(account && !account.tabularBetaGrant && isTabularAcceptanceEmail(email), "Invalid synthetic beta scope.");
       account.tabularBetaGrant = "attempted";
       persist();
 

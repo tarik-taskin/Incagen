@@ -501,7 +501,9 @@ test("requires mode-specific opt-ins and keeps paid acceptance away from the pri
   const smoke = { INCAGEN_LIVE_MODEL_ACCEPTANCE: "1", INCAGEN_ACCEPTANCE_URL: "http://127.0.0.1:4177" };
   assert.equal(configuration("smoke", smoke, buildConfig).url, smoke.INCAGEN_ACCEPTANCE_URL);
   assert.throws(() => configuration("closed", smoke, buildConfig), /opt-in/);
-  for (const INCAGEN_ACCEPTANCE_URL of ["https://incagen.netlify.app", "https://example.test", "http://fake@127.0.0.1"]) {
+  for (const INCAGEN_ACCEPTANCE_URL of ["https://incagen.netlify.app", "https://example.test", "http://fake@127.0.0.1",
+    "http://127.0.0.1:4177/other", "http://127.0.0.1:4177/?target=other", "http://127.0.0.1:4177/#other",
+    "https://deadbeef--incagen.netlify.app:8443"]) {
     assert.throws(() => configuration("smoke", { ...smoke, INCAGEN_ACCEPTANCE_URL }, buildConfig), /Unexpected acceptance URL/);
   }
   assert.equal(configuration("full", { ...smoke, INCAGEN_ACCEPTANCE_URL: "https://deadbeef--incagen.netlify.app" }, buildConfig).firebase.projectId, "incagen-eeef4");
