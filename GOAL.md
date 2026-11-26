@@ -11,10 +11,10 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ### 2026-11-26 — Furkan / Codex: beta erişim ve kabul kanıtı
 
-- [~] Sahip: Furkan — 1. Kapalı canlı Functions ve worker sürümünü sağlayıcı denemesi öncesinde doğrula.
-- [~] Sahip: Furkan — 2. Mevcut geliştirici teşhisinden tek gerçek sentetik Gemini yanıtı ve süre kaydet.
-- [~] Sahip: Furkan — 3. Teşhis hesabı, geçici claim ve kaynak günlüğü temizliğini doğrula.
-- [~] Sahip: Furkan — 4. Bulut bütçe, alarm ve saklama durumunu salt okunur veriyle yeniden değerlendir.
+- [x] Sahip: Furkan — 1. Kapalı canlı Functions ve worker sürümünü sağlayıcı denemesi öncesinde doğrula.
+- [!] Sahip: Furkan — 2. Tek gerçek sentetik Gemini isteğinin sonucu `functions/unavailable / timeout` (95.401 ms). Sağlayıcıdan geçerli yanıt bekleniyor. Hesap ve claim temizliği doğrulandı; analiz kapıları kapalı.
+- [x] Sahip: Furkan — 3. Teşhis hesabı, geçici claim ve kaynak günlüğü temizliğini doğrula.
+- [x] Sahip: Furkan — 4. Bulut bütçe, alarm ve saklama durumunu salt okunur veriyle yeniden değerlendir.
 - [x] Sahip: Furkan — 5. Canlı kabulün oluşturduğu e-posta ile sentetik davet doğrulayıcısının sözleşmesini birleştir.
 - [x] Sahip: Furkan — 6. Sentetik davet öncesinde Auth kimliği, hesap durumu ve önceki claim’leri doğrulamayı koru.
 - [x] Sahip: Furkan — 7. Canlı kabul ortamında emülatör ve güvenli olmayan önizleme URL’lerini reddet.
@@ -30,9 +30,11 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 17. Kullanım özetinin fiyat tarifesinde gerçek takvim tarihini doğrula.
 - [x] Sahip: Furkan — 18. Geçersiz CLI argümanlarının eksik veya yanıltıcı kullanım özeti üretmesini engelle.
 - [x] Sahip: Furkan — 19. CSV/XLSX ve dil bazlı eksik ölçüm nedenlerini beta denetiminde görünür kıl.
-- [~] Sahip: Furkan — 20. Canlı kapalı kabulü yeni sürümde çalıştır ve kanıt dosyasını çevrimdışı yeniden doğrula.
+- [x] Sahip: Furkan — 20. Canlı kapalı kabulü yeni sürümde çalıştır ve kanıt dosyasını çevrimdışı yeniden doğrula.
 - [~] Sahip: Furkan — 21. Kalite kapıları ile aynı GitHub ve Netlify üretim paketini doğrula.
-- [~] Sahip: Furkan — 22. Kapanan operasyon kanıtını, model kalite kabulünü ve ekip kararlarını yol haritasında güncelle.
+- [x] Sahip: Furkan — 22. Kapanan operasyon kanıtını, model kalite kabulünü ve ekip kararlarını yol haritasında güncelle.
+
+Canlı kapalı kabul, CSV ve iki sayfalı XLSX için `5346048` üzerinde geçti. İki hazırlık tarayıcıda açıldı, sıfır ücretli iş ve sıfır model çağrısı kaydedildi. Son GitHub/Netlify yayın kanıtı TASK-0007 devir kaydında sonuçlandırılır. [Operasyon durumu](docs/BETA-ACCEPTANCE.md#sınırlı-beta-operasyon-durumu-ve-ekip-karar-matrisi).
 
 ### 2026-11-26 — Furkan / Codex: kapalı backend yayını ve analiz iş güvenilirliği
 
@@ -53,15 +55,15 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 15. Geç gelen sonucun özgün hatasını, geçici artefakt temizliği hatasıyla ezme.
 - [x] Sahip: Furkan — 16. Lease, deneme değişimi ve artefakt temizliği davranışını regresyonlarla doğrula.
 - [x] Sahip: Furkan — 17. Emülatörde kapalı analiz ve mevcut belge hazırlığını son paketle doğrula.
-- [~] Sahip: Furkan — 18. Güncel özel Python işçisini kontrollü Cloud Build ve Cloud Run hattından geçir.
-- [~] Sahip: Furkan — 19. Güncel tablo Functions uçlarını analiz kapalıyken dar kapsamda dağıt.
-- [~] Sahip: Furkan — 20. Canlı sentetik hazırlık, kapalı analiz ve kaynak temizliğini doğrula.
-- [~] Sahip: Furkan — 21. Yerel kalite kapılarını ve sır taramasını son paket üzerinde tamamla.
-- [~] Sahip: Furkan — 22. GitHub Quality sonucuyla main ve furkan için aynı commit’i doğrula.
-- [~] Sahip: Furkan — 23. Aynı kapalı analiz paketini Netlify’a yükle ve canlı dosya eşliğini doğrula.
+- [x] Sahip: Furkan — 18. Güncel özel Python işçisini kontrollü Cloud Build ve Cloud Run hattından geçir.
+- [x] Sahip: Furkan — 19. Güncel tablo Functions uçlarını analiz kapalıyken dar kapsamda dağıt.
+- [x] Sahip: Furkan — 20. Canlı sentetik hazırlık, kapalı analiz ve kaynak temizliğini doğrula.
+- [x] Sahip: Furkan — 21. Yerel kalite kapılarını ve sır taramasını son paket üzerinde tamamla.
+- [x] Sahip: Furkan — 22. GitHub Quality sonucuyla main ve furkan için aynı commit’i doğrula.
+- [x] Sahip: Furkan — 23. Aynı kapalı analiz paketini Netlify’a yükle ve canlı dosya eşliğini doğrula.
 - [x] Sahip: Furkan — 24. Canlı backend, sağlayıcı kabulü ve operasyon kararları için ayrı kanıt yolunu belgeye bağla.
 
-Dağıtım kapsamı ve geri dönüş adımları [geliştirme rehberinde](docs/DEVELOPMENT.md#kapalı-analiz-backend-yayını). Değişebilen 18–23 numaralı canlı uygulama ve yayın kanıtları TASK-0006 yerel devir kaydında sonuçlandırılır.
+Dağıtım kapsamı ve geri dönüş adımları [geliştirme rehberinde](docs/DEVELOPMENT.md#kapalı-analiz-backend-yayını). 18–23 numaralı canlı uygulama ve yayın kanıtları TASK-0006 devir kaydında doğrulandı.
 
 ### 2026-11-25 — Furkan / Codex: kaynaklı metrik CSV dışa aktarımı
 

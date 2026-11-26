@@ -110,7 +110,7 @@ Belge hazırlığı TypeScript Cloud Functions kullanır ve Cloud Tasks gerektir
 - Google ile giriş Firebase açılır penceresiyle yapılır; ilk girişte hesap açılır, hesap seçici her seferinde gösterilir. Bir e-posta tek hesaba bağlanır; adres başka yöntemle kayıtlıysa kullanıcıya o yöntemle girmesi söylenir. Pencereyi kapatmak hata göstermez. Apple ve Microsoft seçenekleri pasiftir. Emülatörde Google girişi sahte hesap penceresiyle çalışır.
 - Oturumdaki kullanıcı şifre değiştirme isteğini yalnız bağlı e-posta adresi için başlatabilir. Canlı Firebase ortamında bağlantı e-postayla iletilir; mevcut yerel emülatör gerçek e-posta teslim etmez. Yalnız Google ile giriş yapan hesapta parola bağlantısı gösterilmez; hesap silme parola yerine Google penceresiyle yeniden doğrulanır.
 - Ayarlar'da Google Analytics ve Microsoft Clarity bağlantıları yalnız pasif arayüzdür; OAuth veya veri senkronizasyonu yoktur.
-- Analizler kullanıcı silene kadar tutulur; mevcut emülatör verisi normal durdurmada kalıcı değildir. Gerçek müşteri için saklama/yedek politikası ayrıca onaylanmalıdır.
+- Analizler kullanıcı silene kadar çalışma alanında tutulur. Canlı Storage'da silinen nesneler için 7 günlük soft delete etkin olduğu doğrulandı. Gerçek müşteri için nihai saklama ve yedek politikası [beta kabulü](docs/BETA-ACCEPTANCE.md#sınırlı-beta-operasyon-durumu-ve-ekip-karar-matrisi) kapsamında onaylanır.
 
 ## Sonraki AI ve entegrasyon aşaması
 
