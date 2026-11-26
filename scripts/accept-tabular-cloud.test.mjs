@@ -18,6 +18,7 @@ import {
   usageRecord,
   validateHumanReviewDecision,
   verifyAcceptanceEvidence,
+  verifyPreparedCatalog,
   writePendingHumanReviewFile,
   writeVerifiedReportFile,
 } from "./accept-tabular-cloud.mjs";
@@ -91,6 +92,46 @@ test("checks CSV and XLSX physical evidence, token totals and selected worksheet
     const invalidUsage = structuredClone(record);
     invalidUsage.ai.usage.totalTokens++;
     assert.throws(() => checkResult(artifact, invalidUsage, expected, artifact.result.analysisId, "tr"), /Inconsistent usage/);
+  }
+});
+
+test("requires correct tables, values and physical lines in both catalog formats", async () => {
+  for (const format of ["csv", "xlsx"]) {
+    const input = await fixture(format);
+    const catalog = { tables: input.previews.map(({ sheet, columns, values }) => ({
+      sourceId: "file-0", fileName: input.name, sheet, columns, rows: values.length, nonEmptyRows: values.length,
+      sampleRowNumbering: "file-line", sampleRows: values.map((cells, index) => ({ row: index + 2, values: cells })),
+    })) };
+    assert.doesNotThrow(() => verifyPreparedCatalog(catalog, input));
+    const first = catalog.tables[0];
+    for (const altered of [
+      { sourceId: "foreign-file" }, { sheet: "Unexpected sheet" }, { columns: ["Value", "Group"] },
+      { sampleRowNumbering: "record" }, { sampleRows: [{ row: 1, values: first.sampleRows[0].values }] },
+      { unavailableReason: "unreadable-table" },
+    ]) assert.throws(() => verifyPreparedCatalog({ tables: [{ ...first, ...altered }, ...catalog.tables.slice(1)] }, input));
+  }
+  await assert.rejects(() => fixture("tsv"), /Unknown synthetic table format/);
+});
+
+test("verifies the closed two-format evidence only with physical rows, browser and no paid jobs", t => {
+  const outputDirectory = mkdtempSync(join(tmpdir(), "incagen-closed-formats-"));
+  t.after(() => rmSync(outputDirectory, { recursive: true, force: true }));
+  const checks = ["csv", "xlsx"].map(format => ({
+    format, sourceSha256: "b".repeat(64), sourceRowsVerified: true, browserVerified: true,
+    access: "closed", paidJobReserved: false, modelCalls: 0,
+  }));
+  const finalized = finalizeAcceptanceEvidence({ outputDirectory, mode: "closed", gitCommit: "a".repeat(40),
+    results: [], reports: [], closedChecks: checks, cleanupStatus: "verified" });
+  assert.equal(finalized.verification.verified, true);
+  assert.deepEqual(finalized.verification.closedChecks.map(check => check.format), ["csv", "xlsx"]);
+  for (const altered of [
+    { format: "csv" }, { sourceRowsVerified: false }, { browserVerified: false }, { access: "available" },
+    { paidJobReserved: true }, { modelCalls: 1 }, { sourceSha256: "unverified" },
+  ]) {
+    writePrivateJson(join(outputDirectory, "acceptance.json"), {
+      ...finalized.acceptance, closedChecks: [checks[0], { ...checks[1], ...altered }],
+    });
+    assert.equal(verifyAcceptanceEvidence(outputDirectory).verified, false);
   }
 });
 

@@ -166,7 +166,7 @@ Gerçek Gemini analiz denemeleri `503 / capacity` ile durdu; en küçük sabit b
 INCAGEN_CLOUD_CLOSED_ACCEPTANCE=1 INCAGEN_ACCEPTANCE_URL=https://incagen.netlify.app node scripts/accept-tabular-cloud.mjs --verify-closed
 ```
 
-Canlı kabul komutu kaynak oluşturmadan önce temiz Git ağacından koşunun tam commit SHA’sını alır. Kapalı kabul, tek sentetik hazırlığın ardından katalogdan `closed` bekler ve `startAnalysis` çağrısını yalnız `checkOnly: true` ile yapar. Kod kapalı bayrağı doğrular ve rezervasyona ilerlemez. Eksik erişim alanı, beklenmedik açık kapı veya ön kontrol yanıtı koşuyu durdurur. Bu kontrolü yeni callable sürümü canlıya dağıtıldıktan sonra çalıştırın.
+Canlı kabul komutu kaynak oluşturmadan önce temiz Git ağacından koşunun tam commit SHA’sını alır. Kapalı kabul, tek sentetik hesapla CSV ve iki sayfalı XLSX hazırlar. Katalogda dosya, sayfa, başlık, hücre değeri ve fiziksel örnek satırı eşliğini doğrular. Her iki çalışma için `startAnalysis` çağrısını yalnız `checkOnly: true` ile yapar, kapalı reddini ve ücretli iş kaydı oluşmadığını doğrular. Hazırlık ekranları aynı tarayıcı oturumunda açılır. `acceptance.json` içindeki `closedChecks` iki formatın sonucunu, kaynak satırı ve tarayıcı doğrulamasını kaydeder. Eksik erişim alanı, beklenmedik açık kapı veya ön kontrol yanıtı koşuyu durdurur. Bu kontrolü yeni callable sürümü canlıya dağıtıldıktan sonra çalıştırın.
 
 Onaylı sentetik test penceresinde yerel arayüzü `VITE_AUTH_ONLY_PREVIEW=false VITE_TABULAR_ANALYSIS_ENABLED=true npm run dev -- --host 127.0.0.1 --port 4177` ile açın. Ücretli kabul ana Netlify URL’sinde çalışmaz. Smoke tek Türkçe CSV çağrısı yapar. Tam kabul için aynı komutun `--smoke` bayrağını kaldırın.
 

@@ -37,6 +37,7 @@ function inspectEvidence(directory, expectedCommit) {
     gitCommit: evidence.gitCommit ?? null,
     commitMatched,
     reviews,
+    closedChecks: evidence.verified ? evidence.closedChecks : [],
     usage: reviews.length > 0 ? {
       measuredCases: measuredRuns.length,
       totalDurationMs: usage ? { median: usage.medians.totalDurationMs, max: usage.maxima.totalDurationMs } : null,

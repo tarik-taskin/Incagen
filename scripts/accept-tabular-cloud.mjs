@@ -15,6 +15,7 @@ import { chromium } from "@playwright/test";
 const PROJECT = "incagen-eeef4";
 const ACCEPTANCE_MODEL = "gemini-3.8-flash";
 const locales = ["tr", "en", "de", "es", "zh", "ar"];
+const closedFormats = ["csv", "xlsx"];
 const analysisFailures = new Set(["invalid-data", "scope-limit", "configuration", "provider", "provider-busy", "validation", "timeout"]);
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -60,6 +61,22 @@ export async function checkAdmission(mode, access, request, checkStart) {
 // Kaynak baytlarını ve bağımsız beklenen sayfa, grup, metrik ve fiziksel satırları üretir.
 export async function fixture(kind) {
   return tabularFixture(kind);
+}
+
+// Katalogda yalnız gerçek kaynak, beklenen sayfalar ve fiziksel örnek satırları kabul edilir.
+export function verifyPreparedCatalog(catalog, input) {
+  assert.ok(Array.isArray(catalog.tables) && catalog.tables.length === input.previews.length, "Unexpected prepared tables.");
+  for (const expected of input.previews) {
+    const table = catalog.tables.find(item => item.sheet === expected.sheet);
+    assert.ok(table && !table.unavailableReason, "Expected table was not prepared.");
+    assert.equal(table.sourceId, "file-0");
+    assert.equal(table.fileName, input.name);
+    assert.deepEqual(table.columns, expected.columns);
+    assert.equal(table.rows, expected.values.length);
+    assert.equal(table.nonEmptyRows, table.rows);
+    assert.equal(table.sampleRowNumbering, "file-line");
+    assert.deepEqual(table.sampleRows, expected.values.map((values, index) => ({ row: index + 2, values })));
+  }
 }
 
 // Yalnız testte üretilen oturumla callable çağırır; model için otomatik tekrar yoktur.
@@ -303,7 +320,7 @@ export function writePendingHumanReviewFile(outputDirectory, fileName, reviewInp
 }
 
 // Koşu sonunda acceptance.json, runs.json ve insan inceleme dosyalarını yazar; doğrulama başarısızsa acceptance'ı failed işaretler.
-export function finalizeAcceptanceEvidence({ outputDirectory, mode, gitCommit, failure, results, reports, cleanupStatus }) {
+export function finalizeAcceptanceEvidence({ outputDirectory, mode, gitCommit, failure, results, reports, cleanupStatus, closedChecks }) {
   const expectedCount = expectedAcceptanceCases(mode).length;
   const acceptance = {
     schemaVersion: 2,
@@ -316,6 +333,7 @@ export function finalizeAcceptanceEvidence({ outputDirectory, mode, gitCommit, f
     humanReviewRequired: mode !== "closed",
     cleanup: cleanupStatus,
     reports,
+    ...(closedChecks === undefined ? {} : { closedChecks }),
   };
   writePrivateJson(join(outputDirectory, "runs.json"), results);
   writePrivateJson(join(outputDirectory, "acceptance.json"), acceptance);
@@ -328,6 +346,20 @@ export function finalizeAcceptanceEvidence({ outputDirectory, mode, gitCommit, f
     return { acceptance, verification, failure: verificationFailure };
   }
   return { acceptance, verification, failure };
+}
+
+// Eski kapalı kanıt okunur. Yeni iki format kaydı sıfır maliyet ve fiziksel konum denetimini açıkça bağlar.
+function verifyClosedChecks(acceptance) {
+  if (acceptance.closedChecks === undefined) return [];
+  const checks = acceptance.closedChecks;
+  if (acceptance.mode !== "closed" || !Array.isArray(checks) || checks.length !== closedFormats.length
+    || closedFormats.some(format => !checks.some(check => check?.format === format
+      && typeof check.sourceSha256 === "string" && SHA256_HEX.test(check.sourceSha256)
+      && check.sourceRowsVerified === true && check.browserVerified === true
+      && check.access === "closed" && check.paidJobReserved === false && check.modelCalls === 0))) {
+    throw new Error("Kapalı kanıt CSV/XLSX, tarayıcı, kaynak satırı ve sıfır rezervasyon sözleşmesini karşılamıyor.");
+  }
+  return checks.map(check => ({ format: check.format, sourceRowsVerified: true, browserVerified: true, modelCalls: 0, paidJobReserved: false }));
 }
 
 // Kanıt JSON’unu dosya türü, içerik ve hata güvenliği denetimiyle okur.
@@ -394,6 +426,9 @@ export function verifyAcceptanceEvidence(outputDirectory, options = {}) {
     return failed("Kabul kanıtı sürümü veya aşaması desteklenmiyor.");
   }
   if (!["closed", "smoke", "full"].includes(acceptance.mode)) return failed("Geçersiz kabul modu.");
+  let closedChecks;
+  try { closedChecks = verifyClosedChecks(acceptance); }
+  catch (error) { return failed(error.message); }
   const expectedCases = expectedAcceptanceCases(acceptance.mode);
   const expectedCount = expectedCases.length;
   const errors = [];
@@ -476,6 +511,7 @@ export function verifyAcceptanceEvidence(outputDirectory, options = {}) {
     gitCommit: commitIsValid ? acceptance.gitCommit : null,
     mode: acceptance.mode,
     reportCount: acceptance.reports.length,
+    closedChecks,
     verifiedReports,
     reviews,
     runs: verified ? runs : [],
@@ -484,7 +520,7 @@ export function verifyAcceptanceEvidence(outputDirectory, options = {}) {
 }
 
 // Yeni arayüz aynı gerçek kayıtla açılır; okuma/yenileme/kaynak inceleme yeni model çağrısı yapmaz.
-async function checkBrowser(account, id, baseURL, { closed, outputDirectory }) {
+async function checkBrowser(account, baseURL, { closed, outputDirectory }) {
   const browser = await chromium.launch();
   try {
     const page = await browser.newPage({ reducedMotion: "reduce" });
@@ -495,15 +531,18 @@ async function checkBrowser(account, id, baseURL, { closed, outputDirectory }) {
     await page.getByLabel("E-posta", { exact: true }).fill(account.email);
     await page.getByLabel("Parola", { exact: true }).fill(account.password);
     await page.getByRole("button", { name: "Giriş yap", exact: true }).click();
-    await page.waitForURL("**/app/new-analysis", { timeout: 30000 });
-    await page.goto(`${baseURL}/app/analyses/${id}`);
+    await page.waitForURL(`${baseURL}/app/new-analysis`, { timeout: 30000 });
     if (closed) {
-      await page.getByRole("heading", { name: "Synthetic service analysis", exact: true }).waitFor({ timeout: 30000 });
-      await page.getByRole("heading", { name: "Belgelerin içeriği ayrıştırıldı", exact: true }).waitFor({ timeout: 30000 });
-      assert.equal(await page.getByRole("heading", { name: "Tablodan net bir özet.", exact: true }).count(), 0);
-      console.log(JSON.stringify({ browser: "closed-rollout-preserves-preparation", status: "passed" }));
+      for (const id of account.ids) {
+        await page.goto(`${baseURL}/app/analyses/${id}`);
+        await page.getByRole("heading", { name: "Synthetic service analysis", exact: true }).waitFor({ timeout: 30000 });
+        await page.getByRole("heading", { name: "Belgelerin içeriği ayrıştırıldı", exact: true }).waitFor({ timeout: 30000 });
+        assert.equal(await page.getByRole("heading", { name: "Tablodan net bir özet.", exact: true }).count(), 0);
+      }
+      console.log(JSON.stringify({ browser: "closed-rollout-preserves-preparation", cases: account.ids.length, status: "passed" }));
       return;
     }
+    await page.goto(`${baseURL}/app/analyses/${account.ids[0]}`);
     const report = page.getByRole("region", { name: "Analiz raporu", exact: true });
     await report.waitFor({ timeout: 30000 });
     assert.match(await report.innerText(), /19\.000,50 USD/);
@@ -524,7 +563,7 @@ async function checkBrowser(account, id, baseURL, { closed, outputDirectory }) {
   } finally { await browser.close(); }
 }
 
-// Tek sınama ya da altı dil çalışır. İlk hatada durur ve yalnız koşunun hesaplarını temizler.
+// Kapalı mod iki formatı dener. Canlı model modları ilk hatada durur ve yalnız koşunun hesaplarını temizler.
 async function main(args) {
   const mode = acceptanceMode(args);
   const config = configuration(mode);
@@ -534,7 +573,8 @@ async function main(args) {
   const outputDirectory = journal.path.replace(/\.json$/, "-evidence");
   mkdirSync(outputDirectory, { mode: 0o700 });
   const closed = mode === "closed";
-  const cases = mode === "full" ? locales : locales.slice(0, 1);
+  const cases = closed ? closedFormats.map(format => ({ locale: "tr", format })) : expectedAcceptanceCases(mode);
+  const closedChecks = closed ? [] : undefined;
   let failure;
   console.log(JSON.stringify({ phase: "start", mode, gitCommit, caseCount: cases.length, outputDirectory, journal: journal.path }));
   try {
@@ -554,25 +594,24 @@ async function main(args) {
     for (let index = 0; index < cases.length; index++) {
       const accountIndex = Math.floor(index / 2);
       const account = accounts[accountIndex];
-      const locale = cases[index], format = index % 2 ? "xlsx" : "csv";
+      const { locale, format, caseId } = cases[index];
       const input = await fixture(format);
       const sourceSha256 = createHash("sha256").update(input.bytes).digest("hex");
-      const caseId = `${mode}:${index + 1}:${locale}:${input.caseId}`;
       const created = (await call(account, "createAnalysis", { requestId: randomUUID(), title: "Synthetic service analysis", business: "Synthetic acceptance", objective: input.objective, files: [{ name: input.name, size: input.bytes.length, contentType: input.type }] })).data;
       account.ids.push(created.id);
       journal.analysis(account.uid, created.id);
       await uploadBytes(ref(getStorage(account.app), created.paths[0]), input.bytes, { contentType: input.type });
       await call(account, "prepareAnalysis", { id: created.id });
       const catalog = (await call(account, "getAnalysisTables", { id: created.id })).data;
-      assert.ok(catalog.tables.some(table => table.sheet === input.selection.sheet && table.rows === input.rows));
+      verifyPreparedCatalog(catalog, input);
       const request = { id: created.id, sourceId: "file-0", selection: input.selection, locale };
       await checkAdmission(mode, catalog.access, request, async data => (await call(account, "startAnalysis", data)).data);
       if (closed) {
         const record = (await getDoc(doc(getFirestore(account.app), `users/${account.uid}/analyses/${created.id}`))).data();
         assert.equal(record.ai, undefined, "Closed rollout must not reserve a paid job.");
-        await checkBrowser(account, created.id, config.url, { closed, outputDirectory });
-        console.log(JSON.stringify({ phase: "closed-rollout", paidJobReserved: false, modelCalls: 0, status: "passed" }));
-        break;
+        closedChecks.push({ format, sourceSha256, sourceRowsVerified: true, browserVerified: false,
+          access: catalog.access, paidJobReserved: false, modelCalls: 0 });
+        continue;
       }
       if (mode === "full") {
         const other = accounts[(accountIndex + 1) % accounts.length];
@@ -610,7 +649,11 @@ async function main(args) {
       writePrivateJson(join(outputDirectory, "runs.json"), results);
       console.log(JSON.stringify({ phase: "real-model-passed", run: index + 1, locale, aggregate: input.total, durationMs: job.durationMs, tokens: job.usage.totalTokens }));
     }
-    if (!closed) await checkBrowser(accounts[0], accounts[0].ids[0], config.url, { closed, outputDirectory });
+    await checkBrowser(accounts[0], config.url, { closed, outputDirectory });
+    if (closed) {
+      for (const check of closedChecks) check.browserVerified = true;
+      console.log(JSON.stringify({ phase: "closed-rollout", formats: closedFormats, paidJobReserved: false, modelCalls: 0, status: "passed" }));
+    }
   } catch (error) { failure = error; }
   finally {
     for (const account of accounts) {
@@ -639,7 +682,7 @@ async function main(args) {
       }
     } catch (error) { failure ??= error; }
     if (!failure && results.length !== (closed ? 0 : cases.length)) failure = new Error("Acceptance case count mismatch.");
-    const finalized = finalizeAcceptanceEvidence({ outputDirectory, mode, gitCommit, failure, results, reports, cleanupStatus });
+    const finalized = finalizeAcceptanceEvidence({ outputDirectory, mode, gitCommit, failure, results, reports, cleanupStatus, closedChecks });
     failure = finalized.failure;
     console.log(JSON.stringify({ phase: "cleanup", status: cleanupStatus, accounts: accountCount, evidenceVerified: finalized.verification.verified }));
     console.log(JSON.stringify(finalized.acceptance));

@@ -19,10 +19,10 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 6. Sentetik davet öncesinde Auth kimliği, hesap durumu ve önceki claim’leri doğrulamayı koru.
 - [x] Sahip: Furkan — 7. Canlı kabul ortamında emülatör ve güvenli olmayan önizleme URL’lerini reddet.
 - [x] Sahip: Furkan — 8. Canlı model koşusunun ön kontrolünü ve yerel sentetik bağlam regresyonunu doğrula.
-- [~] Sahip: Furkan — 9. Kapalı kabulde aynı sentetik hesapla CSV ve çok sayfalı XLSX hazırlığını denetle.
-- [~] Sahip: Furkan — 10. Seçili sayfa, sütunlar ve örneklerin fiziksel kaynak satırlarını doğrula.
-- [~] Sahip: Furkan — 11. Her iki formatta checkOnly reddini, iş rezervasyonu olmamasını ve kapsamlı sentetik temizliği doğrula.
-- [~] Sahip: Furkan — 12. Kapalı koşunun makine kanıtına doğrulanmış vaka sayısı, format ve güvenli durumları bağla.
+- [x] Sahip: Furkan — 9. Kapalı kabulde aynı sentetik hesapla CSV ve çok sayfalı XLSX hazırlığını denetle.
+- [x] Sahip: Furkan — 10. Seçili sayfa, sütunlar ve örneklerin fiziksel kaynak satırlarını doğrula.
+- [x] Sahip: Furkan — 11. Her iki formatta checkOnly reddini, iş rezervasyonu olmamasını ve kapsamlı sentetik temizliği doğrula.
+- [x] Sahip: Furkan — 12. Kapalı koşunun makine kanıtına doğrulanmış vaka sayısı, format ve güvenli durumları bağla.
 - [~] Sahip: Furkan — 13. Rapor kabulünde kaynak SHA’sını ilgili sabit CSV/XLSX örneğiyle eşleştir.
 - [~] Sahip: Furkan — 14. Rapor kabulünde ölçüm durumunu dosya ve vaka kimliğine bağla.
 - [~] Sahip: Furkan — 15. Kanıt dosyalarına boyut sınırı ve geçerli UTF-8 kontrolü uygula.

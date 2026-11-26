@@ -13,6 +13,7 @@ export async function tabularFixture(kind) {
       type: "text/csv",
       bytes: Buffer.from("Service,NetRevenue\nCloud,12000.10\nCloud,-500.10\nConsulting,5000.20\nConsulting,2500.30\n"),
       rows: 4,
+      previews: [{ sheet: null, columns: ["Service", "NetRevenue"], values: [["Cloud", "12000.10"], ["Cloud", "-500.10"], ["Consulting", "5000.20"], ["Consulting", "2500.30"]] }],
       measure: "NetRevenue",
       group: "Service",
       groupRows: { Cloud: [2, 3], Consulting: [4, 5] },
@@ -22,6 +23,7 @@ export async function tabularFixture(kind) {
       objective: "Compare recorded net revenue across service lines. Explain which profitability conclusions cannot be supported without cost data.",
     };
   }
+  if (kind !== "xlsx") throw new Error("Unknown synthetic table format.");
   const workbook = new ExcelJS.Workbook();
   workbook.addWorksheet("Out of scope").addRows([["Team", "Amount"], ["Other", 999999]]);
   workbook.addWorksheet("Services").addRows([["Team", "Amount"], ["A", 10], ["A", 20], ["B", 90]]);
@@ -31,6 +33,10 @@ export async function tabularFixture(kind) {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     bytes: Buffer.from(await workbook.xlsx.writeBuffer()),
     rows: 3,
+    previews: [
+      { sheet: "Out of scope", columns: ["Team", "Amount"], values: [["Other", 999999]] },
+      { sheet: "Services", columns: ["Team", "Amount"], values: [["A", 10], ["A", 20], ["B", 90]] },
+    ],
     measure: "Amount",
     group: "Team",
     groupRows: { B: [4], A: [2, 3] },
