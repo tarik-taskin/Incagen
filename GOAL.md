@@ -9,6 +9,33 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
+### 2026-11-26 — Furkan / Codex: kapalı backend yayını ve analiz iş güvenilirliği
+
+- [x] Sahip: Furkan — 1. Temiz Git revizyonuna bağlı, sır yazdırmayan kapalı backend yayın planı oluştur.
+- [x] Sahip: Furkan — 2. Canlı Functions kapısını, runtime ortamında doğrudan Gemini anahtarı olmadığını ve worker adresini doğrula.
+- [x] Sahip: Furkan — 3. Cloud Run çalışma kimliği, digest, kaynak sınırları ve hazır revizyonu doğrula.
+- [x] Sahip: Furkan — 4. Worker servis ve proje IAM durumunu salt okunur denetle, eksik kanıtı kabul etme.
+- [~] Sahip: Furkan — 5. Cloud Run yenilemesini mevcut kaynaklara ve açık komut kapsamına sınırla.
+- [~] Sahip: Furkan — 6. Python build arşivini temiz Git ağacındaki izinli kaynaklardan tekrarlanabilir üret.
+- [~] Sahip: Furkan — 7. Cloud Build çıktısını arşiv kaynağı, build kimliği ve image digest ile bağla.
+- [~] Sahip: Furkan — 8. Yenilemede IAM, servis hesabı ve yerel ortam dosyası değişikliğini engelle.
+- [~] Sahip: Furkan — 9. Cloud Build Linux kabulünde gerçek CSV ondalık toplamı ve fiziksel satırları doğrula.
+- [~] Sahip: Furkan — 10. Aynı Linux imajında seçili Excel sayfası ve doğrulanmış hesap için sentetik kontrol ekle.
+- [~] Sahip: Furkan — 11. Cloud Run yenilemesinde önceki revizyonu ve yeni trafik hedefini kaydet.
+- [~] Sahip: Furkan — 12. Worker güncellemesini GitHub ve sunucu dağıtımından bağımsız geri dönüş kanıtına bağla.
+- [~] Sahip: Furkan — 13. Süresi dolan analiz denemesinin sonraki aşamaya geçmesini veya sonucu kaydetmesini engelle.
+- [~] Sahip: Furkan — 14. Eski ve yeni analiz denemelerini aynı lease kuralıyla ayır.
+- [~] Sahip: Furkan — 15. Geç gelen sonucun özgün hatasını, geçici artefakt temizliği hatasıyla ezme.
+- [~] Sahip: Furkan — 16. Lease, deneme değişimi ve artefakt temizliği davranışını regresyonlarla doğrula.
+- [~] Sahip: Furkan — 17. Emülatörde kapalı analiz ve mevcut belge hazırlığını son paketle doğrula.
+- [~] Sahip: Furkan — 18. Güncel özel Python işçisini kontrollü Cloud Build ve Cloud Run hattından geçir.
+- [~] Sahip: Furkan — 19. Güncel tablo Functions uçlarını analiz kapalıyken dar kapsamda dağıt.
+- [~] Sahip: Furkan — 20. Canlı sentetik hazırlık, kapalı analiz ve kaynak temizliğini doğrula.
+- [~] Sahip: Furkan — 21. Yerel kalite kapılarını ve sır taramasını son paket üzerinde tamamla.
+- [~] Sahip: Furkan — 22. GitHub Quality sonucuyla main ve furkan için aynı commit’i doğrula.
+- [~] Sahip: Furkan — 23. Aynı kapalı analiz paketini Netlify’a yükle ve canlı dosya eşliğini doğrula.
+- [~] Sahip: Furkan — 24. Canlı backend, sağlayıcı kabulü ve operasyon kararlarını ayrı kanıtlarla devir kaydına geçir.
+
 ### 2026-11-25 — Furkan / Codex: kaynaklı metrik CSV dışa aktarımı
 
 - [x] Sahip: Furkan — 1. Doğrulanmış rapor metriklerini tek satır/tek metrik sözleşmesiyle CSV’ye aktar.
