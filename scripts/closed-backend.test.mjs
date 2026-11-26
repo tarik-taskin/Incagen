@@ -53,11 +53,12 @@ test("requires active closed functions and publishes no environment values", () 
   const records = selectedFunctions.map(name => ({
     name: `${revisionScope}/functions/${name}`, state: "ACTIVE", updateTime: "2026-11-25T08:00:00Z",
     serviceConfig: { revision: name + "-001", serviceAccountEmail: callerIdentity, environmentVariables: {
-      INCAGEN_TABULAR_ANALYSIS_ENABLED: "false", INCAGEN_PYTHON_WORKER_URL: origin, OTHER: "sensitive-value",
+      INCAGEN_TABULAR_ANALYSIS_ENABLED: "false", INCAGEN_PYTHON_WORKER_URL: origin, INCAGEN_BACKEND_RELEASE_SHA: "b".repeat(40), OTHER: "sensitive-value",
     } },
   }));
   const result = verifyClosedFunctions(records, origin);
   assert.deepEqual(result.map(item => item.name), selectedFunctions);
+  assert.ok(result.every(item => item.releaseCommit === "b".repeat(40)));
   assert.ok(!JSON.stringify(result).includes("sensitive-value"));
   assert.throws(() => verifyClosedFunctions(records.slice(1), origin), /doğrulanamadı/);
   const runtime = records[0].serviceConfig;

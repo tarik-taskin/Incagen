@@ -114,7 +114,9 @@ export function verifyClosedFunctions(records, workerOrigin) {
       || config.serviceAccountEmail !== callerIdentity) {
       throw new Error(`${name} için kapalı Functions ortamı doğrulanamadı.`);
     }
-    return { name, updatedAt: record.updateTime, revision: config.revision ?? null };
+    const releaseCommit = typeof env.INCAGEN_BACKEND_RELEASE_SHA === "string" && /^[a-f0-9]{40}$/.test(env.INCAGEN_BACKEND_RELEASE_SHA)
+      ? env.INCAGEN_BACKEND_RELEASE_SHA : null;
+    return { name, updatedAt: record.updateTime, revision: config.revision ?? null, releaseCommit };
   });
 }
 

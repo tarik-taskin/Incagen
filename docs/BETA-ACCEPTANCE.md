@@ -44,6 +44,8 @@ Bulut ayarlarında, IAM’de, bütçede, kotada veya saklama politikasında değ
 
 ### İlk oturum sentetik doğrulama sırası ve durma kriterleri
 
+Kapalı backend için [dar kapsamlı yayın ve sürüm kanıtı](DEVELOPMENT.md#kapalı-analiz-backend-yayını) kullanılabilir. Cloud Run/Functions metadata denetimi ve sentetik kapalı mod kabulü, gerçek Gemini ve kohort onayından ayrı kaydedilir.
+
 Sağlayıcı yanıt vermeye başladığında yapılacak ilk kontrollü sentetik oturum sırası ([TESTING.md](TESTING.md), [DEVELOPMENT.md](DEVELOPMENT.md), [GEMINI.md](GEMINI.md)):
 
 1. **Ön koşul ve temizlik:** `verify:release` ile canlı ön yüz yayın bayraklarının kapalı olduğunu ve Netlify paket/manifest/rota eşliğini, `tabular-rollout.test.ts` / `integration/tabular.test.mjs` ile backend kapısı kilidini ve ayrı backend kabul adımından (`functions/.env.incagen-eeef4` dağıtım kontrolü / `scripts/accept-tabular-cloud.mjs --verify-closed`) canlı sunucu kapısının kapalı kaldığını doğrula; önceki sentetik hesap/dosya temizliğinin `verified-clean` olduğunu kontrol et.

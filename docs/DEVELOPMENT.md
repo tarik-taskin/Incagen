@@ -92,6 +92,30 @@ npx firebase deploy --only "firestore:rules,storage,functions" --project incagen
 
 Firebase CLI Node 20+ ister; PowerShell'de `--only` listesi tırnak içinde verilir. Kurallar ve Functions, kodun kullandığı `(default)` Firestore veritabanına ve varsayılan Storage bucket'ına bağlanır. Storage, Functions ve erişim kuralları doğrulanmadan Auth-only sınırı kaldırılmaz. 2 Kasım üretim kabulü ve açık kullanıcı onayı sonrasında mevcut yayın `VITE_AUTH_ONLY_PREVIEW=false` ile belge hazırlığına açıldı. Plan yükseltmesi tek başına backend'in dağıtıldığını veya güvenli olduğunu göstermez. Güncel yayın kapsamı ve sistem davranışı [FLOW](../FLOW.md) içindedir.
 
+### Kapalı analiz backend yayını
+
+Önce temiz Git ağacı, yerel kalite kapıları ve mevcut özel worker denetlenir. `backend:check -- --live` ayrı servis/proje IAM okumalarıyla tek hazır Cloud Run revizyonunu, image digest’ini, kaynak sınırlarını, kapalı Functions bayrağını ve runtime servis hesabını kontrol eder. Çıktı ortam değerlerini içermez. `functions[].releaseCommit`, dağıtılmış kaynağın SHA kaydıdır. Eski yayınlarda bu alan boş olabilir.
+
+```bash
+npm run backend:check
+npm run backend:check -- --live
+```
+
+Mevcut worker’ı yenilerken komut yalnız temiz Git’teki sabit Python girdilerini paketler. Cloud Build çalışması onay verilen projedeki özel kaynak bucket’ını ve mevcut Artifact Registry deposunu kullanır. Aynı Linux imajında tek CPU, 1 GiB ve kapalı ağla sentetik CSV ve XLSX sonucu kontrol edilir. İmaj sürümü arşiv nesnesi ve nesne nesliyle eşleştiğinde mevcut worker’ın image alanı güncellenir. IAM, servis hesabı, yerel ortam ve trafik yapılandırması korunur. `.incagen-local/worker-refresh-*/worker-release.json` önceki ve sonraki digest/revizyonu kaydeder. Geri dönüş gerektiğinde önceki doğrulanmış digest, mevcut worker politikasını koruyan ayrı yayın kararıyla tekrar uygulanır.
+
+```bash
+INCAGEN_CLOSED_WORKER_REFRESH=1 npm run backend:worker:refresh
+```
+
+Ardından yalnız `prepareAnalysis`, `startAnalysis`, `getAnalysisTables` ve `getAnalysisResult` temiz Git arşivinden geçici dizinde derlenip dağıtılır. Komut, üretime kapalı analiz bayrağını, doğrulanmış worker adresini ve Git SHA’sını aktarır. Kurallar ve diğer uçlar bu dağıtım kapsamında yer almaz. Canlı metadata aynı SHA’yı gösterdikten sonra [kapalı sentetik kabul](TESTING.md#canlı-analiz-kabul-kayıtları) çalıştırılır.
+
+```bash
+INCAGEN_CLOSED_FUNCTIONS_DEPLOY=1 npm run backend:functions:deploy
+INCAGEN_CLOUD_CLOSED_ACCEPTANCE=1 INCAGEN_ACCEPTANCE_URL=https://incagen.netlify.app node scripts/accept-tabular-cloud.mjs --verify-closed
+```
+
+Bu kabul yeni Gemini isteği başlatmaz. Sentetik hesap, hazırlık kaydı ve kaynakları doğrulanmış temizlikle kapatılır. Gerçek sağlayıcı kabulü ve [operasyon kararları](BETA-ACCEPTANCE.md#sınırlı-beta-operasyon-durumu-ve-ekip-karar-matrisi) ayrı takip edilir.
+
 ## Değişiklik disiplini
 
 [AGENTS.md’deki paketli commit ve dal düzenini](../AGENTS.md#commit-ve-ekip-düzeni) ve [RULES](../RULES.md)'deki kod/stil kurallarını izleyin. Belge ve testleri davranış değişikliğiyle birlikte güncelleyin; ürün limitleri ortak sözleşmeden gelir. Sırlar ve gerçek müşteri verileri Git'e eklenmez.

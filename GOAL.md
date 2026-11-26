@@ -22,19 +22,21 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 9. Cloud Build Linux kabulüne gerçek CSV ondalık toplamı ve fiziksel satır kontrolleri ekle.
 - [x] Sahip: Furkan — 10. Aynı Linux imajında seçili Excel sayfası ve doğrulanmış hesap için sentetik kontrol ekle.
 - [x] Sahip: Furkan — 11. Cloud Run yenilemesinde önceki revizyonu ve yeni trafik hedefini kaydet.
-- [~] Sahip: Furkan — 12. Worker güncellemesini GitHub ve sunucu dağıtımından bağımsız geri dönüş kanıtına bağla.
+- [x] Sahip: Furkan — 12. Worker güncellemesi için önceki digest ve revizyonla geri dönüş yolunu tanımla.
 - [x] Sahip: Furkan — 13. Süresi dolan analiz denemesinin sonraki aşamaya geçmesini veya sonucu kaydetmesini engelle.
 - [x] Sahip: Furkan — 14. Eski ve yeni analiz denemelerini aynı lease kuralıyla ayır.
 - [x] Sahip: Furkan — 15. Geç gelen sonucun özgün hatasını, geçici artefakt temizliği hatasıyla ezme.
 - [x] Sahip: Furkan — 16. Lease, deneme değişimi ve artefakt temizliği davranışını regresyonlarla doğrula.
-- [~] Sahip: Furkan — 17. Emülatörde kapalı analiz ve mevcut belge hazırlığını son paketle doğrula.
+- [x] Sahip: Furkan — 17. Emülatörde kapalı analiz ve mevcut belge hazırlığını son paketle doğrula.
 - [~] Sahip: Furkan — 18. Güncel özel Python işçisini kontrollü Cloud Build ve Cloud Run hattından geçir.
 - [~] Sahip: Furkan — 19. Güncel tablo Functions uçlarını analiz kapalıyken dar kapsamda dağıt.
 - [~] Sahip: Furkan — 20. Canlı sentetik hazırlık, kapalı analiz ve kaynak temizliğini doğrula.
 - [~] Sahip: Furkan — 21. Yerel kalite kapılarını ve sır taramasını son paket üzerinde tamamla.
 - [~] Sahip: Furkan — 22. GitHub Quality sonucuyla main ve furkan için aynı commit’i doğrula.
 - [~] Sahip: Furkan — 23. Aynı kapalı analiz paketini Netlify’a yükle ve canlı dosya eşliğini doğrula.
-- [~] Sahip: Furkan — 24. Canlı backend, sağlayıcı kabulü ve operasyon kararlarını ayrı kanıtlarla devir kaydına geçir.
+- [x] Sahip: Furkan — 24. Canlı backend, sağlayıcı kabulü ve operasyon kararları için ayrı kanıt yolunu belgeye bağla.
+
+Dağıtım kapsamı ve geri dönüş adımları [geliştirme rehberinde](docs/DEVELOPMENT.md#kapalı-analiz-backend-yayını). Değişebilen 18–23 numaralı canlı uygulama ve yayın kanıtları TASK-0006 yerel devir kaydında sonuçlandırılır.
 
 ### 2026-11-25 — Furkan / Codex: kaynaklı metrik CSV dışa aktarımı
 

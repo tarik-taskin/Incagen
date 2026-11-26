@@ -46,7 +46,7 @@ Tamamlanan hazırlıkta belge adları, kategorileri, boyutları, sayfa/çalışm
 
 ### Analiz denemesi ve özgün belge indirme
 
-Kaynaklı analizde sağlayıcının 429/503 yanıtları geçici yoğunluk/hız sınırı, 408/504 ve yerel deadline zaman aşımı olarak ayrılır. Bozuk çıktı doğrulama hatasıdır. Yoğunluk veya zaman aşımında sunucu 30 saniyelik manuel tekrar beklemesi uygular; bu süre dolmadan deneme/kota rezervasyonu oluşmaz. Düğmenin açılması otomatik analiz başlatmaz. İş kaydı oluşmadan reddedilen çağrılar da arayüzde güvenli açıklama gösterir; mevcut iş hatasıyla aynı mesaj iki kez gösterilmez.
+Kaynaklı analizde sağlayıcının 429/503 yanıtları geçici yoğunluk/hız sınırı, 408/504 ve yerel deadline zaman aşımı olarak ayrılır. Bozuk çıktı doğrulama hatasıdır. Yoğunluk veya zaman aşımında sunucu 30 saniyelik manuel tekrar beklemesi uygular; bu süre dolmadan deneme/kota rezervasyonu oluşmaz. Düğmenin açılması otomatik analiz başlatmaz. Süresi dolan deneme yeni aşamaya ilerleyemez ve sonuç yayımlayamaz. Sonuç kaydı belirsiz kaldığında yayımlanmış dosya bağı tekrar okunur ve bağlı sonuç korunur. İş kaydı oluşmadan reddedilen çağrılar da arayüzde güvenli açıklama gösterir; mevcut iş hatasıyla aynı mesaj iki kez gösterilmez.
 
 Analiz ekranı iş kilidi veya yeniden deneme son tarihine tek bir zamanlayıcı kurar; yeni kayıt geldiğinde ve arka plandan dönüldüğünde güncel saati kullanır. Süre dolduğunda bekleme görünümü güncellenir, sürekli polling ve otomatik analiz çağrısı yapılmaz. Bu istemci saati güvenlik sınırı değildir; iş ve bekleme kabulü sunucuda doğrulanır.
 
