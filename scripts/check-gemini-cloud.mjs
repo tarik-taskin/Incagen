@@ -10,6 +10,7 @@ import { getFunctions, httpsCallable } from "firebase/functions";
 
 const PROJECT = "incagen-eeef4";
 const CALLABLE_TIMEOUT_MS = 340_000;
+const TRANSPORTS = new Set(["interactions", "interactions-priority", "interactions-comparison"]);
 const DEFAULT_PROBE_STATE_FILE = "/tmp/incagen-cloud-probe-resources.json";
 const ALLOWED_REASONS = new Set(["not-configured", "unavailable", "busy", "timeout", "invalid-response", "invalid-input"]);
 const SAFE_CODE = /^(auth|functions)\/[a-z0-9-]+$|^(configuration-error|client-auth-failed|claim-assign-failed|token-refresh-failed|callable-failed|cleanup-failed|validation|diagnostic-failed)$/;
@@ -40,8 +41,8 @@ export function formatDiagnosticSummary({
     stage,
     callAttempted: Boolean(callAttempted),
     durationMs: Math.max(0, Math.round(Number(durationMs) || 0)),
-    ...(model === "gemini-3.8-flash" ? { model } : {}),
-    ...(transport === "interactions" || transport === "interactions-priority" ? { transport } : {}),
+    ...(model === "gemini-3.8-flash" || model === "gemini-3.6-flash" ? { model } : {}),
+    ...(TRANSPORTS.has(transport) ? { transport } : {}),
     ...(serviceTier === "standard" || serviceTier === "priority" ? { serviceTier } : {}),
     ...(code ? { code: safeCode(code) } : {}),
     ...(ALLOWED_REASONS.has(reason) ? { reason } : {}),
@@ -163,7 +164,7 @@ export async function runCloudProbe(deps = {}) {
 
   const configStarted = now();
   try {
-    assert.ok(transport === undefined || transport === "interactions" || transport === "interactions-priority", "Unexpected diagnostic transport.");
+    assert.ok(transport === undefined || TRANSPORTS.has(transport), "Unexpected diagnostic transport.");
     config = (deps.loadConfig ?? loadCloudDiagnosticConfig)();
     admin = deps.adminClient ? await deps.adminClient() : await defaultAdminClient();
     journal = (deps.createJournal ?? createAcceptanceJournal)("connectivity");
@@ -233,7 +234,7 @@ export async function runCloudProbe(deps = {}) {
       const callable = sdk.httpsCallable(sdk.getFunctions(app, "europe-west1"), "checkGemini", { timeout: CALLABLE_TIMEOUT_MS });
       const result = await callable(transport ? { transport } : {});
       assert.equal(result?.data?.status, "ok");
-      assert.equal(result?.data?.model, "gemini-3.8-flash");
+      assert.equal(result?.data?.model, transport === "interactions-comparison" ? "gemini-3.6-flash" : "gemini-3.8-flash");
       assert.equal(result?.data?.transport, transport);
       model = result.data.model;
       serviceTier = result.data.serviceTier;

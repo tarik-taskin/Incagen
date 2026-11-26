@@ -1,10 +1,10 @@
 import { getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { z } from "zod";
-import { checkGeminiConnection, checkGeminiInteractions, createGeminiGenerate, GeminiError, GEMINI_LIMITS } from "./gemini";
+import { checkGeminiConnection, checkGeminiInteractions, createGeminiGenerate, GeminiError, GEMINI_INTERACTION_TRANSPORTS, GEMINI_LIMITS } from "./gemini";
 import { readGeminiKey } from "./gemini-secret";
 
-const diagnosticInput = z.object({ transport: z.enum(["interactions", "interactions-priority"]).optional() }).strict();
+const diagnosticInput = z.object({ transport: z.enum(GEMINI_INTERACTION_TRANSPORTS).optional() }).strict();
 
 // Maliyetli kontrol normal kullanıcılara kapalıdır; son giriş, UID ve geliştirici claim'i zorunludur.
 export function requireGeminiDeveloper(auth: { uid: string; token: Record<string, unknown> } | undefined, data: unknown, now = Date.now()) {
@@ -48,7 +48,7 @@ export const checkGemini = onCall<z.infer<typeof diagnosticInput>>({ region: "eu
     const key = await readGeminiKey();
     await reserveGeminiDiagnostic(uid, Date.now(), priority);
     if (transport) {
-      return { ...await checkGeminiInteractions(key, priority), transport };
+      return { ...await checkGeminiInteractions(key, transport), transport };
     }
     return await checkGeminiConnection(createGeminiGenerate(key));
   } catch (error) {

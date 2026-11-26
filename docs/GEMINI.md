@@ -68,6 +68,8 @@ Geliştirici teşhisinin sağlayıcı süresi 300 saniye, Functions süresi 330 
 
 `INCAGEN_CLOUD_DIAGNOSTIC_TRANSPORT=interactions-priority` seçeneği aynı sentetik isteği Priority kuyruğuna yönlendirir. Proje başına günde tek Priority teşhisi atomik olarak ayrılır. Sağlayıcı Standard kuyruğuna düşürürse dönen hizmet seviyesi `serviceTier` alanında görünür. [Priority rehberi](https://aistudio.google.com/docs/priority-inference).
 
+`INCAGEN_CLOUD_DIAGNOSTIC_TRANSPORT=interactions-comparison` yalnız geliştirici teşhisinde Gemini 3.6 Flash’ı aynı sabit istekle sınar. Yanıtın model ve taşıma bilgisi ayrı doğrulanır. Gemini 3.8 Flash için bağlantı kabulü, doğrudan o modelden geçerli yanıt gerektirir.
+
 6 Kasım devamında ilk iki 45 saniyelik kontrol doğrulanamadı; yeni güvenli sınıflama bunlardan ikincisini `timeout` olarak ayırdı. Analizle aynı `LOW`/90 saniye ayarıyla yapılan son kontrol `busy` yanıtı aldı. Hesaplar ve geçici yetkiler temizlendi. Gerçek analiz kalite kabulü hâlâ tamamlanmadı; açılış anahtarları kapalı kalır. [Resmî thinking seçenekleri](https://aistudio.google.com/docs/thinking?generate-content=true).
 
 16 Kasım tek sabit sentetik backend kontrolü 95.680 ms içinde `functions/unavailable / timeout` verdi. Tekrar çağrı yapılmadı; geçici geliştirici claim’i kaldırıldı, hesap silindi ve koşuya özel kaynak günlüğü `verified-clean` oldu. Bu sonuç gerçek bağlantı veya analiz kalite kabulü değildir; model/anahtar değiştirilmedi, iki yayın kapısı kapalı kaldı.

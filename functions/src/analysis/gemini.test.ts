@@ -52,9 +52,17 @@ describe("Gemini backend boundary", () => {
   it("requests Priority explicitly and reports the service tier actually used", async () => {
     sdk.interact.mockResolvedValue({ status: "completed", model: GEMINI_MODEL, output_text: '{"status":"ok","service":"incagen"}',
       sdkHttpResponse: { headers: { "x-gemini-service-tier": "standard" } } });
-    await expect(checkGeminiInteractions("synthetic-key", true)).resolves.toEqual({ status: "ok", model: GEMINI_MODEL, serviceTier: "standard" });
+    await expect(checkGeminiInteractions("synthetic-key", "interactions-priority")).resolves.toEqual({ status: "ok", model: GEMINI_MODEL, serviceTier: "standard" });
     expect(sdk.interact).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ service_tier: "priority", store: false }),
       expect.objectContaining({ retries: { strategy: "none" } }));
+  });
+  it("uses the separate model only for the explicit comparison diagnostic", async () => {
+    sdk.interact.mockResolvedValue({ status: "completed", model: "gemini-3.6-flash", output_text: '{"status":"ok","service":"incagen"}' });
+    await expect(checkGeminiInteractions("synthetic-key", "interactions-comparison")).resolves.toEqual({ status: "ok", model: "gemini-3.6-flash" });
+    const [request] = sdk.interact.mock.calls[0];
+    expect(request.model).toBe("gemini-3.6-flash");
+    expect(request).not.toHaveProperty("service_tier");
+    expect(GEMINI_MODEL).toBe("gemini-3.8-flash");
   });
   it.each([
     { status: "incomplete", output_text: '{"status":"ok","service":"incagen"}' },

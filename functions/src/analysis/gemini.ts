@@ -3,6 +3,8 @@ import type { AnalysisPacket } from "./input-packet";
 import { aiResultJsonSchema, validateAiResult } from "./result-contract";
 
 export const GEMINI_MODEL = "gemini-3.8-flash";
+export const GEMINI_COMPARISON_MODEL = "gemini-3.6-flash";
+export const GEMINI_INTERACTION_TRANSPORTS = ["interactions", "interactions-priority", "interactions-comparison"] as const;
 export const GEMINI_LIMITS = { timeoutMs: 45_000, analysisTimeoutMs: 90_000, diagnosticTimeoutMs: 300_000, inputBytes: 256 * 1024, outputBytes: 64 * 1024 } as const;
 export type GeminiFailureCode = "not-configured" | "unavailable" | "busy" | "timeout" | "invalid-response" | "invalid-input";
 
@@ -76,29 +78,30 @@ export async function checkGeminiConnection(generate: GeminiGenerate) {
 }
 
 // Sağlayıcının başarılı durumuna ek olarak sabit yanıt sözleşmesini yerelde doğrular.
-function validateDiagnosticOutput(text: string) {
+function validateDiagnosticOutput(text: string, model: typeof GEMINI_MODEL | typeof GEMINI_COMPARISON_MODEL = GEMINI_MODEL) {
   try {
     const result = JSON.parse(text);
     if (Object.keys(result).sort().join() !== "service,status" || result.status !== "ok" || result.service !== "incagen") throw new Error();
-    return { status: "ok" as const, model: GEMINI_MODEL };
+    return { status: "ok" as const, model };
   } catch { throw new GeminiError("invalid-response"); }
 }
 
 // Aynı sabit JSON’u, geliştirici teşhisinde depolamasız ve tek Interactions isteğiyle doğrular.
-export async function checkGeminiInteractions(apiKey: string, priority = false) {
+export async function checkGeminiInteractions(apiKey: string, transport: typeof GEMINI_INTERACTION_TRANSPORTS[number] = "interactions") {
   if (!apiKey.trim()) throw new GeminiError("not-configured");
   const client = new GoogleGenAI({ apiKey });
+  const model = transport === "interactions-comparison" ? GEMINI_COMPARISON_MODEL : GEMINI_MODEL;
   try {
     const response = await client.interactions.create({
-      api_version: "v1", model: GEMINI_MODEL, input: diagnosticRequest.prompt, system_instruction: diagnosticRequest.system,
-      store: false, automatic_continuation: false, ...(priority ? { service_tier: "priority" } : {}),
+      api_version: "v1", model, input: diagnosticRequest.prompt, system_instruction: diagnosticRequest.system,
+      store: false, automatic_continuation: false, ...(transport === "interactions-priority" ? { service_tier: "priority" } : {}),
       generation_config: { thinking_level: "low", max_output_tokens: diagnosticRequest.maxOutputTokens },
       response_format: { type: "text", mime_type: "application/json", schema: diagnosticRequest.schema },
     }, { timeout_ms: GEMINI_LIMITS.diagnosticTimeoutMs, retries: { strategy: "none" } });
     if (response.status !== "completed" || !response.output_text || Buffer.byteLength(response.output_text) > GEMINI_LIMITS.outputBytes
-      || (response.model && response.model !== GEMINI_MODEL)) throw new GeminiError("invalid-response");
+      || (response.model && response.model !== model)) throw new GeminiError("invalid-response");
     const tier = response.sdkHttpResponse?.headers?.["x-gemini-service-tier"] ?? response.service_tier;
-    return { ...validateDiagnosticOutput(response.output_text),
+    return { ...validateDiagnosticOutput(response.output_text, model),
       ...(tier === "standard" || tier === "priority" ? { serviceTier: tier } : {}) };
   } catch (error) { throw classifyGeminiError(error); }
 }
