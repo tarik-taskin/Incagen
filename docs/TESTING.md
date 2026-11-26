@@ -180,6 +180,8 @@ Araç, her çağrılışta `.incagen-local/` altında ayrı temizlik günlüğü
 
 #### Yerel beta kanıtını kontrol etme
 
+Kanıt JSON dosyaları en çok 1 MiB ve geçerli UTF-8 olmalıdır. Özet, bulgu ve hesap dayanakları sabit vakanın kaynak özeti, seçili sayfası ve fiziksel satır aralığıyla eşleşir. Ölçüm durumu aynı vaka kimliğine bağlıdır. Önceki kapalı kayıtlar okunabilir. İki format kontrolünün kanıtı yalnız `closedChecks` bulunan koşularda görünür.
+
 ```bash
 npm run acceptance:check -- --input <koşu-dizini>
 npm run acceptance:check -- --input <koşu-dizini> --expected-commit <tam-sha> --require-ready

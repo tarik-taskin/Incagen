@@ -23,10 +23,10 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 10. Seçili sayfa, sütunlar ve örneklerin fiziksel kaynak satırlarını doğrula.
 - [x] Sahip: Furkan — 11. Her iki formatta checkOnly reddini, iş rezervasyonu olmamasını ve kapsamlı sentetik temizliği doğrula.
 - [x] Sahip: Furkan — 12. Kapalı koşunun makine kanıtına doğrulanmış vaka sayısı, format ve güvenli durumları bağla.
-- [~] Sahip: Furkan — 13. Rapor kabulünde kaynak SHA’sını ilgili sabit CSV/XLSX örneğiyle eşleştir.
-- [~] Sahip: Furkan — 14. Rapor kabulünde ölçüm durumunu dosya ve vaka kimliğine bağla.
-- [~] Sahip: Furkan — 15. Kanıt dosyalarına boyut sınırı ve geçerli UTF-8 kontrolü uygula.
-- [~] Sahip: Furkan — 16. Önceki kanıt sürümlerini ve bekleyen insan kararlarını güvenli biçimde okunabilir tut.
+- [x] Sahip: Furkan — 13. Çevrimdışı rapor dayanaklarını canlı koşuda sabit örneğe bağlanan kaynak SHA’sı, sayfa ve fiziksel satırlarla eşleştir.
+- [x] Sahip: Furkan — 14. Rapor kabulünde ölçüm durumunu dosya ve vaka kimliğine bağla.
+- [x] Sahip: Furkan — 15. Kanıt dosyalarına boyut sınırı ve geçerli UTF-8 kontrolü uygula.
+- [x] Sahip: Furkan — 16. Önceki kanıt sürümlerini ve bekleyen insan kararlarını güvenli biçimde okunabilir tut.
 - [~] Sahip: Furkan — 17. Kullanım özetinin fiyat tarifesinde gerçek takvim tarihini doğrula.
 - [~] Sahip: Furkan — 18. Geçersiz CLI argümanlarının eksik veya yanıltıcı kullanım özeti üretmesini engelle.
 - [~] Sahip: Furkan — 19. CSV/XLSX ve dil bazlı eksik ölçüm nedenlerini beta denetiminde görünür kıl.

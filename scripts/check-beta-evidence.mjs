@@ -14,12 +14,13 @@ function hasMeasuredUsage(run) {
 function inspectEvidence(directory, expectedCommit) {
   const evidence = verifyAcceptanceEvidence(directory, { expectedCommit });
   const commitMatched = evidence.verified && expectedCommit !== undefined;
-  const measuredRuns = (evidence.runs ?? []).filter(run => hasMeasuredUsage(summarizeSingleRun(run)));
-  const measuredLocales = new Set(measuredRuns.map(run => run.locale));
+  const measured = (evidence.runs ?? []).map(run => ({ run, usageMeasured: hasMeasuredUsage(summarizeSingleRun(run)) }));
+  const measurementByCase = new Map(measured.map(item => [item.run.caseId, item.usageMeasured]));
+  const measuredRuns = measured.filter(item => item.usageMeasured).map(item => item.run);
   const usage = measuredRuns.length > 0 ? summarizeUsageAcceptance(measuredRuns) : null;
   const reviews = evidence.verified ? evidence.reviews.map(review => ({
     ...review,
-    usageMeasured: measuredLocales.has(review.locale),
+    usageMeasured: measurementByCase.get(review.caseId) === true,
   })) : [];
   const blockers = [];
   if (!evidence.verified) blockers.push("invalid-evidence");

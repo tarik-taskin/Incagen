@@ -433,6 +433,39 @@ async function reviewEvidence(t, mode) {
   return { directory, gitCommit, reports, results };
 }
 
+test("rejects a rehashed report with changed source anchors even when record hashes are consistent", async t => {
+  const { directory, gitCommit, reports, results } = await reviewEvidence(t, "smoke");
+  const entry = reports[0];
+  const original = JSON.parse(readFileSync(join(directory, entry.reportFile), "utf8"));
+  for (const altered of [
+    anchor => { anchor.sha256 = "e".repeat(64); },
+    anchor => { anchor.locator.sheet = "Foreign sheet"; },
+    anchor => { anchor.locator.rowEnd = 6; },
+  ]) {
+    const report = structuredClone(original);
+    altered(report.summary[0].evidence[0]);
+    const binding = writeVerifiedReportFile(directory, entry.reportFile, report);
+    const next = { ...entry, ...binding };
+    writePendingHumanReviewFile(directory, next.humanReviewFile, next);
+    const finalized = finalizeAcceptanceEvidence({ outputDirectory: directory, gitCommit, mode: "smoke",
+      results: [{ ...results[0], ...binding }], reports: [next], cleanupStatus: "verified" });
+    assert.equal(finalized.verification.verified, false);
+    assert.match(finalized.verification.errors[0], /Rapor dayanağı/);
+  }
+});
+
+test("rejects oversized evidence and malformed UTF-8 rather than accepting replacement characters", async t => {
+  const { directory, reports } = await reviewEvidence(t, "smoke");
+  const path = join(directory, reports[0].humanReviewFile);
+  const original = readFileSync(path, "utf8");
+  writeFileSync(path, Buffer.alloc(1024 * 1024 + 1, 32));
+  assert.match(verifyAcceptanceEvidence(directory).errors[0], /boyutu/);
+  const bytes = Buffer.from(original.replace('"reviewerNote": ""', '"reviewerNote": "X"'));
+  bytes[bytes.indexOf('"X"') + 1] = 0xff;
+  writeFileSync(path, bytes);
+  assert.match(verifyAcceptanceEvidence(directory).errors[0], /UTF-8/);
+});
+
 // Aynı komut girişini gerçek CLI üzerinden çağırır ve yerel çıktıyı verir.
 function checkEvidenceCli(directory, ...args) {
   const cli = spawnSync(process.execPath, ["scripts/check-beta-evidence.mjs", "--input", directory, ...args], { encoding: "utf8" });

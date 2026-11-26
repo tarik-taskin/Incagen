@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createAcceptanceJournal, createTabularAcceptanceEmail, writePrivateJson } from "./acceptance-resources.mjs";
 import { tabularFixture } from "./tabular-synthetic-fixtures.mjs";
 import { verifyGitStatus } from "./verify-release.mjs";
-import { existsSync, lstatSync, mkdirSync, readFileSync } from "node:fs";
+import { closeSync, constants, existsSync, fstatSync, lstatSync, mkdirSync, openSync, readFileSync, readSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomUUID, createHash } from "node:crypto";
@@ -173,6 +173,8 @@ const SHA256_HEX = /^[a-f0-9]{64}$/;
 const GIT_SHA = /^[a-f0-9]{40}$/;
 const ISO_TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?(Z|[+-]\d{2}:\d{2})$/;
 const SECRET_LEAK_PATTERN = /(Bearer\s+[A-Za-z0-9._-]+|AIza[0-9A-Za-z_-]{20,}|ya29\.[0-9A-Za-z_-]{15,}|ghp_[0-9A-Za-z]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|"(?:apiKey|password|secret|token)"\s*:|\b(?:apiKey|password|secret|token)\s*=|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i;
+const MAX_EVIDENCE_FILE_BYTES = 1024 * 1024;
+const exactUtf8 = new TextDecoder("utf-8", { fatal: true });
 
 // Mod bazında beklenen benzersiz kabul vaka kimliklerini, dillerini ve formatlarını döner.
 export function expectedAcceptanceCases(mode) {
@@ -366,19 +368,52 @@ function verifyClosedChecks(acceptance) {
 function readEvidenceJson(root, fileName, label) {
   const path = join(root, fileName);
   let bytes;
+  let descriptor;
   try {
     if (!lstatSync(path).isFile()) throw new Error();
-    bytes = readFileSync(path);
+    descriptor = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+    const stat = fstatSync(descriptor);
+    const { size } = stat;
+    if (!stat.isFile() || size > MAX_EVIDENCE_FILE_BYTES) throw new Error();
+    const buffer = Buffer.alloc(size + 1);
+    let offset = 0;
+    while (offset < buffer.length) {
+      const count = readSync(descriptor, buffer, offset, buffer.length - offset, null);
+      if (count === 0) break;
+      offset += count;
+    }
+    if (offset !== size) throw new Error();
+    bytes = buffer.subarray(0, size);
   } catch {
-    throw new Error(`${label} eksik veya normal dosya değil.`);
+    throw new Error(`${label} eksik, normal dosya değil veya dosya boyutu geçersiz.`);
+  } finally {
+    if (descriptor !== undefined) closeSync(descriptor);
   }
-  const text = bytes.toString("utf8");
+  let text;
+  try { text = exactUtf8.decode(bytes); }
+  catch { throw new Error(`${label} geçerli UTF-8 değil.`); }
   if (SECRET_LEAK_PATTERN.test(text)) throw new Error(`${label} gizli veri içeriyor.`);
   try {
     return { bytes, value: JSON.parse(text) };
   } catch {
     throw new Error(`${label} geçerli JSON değil.`);
   }
+}
+
+// Raporun sayıları ve anlatısı aynı dosya özetine ve sentetik vakanın seçili sayfasına bağlanır.
+function reportMatchesSource(report, sourceSha256, format) {
+  const sheet = format === "xlsx" ? "Services" : null;
+  const finalRow = format === "xlsx" ? 4 : 5;
+  if (!Array.isArray(report?.metrics) || !Array.isArray(report.summary) || !Array.isArray(report.findings)
+    || !report.metrics.length || !report.summary.length || !report.findings.length
+    || report.findings.some(finding => !Array.isArray(finding?.statements) || !finding.statements.length)) return false;
+  const entries = [...report.metrics, ...report.summary, ...report.findings.flatMap(finding => finding.statements)];
+  return entries.every(entry => Array.isArray(entry?.evidence) && entry.evidence.length > 0 && entry.evidence.every(anchor => {
+    const locator = anchor?.locator;
+    return anchor?.sourceId === "file-0" && anchor.sha256 === sourceSha256 && (locator?.sheet ?? null) === sheet
+      && Number.isSafeInteger(locator?.rowStart) && Number.isSafeInteger(locator?.rowEnd)
+      && locator.rowStart >= 2 && locator.rowEnd <= finalRow && locator.rowEnd >= locator.rowStart;
+  }));
 }
 
 // Kanıt girişleri koşu dizininin doğrudan üyesidir. Bir dosya tek bir rol veya vakaya aittir.
@@ -487,6 +522,9 @@ export function verifyAcceptanceEvidence(outputDirectory, options = {}) {
       if (createHash("sha256").update(report.bytes).digest("hex") !== entry.reportSha256) {
         throw new Error(`Rapor SHA-256 uyuşmuyor (${label}).`);
       }
+      if (!reportMatchesSource(report.value, entry.sourceSha256, spec.format)) {
+        throw new Error(`Rapor dayanağı kaynak, sayfa veya fiziksel satırla eşleşmiyor (${label}).`);
+      }
       const reportId = report.value?.analysisId;
       if (typeof reportId !== "string" || !reportId.trim() || reportId !== entry.reportId || reportIds.has(reportId)) {
         throw new Error(`Rapor kimliği eksik, uyuşmuyor veya tekrar kullanılmış (${label}).`);
@@ -496,7 +534,7 @@ export function verifyAcceptanceEvidence(outputDirectory, options = {}) {
       const validation = validateHumanReviewDecision(review.value, entry);
       if (!validation.valid) throw new Error(`İnsan inceleme kaydı geçersiz (${label}). ${validation.reason}`);
       verifiedReports.push(entry);
-      reviews.push({ locale: spec.locale, format: spec.format, reportFile: entry.reportFile,
+      reviews.push({ caseId: spec.caseId, locale: spec.locale, format: spec.format, reportFile: entry.reportFile,
         reviewFile: entry.humanReviewFile, status: validation.status, reviewedAt: review.value.reviewedAt });
     } catch (error) {
       errors.push(error.message);
