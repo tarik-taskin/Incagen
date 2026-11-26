@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import type { GeminiGenerate } from "./gemini";
 import { createTabularPacket, interpretTable, analysisFingerprint } from "./tabular-result";
 import type { WorkerResult, TableSelection } from "./tabular-contract";
 
@@ -26,7 +27,7 @@ describe("real table result boundary", () => {
       const table = structuredClone(worker);
       table.document.chunks[0].table!.rows[0][0] = "PRIVATE RAW CELL";
       const packet = createTabularPacket("private-analysis-id", "收入和服务", table, locale);
-      const generate = vi.fn(async (_request: { prompt: string }) => JSON.stringify(narrative));
+      const generate = vi.fn<GeminiGenerate>(async () => JSON.stringify(narrative));
       const result = await interpretTable(packet, locale, generate);
       const prompt = generate.mock.calls[0][0].prompt;
       expect(JSON.parse(prompt)).toMatchObject({ language, objective: "收入和服务", scope: {
@@ -57,7 +58,7 @@ describe("real table result boundary", () => {
   });
   it("limits the provider and local narrative to verified metric IDs and three model findings", async () => {
     const packet = createTabularPacket("a", "Compare", worker, "en");
-    const generate = vi.fn(async (_request: { schema: unknown }) => JSON.stringify(narrative));
+    const generate = vi.fn<GeminiGenerate>(async () => JSON.stringify(narrative));
     await interpretTable(packet, "en", generate);
     const schema = JSON.stringify(generate.mock.calls[0][0].schema);
     expect(schema).toContain('"enum":["rows","aggregate","group-1","group-2"]');
