@@ -131,6 +131,23 @@ test("runCloudProbe separates configuration, clientAuth, callable and cleanup st
   assert.equal(JSON.parse(written.get("/tmp/mock-probe.json")).cleaned, true);
 });
 
+test("Interactions evidence requires the server to acknowledge the requested transport", async () => {
+  const { deps } = mockDeps();
+  const original = deps.firebase.httpsCallable;
+  deps.env = { INCAGEN_CLOUD_DIAGNOSTIC_TRANSPORT: "interactions" };
+  deps.firebase.httpsCallable = (functions, name, options) => name === "checkGemini" ? async data => {
+    assert.deepEqual(data, { transport: "interactions" });
+    return { data: { status: "ok", model: "gemini-3.8-flash", transport: "interactions" } };
+  } : original(functions, name, options);
+  const passed = await runCloudProbe(deps);
+  assert.equal(passed.status, "passed");
+  assert.equal(passed.transport, "interactions");
+  deps.firebase.httpsCallable = original;
+  const unconfirmed = await runCloudProbe(deps);
+  assert.equal(unconfirmed.status, "failed");
+  assert.equal(unconfirmed.cleanup.journalVerifiedClean, true);
+});
+
 test("runCloudProbe stops before callable on clientAuth failure and does not leak secrets", async () => {
   const base = mockDeps();
   base.deps.firebase.createUserWithEmailAndPassword = async () => {

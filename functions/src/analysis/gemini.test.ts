@@ -1,10 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildAnalysisPacket } from "./input-packet";
-import { checkGeminiConnection, createGeminiGenerate, generateValidatedAnalysis, GEMINI_MODEL } from "./gemini";
+import { checkGeminiConnection, checkGeminiInteractions, createGeminiGenerate, generateValidatedAnalysis, GEMINI_MODEL } from "./gemini";
 import { requireGeminiDeveloper } from "./gemini-diagnostic";
 
-const sdk = vi.hoisted(() => ({ generate: vi.fn(), constructor: vi.fn() }));
-vi.mock("@google/genai", () => ({ ThinkingLevel: { LOW: "LOW", MEDIUM: "MEDIUM" }, GoogleGenAI: class { models = { generateContent: sdk.generate }; constructor(options: unknown) { sdk.constructor(options); } } }));
+const sdk = vi.hoisted(() => ({ generate: vi.fn(), interact: vi.fn(), constructor: vi.fn() }));
+vi.mock("@google/genai", () => ({ ThinkingLevel: { LOW: "LOW", MEDIUM: "MEDIUM" }, GoogleGenAI: class {
+  models = { generateContent: sdk.generate };
+  interactions = { create: sdk.interact };
+  constructor(options: unknown) { sdk.constructor(options); }
+} }));
 const document = { version: 1, sourceId: "file-0", fileName: "brief.txt", sha256: "a".repeat(64), extension: "txt", detectedMime: "text/plain", category: "Belge", parserVersion: "test/1", metadata: {}, warnings: [], chunks: [{ id: "chunk-1", kind: "text", text: "Revenue increased. Costs require review.", locator: { section: "brief" } }] };
 const packet = buildAnalysisPacket({ analysisId: "analysis-1", objective: "Summarize the brief.", documents: [document] });
 const evidence = { sourceId: "file-0", sha256: document.sha256, chunkId: "chunk-1", locator: { section: "brief" } };
@@ -35,6 +39,23 @@ describe("Gemini backend boundary", () => {
     expect(sdk.generate.mock.calls[0][0].config.temperature).toBe(0);
     expect(sdk.generate.mock.calls[0][0].config.httpOptions).toEqual({ timeout: 90000, retryOptions: { attempts: 1 } });
     expect(usage).toHaveBeenCalledWith({ promptTokens: 120, outputTokens: 60, totalTokens: 180 });
+  });
+  it("probes Interactions v1 once using fixed structured output and no stored conversation", async () => {
+    sdk.interact.mockResolvedValue({ status: "completed", model: GEMINI_MODEL, output_text: '{"status":"ok","service":"incagen"}' });
+    await expect(checkGeminiInteractions("synthetic-key")).resolves.toEqual({ status: "ok", model: GEMINI_MODEL });
+    expect(sdk.interact).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ api_version: "v1", model: GEMINI_MODEL,
+      input: 'Return exactly {"status":"ok","service":"incagen"}.', store: false, automatic_continuation: false,
+      response_format: expect.objectContaining({ mime_type: "application/json" }),
+    }), { timeout_ms: 300000, retries: { strategy: "none" } });
+    expect(sdk.generate).not.toHaveBeenCalled();
+  });
+  it.each([
+    { status: "incomplete", output_text: '{"status":"ok","service":"incagen"}' },
+    { status: "completed", model: "other", output_text: '{"status":"ok","service":"incagen"}' },
+    { status: "completed", output_text: '{"status":"ok","service":"unrelated"}' },
+  ])("rejects invalid Interaction responses", async response => {
+    sdk.interact.mockResolvedValue(response);
+    await expect(checkGeminiInteractions("synthetic-key")).rejects.toThrow("invalid-response");
   });
   it("sanitizes raw provider errors", async () => {
     const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -101,7 +122,9 @@ describe("Gemini diagnostic authorization", () => {
     expect(requireGeminiDeveloper(auth, {}, now)).toBe("developer");
   });
   it("accepts no custom prompt, documents or old/invalid sessions", () => {
-    expect(() => requireGeminiDeveloper(auth, { prompt: "custom" }, now)).toThrow("veri kabul etmez");
+    expect(() => requireGeminiDeveloper(auth, { prompt: "custom" }, now)).toThrow("serbest istem kabul etmez");
+    expect(() => requireGeminiDeveloper(auth, { transport: "other" }, now)).toThrow("serbest istem kabul etmez");
+    expect(requireGeminiDeveloper(auth, { transport: "interactions" }, now)).toBe("developer");
     for (const auth_time of [0, "not-a-number", now / 1000 - 301, now / 1000 + 100]) {
       expect(() => requireGeminiDeveloper({ ...auth, token: { incagenDeveloper: true, auth_time } }, {}, now)).toThrow("Yeniden giriş");
     }

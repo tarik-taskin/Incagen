@@ -18,6 +18,19 @@ export interface GeminiRequest {
 }
 export type GeminiGenerate = (request: GeminiRequest) => Promise<string>;
 
+// İki API’nin sağlayıcı ve taşıma hatalarını aynı güvenli koda indirger.
+function classifyGeminiError(error: unknown) {
+  if (error instanceof GeminiError) return error;
+  const status = error && typeof error === "object" && "status" in error ? error.status : undefined;
+  const message = error instanceof Error ? error.message : "";
+  const timedOut = status === 408 || status === 504 || (error instanceof Error
+    && ["AbortError", "TimeoutError", "RequestTimeoutError", "APIConnectionTimeoutError"].includes(error.name));
+  const busy = status === 429 || status === 503;
+  console.warn("gemini-request-failed", { status: typeof status === "number" && Number.isInteger(status) && status >= 100 && status <= 599 ? status : "unknown",
+    reason: /deadline|timeout|timed out/i.test(message) ? "timeout" : /overload|high demand|capacity/i.test(message) ? "capacity" : "provider" });
+  return new GeminiError(timedOut ? "timeout" : busy ? "busy" : "unavailable");
+}
+
 // Resmî SDK yalnız backend'de çalışır; otomatik ücretli retry, araç ve kod yürütme açılmaz.
 export function createGeminiGenerate(apiKey: string, onUsage?: (usage: { promptTokens: number; outputTokens: number; totalTokens: number }) => void): GeminiGenerate {
   if (!apiKey.trim()) throw new GeminiError("not-configured");
@@ -45,29 +58,45 @@ export function createGeminiGenerate(apiKey: string, onUsage?: (usage: { promptT
       }
       return response.text;
     } catch (error) {
-      if (error instanceof GeminiError) throw error;
-      const status = error && typeof error === "object" && "status" in error ? error.status : undefined;
-      const message = error instanceof Error ? error.message : "";
-      const timedOut = status === 408 || status === 504 || (error instanceof Error && ["AbortError", "TimeoutError"].includes(error.name));
-      const busy = status === 429 || status === 503;
-      console.warn("gemini-request-failed", { status: typeof status === "number" && Number.isInteger(status) && status >= 100 && status <= 599 ? status : "unknown",
-        reason: /deadline|timeout|timed out/i.test(message) ? "timeout" : /overload|high demand|capacity/i.test(message) ? "capacity" : "provider" });
-      throw new GeminiError(timedOut ? "timeout" : busy ? "busy" : "unavailable");
+      throw classifyGeminiError(error);
     }
   };
 }
 
+const diagnosticRequest = {
+  prompt: 'Return exactly {"status":"ok","service":"incagen"}.',
+  system: "This is a connectivity test. Return only the requested JSON.", maxOutputTokens: 2048, thinkingLevel: "low",
+  useDefaultTemperature: true, timeoutMs: GEMINI_LIMITS.diagnosticTimeoutMs,
+  schema: { type: "object", properties: { status: { type: "string", enum: ["ok"] }, service: { type: "string", enum: ["incagen"] } }, required: ["status", "service"], additionalProperties: false },
+} satisfies GeminiRequest;
+
 // Bağlantı testinde yalnız sabit sentetik veri gönderilir; serbest prompt ve müşteri belgesi kabul edilmez.
 export async function checkGeminiConnection(generate: GeminiGenerate) {
-  const text = await generate({ prompt: 'Return exactly {"status":"ok","service":"incagen"}.',
-    system: "This is a connectivity test. Return only the requested JSON.", maxOutputTokens: 2048, thinkingLevel: "low",
-    useDefaultTemperature: true, timeoutMs: GEMINI_LIMITS.diagnosticTimeoutMs,
-    schema: { type: "object", properties: { status: { type: "string", enum: ["ok"] }, service: { type: "string", enum: ["incagen"] } }, required: ["status", "service"], additionalProperties: false } });
+  const text = await generate(diagnosticRequest);
   try {
     const result = JSON.parse(text);
     if (Object.keys(result).sort().join() !== "service,status" || result.status !== "ok" || result.service !== "incagen") throw new Error();
     return { status: "ok" as const, model: GEMINI_MODEL };
   } catch { throw new GeminiError("invalid-response"); }
+}
+
+// Aynı sabit JSON’u, geliştirici teşhisinde depolamasız ve tek Interactions isteğiyle doğrular.
+export async function checkGeminiInteractions(apiKey: string) {
+  if (!apiKey.trim()) throw new GeminiError("not-configured");
+  const client = new GoogleGenAI({ apiKey });
+  return checkGeminiConnection(async () => {
+    try {
+      const response = await client.interactions.create({
+        api_version: "v1", model: GEMINI_MODEL, input: diagnosticRequest.prompt, system_instruction: diagnosticRequest.system,
+        store: false, automatic_continuation: false,
+        generation_config: { thinking_level: "low", max_output_tokens: diagnosticRequest.maxOutputTokens },
+        response_format: { type: "text", mime_type: "application/json", schema: diagnosticRequest.schema },
+      }, { timeout_ms: GEMINI_LIMITS.diagnosticTimeoutMs, retries: { strategy: "none" } });
+      if (response.status !== "completed" || !response.output_text || Buffer.byteLength(response.output_text) > GEMINI_LIMITS.outputBytes
+        || (response.model && response.model !== GEMINI_MODEL)) throw new GeminiError("invalid-response");
+      return response.output_text;
+    } catch (error) { throw classifyGeminiError(error); }
+  });
 }
 
 // Gelecek analiz hattı için adaptör: kaynakları talimat saymaz; sonuç ancak güvenilir bağlam kapısından geçer.

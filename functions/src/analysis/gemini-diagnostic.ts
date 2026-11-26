@@ -1,14 +1,16 @@
 import { getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { z } from "zod";
-import { checkGeminiConnection, createGeminiGenerate, GeminiError, GEMINI_LIMITS } from "./gemini";
+import { checkGeminiConnection, checkGeminiInteractions, createGeminiGenerate, GeminiError, GEMINI_LIMITS } from "./gemini";
 import { readGeminiKey } from "./gemini-secret";
 
 // Maliyetli kontrol normal kullanıcılara kapalıdır; son giriş, UID ve geliştirici claim'i zorunludur.
 export function requireGeminiDeveloper(auth: { uid: string; token: Record<string, unknown> } | undefined, data: unknown, now = Date.now()) {
   if (!auth) throw new HttpsError("unauthenticated", "Giriş gerekli.");
   if (auth.token.incagenDeveloper !== true) throw new HttpsError("permission-denied", "Geliştirici yetkisi gerekli.");
-  if (!z.object({}).strict().safeParse(data).success) throw new HttpsError("invalid-argument", "Bu kontrol veri kabul etmez.");
+  if (!z.object({ transport: z.literal("interactions").optional() }).strict().safeParse(data).success) {
+    throw new HttpsError("invalid-argument", "Bu kontrol belge veya serbest istem kabul etmez.");
+  }
   const age = now / 1000 - Number(auth.token.auth_time ?? 0);
   if (!Number.isFinite(age) || age < -30 || age > 300) throw new HttpsError("failed-precondition", "Yeniden giriş gerekli.");
   return auth.uid;
@@ -37,6 +39,9 @@ export const checkGemini = onCall({ region: "europe-west1", timeoutSeconds: GEMI
   try {
     const key = await readGeminiKey();
     await reserveGeminiDiagnostic(uid);
+    if (request.data.transport === "interactions") {
+      return { ...await checkGeminiInteractions(key), transport: "interactions" as const };
+    }
     return await checkGeminiConnection(createGeminiGenerate(key));
   } catch (error) {
     if (error instanceof HttpsError) throw error;
