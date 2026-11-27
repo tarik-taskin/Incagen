@@ -61,6 +61,22 @@ it("also recognizes a transport deadline while awaiting the Cloud Run response",
   await expect(computeTable(input, "file-0", "synthetic.csv", selection)).rejects.toMatchObject({ code: "timeout" });
 });
 
+it("expires during Cloud Run identity acquisition with no worker request", async () => {
+  const controller = new AbortController();
+  const timeout = vi.spyOn(AbortSignal, "timeout").mockReturnValueOnce(controller.signal);
+  try {
+    let finishIdentity!: (value: unknown) => void;
+    mocks.getIdTokenClient.mockReturnValue(new Promise(resolve => { finishIdentity = resolve; }));
+    const result = expect(computeTable(input, "file-0", "synthetic.csv", selection, 1600)).rejects.toMatchObject({ code: "timeout" });
+    await Promise.resolve();
+    controller.abort(new DOMException("synthetic deadline", "TimeoutError"));
+    await result;
+    finishIdentity({ getRequestHeaders: vi.fn() });
+    expect(timeout).toHaveBeenCalledExactlyOnceWith(1600);
+    expect(fetchWorker).not.toHaveBeenCalled();
+  } finally { timeout.mockRestore(); }
+});
+
 it("bounds the streamed Cloud Run body even without a Content-Length header", async () => {
   const cancel = vi.fn();
   const body = new ReadableStream({

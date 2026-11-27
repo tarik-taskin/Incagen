@@ -1,10 +1,10 @@
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { warn } from "firebase-functions/logger";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { getQuotaDay } from "../contracts";
-import { createGeminiGenerate, GEMINI_MODEL, GeminiError, type GeminiGenerate } from "./gemini";
+import { createGeminiGenerate, GEMINI_LIMITS, GEMINI_MODEL, GeminiError, type GeminiGenerate } from "./gemini";
 import { readGeminiKey } from "./gemini-secret";
 import { AnalysisPacketBudgetError } from "./input-packet";
 import { assertAiArtifactSourceBudget, encodeAiArtifact, preparedAnalysis, verifyPreparedSelection, type AiArtifact } from "./tabular-storage";
@@ -13,8 +13,17 @@ import { analysisFingerprint, createTabularPacket, interpretTable } from "./tabu
 import { AI_JOB_LIMITS, hasActiveAnalysisLease, startAnalysisSchema, type AiJob, type AnalysisAccess, type AnalysisFailure } from "./tabular-contract";
 import { isAnalysisEmulator, tabularAnalysisAccess } from "./tabular-rollout";
 import { geminiQuotaDay, legacyProviderQuotaDays, nextQuotaReset } from "./provider-calendar";
+import { readOriginalTable } from "./analysis-source";
 
 const providerBackoffPath = "internalAnalysisQuotas/provider-backoff";
+const maxInvocationSeconds = 180;
+
+// Platform süresi dolmadan başarısız işin Firestore kaydı ve temizliği için pay bırakır.
+export function analysisStageBudget(invokedAt: number, now: number, limit: number) {
+  const available = invokedAt + (maxInvocationSeconds - 15) * 1000 - now;
+  if (available < 1000) throw new WorkerError("timeout");
+  return Math.min(available, limit);
+}
 
 // Eksik sayaç sıfırdır. Bozuk saklanmış sayaç yeni ücretli izin açamaz.
 function quotaCount(value: unknown) {
@@ -90,7 +99,7 @@ export function failureCode(error: unknown): AnalysisFailure {
   if (error instanceof WorkerError) return error.code;
   if (error instanceof AnalysisPacketBudgetError) return "scope-limit";
   if (error instanceof GeminiError) {
-    if (error.code === "not-configured") return "configuration";
+    if (error.code === "not-configured" || error.code === "credential-rejected") return "configuration";
     if (error.code === "busy") return "provider-busy";
     if (error.code === "rate-limited") return "provider-rate-limit";
     if (error.code === "timeout") return "timeout";
@@ -145,6 +154,7 @@ export interface StartAnalysisOptions {
 
 // İstek doğrulama, rollout kapısı, Python hesabı, model çağrısı ve sonucu Atomik hata kaydıyla yürütür.
 export async function executeStartAnalysis(uid: string | undefined, rawData: unknown, options: StartAnalysisOptions = {}) {
+  const invokedAt = Date.now();
   const parsed = startAnalysisSchema.safeParse(rawData);
   if (!parsed.success) throw new HttpsError("invalid-argument", "Analiz kapsamını kontrol edin.");
   const input = parsed.data;
@@ -167,14 +177,14 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
   const job = reservation.job, bucket = getStorage().bucket(), startedAt = Date.now();
   const artifactPath = `derived/${uid}/analyses/${input.id}/ai/${job.attemptId}.json.gz`;
   let savedHash: string | undefined;
+  let phase: "source" | "python" | "model" | "save" = "source";
   const measurement: Pick<AiJob, "inputBytes" | "pythonMs" | "modelMs" | "usage" | "model"> = {};
   try {
-    const [metadata] = await bucket.file(`users/${uid}/analyses/${input.id}/${source.id}`).getMetadata();
-    if (Number(metadata.size) !== source.size || source.size > 25 * 1024 * 1024) throw new WorkerError("invalid-data");
-    const [raw] = await bucket.file(`users/${uid}/analyses/${input.id}/${source.id}`).download();
-    if (createHash("sha256").update(raw).digest("hex") !== source.sha256) throw new WorkerError("invalid-data");
+    const budget = (limit: number) => analysisStageBudget(invokedAt, Date.now(), limit);
+    const raw = await readOriginalTable(bucket, `users/${uid}/analyses/${input.id}/${source.id}`, source, budget(25_000));
+    phase = "python";
     const pythonStarted = Date.now();
-    const worker = await computeTable(raw, source.id, source.name, input.selection).finally(() => {
+    const worker = await computeTable(raw, source.id, source.name, input.selection, budget(70_000)).finally(() => {
       measurement.pythonMs = Date.now() - pythonStarted;
     });
     if (worker.document.sourceId !== source.id || worker.document.sha256 !== source.sha256 || worker.document.fileName !== source.name
@@ -184,6 +194,7 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
     const artifactBase: Omit<AiArtifact, "result"> = { version: 1, sources: [worker.document], scope: worker.scope, locale: input.locale };
     assertAiArtifactSourceBudget(artifactBase);
     await advanceAnalysis(uid!, input.id, job.attemptId, "interpreting");
+    phase = "model";
     const emulator = isAnalysisEmulator();
     let generateFn: GeminiGenerate;
     let useFixedEmulatorText = false;
@@ -198,11 +209,14 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
     }
     const result = await interpretTable(packet, input.locale, async request => {
       const started = Date.now();
+      const timeoutMs = budget(request.timeoutMs ?? GEMINI_LIMITS.analysisTimeoutMs);
       measurement.inputBytes = packet.inputBytes;
       measurement.model = emulator ? "emulator" : GEMINI_MODEL;
-      try { return await generateFn(request); }
+      try { return await generateFn({ ...request, timeoutMs }); }
       finally { measurement.modelMs = Date.now() - started; }
     }, useFixedEmulatorText);
+    phase = "save";
+    budget(5000);
     await advanceAnalysis(uid!, input.id, job.attemptId, "saving");
     if (Buffer.byteLength(JSON.stringify(result)) > AI_JOB_LIMITS.outputBytes) throw new WorkerError("scope-limit");
     const { compressed, sha256 } = encodeAiArtifact({ ...artifactBase, result });
@@ -240,6 +254,9 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
       return "preserve" as const;
     });
     if (disposition === "published") return { id: input.id, status: "completed", reused: false };
+    if (disposition === "fail") warn("tabular-analysis-failed", { failure, phase, durationMs: finishedAt - startedAt,
+      ...(measurement.pythonMs === undefined ? {} : { pythonMs: measurement.pythonMs }),
+      ...(measurement.modelMs === undefined ? {} : { modelMs: measurement.modelMs }) });
     if (savedHash && (disposition === "fail" || disposition === "unreferenced")) {
       await bucket.file(artifactPath).delete({ ignoreNotFound: true }).catch(() => {
         warn("analysis-artifact-cleanup-failed", { failure });
@@ -251,6 +268,6 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
 }
 
 // Kullanıcı onayıyla tek tabloyu hesaplar ve yorumlar; otomatik ücretli retry veya metrik tahmini yapmaz.
-export const startAnalysis = onCall({ region: "europe-west1", timeoutSeconds: 180, memory: "1GiB", maxInstances: 2, concurrency: 1 }, async request => {
+export const startAnalysis = onCall({ region: "europe-west1", timeoutSeconds: maxInvocationSeconds, memory: "1GiB", maxInstances: 2, concurrency: 1 }, async request => {
   return executeStartAnalysis(request.auth?.uid, request.data, { access: tabularAnalysisAccess(request.auth?.token.incagenTabularBeta) });
 });

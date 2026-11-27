@@ -4,12 +4,18 @@ import { gzipSync } from "node:zlib";
 import { GeminiError } from "./gemini";
 import { AnalysisPacketBudgetError } from "./input-packet";
 import { mapWorkerFailure, WorkerError } from "./python-worker";
-import { failureCode, failureDisposition } from "./tabular-jobs";
+import { analysisStageBudget, failureCode, failureDisposition } from "./tabular-jobs";
 import { assertAiArtifactSourceBudget, buildAnalysisTables, decodeAiArtifact, encodeAiArtifact, fitAnalysisTablesBudget, parseCsvTablePreview, validateStoredArtifact, type AiArtifact } from "./tabular-storage";
 import { analysisFingerprint } from "./tabular-result";
 import { AI_JOB_LIMITS, hasActiveAnalysisLease, type AiJob } from "./tabular-contract";
 import type { ParsedDocument, Report } from "../contracts";
 
+it("allows only the remaining invocation budget and reserves time for finalization", () => {
+  const startedAt = 100_000;
+  expect(analysisStageBudget(startedAt, startedAt + 1_000, 90_000)).toBe(90_000);
+  expect(analysisStageBudget(startedAt, startedAt + 120_000, 90_000)).toBe(45_000);
+  expect(() => analysisStageBudget(startedAt, startedAt + 164_001, 90_000)).toThrow("timeout");
+});
 describe("AI iş yaşam döngüsü hata sınıflandırması", () => {
   it("sağlayıcı busy/timeout, geçersiz yanıt, kapsam aşımı ve eksik anahtar hatalarını ayırır", () => {
     expect(failureCode(new GeminiError("busy"))).toBe("provider-busy");

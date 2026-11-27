@@ -4,6 +4,7 @@ import { GoogleAuth } from "google-auth-library";
 import type { TableSelection, WorkerResult } from "./tabular-contract";
 import { workerResultSchema } from "./tabular-contract";
 import { isAnalysisEmulator } from "./tabular-rollout";
+import { beforeAbort } from "./analysis-deadline";
 
 const workerLimits = { outputBytes: 4 * 1024 * 1024, localTimeoutMs: 60_000, cloudTimeoutMs: 70_000 } as const;
 
@@ -60,7 +61,7 @@ function parseWorkerJson(bytes: Uint8Array): unknown {
 }
 
 // Yalnız izole demo emülatöründe sabit Python modülünü çalıştırır; çocuk ortama sağlayıcı anahtarı geçmez.
-async function localWorker(data: Buffer, metadata: string): Promise<unknown> {
+async function localWorker(data: Buffer, metadata: string, timeoutMs: number): Promise<unknown> {
   return new Promise((accept, reject) => {
     const child = spawn(resolve(__dirname, "../../../python/.venv/bin/python"), ["-m", "incagen_extract.worker_cli"], {
       env: { PATH: process.env.PATH, PYTHONPATH: resolve(__dirname, "../../../python/src"), INCAGEN_WORKER_METADATA: metadata, OPENBLAS_NUM_THREADS: "1" },
@@ -74,7 +75,7 @@ async function localWorker(data: Buffer, metadata: string): Promise<unknown> {
       stopped = code;
       child.kill("SIGKILL");
     }
-    const deadline = setTimeout(() => stop("timeout"), workerLimits.localTimeoutMs);
+    const deadline = setTimeout(() => stop("timeout"), timeoutMs);
     deadline.unref();
     child.stdout.on("data", (chunk: Buffer) => {
       if (stopped) return;
@@ -113,27 +114,32 @@ async function boundedCloudBody(response: Response) {
 }
 
 // Tek güvenilir Cloud Run adresine OIDC audience ile ham dosya gönderir; dosya/URL/kod istemciden çalıştırılmaz.
-export async function computeTable(data: Buffer, sourceId: string, fileName: string, selection: TableSelection) {
+export async function computeTable(data: Buffer, sourceId: string, fileName: string, selection: TableSelection, availableMs: number = workerLimits.cloudTimeoutMs) {
+  if (availableMs <= 0) throw new WorkerError("timeout");
   const metadata = Buffer.from(JSON.stringify({ sourceId, fileName, selection })).toString("base64");
-  if (isAnalysisEmulator()) return unwrap(await localWorker(data, metadata));
+  if (isAnalysisEmulator()) return unwrap(await localWorker(data, metadata, Math.min(availableMs, workerLimits.localTimeoutMs)));
   let url: URL;
   try { url = new URL(process.env.INCAGEN_PYTHON_WORKER_URL || ""); }
   catch { throw new WorkerError("configuration"); }
   if (url.protocol !== "https:" || !url.hostname.endsWith(".run.app") || url.pathname !== "/" || url.username || url.password || url.search || url.hash || url.port) throw new WorkerError("configuration");
   try {
-    const client = await new GoogleAuth().getIdTokenClient(url.origin);
-    const headers = await client.getRequestHeaders();
+    const signal = AbortSignal.timeout(Math.min(availableMs, workerLimits.cloudTimeoutMs));
+    const headers = await beforeAbort(signal, async () => {
+      const client = await new GoogleAuth().getIdTokenClient(url.origin);
+      signal.throwIfAborted();
+      return client.getRequestHeaders();
+    });
     headers.set("Content-Type", "application/octet-stream");
     headers.set("X-Incagen-Metadata", metadata);
     const response = await fetch(`${url.origin}/analyze`, { method: "POST", headers, body: new Uint8Array(data),
-      redirect: "error", signal: AbortSignal.timeout(workerLimits.cloudTimeoutMs) });
+      redirect: "error", signal });
     if (response.status !== 200 && response.status !== 422) {
       void response.body?.cancel().catch(() => {});
       if (response.status === 408 || response.status === 504) throw new WorkerError("timeout");
       if (response.status === 413) throw new WorkerError("scope-limit");
       throw new WorkerError("configuration");
     }
-    return unwrap(parseWorkerJson(await boundedCloudBody(response)));
+    return unwrap(parseWorkerJson(await beforeAbort(signal, () => boundedCloudBody(response))));
   } catch (error) {
     if (error instanceof WorkerError) throw error;
     if (error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError")) throw new WorkerError("timeout");
