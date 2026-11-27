@@ -23,13 +23,13 @@ export default function LiveAnalysisReport({ artifact, job, analysisId }: { arti
   // Gerçek güncel oturum (auth.currentUser) ve AbortSignal asenkron sınırlar boyunca kontrol edilir.
   async function downloadSource(source: ReportSource, signal?: AbortSignal) {
     const services = getServices();
-    const currentAuthUser = services.auth.currentUser;
-    const currentUid = currentAuthUser?.uid;
+    const currentUid = user?.uid;
 
-    if (!currentUid) {
+    if (!currentUid || currentUid !== services.auth.currentUser?.uid) {
       throw new DownloadError("invalid_session", "Kullanıcı oturumu bulunamadı.");
     }
-    if (source.sourceId !== job.sourceId) {
+    const original = artifact.sources.find(item => item.sourceId === job.sourceId);
+    if (artifact.result.analysisId !== analysisId || !original || source.sourceId !== original.sourceId || source.sha256 !== original.sha256) {
       throw new DownloadError("invalid_source", "Seçilen kaynak bu analize ait değil.");
     }
     if (signal?.aborted) {
@@ -38,7 +38,7 @@ export default function LiveAnalysisReport({ artifact, job, analysisId }: { arti
 
     let bytes: ArrayBuffer;
     try {
-      bytes = await getBytes(ref(services.storage, `users/${currentUid}/analyses/${analysisId}/${source.sourceId}`), 25 * 1024 * 1024);
+      bytes = await getBytes(ref(services.storage, `users/${currentUid}/analyses/${analysisId}/${original.sourceId}`), 25 * 1024 * 1024);
     } catch {
       if (signal?.aborted) {
         throw new DownloadError("cancelled", "İndirme işlemi iptal edildi.");
@@ -53,7 +53,7 @@ export default function LiveAnalysisReport({ artifact, job, analysisId }: { arti
     }
 
     // İndirilen dosyanın SHA-256 özetini kaynak sözleşmesiyle doğrula
-    const isIntegrityValid = await verifySourceIntegrity(bytes, source.sha256);
+    const isIntegrityValid = await verifySourceIntegrity(bytes, original.sha256);
 
     // Hash işlemi beklerken hesap veya kaynak değişimi ya da iptal kontrolü
     const postVerifyUid = services.auth.currentUser?.uid;
@@ -65,7 +65,7 @@ export default function LiveAnalysisReport({ artifact, job, analysisId }: { arti
       throw new DownloadError("integrity_failed", "İndirilen dosya bütünlük kontrolünü geçemedi.");
     }
 
-    downloadBlob(new Blob([bytes]), source.fileName);
+    downloadBlob(new Blob([bytes]), original.fileName);
   }
 
   const numberFormatter = new Intl.NumberFormat(localeTag());

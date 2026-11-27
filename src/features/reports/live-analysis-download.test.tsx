@@ -177,11 +177,34 @@ function createJob(sourceId: string): AiJob {
   };
 }
 
+// Raporu gören hesapla tarayıcıdaki Firebase oturumu ayrı değiştirilebilir.
+function renderOwnedReport(report: React.ReactElement) {
+  return render(report, { wrapper: ({ children }) => (
+    <AuthContext.Provider value={{ user: { uid: "user-123" } as User, loading: false, error: "" }}>
+      {children}
+    </AuthContext.Provider>
+  ) });
+}
+
 describe("LiveAnalysisReport - downloadSource oturum ve yaşam döngüsü koordinasyonu", () => {
+  it.each(["stale-account", "different-analysis"] as const)("rejects %s before opening Storage", async scenario => {
+    if (scenario === "stale-account") mocks.currentUser = { uid: "other-user" };
+    const source: ReportSource = { sourceId: "file-0", fileName: "synthetic.csv", sha256: await computeSha256(sampleBytes),
+      chunks: [{ id: "c1", locator: {}, table: { columns: ["Team", "Amount"], rows: [["A", 10]] } }] };
+    const user = userEvent.setup();
+    renderOwnedReport(<LiveAnalysisReport artifact={createTestArtifact(source)} job={createJob(source.sourceId)}
+      analysisId={scenario === "different-analysis" ? "different-id" : "analysis-1"} />);
+    await user.click(screen.getByRole("button", { name: /Dayanağını incele/i }));
+    await user.click(await screen.findByRole("button", { name: "Özgün belgeyi indir" }));
+    expect(await screen.findByRole("alert")).toBeVisible();
+    expect(mocks.getBytesMock).not.toHaveBeenCalled();
+    expect(mocks.createObjectURLMock).not.toHaveBeenCalled();
+  });
+
   it("only displays recorded processing measurements and does not invent zero duration", () => {
     const source: ReportSource = { sourceId: "file-0", fileName: "synthetic.csv", sha256: "a".repeat(64), chunks: [{ id: "c1", locator: {}, table: { columns: ["Team", "Amount"], rows: [["A", 10]] } }] };
     const artifact = createTestArtifact(source), job = { ...createJob(source.sourceId), pythonMs: 1250, modelMs: 3000 };
-    const view = render(<LiveAnalysisReport artifact={artifact} job={job} analysisId="analysis-1" />);
+    const view = renderOwnedReport(<LiveAnalysisReport artifact={artifact} job={job} analysisId="analysis-1" />);
     expect(screen.getByText("İşlem süresi").nextElementSibling).toHaveTextContent("—");
     expect(screen.getByText("Hesaplama süresi").nextElementSibling).toHaveTextContent("1,3 saniye");
     expect(screen.getByText("Özet süresi").nextElementSibling).toHaveTextContent("3 saniye");
@@ -212,7 +235,7 @@ describe("LiveAnalysisReport - downloadSource oturum ve yaşam döngüsü koordi
     const job = createJob("src-1");
 
     const user = userEvent.setup();
-    render(<LiveAnalysisReport artifact={artifact} job={job} analysisId="analysis-1" />);
+    renderOwnedReport(<LiveAnalysisReport artifact={artifact} job={job} analysisId="analysis-1" />);
 
     // Metrik kartına tıkla ve dayanak dialog'unu aç
     await user.click(screen.getByRole("button", { name: /Dayanağını incele/i }));
@@ -247,7 +270,7 @@ describe("LiveAnalysisReport - downloadSource oturum ve yaşam döngüsü koordi
     const artifact = createTestArtifact(source);
     const job = createJob("src-1");
     const user = userEvent.setup();
-    render(<LiveAnalysisReport artifact={artifact} job={job} analysisId="analysis-1" />);
+    renderOwnedReport(<LiveAnalysisReport artifact={artifact} job={job} analysisId="analysis-1" />);
 
     await user.click(screen.getByRole("button", { name: /Dayanağını incele/i }));
     const downloadBtn = await screen.findByRole("button", { name: "Özgün belgeyi indir" });
@@ -276,7 +299,7 @@ describe("LiveAnalysisReport - downloadSource oturum ve yaşam döngüsü koordi
     const artifact = createTestArtifact(source);
     const job = createJob("src-1");
     const user = userEvent.setup();
-    render(<LiveAnalysisReport artifact={artifact} job={job} analysisId="analysis-1" />);
+    renderOwnedReport(<LiveAnalysisReport artifact={artifact} job={job} analysisId="analysis-1" />);
 
     await user.click(screen.getByRole("button", { name: /Dayanağını incele/i }));
     const downloadBtn = await screen.findByRole("button", { name: "Özgün belgeyi indir" });
@@ -301,7 +324,7 @@ describe("LiveAnalysisReport - downloadSource oturum ve yaşam döngüsü koordi
     mocks.getBytesMock.mockResolvedValue(sampleBytes);
     const source: ReportSource = { sourceId: "src-1", fileName: "sales.csv", sha256: hash,
       chunks: [{ id: "c1", locator: {}, table: { columns: ["Channel"], rows: [["A"]] } }] };
-    const view = render(<LiveAnalysisReport artifact={createTestArtifact(source)} job={createJob(source.sourceId)} analysisId="analysis-1" />);
+    const view = renderOwnedReport(<LiveAnalysisReport artifact={createTestArtifact(source)} job={createJob(source.sourceId)} analysisId="analysis-1" />);
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: /Dayanağını incele/i }));
     await user.click(await screen.findByRole("button", { name: "Özgün belgeyi indir" }));
@@ -352,7 +375,7 @@ describe("LiveAnalysisReport - downloadSource oturum ve yaşam döngüsü koordi
       selection: artifact.scope.selection,
     };
 
-    render(<LiveAnalysisReport artifact={artifact} job={legacyJob} analysisId="analysis-1" />);
+    renderOwnedReport(<LiveAnalysisReport artifact={artifact} job={legacyJob} analysisId="analysis-1" />);
 
     expect(screen.getByText("Doğrulanmış hesaplar")).toBeVisible();
     expect(screen.getByText("Model yorumu · Kaynaklı özet")).toBeVisible();
