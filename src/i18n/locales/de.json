@@ -1104,6 +1104,8 @@
   "kayıt__many": "Datensätze",
   "kayıt__other": "Datensätze",
   "Özet servisi şu anda yoğun. Hazırlanan belgeleriniz korunuyor; biraz sonra yeniden deneyin.": "Der Zusammenfassungsdienst ist gerade ausgelastet. Ihre vorbereiteten Dokumente bleiben erhalten. Versuchen Sie es in Kürze erneut.",
+  "Bugünkü analiz haklarınız doldu. Hazırlanan belgeleriniz korunuyor. Kota yenilendiğinde yeniden deneyebilirsiniz.": "Ihr heutiges Analysekontingent ist ausgeschöpft. Ihre vorbereiteten Dokumente bleiben gespeichert. Versuchen Sie es nach der Rücksetzung erneut.",
+  "Analiz servisinin günlük kapasitesi doldu. Hazırlanan belgeleriniz korunuyor. Kapasite yenilendiğinde yeniden deneyebilirsiniz.": "Der Analysedienst hat sein Tageslimit erreicht. Ihre vorbereiteten Dokumente bleiben gespeichert. Versuchen Sie es nach der Rücksetzung erneut.",
   "Özet servisi istek sınırına ulaştı. Hazırlanan belgeleriniz korunuyor. Daha sonra yeniden deneyin.": "Der Zusammenfassungsdienst hat sein Anfragelimit erreicht. Ihre vorbereiteten Dokumente sind gespeichert. Versuchen Sie es später erneut.",
   "Yeniden deneme kısa bir süre sonra açılacak; işlem kendiliğinden başlamaz.": "Sie können es in Kürze erneut versuchen. Die Analyse startet erst, wenn Sie sie erneut auslösen.",
   "Kısa bir süre bekleyin": "Bitte kurz warten",

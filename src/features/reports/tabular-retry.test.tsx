@@ -38,6 +38,25 @@ it("shows a safe configuration error when admission is rejected before a new job
   expect(mocks.start).toHaveBeenCalledTimes(1);
 });
 
+it.each([
+  ["user-day", "Bugünkü analiz haklarınız doldu."],
+  ["provider-day", "Analiz servisinin günlük kapasitesi doldu."],
+  ["attempts", "Bu çalışma için deneme sınırına ulaşıldı."],
+])("shows the %s admission limit and disables new requests until allowed", async (limit, message) => {
+  vi.useFakeTimers({ now: 5000 });
+  mocks.start.mockRejectedValue({ code: "functions/resource-exhausted", details: { analysisLimit: limit, ...(limit !== "attempts" ? { retryAfter: 8000 } : {}) } });
+  const analysis = { id: "synthetic", ai: { status: "failed", attempts: 1, sourceId: "file-0",
+    selection: { sheet: null, valueColumn: 1, groupColumn: 0, aggregation: "sum", numberFormat: "plain", unit: "USD" } } } as Analysis;
+  await act(async () => { render(<TabularAnalysisPanel analysis={analysis} />); });
+  await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Yeniden dene" })); });
+  expect(screen.getByRole(limit === "attempts" ? "status" : "alert")).toHaveTextContent(message);
+  expect(screen.getByRole("button", { name: limit === "attempts" ? "Yeniden dene" : "Kısa bir süre bekleyin" })).toBeDisabled();
+  expect(screen.queryByText("Analiz oluşturulmaya hazır.")).not.toBeInTheDocument();
+  await act(async () => { vi.advanceTimersByTime(3001); });
+  expect(screen.getByRole("button", { name: "Yeniden dene" })).toHaveProperty("disabled", limit === "attempts");
+  expect(mocks.start).toHaveBeenCalledTimes(1);
+});
+
 it.each(["failed", "running"] as const)("blocks manual resend from a rate-limit response after an old %s job", async status => {
   vi.useFakeTimers({ now: 5000 });
   mocks.start.mockRejectedValue({ code: "functions/resource-exhausted", details: { analysisFailure: "provider-rate-limit", retryAfter: 8000 } });

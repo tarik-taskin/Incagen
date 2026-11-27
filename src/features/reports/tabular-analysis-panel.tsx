@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { ArrowRight, Check, Database, Eye, Layers, LoaderCircle, PieChart, RotateCcw, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
 import type { Analysis } from "../../../functions/src/contracts";
-import type { AnalysisAccess, AnalysisFailure, AnalysisTable, TableSelection } from "../../../functions/src/analysis/tabular-contract";
+import type { AnalysisAccess, AnalysisFailure, AnalysisLimit, AnalysisTable, TableSelection } from "../../../functions/src/analysis/tabular-contract";
 import type { AiArtifact } from "../../../functions/src/analysis/tabular-storage";
 import { getLocale, t, useLocale } from "../../i18n/runtime";
 import { getServices } from "../../lib/firebase";
@@ -18,6 +18,11 @@ const LiveAnalysisReport = lazy(() => import("./live-analysis-report"));
 const defaults: TableSelection = { sheet: null, valueColumn: null, groupColumn: null, aggregation: "sum", numberFormat: "plain", unit: "number" };
 const panel = "surface rounded-3xl border border-border bg-card p-5 shadow-sm sm:p-7";
 const fallbackFailureMessage = "Bu işlemden henüz sonuç alınamadı. Seçiminizi kontrol edip yeniden deneyebilirsiniz.";
+const limitMessages: Record<AnalysisLimit, string> = {
+  attempts: "Bu çalışma için deneme sınırına ulaşıldı. Kaynaklarınız ve hazırlık özeti korunuyor.",
+  "user-day": "Bugünkü analiz haklarınız doldu. Hazırlanan belgeleriniz korunuyor. Kota yenilendiğinde yeniden deneyebilirsiniz.",
+  "provider-day": "Analiz servisinin günlük kapasitesi doldu. Hazırlanan belgeleriniz korunuyor. Kapasite yenilendiğinde yeniden deneyebilirsiniz.",
+};
 const errors: Record<AnalysisFailure, string> = {
   "invalid-data": "Seçilen ölçümde boş, geçersiz veya biçimi uyuşmayan hücreler var. Tabloyu ve sayı biçimini kontrol edin.",
   "invalid-number-format": "Seçilen sayı biçimi bu sütundaki değerlerle uyuşmuyor. Sayı biçimini (1234.56 / 1.234,56 / 1,234.56) değiştirip yeniden deneyin.",
@@ -196,6 +201,7 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
   const [limits, setLimits] = useState({ rows: 5000, groups: 12, attempts: 3 });
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const [attemptLimitReached, setAttemptLimitReached] = useState(false);
   const [callableRetryAfter, setCallableRetryAfter] = useState(0);
   const [refresh, setRefresh] = useState(0);
   const [artifact, setArtifact] = useState<AiArtifact | null>(null);
@@ -250,8 +256,9 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
   const valid = validationReason === null;
   const canStart = access === "available" && !checkingAccess;
   const summary = tables ? getScopeSummary(selected, tables, normalizedSelection) : null;
-  const exhausted = (job?.attempts ?? 0) >= (job?.maxAttempts ?? limits.attempts);
+  const exhausted = attemptLimitReached || (job?.attempts ?? 0) >= (job?.maxAttempts ?? limits.attempts);
   const jobFailureMessage = job?.error ? getFailureMessage(job.error) : "";
+  const quotaMessageExpired = !cooling && (error === limitMessages["user-day"] || error === limitMessages["provider-day"]);
 
   // Kullanıcının açık seçimi gönderilir; başlık, kaynak yolu, metrik veya prompt istemciden üretilmez.
   async function start() {
@@ -261,7 +268,7 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
     try { await httpsCallable(getServices().functions, "startAnalysis", { timeout: 190_000 })({ id: analysis.id, sourceId: selected.sourceId, selection: normalizedSelection, locale: job?.status === "running" ? job.locale : getLocale() }); }
     catch (failure) {
       if (!lifetime.current.active) return;
-      const details = (failure as { details?: { analysisFailure?: string; analysisAccess?: string; retryAfter?: number } })?.details;
+      const details = (failure as { details?: { analysisFailure?: string; analysisAccess?: string; analysisLimit?: AnalysisLimit; retryAfter?: number } })?.details;
       const reason = details?.analysisFailure;
       const retryAfter = details?.retryAfter;
       if (typeof retryAfter === "number" && Number.isFinite(retryAfter) && retryAfter > Date.now()) setCallableRetryAfter(retryAfter);
@@ -270,7 +277,10 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
         return;
       }
       if (reason === "configuration") setAccess("closed");
-      setError(reason ? getFailureMessage(reason) : userError(failure));
+      const limit = details?.analysisLimit;
+      if (limit === "attempts") setAttemptLimitReached(true);
+      const limitMessage = limit && Object.prototype.hasOwnProperty.call(limitMessages, limit) ? limitMessages[limit] : "";
+      setError(limitMessage || (reason ? getFailureMessage(reason) : userError(failure)));
     }
     finally { lifetime.current.starting = false; if (lifetime.current.active) setPending(false); }
   }
@@ -308,7 +318,7 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
   }
   return <section className={`${panel} mt-7`} aria-labelledby="ai-setup-title"><div className="flex items-start gap-4"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:text-secondary"><Sparkles className="h-5 w-5" aria-hidden="true" /></span><div><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary dark:text-secondary">{t("Kaynaklı analiz")}</p><h2 id="ai-setup-title" className="mt-1 text-xl font-semibold tracking-tight">{t("Tablodan net bir özet.")}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{t("Bir tablo ve ölçüm seçin. Hesaplar kaynak satırlarıyla doğrulanır; özet, analiz hedefinize göre hazırlanır.")}</p></div></div>
     {job && <p role="status" className="mt-5 flex items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-6"><TriangleAlert className="mt-1 h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300" aria-hidden="true" /><span>{t(exhausted ? "Bu çalışma için deneme sınırına ulaşıldı. Kaynaklarınız ve hazırlık özeti korunuyor." : jobFailureMessage || "Bu işlemden henüz sonuç alınamadı. Aynı kapsamla yeniden deneyebilirsiniz.")}{cooling && <span className="mt-1 block">{t("Yeniden deneme kısa bir süre sonra açılacak; işlem kendiliğinden başlamaz.")}</span>}</span></p>}
-    {error && !(job?.status === "failed" && jobFailureMessage && error === jobFailureMessage) && <p role="alert" className="mt-4 text-sm text-destructive">{t(error)}</p>}
+    {error && !quotaMessageExpired && !(job && (exhausted ? limitMessages.attempts === error : jobFailureMessage === error)) && <p role="alert" className="mt-4 text-sm text-destructive">{t(error)}</p>}
     {tables !== null && !canStart && <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-muted/40 p-4">
       <p id="table-access-status" role="status" className="text-sm leading-6 text-muted-foreground">
         {checkingAccess ? t("Tablo analizi erişimi kontrol ediliyor…") : access === "invite-required"
@@ -390,7 +400,7 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
       {/* Alt Eylem ve Durum Çubuğu */}
       <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-5">
         <div className="text-xs leading-6 text-muted-foreground">
-          {canStart && (validationReason && !exhausted && !cooling ? (
+          {canStart && !exhausted && !cooling && (validationReason ? (
             <p className="flex items-center gap-1.5 text-amber-700 dark:text-amber-300">
               <TriangleAlert className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
               <span>{validationReason}</span>

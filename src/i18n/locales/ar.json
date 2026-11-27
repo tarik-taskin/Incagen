@@ -1104,6 +1104,8 @@
   "kayıt__many": "سجلًا",
   "kayıt__other": "سجل",
   "Özet servisi şu anda yoğun. Hazırlanan belgeleriniz korunuyor; biraz sonra yeniden deneyin.": "خدمة التلخيص مشغولة حاليًا. مستنداتك المُعَدّة محفوظة؛ حاول مجددًا بعد قليل.",
+  "Bugünkü analiz haklarınız doldu. Hazırlanan belgeleriniz korunuyor. Kota yenilendiğinde yeniden deneyebilirsiniz.": "استنفدت حصة التحليلات اليوم. مستنداتك المُعَدّة محفوظة. يمكنك المحاولة مجددًا بعد تجديد الحصة.",
+  "Analiz servisinin günlük kapasitesi doldu. Hazırlanan belgeleriniz korunuyor. Kapasite yenilendiğinde yeniden deneyebilirsiniz.": "بلغت خدمة التحليل سعتها اليومية. مستنداتك المُعَدّة محفوظة. يمكنك المحاولة مجددًا بعد تجديد السعة.",
   "Özet servisi istek sınırına ulaştı. Hazırlanan belgeleriniz korunuyor. Daha sonra yeniden deneyin.": "بلغت خدمة التلخيص الحد الأقصى للطلبات. مستنداتك المُعَدّة محفوظة. حاول مرة أخرى لاحقًا.",
   "Yeniden deneme kısa bir süre sonra açılacak; işlem kendiliğinden başlamaz.": "يمكنك إعادة المحاولة بعد قليل. لن يبدأ التحليل مجددًا إلا عندما تختار إعادة المحاولة.",
   "Kısa bir süre bekleyin": "انتظر قليلًا",

@@ -1104,6 +1104,8 @@
   "kayıt__many": "registros",
   "kayıt__other": "registros",
   "Özet servisi şu anda yoğun. Hazırlanan belgeleriniz korunuyor; biraz sonra yeniden deneyin.": "El servicio de resúmenes está ocupado. Tus documentos preparados se conservan; vuelve a intentarlo en unos momentos.",
+  "Bugünkü analiz haklarınız doldu. Hazırlanan belgeleriniz korunuyor. Kota yenilendiğinde yeniden deneyebilirsiniz.": "Has agotado tus análisis de hoy. Tus documentos preparados siguen guardados. Vuelve a intentarlo cuando se renueve tu cuota.",
+  "Analiz servisinin günlük kapasitesi doldu. Hazırlanan belgeleriniz korunuyor. Kapasite yenilendiğinde yeniden deneyebilirsiniz.": "El servicio de análisis alcanzó su capacidad diaria. Tus documentos preparados siguen guardados. Vuelve a intentarlo cuando se renueve.",
   "Özet servisi istek sınırına ulaştı. Hazırlanan belgeleriniz korunuyor. Daha sonra yeniden deneyin.": "El servicio de resúmenes alcanzó su límite de solicitudes. Tus documentos preparados se han guardado. Inténtalo más tarde.",
   "Yeniden deneme kısa bir süre sonra açılacak; işlem kendiliğinden başlamaz.": "Podrás volver a intentarlo en unos momentos. El análisis solo se reiniciará cuando lo solicites.",
   "Kısa bir süre bekleyin": "Espera un momento",

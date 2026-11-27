@@ -1104,6 +1104,8 @@
   "kayıt__many": "条记录",
   "kayıt__other": "条记录",
   "Özet servisi şu anda yoğun. Hazırlanan belgeleriniz korunuyor; biraz sonra yeniden deneyin.": "摘要服务暂时繁忙。已准备的文档会保留，请稍后重试。",
+  "Bugünkü analiz haklarınız doldu. Hazırlanan belgeleriniz korunuyor. Kota yenilendiğinde yeniden deneyebilirsiniz.": "今日分析额度已用完。已准备的文档会保留，请在额度重置后重试。",
+  "Analiz servisinin günlük kapasitesi doldu. Hazırlanan belgeleriniz korunuyor. Kapasite yenilendiğinde yeniden deneyebilirsiniz.": "分析服务已达到每日容量上限。已准备的文档会保留，请在容量重置后重试。",
   "Özet servisi istek sınırına ulaştı. Hazırlanan belgeleriniz korunuyor. Daha sonra yeniden deneyin.": "摘要服务已达到请求上限。已准备的文档会保留，请稍后重试。",
   "Yeniden deneme kısa bir süre sonra açılacak; işlem kendiliğinden başlamaz.": "稍后即可重试。只有你点击重试后，分析才会重新开始。",
   "Kısa bir süre bekleyin": "请稍候",
