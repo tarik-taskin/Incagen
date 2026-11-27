@@ -44,7 +44,7 @@ export function calculateDistManifest(directory = "dist") {
 }
 
 // Manifest build sırasında yazılır; şimdiki HEAD'i eski dist'e etiketlemek kabul değildir.
-export function verifyDistDirectory(directory = "dist", revision) {
+export function verifyDistDirectory(directory = "dist", revision, { inviteBeta = false } = {}) {
   const manifest = calculateDistManifest(directory);
   assert.ok(manifest["index.html"], "Paket index.html içermiyor.");
   assert.ok(manifest[MANIFEST_NAME], "Build provenance manifesti bulunamadı; yeniden derleyin.");
@@ -55,7 +55,7 @@ export function verifyDistDirectory(directory = "dist", revision) {
   assert.equal(info.revision?.tree, revision.tree, "Paket kaynak ağacı eşleşmiyor.");
   assert.equal(info.revision?.dirty, false, "Paket kirli kaynak ağacından derlenmiş.");
   assert.equal(info.mode, "cloud-preview", "Canlı paket cloud-preview modunda derlenmeli.");
-  assert.deepEqual(info.flags, { authOnlyPreview: false, tabularAnalysisEnabled: false }, "Yayın kapıları beklenen kapsamla eşleşmiyor.");
+  assert.deepEqual(info.flags, { authOnlyPreview: false, tabularAnalysisEnabled: inviteBeta }, "Yayın kapıları beklenen kapsamla eşleşmiyor.");
   const config = info.firebase;
   assert.equal(config?.mode, "cloud", "Firebase cloud modu gerekli.");
   assert.equal(config.projectId, "incagen-eeef4", "Firebase proje kimliği eşleşmiyor.");
@@ -132,13 +132,14 @@ export async function verifyLiveRoutes(baseUrl, manifest, options = {}) {
 
 // Doğrulama salt okunurdur; yerel-only sonuç canlı yayın kabulü diye etiketlenmez.
 export async function runReleaseVerification(args = process.argv.slice(2), { cwd = process.cwd(), fetchFn = globalThis.fetch } = {}) {
-  assert.ok(args.every(arg => arg === "--skip-live" || /^--site-url=.+$/.test(arg)), "Bilinmeyen seçenek; dirty-tree bypass desteklenmez.");
+  assert.ok(args.every(arg => arg === "--skip-live" || arg === "--invite-beta" || /^--site-url=.+$/.test(arg)), "Bilinmeyen seçenek; dirty-tree bypass desteklenmez.");
   const git = verifyGitStatus({ cwd }), directory = resolve(cwd, "dist");
   assert.equal(checkSourceCredentials({ cwd }).findings.length, 0, "Takip edilen kaynaklarda credential kalıbı bulundu; yayın reddedildi.");
-  const { manifest, info } = verifyDistDirectory(directory, git);
+  const inviteBeta = args.includes("--invite-beta");
+  const { manifest, info } = verifyDistDirectory(directory, git, { inviteBeta });
   const site = args.find(arg => arg.startsWith("--site-url="))?.slice("--site-url=".length) ?? process.env.INCAGEN_SITE_URL ?? DEFAULT_SITE_URL;
   const live = !args.includes("--skip-live");
-  const result = { commit: git.commit, files: Object.keys(manifest).length, mode: info.mode, liveVerified: false };
+  const result = { commit: git.commit, files: Object.keys(manifest).length, mode: info.mode, liveVerified: false, ...(inviteBeta ? { inviteBeta: true } : {}) };
   if (live) {
     Object.assign(result, await verifyLiveAssets(site, manifest, { fetchFn }), await verifyLiveRoutes(site, manifest, { fetchFn }));
     result.liveVerified = true;

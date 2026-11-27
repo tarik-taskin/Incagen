@@ -101,6 +101,8 @@ npm run backend:check
 npm run backend:check -- --live
 ```
 
+Davetli beta sürümü için `npm run verify:release -- --invite-beta` ön yüz paketinin beklenen açık bayrağını ve canlı dosya eşliğini doğrular. `npm run backend:check -- --live --invite-beta` dört Functions ucunda aynı açık bayrağı, doğrulanmış worker adresini ve güncel tam SHA’yı ister. Bu iki komut salt okunurdur. Kapalı mod doğrulamaları varsayılan kalır. Erişim davetinin ve [beta operasyon kararlarının](BETA-ACCEPTANCE.md#sınırlı-beta-operasyon-durumu-ve-ekip-karar-matrisi) kanıtı ayrıca gerekir.
+
 Mevcut worker’ı yenilerken komut yalnız temiz Git’teki sabit Python girdilerini paketler. Cloud Build çalışması onay verilen projedeki özel kaynak bucket’ını ve mevcut Artifact Registry deposunu kullanır. Aynı Linux imajında tek CPU, 1 GiB ve kapalı ağla sentetik CSV ve XLSX sonucu kontrol edilir. İmaj sürümü arşiv nesnesi ve nesne nesliyle eşleştiğinde mevcut worker’ın image alanı güncellenir. IAM, servis hesabı, yerel ortam ve trafik yapılandırması korunur. `.incagen-local/worker-refresh-*/worker-release.json` önceki ve sonraki digest/revizyonu kaydeder. Geri dönüş gerektiğinde önceki doğrulanmış digest, mevcut worker politikasını koruyan ayrı yayın kararıyla tekrar uygulanır.
 
 ```bash

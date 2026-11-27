@@ -7,6 +7,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M3 — İlk kaynaklı tablo analizi
 
+### 2026-11-27 — Furkan / Antigravity: TASK-0014 rapor kanıt bağı, davetli beta doğrulayıcı ve yayın adayı
+
+- [x] Sahip: Furkan — A (1–6): Altı dilli `6e972d8` canlı rapor JSON’larını ve Claude incelemesini fiziksel kaynak satırlarıyla doğrula; doğrulanan anlam kaymalarına başarısız regresyon testleri ekle.
+- [x] Sahip: Furkan — B (7–16): Model istemini ve sunucu doğrulamasını ölçüme bağla (EN performans çıkarımı, ZH `NetRevenue`/`记录完整`, AR/ZH grup kimlikleri `Cloud`/`Consulting`/`A`/`B`, `Services` sayfa adı, rakam/RTL/noktalama etiketleri, ES/XLSX satır ağırlıklı ortalama, CSV tutarları, v1 kayıt bütünlüğü).
+- [x] Sahip: Furkan — C (17–24): `codex/invite-beta-readiness` açık/kapalı doğrulayıcı diff’ini entegre et; CSV/XLSX emülatör E2E, farklı arayüz/rapor dili + RTL, oturumsuz/davetsiz/davetli erişim, geri kapatma ve kota/tekrar testlerini doğrula.
+- [x] Sahip: Furkan — D (25–30): Kapalı/davetli aday kanıtını, geri kapatma adımlarını, bütçe/izleme/saklama durumunu, `acceptance:check`/`usage:summarize` çıktılarını ve yeni aday SHA–eski kanıt ilişkisini [BETA-ACCEPTANCE.md](docs/BETA-ACCEPTANCE.md) içinde hizala.
+- [~] Sahip: Furkan — E (31–36): Tam yerel kalite kapıları (`lint`, `test:run`, `test:functions`, `test:scripts`, `test:python`, `build`, `build:functions`, `test:integration`, `test:local` / `tabular-analysis`, `check:secrets`) geçti; GitHub `Quality`, kapalı Netlify `cloud-preview` yayını, `verify:release` ve `gemini.md` (`REVIEW_NEEDED`) devir kanıtı bu paketin yayın adımında tutulur. Yeni aday SHA için canlı Gemini kabulü, altı dilli insan incelemesi ve kapalı backend yayını `TASK-0013` altında açıktır.
+
 ### 2026-11-27 — Furkan / Codex: kapalı üretimde kaynaklı kullanıcı raporu provası
 
 - [x] Sahip: Furkan — 1. Geliştirici callable girişine yalnız iç kabul kapsamındaki rapor provası seçeneğini ekle.

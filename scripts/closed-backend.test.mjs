@@ -68,3 +68,21 @@ test("requires active closed functions and publishes no environment values", () 
   runtime.secretEnvironmentVariables = [{ key: "GEMINI_API_KEY" }];
   assert.throws(() => verifyClosedFunctions(records, origin), /doğrulanamadı/);
 });
+
+test("requires explicit invitation mode, identical endpoint flags and the same release commit", () => {
+  const open = `INCAGEN_TABULAR_ANALYSIS_ENABLED=true\nINCAGEN_PYTHON_WORKER_URL=${origin}\n`;
+  assert.deepEqual(inspectClosedEnvironment(open, { inviteBeta: true }), { workerOrigin: origin });
+  assert.throws(() => inspectClosedEnvironment(open), /uygunsuz/);
+  const sha = "b".repeat(40);
+  const records = selectedFunctions.map(name => ({
+    name: `${revisionScope}/functions/${name}`, state: "ACTIVE", updateTime: "2026-11-27T00:00:00Z",
+    serviceConfig: { revision: name + "-001", serviceAccountEmail: callerIdentity, environmentVariables: {
+      INCAGEN_TABULAR_ANALYSIS_ENABLED: "true", INCAGEN_PYTHON_WORKER_URL: origin, INCAGEN_BACKEND_RELEASE_SHA: sha,
+    } },
+  }));
+  assert.equal(verifyClosedFunctions(records, origin, { inviteBeta: true, expectedCommit: sha }).length, selectedFunctions.length);
+  assert.throws(() => verifyClosedFunctions(records, origin), /doğrulanamadı/);
+  assert.throws(() => verifyClosedFunctions(records, origin, { inviteBeta: true, expectedCommit: "c".repeat(40) }), /SHA/);
+  records[0].serviceConfig.environmentVariables.INCAGEN_TABULAR_ANALYSIS_ENABLED = "false";
+  assert.throws(() => verifyClosedFunctions(records, origin, { inviteBeta: true, expectedCommit: sha }), /doğrulanamadı/);
+});

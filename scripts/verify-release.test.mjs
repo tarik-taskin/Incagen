@@ -63,6 +63,20 @@ test("wrong revision, dirty source, wrong mode and open rollout flags are reject
   }
 });
 
+test("invite beta verification requires the explicit package flag, valid manifest/SHA, and retains the Auth check", t => {
+  const enabled = fixture(t, { change: info => { info.flags.tabularAnalysisEnabled = true; } });
+  assert.equal(verifyDistDirectory(enabled, revision, { inviteBeta: true }).info.flags.tabularAnalysisEnabled, true);
+  assert.throws(() => verifyDistDirectory(enabled, revision), /Yayın kapıları/);
+  assert.throws(() => verifyDistDirectory(fixture(t), revision, { inviteBeta: true }), /Yayın kapıları/);
+  const authOnly = fixture(t, { change: info => { info.flags = { authOnlyPreview: true, tabularAnalysisEnabled: true }; } });
+  assert.throws(() => verifyDistDirectory(authOnly, revision, { inviteBeta: true }), /Yayın kapıları/);
+  const wrongCommit = fixture(t, { change: info => { info.flags.tabularAnalysisEnabled = true; info.revision.commit = "d".repeat(40); } });
+  assert.throws(() => verifyDistDirectory(wrongCommit, revision, { inviteBeta: true }), /commit/);
+  const missingManifest = fixture(t, { change: info => { info.flags.tabularAnalysisEnabled = true; } });
+  rmSync(join(missingManifest, MANIFEST_NAME));
+  assert.throws(() => verifyDistDirectory(missingManifest, revision, { inviteBeta: true }), /manifesti/);
+});
+
 test("every required Firebase field and actual bundle key fingerprint is checked", t => {
   for (const key of Object.keys({ ...config, apiKeySha256: "" })) {
     const directory = fixture(t, { change: info => delete info.firebase[key] });

@@ -621,3 +621,105 @@ test("kapalı rapor provası tek sentetik kullanıcı, kaynak ve rezervasyona ba
     await Promise.all([deleteApp(own.app), deleteApp(other.app)]);
   }
 });
+
+test("oturumsuz, davetsiz, davetli, geri kapatma ve davet iptali erişim sınırları korunur", { timeout: 60000 }, async () => {
+  assert.match(process.env.FIRESTORE_EMULATOR_HOST ?? "", /^127\.0\.0\.1:/);
+  if (!getApps().length) initializeAdmin({ projectId: "demo-incagen", storageBucket: "demo-incagen.appspot.com" });
+  const { executeStartAnalysis } = require("./lib/analysis/tabular-jobs");
+  const { tabularAnalysisAccess } = require("./lib/analysis/tabular-rollout");
+  const { getQuotaDay } = require("./lib/contracts");
+
+  const own = await client(), other = await client(), db = getFirestore();
+  const uid = own.auth.currentUser.uid;
+  const fixture = await tabularFixture("csv");
+  const prevEmu = process.env.FUNCTIONS_EMULATOR;
+  const prevProj = process.env.GCLOUD_PROJECT;
+  const prevEnabled = process.env.INCAGEN_TABULAR_ANALYSIS_ENABLED;
+  let id;
+  let modelCalls = 0;
+
+  try {
+    // 1. Oturumsuz çağrı reddedilir (Functions sınırında auth zorunlu).
+    await assert.rejects(
+      executeStartAnalysis(undefined, { id: crypto.randomUUID(), sourceId: "file-0", selection: fixture.selection, locale: "tr" }),
+      { code: "unauthenticated" }
+    );
+
+    const created = await own.call("createAnalysis", {
+      requestId: crypto.randomUUID(),
+      title: "Invite and rollback access test",
+      business: "Synthetic",
+      objective: fixture.objective,
+      files: [{ name: fixture.name, size: fixture.bytes.length, contentType: fixture.type }],
+    });
+    id = created.data.id;
+    await uploadBytes(ref(own.storage, created.data.paths[0]), fixture.bytes, { contentType: fixture.type });
+    await own.call("prepareAnalysis", { id });
+    const recordRef = db.doc(`users/${uid}/analyses/${id}`);
+
+    // Üretim bayrağı simülasyonu (emülatör baypass'ı kapalıyken gerçek access politikası çalışır).
+    process.env.FUNCTIONS_EMULATOR = "false";
+    process.env.GCLOUD_PROJECT = "incagen-eeef4";
+
+    // 2. Açık davetli modda davetsiz kullanıcı reddedilir, rezervasyon veya model çağrısı oluşmaz.
+    process.env.INCAGEN_TABULAR_ANALYSIS_ENABLED = "true";
+    const uninvitedAccess = tabularAnalysisAccess(undefined);
+    assert.equal(uninvitedAccess, "invite-required");
+    await assert.rejects(
+      executeStartAnalysis(uid, { id, sourceId: "file-0", selection: fixture.selection, locale: "tr" }, {
+        access: uninvitedAccess,
+        generate: async () => { modelCalls += 1; throw new Error("unexpected"); },
+      }),
+      { code: "permission-denied", details: { analysisAccess: "invite-required" } }
+    );
+
+    // 3. Davetli claim (incagenTabularBeta: true) ile checkOnly geçer, yazım yapmaz.
+    await getAdminAuth().setCustomUserClaims(uid, { incagenTabularBeta: true });
+    const invitedToken = await own.auth.currentUser.getIdTokenResult(true);
+    assert.equal(invitedToken.claims.incagenTabularBeta, true);
+    const invitedAccess = tabularAnalysisAccess(invitedToken.claims.incagenTabularBeta);
+    assert.equal(invitedAccess, "available");
+    assert.deepEqual(
+      await executeStartAnalysis(uid, { id, sourceId: "file-0", selection: fixture.selection, locale: "tr", checkOnly: true }, { access: invitedAccess }),
+      { id, status: "available", checkOnly: true }
+    );
+
+    // 4. Geri kapatma: kullanıcı claim'i geçerli kalsa bile sunucu kapısı kapanınca yeni analiz reddedilir.
+    process.env.INCAGEN_TABULAR_ANALYSIS_ENABLED = "false";
+    const rolledBackAccess = tabularAnalysisAccess(invitedToken.claims.incagenTabularBeta);
+    assert.equal(rolledBackAccess, "closed");
+    await assert.rejects(
+      executeStartAnalysis(uid, { id, sourceId: "file-0", selection: fixture.selection, locale: "tr" }, {
+        access: rolledBackAccess,
+        generate: async () => { modelCalls += 1; throw new Error("unexpected"); },
+      }),
+      { code: "failed-precondition", details: { analysisFailure: "configuration" } }
+    );
+
+    // 5. Davet iptali sonrası taze belirteçte claim kalkar ve açık modda tekrar invite-required döner.
+    await getAdminAuth().setCustomUserClaims(uid, {});
+    const revokedToken = await own.auth.currentUser.getIdTokenResult(true);
+    assert.equal(revokedToken.claims.incagenTabularBeta, undefined);
+    process.env.INCAGEN_TABULAR_ANALYSIS_ENABLED = "true";
+    assert.equal(tabularAnalysisAccess(revokedToken.claims.incagenTabularBeta), "invite-required");
+
+    // 6. Kapalı/reddedilen akışta sıfır model çağrısı, sıfır AI işi ve sıfır kota; belge hazırlığı ve geçmiş korunur; başka kullanıcı reddedilir.
+    assert.equal(modelCalls, 0);
+    const saved = (await recordRef.get()).data();
+    assert.equal(saved.status, "completed");
+    assert.equal(saved.ai, undefined);
+    const day = getQuotaDay(new Date());
+    assert.equal((await db.doc(`users/${uid}/aiQuotas/${day}`).get()).exists, false);
+    await assert.rejects(other.call("getAnalysisTables", { id }), { code: "functions/not-found" });
+    assert.equal((await own.call("getAnalysisTables", { id })).data.tables[0].rows, 4);
+  } finally {
+    if (prevEmu === undefined) delete process.env.FUNCTIONS_EMULATOR;
+    else process.env.FUNCTIONS_EMULATOR = prevEmu;
+    if (prevProj === undefined) delete process.env.GCLOUD_PROJECT;
+    else process.env.GCLOUD_PROJECT = prevProj;
+    if (prevEnabled === undefined) delete process.env.INCAGEN_TABULAR_ANALYSIS_ENABLED;
+    else process.env.INCAGEN_TABULAR_ANALYSIS_ENABLED = prevEnabled;
+    if (id) await own.call("deleteAnalysis", { id }).catch(() => {});
+    await Promise.all([deleteApp(own.app), deleteApp(other.app)]);
+  }
+});

@@ -20,11 +20,11 @@ const digestPattern = /^sha256:[a-f0-9]{64}$/;
 const publicMembers = new Set(["allUsers", "allAuthenticatedUsers"]);
 
 // Üretim planı yalnız net kapalı bayrak ve güvenilir HTTPS Cloud Run adresiyle hazırlanır.
-export function inspectClosedEnvironment(text) {
+export function inspectClosedEnvironment(text, { inviteBeta = false } = {}) {
   const keys = ["INCAGEN_TABULAR_ANALYSIS_ENABLED", "INCAGEN_PYTHON_WORKER_URL"];
   const env = parseEnv(text);
   if (keys.some(key => [...text.matchAll(new RegExp(`^ *${key} *=`, "gm"))].length !== 1)
-    || env[keys[0]] !== "false" || Object.hasOwn(env, "GEMINI_API_KEY")) {
+    || env[keys[0]] !== String(inviteBeta) || Object.hasOwn(env, "GEMINI_API_KEY")) {
     throw new Error("Kapalı backend ortamı eksik, yinelenmiş veya uygunsuz.");
   }
   let url;
@@ -103,29 +103,34 @@ export async function inspectWorker(request) {
 }
 
 // Fonksiyon başına yalnız sürüm ve kapalı politika kanıtı döndürür. Ortam değerlerini dışarı vermez.
-export function verifyClosedFunctions(records, workerOrigin) {
+export function verifyClosedFunctions(records, workerOrigin, { inviteBeta = false, expectedCommit } = {}) {
   return selectedFunctions.map(name => {
     const record = records.find(value => value.name === `${revisionScope}/functions/${name}`);
     const config = record?.serviceConfig;
     const env = config?.environmentVariables;
     if (record?.state !== "ACTIVE" || typeof record.updateTime !== "string"
-      || env?.INCAGEN_TABULAR_ANALYSIS_ENABLED !== "false" || env.INCAGEN_PYTHON_WORKER_URL?.replace(/\/$/, "") !== workerOrigin
+      || env?.INCAGEN_TABULAR_ANALYSIS_ENABLED !== String(inviteBeta) || env.INCAGEN_PYTHON_WORKER_URL?.replace(/\/$/, "") !== workerOrigin
       || Object.hasOwn(env, "GEMINI_API_KEY") || config.secretEnvironmentVariables?.some(secret => secret.key === "GEMINI_API_KEY")
       || config.serviceAccountEmail !== callerIdentity) {
-      throw new Error(`${name} için kapalı Functions ortamı doğrulanamadı.`);
+      throw new Error(`${name} için beklenen Functions ortamı doğrulanamadı.`);
     }
     const releaseCommit = typeof env.INCAGEN_BACKEND_RELEASE_SHA === "string" && /^[a-f0-9]{40}$/.test(env.INCAGEN_BACKEND_RELEASE_SHA)
       ? env.INCAGEN_BACKEND_RELEASE_SHA : null;
+    if (expectedCommit && releaseCommit !== expectedCommit) throw new Error(`${name} için yayın SHA’sı doğrulanamadı.`);
     return { name, updatedAt: record.updateTime, revision: config.revision ?? null, releaseCommit };
   });
 }
 
 // Temiz revizyon, kapalı ortam ve seçili hedefler doğrulanır. Canlı mod yalnız metadata okur.
 export async function closedBackendPlan(args, root = process.cwd()) {
-  if (!(args.length === 0 || args.length === 1 && args[0] === "--live")) throw new Error("Kullanım: npm run backend:check -- [--live]");
+  const live = args.includes("--live");
+  const inviteBeta = args.includes("--invite-beta");
+  if (new Set(args).size !== args.length || args.some(arg => !["--live", "--invite-beta"].includes(arg)) || (inviteBeta && !live)) {
+    throw new Error("Kullanım: npm run backend:check -- [--live [--invite-beta]]");
+  }
   const { commit } = verifyGitStatus({ cwd: root });
   const functionsDir = join(root, "functions");
-  const productionEnv = inspectClosedEnvironment(readFileSync(join(functionsDir, `.env.${project}`), "utf8"));
+  const productionEnv = inspectClosedEnvironment(readFileSync(join(functionsDir, `.env.${project}`), "utf8"), { inviteBeta });
   const sharedPath = join(functionsDir, ".env");
   if (existsSync(sharedPath)) {
     const shared = parseEnv(readFileSync(sharedPath, "utf8"));
@@ -133,8 +138,8 @@ export async function closedBackendPlan(args, root = process.cwd()) {
       throw new Error("Ortak Functions ortamı üretim kontrolünü gölgeliyor.");
     }
   }
-  const plan = { commit, project, region, analysisEnabled: false, targets: selectedFunctions, liveVerified: false };
-  if (args.length === 0) return plan;
+  const plan = { commit, project, region, analysisEnabled: inviteBeta, targets: selectedFunctions, liveVerified: false };
+  if (!live) return plan;
   const request = cloudRequest(root);
   const [worker, records] = await Promise.all([
     inspectWorker(request),
@@ -144,7 +149,7 @@ export async function closedBackendPlan(args, root = process.cwd()) {
     throw new Error("Canlı worker adresi kapalı ortamla eşleşmiyor.");
   }
   const { revision, digest } = worker.report;
-  return { ...plan, liveVerified: true, worker: { revision, digest }, functions: verifyClosedFunctions(records, productionEnv.workerOrigin) };
+  return { ...plan, liveVerified: true, worker: { revision, digest }, functions: verifyClosedFunctions(records, productionEnv.workerOrigin, { inviteBeta, expectedCommit: inviteBeta ? commit : undefined }) };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
