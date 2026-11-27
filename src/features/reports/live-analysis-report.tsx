@@ -89,7 +89,7 @@ export default function LiveAnalysisReport({ artifact, job, analysisId }: { arti
   const auditMetric = artifact.result.metrics.find(metric => metric.id === "aggregate") ?? artifact.result.metrics[0];
 
   return <section aria-label={t("Analiz raporu")}><div className="mb-5 flex flex-wrap items-center justify-between gap-3 text-xs"><p className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-emerald-800 dark:text-emerald-300"><Check className="h-3.5 w-3.5" aria-hidden="true" />{t("Hesaplar ve kaynak bağlantıları doğrulandı")}</p><span className="text-muted-foreground">{t("Rapor dili: {0}", t(language))}</span></div>
-    <p className="mb-5 flex items-start gap-2 text-xs leading-6 text-muted-foreground"><FileCheck2 className="mt-1 h-3.5 w-3.5 shrink-0" aria-hidden="true" /><span>{sourceLabel}<span className="mx-2" aria-hidden="true">·</span>{t("{0} kayıt", scope.rows)}{scope.measure ? ` · ${scope.measure}` : ""}{scope.group ? ` · ${scope.group}` : ""}</span></p>
+    <p className="mb-5 flex items-start gap-2 text-xs leading-6 text-muted-foreground"><FileCheck2 className="mt-1 h-3.5 w-3.5 shrink-0" aria-hidden="true" /><span><bdi dir="auto">{sourceLabel}</bdi><span className="mx-2" aria-hidden="true">·</span>{t("{0} kayıt", scope.rows)}{scope.measure ? <> · <bdi dir="auto">{scope.measure}</bdi></> : ""}{scope.group ? <> · <bdi dir="auto">{scope.group}</bdi></> : ""}</span></p>
     <AdaptiveReport
       result={artifact.result}
       sources={artifact.sources}
@@ -118,7 +118,7 @@ export default function LiveAnalysisReport({ artifact, job, analysisId }: { arti
             ...(job.pythonMs !== undefined ? [[t("Hesaplama süresi"), reportDuration(job.pythonMs)]] : []),
             ...(job.modelMs !== undefined ? [[t("Özet süresi"), reportDuration(job.modelMs)]] : []),
             ...(job.usage ? [[t("Model kullanımı"), t("{0} token", job.usage.totalTokens)]] : []),
-          ].map(([label, value]) => <div key={label}><dt className="text-muted-foreground">{label}</dt><dd className="mt-2 break-words font-medium">{value}</dd></div>)}</dl>
+          ].map(([label, value]) => <div key={label}><dt className="text-muted-foreground">{label}</dt><dd dir="auto" className="mt-2 break-words font-medium">{value}</dd></div>)}</dl>
           {auditMetric && auditMetric.evidence.length > 0 && <div className="mt-5 border-t border-border pt-4">
             <Button type="button" variant="outline" size="sm" className="min-h-10 gap-2 text-xs" onClick={() => openSource({ title: auditMetric.label, evidence: auditMetric.evidence, method: auditMetric.method })}>
               {t("Kapsam kaynağını incele")}

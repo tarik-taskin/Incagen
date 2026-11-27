@@ -382,8 +382,10 @@ describe("LiveAnalysisReport - downloadSource oturum ve yaşam döngüsü koordi
     expect(screen.getByText("Gespeicherter deutscher Berichtstext.")).toHaveAttribute("lang", "de");
 
     await user.click(screen.getByText("İşlem ayrıntıları"));
-    expect(screen.getByText("hizmetler.xlsx · Gelir")).toBeVisible();
-    expect(screen.getByText("Tutar")).toBeVisible();
+    const sourceLabels = screen.getAllByText("hizmetler.xlsx · Gelir");
+    expect(sourceLabels.length).toBeGreaterThanOrEqual(2);
+    expect(sourceLabels.every(node => node.getAttribute("dir") === "auto")).toBe(true);
+    expect(screen.getAllByText("Tutar").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("EUR")).toBeVisible();
     expect(screen.getByText("Ekip (2 grup)")).toBeVisible();
     expect(screen.getByText("3 boş satır hesaplama dışında bırakıldı")).toBeVisible();
@@ -404,6 +406,11 @@ describe("LiveAnalysisReport - downloadSource oturum ve yaşam döngüsü koordi
     expect(screen.getByText("Gespeicherter deutscher Berichtstext.")).toBeVisible();
     expect(screen.getByText("Verified calculations")).toBeVisible();
     expect(screen.getByText("Model commentary · Grounded summary")).toBeVisible();
+
+    // Arayüz Arapça RTL'e çevrildiğinde özgün çalışma sayfası adı ve karışık yönlü etiketler bozulmadan korunur.
+    act(() => setLocale("ar"));
+    expect(screen.getAllByText("hizmetler.xlsx · Gelir").every(node => node.getAttribute("dir") === "auto")).toBe(true);
+    expect(screen.getByText("Gespeicherter deutscher Berichtstext.")).toHaveAttribute("dir", "auto");
   });
 });
 

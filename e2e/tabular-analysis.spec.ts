@@ -211,7 +211,17 @@ test("çok sayfalı Excel'de önizleme, satır ağırlıklı ortalama, sayfa kay
   await expect(page.getByText("Analiz hazır", { exact: true }).first()).toBeVisible();
   await page.goto(url);
   await expect(report).toContainText("40,00 EUR");
+  // Rapor dili Türkçe iken arayüz Arapça RTL'e çevrildiğinde sayfa adı, grup etiketleri ve kaynak satırları korunur.
+  await chooseLanguage(page, "ar");
+  const rtlReport = page.getByRole("region", { name: ar["Analiz raporu"], exact: true });
+  await expect(rtlReport).toBeVisible();
+  await expect(rtlReport).toContainText("Hizmetler");
+  await rtlReport.getByText(ar["Veri tablosu"], { exact: true }).click();
+  const rtlTable = rtlReport.getByRole("table");
+  await expect(rtlTable.getByRole("rowheader", { name: "Alfa", exact: true })).toHaveAttribute("dir", "auto");
+  await expect(rtlTable.getByRole("rowheader", { name: "Beta", exact: true })).toHaveAttribute("dir", "auto");
   await layout(page);
+  await chooseLanguage(page, "tr");
 });
 
 test("iki örnek raporda kısa keşif rehberi isteğe bağlı ve klavyeyle erişilebilirdir", async ({ page }) => {
