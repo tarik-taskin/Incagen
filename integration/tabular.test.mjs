@@ -51,6 +51,7 @@ test("gerçek Python hesabı, kaynaklı rapor, tekrar/yenileme, izolasyon ve tem
     const completed = (await record.get()).data();
     assert.equal(completed.ai.status, "completed"); assert.equal(completed.ai.attempts, 1); assert.equal(completed.ai.model, "emulator");
     assert.equal(completed.ai.inputBytes, undefined);
+    assert.equal(completed.ai.modelMs, undefined);
     const report = (await own.call("getAnalysisResult", { id })).data;
     assert.equal(report.result.metrics.find(metric => metric.id === "aggregate").value, 0.3);
     assert.equal(report.result.charts.length, 1); assert.equal(report.sources[0].fileName, "revenue.csv");
@@ -63,7 +64,11 @@ test("gerçek Python hesabı, kaynaklı rapor, tekrar/yenileme, izolasyon ve tem
     assert.deepEqual((await own.call("getAnalysisResult", { id })).data.result, report.result);
     const retryId = await create(), retryInput = { ...input, id: retryId }, retryRecord = db.doc(`users/${own.auth.currentUser.uid}/analyses/${retryId}`);
     await assert.rejects(own.call("startAnalysis", { ...retryInput, selection: { ...selection, valueColumn: 2 } }), { code: "functions/failed-precondition" });
-    assert.equal((await retryRecord.get()).data().ai.status, "failed");
+    const invalidJob = (await retryRecord.get()).data().ai;
+    assert.equal(invalidJob.status, "failed");
+    assert.ok(Number.isFinite(invalidJob.pythonMs));
+    assert.equal(invalidJob.modelMs, undefined);
+    assert.equal(invalidJob.inputBytes, undefined);
     await own.call("startAnalysis", retryInput);
     assert.equal((await retryRecord.get()).data().ai.status, "completed");
     assert.equal((await retryRecord.get()).data().ai.attempts, 2);
@@ -116,6 +121,7 @@ test("atomik iş kabulü, sınırlar ve geç gelen/silinen sonuçların reddi", 
 
 test("Pasifik kota sınırı geçişi eski günleri sayar ve son hakkı atomik ayırır", async () => {
   assert.match(process.env.FIRESTORE_EMULATOR_HOST ?? "", /^127\.0\.0\.1:/);
+  if (!getApps().length) initializeAdmin({ projectId: "demo-incagen", storageBucket: "demo-incagen.appspot.com" });
   const { reserveAnalysis } = require("./lib/analysis/tabular-jobs");
   const { getQuotaDay } = require("./lib/contracts");
   const db = getFirestore(), now = Date.parse("2003-11-27T00:30:00Z");
@@ -473,6 +479,9 @@ test("sağlayıcı beklemesini hesaplar arasında korur ve süresi dolunca manue
     assert.equal(docData.ai.attempts, 1);
     assert.equal(docData.ai.retryAfter, returnedDeadline);
     assert.equal(docData.ai.retryAfter - docData.ai.finishedAt, 120_000);
+    assert.ok(Number.isFinite(docData.ai.pythonMs));
+    assert.ok(Number.isFinite(docData.ai.modelMs));
+    assert.ok(docData.ai.inputBytes > 0);
     assert.equal(modelCalls, 1);
 
     await otherRecord.set({ status: "completed" });

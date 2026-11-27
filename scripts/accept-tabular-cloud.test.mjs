@@ -139,7 +139,7 @@ test("acceptance records feed the usage report without document or account field
   const { record } = await example("csv");
   const common = { locale: "tr", format: "csv" };
   const success = usageRecord({ ...common, runId: "completed", job: record.ai, passed: true });
-  const failure = usageRecord({ ...common, runId: "failed", job: undefined, failure: "provider-busy" });
+  const failure = usageRecord({ ...common, runId: "failed", job: { ...record.ai, inputBytes: 250, privateRaw: "discard" }, failure: "provider-busy" });
   const report = summarizeUsageAcceptance([success, failure]);
   assert.equal(report.completedCount, 1);
   assert.equal(report.failedCount, 1);
@@ -147,7 +147,11 @@ test("acceptance records feed the usage report without document or account field
   assert.equal(report.runs[1].error, "provider-busy");
   assert.equal(report.runs[1].format, "csv");
   assert.equal(report.runs[1].locale, "tr");
-  assert.equal(report.runs[1].model, null);
+  assert.equal(report.runs[1].model, record.ai.model);
+  assert.equal(failure.inputBytes, 250);
+  assert.equal(report.runs[1].inputBytes, 250);
+  assert.deepEqual(failure.usage, record.ai.usage);
+  assert.equal(Object.hasOwn(failure, "privateRaw"), false);
   assert.deepEqual(Object.keys(success).sort(), ["durationMs", "format", "locale", "model", "modelMs", "pythonMs", "runId", "status", "usage"]);
 });
 

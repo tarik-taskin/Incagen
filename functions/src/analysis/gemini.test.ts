@@ -80,6 +80,20 @@ describe("Gemini backend boundary", () => {
     expect(JSON.stringify(warning.mock.calls)).not.toMatch(/private-key|document-content/);
     warning.mockRestore();
   });
+  it("records measured tokens before rejecting incomplete output, ignoring inconsistent measurements", async () => {
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const usage = vi.fn();
+    const generate = createGeminiGenerate("synthetic-key", usage);
+    const usageMetadata = { promptTokenCount: 18, candidatesTokenCount: 3, thoughtsTokenCount: 4, totalTokenCount: 25 };
+    const response = { text: "{", candidates: [{ finishReason: "MAX_TOKENS" }], usageMetadata };
+    try {
+      sdk.generate.mockResolvedValueOnce(response).mockResolvedValueOnce({ ...response, usageMetadata: { ...usageMetadata, totalTokenCount: 27 } });
+      await expect(checkGeminiConnection(generate)).rejects.toThrow("invalid-response");
+      expect(usage).toHaveBeenCalledExactlyOnceWith({ promptTokens: 18, outputTokens: 7, totalTokens: 25 });
+      await expect(checkGeminiConnection(generate)).rejects.toThrow("invalid-response");
+      expect(usage).toHaveBeenCalledTimes(1);
+    } finally { warning.mockRestore(); }
+  });
   it.each([[429, "rate-limited"], [503, "busy"], [408, "timeout"], [504, "timeout"], [400, "unavailable"], [403, "unavailable"]])("classifies HTTP %s without retrying or exposing provider bodies", async (status, code) => {
     const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
     sdk.generate.mockRejectedValue(Object.assign(new Error("private provider body"), { status }));

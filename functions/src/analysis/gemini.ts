@@ -49,15 +49,18 @@ export function createGeminiGenerate(apiKey: string, onUsage?: (usage: { promptT
           ...(request.timeoutMs ? { httpOptions: { timeout, retryOptions: { attempts: 1 } } } : {}),
           abortSignal: AbortSignal.timeout(timeout) },
       });
+      const usage = response.usageMetadata;
+      if (usage && [usage.promptTokenCount, usage.candidatesTokenCount, usage.totalTokenCount, usage.thoughtsTokenCount ?? 0].every(value => Number.isSafeInteger(value) && value! >= 0)) {
+        const outputTokens = usage.candidatesTokenCount! + (usage.thoughtsTokenCount ?? 0);
+        if (usage.promptTokenCount! + outputTokens === usage.totalTokenCount) {
+          onUsage?.({ promptTokens: usage.promptTokenCount!, outputTokens, totalTokens: usage.totalTokenCount! });
+        }
+      }
       if (!response.text || response.candidates?.[0]?.finishReason !== "STOP"
         || Buffer.byteLength(response.text) > GEMINI_LIMITS.outputBytes) {
         const finish = response.candidates?.[0]?.finishReason;
         console.warn("gemini-rejected-response", { finish: ["STOP", "MAX_TOKENS", "SAFETY", "RECITATION", "OTHER"].includes(finish || "") ? finish : "unknown", hasText: Boolean(response.text) });
         throw new GeminiError("invalid-response");
-      }
-      const usage = response.usageMetadata;
-      if (usage && [usage.promptTokenCount, usage.candidatesTokenCount, usage.totalTokenCount, usage.thoughtsTokenCount ?? 0].every(value => Number.isSafeInteger(value) && value! >= 0)) {
-        onUsage?.({ promptTokens: usage.promptTokenCount!, outputTokens: usage.candidatesTokenCount! + (usage.thoughtsTokenCount ?? 0), totalTokens: usage.totalTokenCount! });
       }
       return response.text;
     } catch (error) {

@@ -258,7 +258,8 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
   const summary = tables ? getScopeSummary(selected, tables, normalizedSelection) : null;
   const exhausted = attemptLimitReached || (job?.attempts ?? 0) >= (job?.maxAttempts ?? limits.attempts);
   const jobFailureMessage = job?.error ? getFailureMessage(job.error) : "";
-  const quotaMessageExpired = !cooling && (error === limitMessages["user-day"] || error === limitMessages["provider-day"]);
+  const dailyLimitMessage = error === limitMessages["user-day"] || error === limitMessages["provider-day"];
+  const quotaMessageExpired = !cooling && dailyLimitMessage;
 
   // Kullanıcının açık seçimi gönderilir; başlık, kaynak yolu, metrik veya prompt istemciden üretilmez.
   async function start() {
@@ -317,7 +318,7 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
     return <section className={`${panel} mt-7`} aria-labelledby="ai-progress-title" aria-busy="true"><div className="flex items-start gap-4"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:text-secondary"><Sparkles className="h-5 w-5" aria-hidden="true" /></span><div><h2 id="ai-progress-title" className="text-lg font-semibold">{t("Analiziniz hazırlanıyor")}</h2><p role="status" className="mt-2 text-sm text-muted-foreground">{t(stage === "calculating" ? "Tablo hesaplanıyor." : stage === "interpreting" ? "Kaynaklı özet hazırlanıyor." : "Rapor kaydediliyor.")}</p><p className="mt-2 text-xs leading-6 text-muted-foreground">{t("Bu sayfadan ayrılabilirsiniz. Sonucu geçmişinizden açabilirsiniz; aynı isteği tekrarlamak yeni analiz başlatmaz.")}</p></div></div><ol className="mt-6 grid grid-cols-3 gap-3" aria-label={t("Analiz aşamaları")}>{["Hesaplar", "Özet", "Kayıt"].map((label, position) => <li key={label} className={`border-t-2 pt-3 text-xs ${position <= activeIndex ? "border-primary font-medium text-primary dark:border-secondary dark:text-secondary" : "border-border text-muted-foreground"}`}><span className="inline-flex items-center gap-2">{position < activeIndex ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : position === activeIndex ? <LoaderCircle className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" aria-hidden="true" /> : null}{t(label)}</span></li>)}</ol></section>;
   }
   return <section className={`${panel} mt-7`} aria-labelledby="ai-setup-title"><div className="flex items-start gap-4"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary dark:text-secondary"><Sparkles className="h-5 w-5" aria-hidden="true" /></span><div><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary dark:text-secondary">{t("Kaynaklı analiz")}</p><h2 id="ai-setup-title" className="mt-1 text-xl font-semibold tracking-tight">{t("Tablodan net bir özet.")}</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{t("Bir tablo ve ölçüm seçin. Hesaplar kaynak satırlarıyla doğrulanır; özet, analiz hedefinize göre hazırlanır.")}</p></div></div>
-    {job && <p role="status" className="mt-5 flex items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-6"><TriangleAlert className="mt-1 h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300" aria-hidden="true" /><span>{t(exhausted ? "Bu çalışma için deneme sınırına ulaşıldı. Kaynaklarınız ve hazırlık özeti korunuyor." : jobFailureMessage || "Bu işlemden henüz sonuç alınamadı. Aynı kapsamla yeniden deneyebilirsiniz.")}{cooling && <span className="mt-1 block">{t("Yeniden deneme kısa bir süre sonra açılacak; işlem kendiliğinden başlamaz.")}</span>}</span></p>}
+    {job && <p role="status" className="mt-5 flex items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-6"><TriangleAlert className="mt-1 h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300" aria-hidden="true" /><span>{t(exhausted ? "Bu çalışma için deneme sınırına ulaşıldı. Kaynaklarınız ve hazırlık özeti korunuyor." : jobFailureMessage || "Bu işlemden henüz sonuç alınamadı. Aynı kapsamla yeniden deneyebilirsiniz.")}{cooling && !dailyLimitMessage && <span className="mt-1 block">{t("Yeniden deneme kısa bir süre sonra açılacak; işlem kendiliğinden başlamaz.")}</span>}</span></p>}
     {error && !quotaMessageExpired && !(job && (exhausted ? limitMessages.attempts === error : jobFailureMessage === error)) && <p role="alert" className="mt-4 text-sm text-destructive">{t(error)}</p>}
     {tables !== null && !canStart && <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-muted/40 p-4">
       <p id="table-access-status" role="status" className="text-sm leading-6 text-muted-foreground">
@@ -411,7 +412,7 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
         </div>
         <Button onClick={start} disabled={!canStart || !valid || exhausted || cooling} aria-describedby={canStart ? undefined : "table-access-status"} className="min-h-11 gap-2">
           {job ? <RotateCcw className="h-4 w-4" aria-hidden="true" /> : <Sparkles className="h-4 w-4" aria-hidden="true" />}
-          {cooling ? t("Kısa bir süre bekleyin") : job ? t("Yeniden dene") : t("Analizi oluştur")}
+          {cooling && !dailyLimitMessage ? t("Kısa bir süre bekleyin") : job ? t("Yeniden dene") : t("Analizi oluştur")}
           <ArrowRight className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" />
         </Button>
       </div>

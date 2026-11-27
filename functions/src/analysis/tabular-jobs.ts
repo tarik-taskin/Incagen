@@ -167,12 +167,16 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
   const job = reservation.job, bucket = getStorage().bucket(), startedAt = Date.now();
   const artifactPath = `derived/${uid}/analyses/${input.id}/ai/${job.attemptId}.json.gz`;
   let savedHash: string | undefined;
+  const measurement: Pick<AiJob, "inputBytes" | "pythonMs" | "modelMs" | "usage" | "model"> = {};
   try {
     const [metadata] = await bucket.file(`users/${uid}/analyses/${input.id}/${source.id}`).getMetadata();
     if (Number(metadata.size) !== source.size || source.size > 25 * 1024 * 1024) throw new WorkerError("invalid-data");
     const [raw] = await bucket.file(`users/${uid}/analyses/${input.id}/${source.id}`).download();
     if (createHash("sha256").update(raw).digest("hex") !== source.sha256) throw new WorkerError("invalid-data");
-    const pythonStarted = Date.now(), worker = await computeTable(raw, source.id, source.name, input.selection), pythonMs = Date.now() - pythonStarted;
+    const pythonStarted = Date.now();
+    const worker = await computeTable(raw, source.id, source.name, input.selection).finally(() => {
+      measurement.pythonMs = Date.now() - pythonStarted;
+    });
     if (worker.document.sourceId !== source.id || worker.document.sha256 !== source.sha256 || worker.document.fileName !== source.name
       || worker.scope.sheet !== input.selection.sheet || worker.document.chunks.some(chunk => (chunk.locator.sheet ?? null) !== input.selection.sheet)
       || analysisFingerprint(source.sha256, source.id, worker.scope.selection, input.locale) !== fingerprint) throw new WorkerError("invalid-data");
@@ -181,7 +185,6 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
     assertAiArtifactSourceBudget(artifactBase);
     await advanceAnalysis(uid!, input.id, job.attemptId, "interpreting");
     const emulator = isAnalysisEmulator();
-    let usage: AiJob["usage"];
     let generateFn: GeminiGenerate;
     let useFixedEmulatorText = false;
     if (options.generate) {
@@ -191,20 +194,23 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
       generateFn = async () => "";
     } else {
       const key = await (options.readKey ?? readGeminiKey)();
-      generateFn = createGeminiGenerate(key, value => { usage = value; });
+      generateFn = createGeminiGenerate(key, usage => { measurement.usage = usage; });
     }
-    const modelStarted = Date.now();
-    const result = await interpretTable(packet, input.locale, generateFn, useFixedEmulatorText);
-    const modelMs = Date.now() - modelStarted;
+    const result = await interpretTable(packet, input.locale, async request => {
+      const started = Date.now();
+      measurement.inputBytes = packet.inputBytes;
+      measurement.model = emulator ? "emulator" : GEMINI_MODEL;
+      try { return await generateFn(request); }
+      finally { measurement.modelMs = Date.now() - started; }
+    }, useFixedEmulatorText);
     await advanceAnalysis(uid!, input.id, job.attemptId, "saving");
     if (Buffer.byteLength(JSON.stringify(result)) > AI_JOB_LIMITS.outputBytes) throw new WorkerError("scope-limit");
     const { compressed, sha256 } = encodeAiArtifact({ ...artifactBase, result });
     await bucket.file(artifactPath).save(compressed, { resumable: false, preconditionOpts: { ifGenerationMatch: 0 },
       metadata: { contentType: "application/gzip", cacheControl: "private, no-store" } });
     savedHash = sha256;
-    const completed: AiJob = { ...job, stage: "saving", status: "completed", finishedAt: Date.now(), artifactPath, artifactSha256: savedHash,
-        model: emulator ? "emulator" : GEMINI_MODEL, durationMs: Date.now() - startedAt, pythonMs, modelMs,
-        ...(!useFixedEmulatorText ? { inputBytes: packet.inputBytes } : {}), ...(usage ? { usage } : {}) };
+    const completed: AiJob = { ...job, ...measurement, stage: "saving", status: "completed", finishedAt: Date.now(),
+      artifactPath, artifactSha256: savedHash, model: emulator ? "emulator" : GEMINI_MODEL, durationMs: Date.now() - startedAt };
     const committed = await completeAnalysis(uid!, input.id, job.attemptId, completed);
     if (!committed) {
       if (!hasActiveAnalysisLease(job, Date.now())) throw new WorkerError("timeout");
@@ -226,7 +232,7 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
           tx.set(backoff, { reason: failure, retryAfter: failureDetails.retryAfter });
         }
       }
-      if (next === "fail") tx.update(ref, { ai: { ...job, status: "failed", finishedAt, error: failure, durationMs: finishedAt - startedAt,
+      if (next === "fail") tx.update(ref, { ai: { ...job, ...measurement, status: "failed", finishedAt, error: failure, durationMs: finishedAt - startedAt,
         ...(failureDetails.retryAfter !== undefined ? { retryAfter: failureDetails.retryAfter } : {}) }, updatedAt: finishedAt });
       return next;
     }).catch(() => {

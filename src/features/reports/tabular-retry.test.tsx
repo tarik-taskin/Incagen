@@ -50,7 +50,7 @@ it.each([
   await act(async () => { render(<TabularAnalysisPanel analysis={analysis} />); });
   await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Yeniden dene" })); });
   expect(screen.getByRole(limit === "attempts" ? "status" : "alert")).toHaveTextContent(message);
-  expect(screen.getByRole("button", { name: limit === "attempts" ? "Yeniden dene" : "Kısa bir süre bekleyin" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Yeniden dene" })).toBeDisabled();
   expect(screen.queryByText("Analiz oluşturulmaya hazır.")).not.toBeInTheDocument();
   await act(async () => { vi.advanceTimersByTime(3001); });
   expect(screen.getByRole("button", { name: "Yeniden dene" })).toHaveProperty("disabled", limit === "attempts");

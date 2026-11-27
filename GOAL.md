@@ -9,6 +9,31 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
+### 2026-11-27 — Furkan / Codex: beta kapasitesi, hata kanıtı ve kaynak erişimi
+
+- [x] Sahip: Furkan — 1. İlk beta için proje analiz bütçesini günde 12 denemeyle sınırla.
+- [x] Sahip: Furkan — 2. Proje sayacını Pasifik, kişisel sayacı İstanbul takviminde tut.
+- [x] Sahip: Furkan — 3. Geçişte iki takvim günündeki eski proje kullanımını say.
+- [x] Sahip: Furkan — 4. Eşzamanlı son rezervasyon ve bozuk sayaçta bütçe sınırını koru.
+- [x] Sahip: Furkan — 5. Sağlayıcı hız veya kapasite hatasını proje genelindeki kısa beklemeye bağla.
+- [x] Sahip: Furkan — 6. Farklı hesapların bekleme sırasında iş veya kota tüketmesini engelle.
+- [x] Sahip: Furkan — 7. Eski başarısız yanıtın geçerli denemeyi veya daha uzun beklemeyi ezmesini engelle.
+- [x] Sahip: Furkan — 8. Tamamlanan raporları ve süresi dolan bekleme sonrası manuel başlatmayı koru.
+- [x] Sahip: Furkan — 9. Kullanıcı kotası, proje bütçesi ve kayıt deneme sınırını ayrı kodlarla döndür.
+- [x] Sahip: Furkan — 10. Kota hatalarını altı dilde kullanıcının atabileceği adımlarla açıkla.
+- [x] Sahip: Furkan — 11. Kota reddinden sonra yeniden tıklamanın aynı reddi döngüye sokmasını önle.
+- [x] Sahip: Furkan — 12. Analiz sürerken ve erişim yenilenirken çelişkili hazır mesajını kaldır.
+- [x] Sahip: Furkan — 13. Rapor indirmesinde render edilen hesap ile gerçek Firebase oturumunu ağdan önce eşleştir.
+- [x] Sahip: Furkan — 14. İndirilecek dosyanın kimliğini ve hash’ini mevcut rapor kaynağıyla bağla.
+- [x] Sahip: Furkan — 15. İndirme dosya adını doğrulanmış rapor kaynağından al.
+- [x] Sahip: Furkan — 16. Eski oturum ve kopan kaynak bağında Storage isteği oluşmadığını regresyonla doğrula.
+- [x] Sahip: Furkan — 17. Hatalı Python veya model aşamasının gerçek süresini iş kaydında koru.
+- [x] Sahip: Furkan — 18. Geçersiz model yanıtında sağlayıcının ölçtüğü geçerli token kullanımını kaybetme.
+- [x] Sahip: Furkan — 19. Model çağrısı yapılmadığında model süresi ve istem baytı kaydetme.
+- [~] Sahip: Furkan — 20. Başarısız sentetik kabul özetine ölçüm ekle ve GitHub/Netlify ile kapalı Firebase paketini doğrula.
+
+Emülatör ve hedefli regresyon doğrulandı. Son sürümün GitHub, Netlify ve Firebase yayın kanıtı TASK-0010 devir kaydında tutulur. [Beta kabulü](docs/BETA-ACCEPTANCE.md).
+
 ### 2026-11-27 — Furkan / Codex: beta iş kabulü ve servis sınırları
 
 - [x] Sahip: Furkan — 1. Teşhis gününü Gemini kota takvimiyle eşleştir.
@@ -30,7 +55,7 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 17. Rapor yazma ve okuma için tek işlenmiş artefakt boyut sözleşmesi kullan.
 - [x] Sahip: Furkan — 18. Rapor bütçesine sığmayacak kaynağı Gemini çağrısından önce reddet.
 - [x] Sahip: Furkan — 19. Yazılacak gzip ve gerçek indirilen baytları aynı sınırda doğrula.
-- [~] Sahip: Furkan — 20. Eski v1 raporlarını ve çok baytlı sınırları doğrula, kapalı paketin yayın kanıtını kaydet.
+- [x] Sahip: Furkan — 20. Eski v1 raporlarını ve çok baytlı sınırları doğrula, kapalı paketin yayın kanıtını kaydet (`9f63f8b`).
 
 Yerel kabul ve Firebase entegrasyonu geçti. Son canlı GitHub/Netlify ile kapalı Firebase kanıtı TASK-0009 devir kaydında tamamlanır. [Analiz sözleşmesi](docs/TABULAR-ANALYSIS.md).
 

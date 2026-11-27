@@ -239,6 +239,7 @@ export function usageRecord({ runId, gitCommit, caseId, locale, format, sourceSh
     ...(passed && reportSha256 ? { reportSha256 } : {}),
     status: passed ? "completed" : "failed",
     model: job?.model, durationMs: job?.durationMs, pythonMs: job?.pythonMs, modelMs: job?.modelMs,
+    ...(Number.isSafeInteger(job?.inputBytes) && job.inputBytes > 0 ? { inputBytes: job.inputBytes } : {}),
     usage: job?.usage, ...(passed ? {} : { error: failure }),
   };
 }
@@ -671,6 +672,7 @@ async function main(args) {
           assert.equal((await getDoc(recordRef)).data().ai.attempts, 1);
         }
       } catch (error) {
+        job ??= await getDoc(recordRef).then(snapshot => snapshot.data()?.ai).catch(() => undefined);
         const reason = error?.details?.analysisFailure;
         const failure = analysisFailures.has(reason) ? reason : error instanceof assert.AssertionError ? "acceptance-validation" : "acceptance-request";
         results.push(usageRecord({ runId, gitCommit, caseId, locale, format, sourceSha256, job, passed: false, failure }));

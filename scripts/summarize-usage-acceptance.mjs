@@ -125,6 +125,7 @@ export function summarizeSingleRun(run, pricingInput) {
     calculationMs,
     modelMs,
     totalDurationMs,
+    ...(Number.isSafeInteger(run?.inputBytes) && run.inputBytes > 0 ? { inputBytes: run.inputBytes } : {}),
     usage,
     error: errorType,
     unmeasuredFields,
