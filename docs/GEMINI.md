@@ -24,13 +24,13 @@ Secret Manager'da **yalnız bu secret üzerinde**, `checkGemini` çalışma zama
 
 2 Kasım kurulumunda bu secret kapsamındaki rol verildi ve tekrar okunarak doğrulandı; herkese açık principal bulunmuyor. Servis hesabı projenin mevcut backend çalışma zamanı hesabıdır, yalnız `checkGemini` için oluşturulmuş ayrı bir kimlik değildir. Anahtar değeri bağlantı testinde yalnız buluttaki function tarafından okundu; yerel dosyaya veya test çıktısına alınmadı.
 
-Cloud callable `checkGemini` için Firebase Auth kullanıcısının güvenilir yönetici tarafından atanmış `incagenDeveloper: true` custom claim'i ve son beş dakikada giriş yapmış olması gerekir. Bu claim istemciden atanamaz. Dağıtım hiçbir mevcut kullanıcıya kendiliğinden yetki vermez. Normal kullanıcıya teşhis düğmesi sunulmaz; API anahtarı istek gövdesiyle alınmaz. Yalnız temel `{}` veri gövdesi kabul edilir.
+Cloud callable `checkGemini` için Firebase Auth kullanıcısının güvenilir yönetici tarafından atanmış `incagenDeveloper: true` custom claim'i ve son beş dakikada giriş yapmış olması gerekir. Bu claim istemciden atanamaz. Dağıtım hiçbir mevcut kullanıcıya kendiliğinden yetki vermez. Normal kullanıcıya teşhis düğmesi sunulmaz. Çağrı gövdesi `{}` veya aşağıda tanımlanan tek sabit teşhis seçeneğini alır.
 
 ## Sınırlar ve hata davranışı
 
-- Sabit kontrol prompt'u, `LOW` thinking, en fazla 2.048 çıktı token'ı ve 90 saniye model sınırı; callable süresi 120 saniyedir. Tek istek yapılır, otomatik ücretli retry yok. Bu sınırlar 6 Kasım güncellemesidir; aşağıdaki 2 Kasım kabulü kendi tarihindeki ayarları anlatır.
-- UID başına 60 saniyede bir; proje genelinde UTC gününde en fazla 20 kontrol. Sayaçlar transaction ile tutulur; eksik anahtar sayaç tüketmez. Sağlayıcıya gönderilmiş başarısız deneme hak tüketir.
-- Anahtarın yokluğu/okunamaması `failed-precondition`; sağlayıcı, zaman aşımı veya geçersiz JSON `unavailable` olur. Geliştirici teşhisinin `geminiFailure` ayrıntısı yalnız sabit hata türüdür; 429/503 `busy`, 408/504 veya yerel deadline `timeout` olarak ayrılır, 400/403 yoğunluk sayılmaz. Ham hata ve yanıt loglanmaz. `maxInstances: 1` ve `concurrency: 1` kullanılır.
+- Sabit kontrol prompt'u, `LOW` thinking, en fazla 2.048 çıktı token'ı ve 300 saniye model sınırı kullanılır. Callable süresi 330 saniyedir. Operatör tek istek başlatır ve otomatik ücretli tekrar yapılmaz.
+- Teşhisler aynı proje içinde hesaplar arasında en az 60 saniye arayla çalışır. Pasifik takviminde günde en fazla dört teşhis ve bunlardan en fazla bir Priority isteği mümkündür. Mevcut UTC kaydı geçişte örtüşen günün kullanılan haklarını korur. Eksik anahtar sayaç tüketmez. Gönderilen başarısız deneme hak tüketir. [Gemini kota takvimi](https://aistudio.google.com/docs/rate-limits)
+- Anahtarın yokluğu/okunamaması `failed-precondition` döndürür. Sağlayıcı ve yanıt hataları `unavailable` altında sabit `geminiFailure` türüyle ayrılır: HTTP 429 `rate-limited`, 503 `busy`, 408/504 ve yerel zaman aşımı `timeout`. Ham hata ve yanıt loglanmaz. `maxInstances: 1` ve `concurrency: 1` kullanılır.
 - Runtime secret okuması 5 saniye ile sınırlıdır. Yerel emülatör bulut secret'ına düşmez. Bulutta düz ortam `GEMINI_API_KEY` okunmaz.
 
 ## İlk analiz adaptörü
@@ -81,3 +81,5 @@ Geliştirici teşhisinin sağlayıcı süresi 300 saniye, Functions süresi 330 
 26 Kasım 2026 güncel tek sentetik kontrol: kapalı backend sürümü doğrulandı. `checkGemini` 95.401 ms sonunda `functions/unavailable / timeout` döndü. Temizlik geçti ve ek model isteği yapılmadı. [Beta kabul durumu](BETA-ACCEPTANCE.md#ilk-beta-için-kalan-kabul).
 
 27 Kasım devamında Gemini 3.8 Flash `generateContent` teşhisi 504, Standard Interactions teşhisi 503 ve Priority Interactions teşhisi 429 döndü. Onaylanan tek 3.6 Flash Interactions karşılaştırması 503 kapasite hatası döndü. Her koşuda geçici yetki, hesap ve kaynak günlüğü temizliği doğrulandı. Geçerli canlı 3.8 Flash yanıtı ve gerçek rapor kalite kabulü bekliyor. [Beta kabul durumu](BETA-ACCEPTANCE.md#ilk-beta-için-kalan-kabul).
+
+27 Kasım 12.42 Türkiye saatiyle, Pasifik günlük kota sıfırlamasından sonra 3.8 Flash Standard `generateContent` tek sentetik denemede 12.210 ms sonunda HTTP 503 kapasite hatası döndü. Geçici yetki, hesap ve kaynak günlüğü temizliği doğrulandı. [Beta kabul durumu](BETA-ACCEPTANCE.md#ilk-beta-için-kalan-kabul)

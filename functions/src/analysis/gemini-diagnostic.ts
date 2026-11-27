@@ -5,6 +5,14 @@ import { checkGeminiConnection, checkGeminiInteractions, createGeminiGenerate, G
 import { readGeminiKey } from "./gemini-secret";
 
 const diagnosticInput = z.object({ transport: z.enum(GEMINI_INTERACTION_TRANSPORTS).optional() }).strict();
+const providerCalendar = new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", year: "numeric", month: "2-digit", day: "2-digit" });
+const diagnosticLimits = { projectPerDay: 4, intervalMs: 60_000 } as const;
+
+// UTC gece yarısı yeni teşhis hakkı açmaz; sağlayıcının Pasifik takvimi kullanılır.
+export function geminiQuotaDay(now: number) {
+  const parts = Object.fromEntries(providerCalendar.formatToParts(now).map(({ type, value }) => [type, value]));
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}
 
 // Maliyetli kontrol normal kullanıcılara kapalıdır; son giriş, UID ve geliştirici claim'i zorunludur.
 export function requireGeminiDeveloper(auth: { uid: string; token: Record<string, unknown> } | undefined, data: unknown, now = Date.now()) {
@@ -18,7 +26,7 @@ export function requireGeminiDeveloper(auth: { uid: string; token: Record<string
   return auth.uid;
 }
 
-// UID başına dakikada bir ve proje genelinde günde 20 çağrı. Priority bunların en fazla birini kullanabilir.
+// Proje ve UID aralığı, günlük bütçe ve tek Priority çağrısı aynı transaction içinde korunur.
 export async function reserveGeminiDiagnostic(uid: string, now = Date.now(), priority = false) {
   const db = getFirestore();
   await db.runTransaction(async tx => {
@@ -26,15 +34,20 @@ export async function reserveGeminiDiagnostic(uid: string, now = Date.now(), pri
     const own = db.doc(`users/${uid}/diagnostics/gemini`);
     const global = db.doc("internalDiagnostics/gemini");
     const [user, last, total] = await Promise.all([tx.get(account), tx.get(own), tx.get(global)]);
-    const day = new Date(now).toISOString().slice(0, 10);
+    const day = geminiQuotaDay(now);
     const current = total.data();
-    const count = current?.day === day ? Number(current?.count ?? 0) : 0;
-    const priorityUsed = current?.day === day && current.priorityUsed === true;
+    // Eski UTC kaydı bu günün herhangi bir bölümünü kapsıyorsa ilk geçişte sayacı koru.
+    const carriesUsage = current?.day === day || (current?.calendar === undefined && current?.day === new Date(now).toISOString().slice(0, 10));
+    const count = carriesUsage ? Number(current?.count ?? 0) : 0;
+    const priorityUsed = carriesUsage && current?.priorityUsed === true;
     if (user.data()?.deletingAccount) throw new HttpsError("failed-precondition", "Hesap siliniyor.");
-    if (now - Number(last.data()?.at ?? 0) < 60_000 || count >= 20 || (priority && priorityUsed)) {
+    if (now - Number(last.data()?.at ?? 0) < diagnosticLimits.intervalMs
+      || now - Number(current?.lastAt ?? 0) < diagnosticLimits.intervalMs
+      || count >= diagnosticLimits.projectPerDay || (priority && priorityUsed)) {
       throw new HttpsError("resource-exhausted", "Bağlantı kontrolü sınırına ulaşıldı.");
     }
-    tx.set(own, { at: now }); tx.set(global, { day, count: count + 1, ...(priority || priorityUsed ? { priorityUsed: true } : {}) });
+    tx.set(own, { at: now });
+    tx.set(global, { calendar: "pacific", day, lastAt: now, count: count + 1, ...(priority || priorityUsed ? { priorityUsed: true } : {}) });
   });
 }
 
