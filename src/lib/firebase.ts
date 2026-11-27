@@ -2,6 +2,7 @@ import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
 import { connectStorageEmulator, getStorage } from "firebase/storage";
 import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
 import { getAuthServices, usesFirebaseEmulator } from "./firebase-auth";
+import { emulatorPorts } from "./emulator-ports";
 
 // Çalışma alanı gerektiğinde veri servislerini aynı uygulama/kimlik örneğine bağlar.
 function initializeServices() {
@@ -10,9 +11,10 @@ function initializeServices() {
   const storage = getStorage(app);
   const functions = getFunctions(app, "europe-west1");
   if (usesFirebaseEmulator) {
-    connectFirestoreEmulator(db, "127.0.0.1", 8080);
-    connectStorageEmulator(storage, "127.0.0.1", 9199);
-    connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+    const ports = emulatorPorts(import.meta.env.VITE_INCAGEN_TEST_PORT_BASE);
+    connectFirestoreEmulator(db, "127.0.0.1", ports.firestore);
+    connectStorageEmulator(storage, "127.0.0.1", ports.storage);
+    connectFunctionsEmulator(functions, "127.0.0.1", ports.functions);
   }
   return { auth, db, storage, functions };
 }

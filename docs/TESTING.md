@@ -109,6 +109,15 @@ Functions kodunun ilk yüklemesi yavaş disklerde (örneğin OneDrive klasörü)
 
 Kimlik, yetki, kota ve silme kontrolleri entegrasyon paketindedir. Tarayıcı paketi masaüstü/mobil, açık/koyu tema, klavye, erişilebilirlik ve taslak yaşam döngüsünü sınar. Google ile giriş, emülatörün sahte hesap penceresiyle ilk giriş, yeniden giriş ve Google doğrulamalı hesap silme olarak sınanır; gerçek Google hesabı kullanılmaz. Test hizmetleri `demo-incagen` ile loopback adreslerine kilitlidir; eksik servis gerçek bulutla tamamlanmaz. Normal kapanışta test verileri kalıcı değildir.
 
+Varsayılan portlar doluysa her koşu için boş, on portluk bir blok seçin. İşlem kendi Firebase konfigürasyonunu oluşturur ve kapanırken kaldırır. Üretim Firebase bağlantısı test portlarından bağımsızdır.
+
+```bash
+INCAGEN_TEST_PORT_BASE=16320 npm run test:integration
+INCAGEN_TEST_PORT_BASE=16340 npm run test:local
+```
+
+Yalnız tablo akışını iki görünümde çalıştırmak için `npm run test:local -- --tabular` kullanın. GitHub Quality tam tarayıcı paketini çalıştırır.
+
 ## Görsel inceleme
 
 Uygulama akışını sentetik bir hesapla incelemek için:

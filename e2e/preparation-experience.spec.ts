@@ -8,6 +8,9 @@ import es from "../src/i18n/locales/es.json" with { type: "json" };
 import zh from "../src/i18n/locales/zh.json" with { type: "json" };
 import ar from "../src/i18n/locales/ar.json" with { type: "json" };
 import { chooseLanguage, setTheme } from "./ui-helpers";
+import { emulatorPorts } from "../src/lib/emulator-ports";
+
+const ports = emulatorPorts(process.env.INCAGEN_TEST_PORT_BASE);
 
 // Yalnız izole test ortamında benzersiz sentetik hesap ve yükleme taslağı oluşturur.
 async function openDraft(page: Page) {
@@ -40,7 +43,7 @@ test("oluşturma, gerçek yükleme ve hazırlama ayrı görünür; rota/dil değ
   await openDraft(page);
   const creation = gate(), upload = gate(), preparation = gate();
   await page.route("**/createAnalysis", async route => { await creation.promise; await route.continue(); });
-  await page.route(/http:\/\/127\.0\.0\.1:9199\/v0\/b\/.+\/o/, async route => {
+  await page.route(new RegExp(`http://127\\.0\\.0\\.1:${ports.storage}/v0/b/.+/o`), async route => {
     if (["POST", "PUT"].includes(route.request().method())) await upload.promise;
     await route.continue();
   });

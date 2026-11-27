@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { connectAuthEmulator, getAuth } from "firebase/auth";
+import { emulatorPorts } from "./emulator-ports";
 
 type FirebaseMode = "emulator" | "cloud";
 
@@ -37,7 +38,7 @@ function initializeAuthServices() {
     storageBucket: "demo-incagen.appspot.com",
   } : cloudConfig);
   const auth = getAuth(app);
-  if (usesFirebaseEmulator) connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+  if (usesFirebaseEmulator) connectAuthEmulator(auth, `http://127.0.0.1:${emulatorPorts(import.meta.env.VITE_INCAGEN_TEST_PORT_BASE).auth}`, { disableWarnings: true });
   return { app, auth };
 }
 

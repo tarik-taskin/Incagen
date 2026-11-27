@@ -6,6 +6,14 @@ import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { test } from "node:test";
 import { runIsolated } from "./run-emulator-tests.mjs";
+import { emulatorPorts } from "../src/lib/emulator-ports.ts";
+
+test("uses existing default ports or validates an isolated loopback block", () => {
+  assert.deepEqual(emulatorPorts(), { auth: 9099, firestore: 8080, storage: 9199, functions: 5001, hub: 4400, logging: 4500, web: 4173,
+    eventarc: 9299, tasks: 9499, firestoreWebsocket: 9150 });
+  assert.deepEqual(Object.values(emulatorPorts("16320")), Array.from({ length: 10 }, (_, offset) => 16320 + offset));
+  for (const invalid of ["not-a-port", "1023", "65527", "1e4", "1234; echo", " 16320 "]) assert.throws(() => emulatorPorts(invalid));
+});
 
 // Child metadata contains only a test directory path and its mode, never application credentials.
 async function fixture(callback) {
@@ -56,5 +64,21 @@ for (const signal of ["SIGINT", "SIGTERM"]) test(`forwards ${signal}, waits for 
     assert.equal(readFileSync(acknowledged, "utf8"), "yes");
     assert.deepEqual(JSON.parse(readFileSync(result, "utf8")), { code: 0, signal });
     assert.equal(existsSync(temporary), false);
+  } finally { if (parent.exitCode === null) { parent.kill("SIGTERM"); await finished; } }
+}));
+
+test("signals the owned process group, including the nested test process", { skip: process.platform === "win32" }, () => fixture(async dir => {
+  const ready = join(dir, "nested-ready"), stopped = join(dir, "nested-stopped");
+  const nested = `const fs=require('node:fs');process.on('SIGTERM',()=>{fs.writeFileSync(${JSON.stringify(stopped)},'yes');process.exit(0)});fs.writeFileSync(${JSON.stringify(ready)},'yes');setInterval(()=>{},1000);`;
+  const shell = `const child=require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(nested)}]);process.on('SIGTERM',()=>{});child.on('exit',code=>process.exit(code));`;
+  const runner = `import {runIsolated} from ${JSON.stringify(new URL("./run-emulator-tests.mjs", import.meta.url).href)};await runIsolated(process.execPath,['-e',${JSON.stringify(shell)}]);`;
+  const parent = spawn(process.execPath, ["--input-type=module", "-e", runner], { stdio: "ignore" });
+  const finished = new Promise((resolve, reject) => { parent.once("error", reject); parent.once("exit", resolve); });
+  try {
+    for (let attempt = 0; !existsSync(ready) && attempt < 100; attempt++) await delay(20);
+    assert.ok(existsSync(ready), "nested process must be ready before interrupt");
+    parent.kill("SIGTERM");
+    assert.equal(await finished, 0);
+    assert.equal(readFileSync(stopped, "utf8"), "yes");
   } finally { if (parent.exitCode === null) { parent.kill("SIGTERM"); await finished; } }
 }));

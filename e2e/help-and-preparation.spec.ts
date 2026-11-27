@@ -9,6 +9,9 @@ import es from "../src/i18n/locales/es.json" with { type: "json" };
 import zh from "../src/i18n/locales/zh.json" with { type: "json" };
 import ar from "../src/i18n/locales/ar.json" with { type: "json" };
 import { chooseLanguage, setTheme } from "./ui-helpers";
+import { emulatorPorts } from "../src/lib/emulator-ports";
+
+const ports = emulatorPorts(process.env.INCAGEN_TEST_PORT_BASE);
 
 // Dar ekranda genişleyen innerWidth yerine gerçek viewport sınırını ve erişilebilirliği denetler.
 async function checkPage(page: Page) {
@@ -329,7 +332,7 @@ async function setupPendingPrepareEmulator(page: Page) {
       capturedAnalysisId = (route.request().postDataJSON() as { data?: { id?: string } })?.data?.id ?? "";
       markPrepareSeen();
       await prepareGate;
-      const docUrl = `http://127.0.0.1:8080/v1/projects/demo-incagen/databases/(default)/documents/users/${capturedUid}/analyses/${capturedAnalysisId}?updateMask.fieldPaths=status&updateMask.fieldPaths=updatedAt`;
+      const docUrl = `http://127.0.0.1:${ports.firestore}/v1/projects/demo-incagen/databases/(default)/documents/users/${capturedUid}/analyses/${capturedAnalysisId}?updateMask.fieldPaths=status&updateMask.fieldPaths=updatedAt`;
       const patch = await fetch(docUrl, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: "Bearer owner" },
@@ -349,13 +352,13 @@ async function setupPendingPrepareEmulator(page: Page) {
 
 // Bekleyen işi lease süresini aşmış gibi güncelleyip gerçek Functions emülatöründe tamamlar.
 async function completePendingPrepareEmulator({ capturedAuth, capturedUid, capturedAnalysisId }: { capturedAuth: string; capturedUid: string; capturedAnalysisId: string }) {
-  const expireUrl = `http://127.0.0.1:8080/v1/projects/demo-incagen/databases/(default)/documents/users/${capturedUid}/analyses/${capturedAnalysisId}?updateMask.fieldPaths=updatedAt`;
+  const expireUrl = `http://127.0.0.1:${ports.firestore}/v1/projects/demo-incagen/databases/(default)/documents/users/${capturedUid}/analyses/${capturedAnalysisId}?updateMask.fieldPaths=updatedAt`;
   await fetch(expireUrl, {
     method: "PATCH",
     headers: { "Content-Type": "application/json", Authorization: "Bearer owner" },
     body: JSON.stringify({ fields: { updatedAt: { integerValue: "1" } } }),
   });
-  const fnResponse = await fetch("http://127.0.0.1:5001/demo-incagen/europe-west1/prepareAnalysis", {
+  const fnResponse = await fetch(`http://127.0.0.1:${ports.functions}/demo-incagen/europe-west1/prepareAnalysis`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: capturedAuth },
     body: JSON.stringify({ data: { id: capturedAnalysisId } }),

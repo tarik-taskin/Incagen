@@ -5,6 +5,9 @@ import { initializeApp, deleteApp } from "firebase/app";
 import { getAuth, connectAuthEmulator, createUserWithEmailAndPassword } from "firebase/auth";
 import { getFunctions, connectFunctionsEmulator, httpsCallable } from "firebase/functions";
 import { getStorage, connectStorageEmulator, ref, uploadBytes } from "firebase/storage";
+import { emulatorPorts } from "../src/lib/emulator-ports.ts";
+
+const ports = emulatorPorts(process.env.INCAGEN_TEST_PORT_BASE);
 const require = createRequire(new URL("../functions/package.json", import.meta.url));
 const { initializeApp: initializeAdmin, getApps } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
@@ -15,9 +18,9 @@ const { getStorage: getAdminStorage } = require("firebase-admin/storage");
 async function client() {
   assert.match(process.env.FIRESTORE_EMULATOR_HOST ?? "", /^127\.0\.0\.1:/);
   const app = initializeApp({ projectId: "demo-incagen", apiKey: "demo-key", storageBucket: "demo-incagen.appspot.com" }, crypto.randomUUID());
-  const auth = getAuth(app); connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
-  const functions = getFunctions(app, "europe-west1"); connectFunctionsEmulator(functions, "127.0.0.1", 5001);
-  const storage = getStorage(app); connectStorageEmulator(storage, "127.0.0.1", 9199);
+  const auth = getAuth(app); connectAuthEmulator(auth, `http://127.0.0.1:${ports.auth}`, { disableWarnings: true });
+  const functions = getFunctions(app, "europe-west1"); connectFunctionsEmulator(functions, "127.0.0.1", ports.functions);
+  const storage = getStorage(app); connectStorageEmulator(storage, "127.0.0.1", ports.storage);
   await createUserWithEmailAndPassword(auth, `table-${crypto.randomUUID()}@example.test`, "Synthetic123!");
   return { app, auth, functions, storage, call: (name, data) => httpsCallable(functions, name, { timeout: 180000 })(data) };
 }

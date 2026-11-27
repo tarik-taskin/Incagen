@@ -1,4 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
+import { emulatorPorts } from "./src/lib/emulator-ports";
+
+const base = process.env.INCAGEN_TEST_PORT_BASE;
+const webPort = emulatorPorts(base).web;
+const baseURL = `http://127.0.0.1:${webPort}`;
 
 // Uçtan uca kontrolleri gerçek Chromium üzerinde masaüstü ve mobil görünümde çalıştırır.
 export default defineConfig({
@@ -14,7 +19,7 @@ export default defineConfig({
     ? [["list"], ["html", { open: "never" }], ["json", { outputFile: "test-results/playwright-report.json" }]]
     : [["list"], ["html", { open: "never" }]],
   use: {
-    baseURL: "http://127.0.0.1:4173",
+    baseURL,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     reducedMotion: "reduce",
@@ -25,9 +30,9 @@ export default defineConfig({
   ],
   webServer: {
     // Yalnız test sunucusunda kullanılır; Web3Forms istekleri testte yakalanır, gerçek alıcıya gönderilmez.
-    env: { VITE_SUPPORT_EMAIL: "support@example.test", VITE_WEB3FORMS_ACCESS_KEY: "00000000-0000-4000-8000-000000000001" },
-    command: "npm run dev:web -- --host 127.0.0.1 --port 4173",
-    url: "http://127.0.0.1:4173",
+    env: { VITE_SUPPORT_EMAIL: "support@example.test", VITE_WEB3FORMS_ACCESS_KEY: "00000000-0000-4000-8000-000000000001", VITE_INCAGEN_TEST_PORT_BASE: base ?? "" },
+    command: `npm run dev:web -- --host 127.0.0.1 --port ${webPort} --strictPort`,
+    url: baseURL,
     reuseExistingServer: false,
   },
 });

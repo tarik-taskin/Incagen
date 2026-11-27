@@ -7,6 +7,41 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M3 — İlk kaynaklı tablo analizi
 
+### 2026-11-27 — Furkan / Codex: canlı sentetik tablo kabulü ve çalışma sınırları
+
+- [x] Sahip: Furkan — 1. Yeni Secret Manager sürümüyle gerçek 3.8 Flash bağlantısını doğrula ve geçici hesabı temizle. 27 Kasım’da callable 21.717 ms içinde beklenen sabit JSON’u döndürdü. Temizlik doğrulandı.
+- [x] Sahip: Furkan — 2. Geliştirici callable'ına yalnız sabit CSV veya XLSX seçen, diğer teşhis modlarıyla birleşmeyen giriş ekle.
+- [x] Sahip: Furkan — 3. Sabit CSV ile ondalık, negatif değer ve fiziksel kaynak satırı hesabını sına.
+- [x] Sahip: Furkan — 4. İki sayfalı sabit Excel'de seçilen sayfayı ve satır ağırlıklı ortalamayı sına.
+- [x] Sahip: Furkan — 5. İşçi dosya kimliği, SHA, seçim ve grup sonuçlarını bağımsız beklenenlerle eşleştir.
+- [x] Sahip: Furkan — 6. Fiziksel kaynak satırı yanlışsa modele gitmeden sentetik vakayı reddet.
+- [x] Sahip: Furkan — 7. Aynı gerçek Gemini yorum adaptörünü kullan ve doğrulanmış rapor sözleşmesini uygula.
+- [x] Sahip: Furkan — 8. Sentetik çağrı sonucunu yalnız ölçümlü ve izinli JSON kanıtına indir.
+- [x] Sahip: Furkan — 9. Yeni teşhis biçimini CLI'da tek istekle ve açık biçim seçimiyle çalıştır.
+- [x] Sahip: Furkan — 10. CLI eksik, uyuşmayan veya sıfır ölçümlü sentetik cevabı kabul etmesin.
+- [x] Sahip: Furkan — 11. Sağlayıcı kimlik/yetki reddini kapasite ve genel servis hatasından ayır.
+- [x] Sahip: Furkan — 12. Sağlayıcı hatasında filtrelenmiş sınıflamayı doğrula ve ham istisna dışarı çıkmasın.
+- [x] Sahip: Furkan — 13. Python süresine kimlik alma ve gövdeyi okuma aşamasını dahil et.
+- [x] Sahip: Furkan — 14. Kaynak işinde sabit yayın süresinden kalan bütçeyi worker ve Gemini çağrılarına uygula.
+- [x] Sahip: Furkan — 15. Kaynak okumayı baştaki Storage nesil bilgisine ve gerçek okuma boyutuna bağla.
+- [x] Sahip: Furkan — 16. Hatalı analiz işletim kaydına güvenli aşama, süre ve sonuç kodu ekle.
+- [~] Sahip: Furkan — 17. Yeni teşhis revizyonunun özel worker ve kapalı backend ile eşliğini yayın metadata'sından doğrula.
+- [~] Sahip: Furkan — 18. Değişikliği model taklidi, gerçek Python, Firebase emülatörü ve mevcut tarayıcı yollarıyla regresyona al.
+- [~] Sahip: Furkan — 19. GitHub Quality ve Netlify eşliğini aynı SHA üzerinde doğrula.
+- [~] Sahip: Furkan — 20. Kapalı üretimde canlı sentetik tablo hattını ve temizliği doğrula. Tam kullanıcı/altı dil kabulünü ayrı tut.
+- [x] Sahip: Furkan — 21. Yerel kalite koşusunda doğrulanmış alternatif port bloğu seç.
+- [x] Sahip: Furkan — 22. Firebase test konfigürasyonunu yalnız o koşuya ait geçici dosyada hazırla.
+- [x] Sahip: Furkan — 23. Varsayılan Firebase ve Vite portlarıyla mevcut geliştirme akışını koru.
+- [x] Sahip: Furkan — 24. Firebase Hub ve günlük emülatörünü seçilen porta taşı.
+- [x] Sahip: Furkan — 25. Auth, Firestore, Storage ve Functions entegrasyon istemcilerini aynı port bloğuna bağla.
+- [x] Sahip: Furkan — 26. Demo tarayıcının Firebase servis adreslerini test koşusuyla eşleştir.
+- [x] Sahip: Furkan — 27. Playwright web sunucusunu seçilen portta kesin olarak bağla.
+- [~] Sahip: Furkan — 28. Ağ yakalama ve Firestore yaşam döngüsü senaryolarını seçilen portlarla çalıştır.
+- [x] Sahip: Furkan — 29. Alternatif portları yalnız demo modunda kullan ve geçersiz girişte dur.
+- [x] Sahip: Furkan — 30. Koşuya ait geçici konfigürasyonu başarı ve hata sonrasında kaldır.
+- [~] Sahip: Furkan — 31. Meşgul varsayılan portlara dokunmadan entegrasyon ve masaüstü/mobil koşularını doğrula.
+- [x] Sahip: Furkan — 32. Alternatif port komutunu ve beklenen erişim sınırını test rehberine ekle.
+
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
 ### 2026-11-27 — Furkan / Codex: beta kapasitesi, hata kanıtı ve kaynak erişimi
@@ -77,7 +112,7 @@ Yerel veri sınırı ve ön kontrol testleri geçti. Bu paketin kesin SHA’sı 
 ### 2026-11-26 — Furkan / Codex: beta erişim ve kabul kanıtı
 
 - [x] Sahip: Furkan — 1. Kapalı canlı Functions ve worker sürümünü sağlayıcı denemesi öncesinde doğrula.
-- [!] Sahip: Furkan — 2. Canlı Gemini 3.8 Flash yanıtı ve süreyi doğrula. Günlük kota yenilendikten sonra 27 Kasım 12.42’de Standard `generateContent` tek çağrı 12.210 ms’de HTTP 503 / kapasite döndü. Önceki koşularda 504 ve Priority 429 da görüldü. Geçici kaynaklar temizlendi. Kabul için 3.8 Flash’tan geçerli sabit JSON gerekiyor. [Teşhis kaydı](docs/GEMINI.md).
+- [x] Sahip: Furkan — 2. Canlı Gemini 3.8 Flash yanıtı ve süreyi doğrula. 27 Kasım’da yeni Secret Manager sürümüyle Standard `generateContent` sabit JSON’u 21.717 ms içinde döndürdü. Geçici kaynak ve claim temizliği doğrulandı. [Teşhis kaydı](docs/GEMINI.md).
 - [x] Sahip: Furkan — 3. Teşhis hesabı, geçici claim ve kaynak günlüğü temizliğini doğrula.
 - [x] Sahip: Furkan — 4. Bulut bütçe, alarm ve saklama durumunu salt okunur veriyle yeniden değerlendir.
 - [x] Sahip: Furkan — 5. Canlı kabulün oluşturduğu e-posta ile sentetik davet doğrulayıcısının sözleşmesini birleştir.

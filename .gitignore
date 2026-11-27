@@ -41,6 +41,7 @@ functions/lib/
 
 # Private synthetic acceptance resource journals survive interrupted runs.
 .incagen-local/
+.incagen-emulator-*.json
 
 # Isolated Python tools, runtime and environments
 .tools/

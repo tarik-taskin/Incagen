@@ -5,14 +5,17 @@ import { getAuth, connectAuthEmulator, createUserWithEmailAndPassword, signInWit
 import { getFirestore, connectFirestoreEmulator, doc, getDoc, setDoc } from "firebase/firestore";
 import { getStorage, connectStorageEmulator, ref, uploadBytes, getBytes } from "firebase/storage";
 import { getFunctions, connectFunctionsEmulator, httpsCallable } from "firebase/functions";
+import { emulatorPorts } from "../src/lib/emulator-ports.ts";
+
+const ports = emulatorPorts(process.env.INCAGEN_TEST_PORT_BASE);
 
 // Test verileri yalnız demo emülatörlerine gider; bağımsız kullanıcı oturumları oluşturur.
 async function client() {
   const app = initializeApp({ projectId: "demo-incagen", apiKey: "demo-local-key", storageBucket: "demo-incagen.appspot.com" }, crypto.randomUUID());
-  const auth = getAuth(app); connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
-  const db = getFirestore(app); connectFirestoreEmulator(db, "127.0.0.1", 8080);
-  const storage = getStorage(app); connectStorageEmulator(storage, "127.0.0.1", 9199);
-  const functions = getFunctions(app, "europe-west1"); connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+  const auth = getAuth(app); connectAuthEmulator(auth, `http://127.0.0.1:${ports.auth}`, { disableWarnings: true });
+  const db = getFirestore(app); connectFirestoreEmulator(db, "127.0.0.1", ports.firestore);
+  const storage = getStorage(app); connectStorageEmulator(storage, "127.0.0.1", ports.storage);
+  const functions = getFunctions(app, "europe-west1"); connectFunctionsEmulator(functions, "127.0.0.1", ports.functions);
   await createUserWithEmailAndPassword(auth, `test-${crypto.randomUUID()}@example.test`, "Synthetic123!");
   return { app, auth, db, storage, functions };
 }
