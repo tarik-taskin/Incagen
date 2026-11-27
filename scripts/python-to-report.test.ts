@@ -5,7 +5,8 @@ import { resolve } from "node:path";
 import { render, cleanup } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createTabularPacket, interpretTable } from "../functions/src/analysis/tabular-result";
-import { probeSyntheticTable } from "../functions/src/analysis/tabular-probe";
+import { probeSyntheticTable, verifySyntheticLedger } from "../functions/src/analysis/tabular-probe";
+import { trialFixtures, verifySyntheticCells } from "../functions/src/analysis/tabular-acceptance";
 import type { GeminiGenerate } from "../functions/src/analysis/gemini";
 import { workerResultSchema, type ResultLocale, type TableSelection, type WorkerResult } from "../functions/src/analysis/tabular-contract";
 import { parseCsvTablePreview } from "../functions/src/analysis/tabular-storage";
@@ -108,6 +109,19 @@ it("rejects changed physical source evidence before dispatching the smoke to Gem
     return worker;
   })).rejects.toMatchObject({ code: "invalid-data" });
   expect(model).not.toHaveBeenCalled();
+});
+
+it.each(["csv", "xlsx"] as const)("matches the complete saved-report %s fixture before sending model input", async format => {
+  const input = await fixture(format);
+  const expected = trialFixtures[format];
+  expect(input.selection).toEqual(expected.selection);
+  expect(input.objective).toBe(expected.objective);
+  const worker = workerResultSchema.parse(runPythonWorker(input.bytes, input.name, expected.selection).body.result);
+  const sha256 = createHash("sha256").update(input.bytes).digest("hex");
+  expect(() => verifySyntheticLedger(worker, expected, sha256)).not.toThrow();
+  expect(verifySyntheticCells(worker, format)).toBe(true);
+  worker.document.chunks[0].table!.rows[0][1] = 99;
+  expect(verifySyntheticCells(worker, format)).toBe(false);
 });
 
 // Çıktı içindeki kaynak kanıtlarının beklenen sayfa ve fiziksel satır aralığıyla birebir eşleşmesini doğrular.

@@ -6,16 +6,21 @@ import { readGeminiKey } from "./gemini-secret";
 import { geminiQuotaDay } from "./provider-calendar";
 import { probeSyntheticTable, syntheticTableFormats } from "./tabular-probe";
 import { WorkerError } from "./python-worker";
+import { requireSyntheticGrant, trialFixtures } from "./tabular-acceptance";
+import { executeStartAnalysis } from "./tabular-jobs";
 
-const diagnosticInput = z.object({ transport: z.enum(GEMINI_INTERACTION_TRANSPORTS).optional(), tableFormat: z.enum(syntheticTableFormats).optional() })
-  .strict().refine(value => !(value.transport && value.tableFormat));
+const diagnosticInput = z.object({ transport: z.enum(GEMINI_INTERACTION_TRANSPORTS).optional(), tableFormat: z.enum(syntheticTableFormats).optional(),
+  syntheticReportId: z.string().uuid().optional() }).strict().refine(value =>
+  [value.transport, value.tableFormat, value.syntheticReportId].filter(Boolean).length <= 1);
 const diagnosticLimits = { projectPerDay: 4, intervalMs: 60_000 } as const;
 
 // Maliyetli kontrol normal kullanıcılara kapalıdır; son giriş, UID ve geliştirici claim'i zorunludur.
 export function requireGeminiDeveloper(auth: { uid: string; token: Record<string, unknown> } | undefined, data: unknown, now = Date.now()) {
   if (!auth) throw new HttpsError("unauthenticated", "Giriş gerekli.");
-  if (auth.token.incagenDeveloper !== true) throw new HttpsError("permission-denied", "Geliştirici yetkisi gerekli.");
-  if (!diagnosticInput.safeParse(data).success) {
+  const parsed = diagnosticInput.safeParse(data);
+  const synthetic = parsed.success && parsed.data.syntheticReportId !== undefined && auth.token.incagenSyntheticReport !== undefined;
+  if (auth.token.incagenDeveloper !== true && !synthetic) throw new HttpsError("permission-denied", "Geliştirici yetkisi gerekli.");
+  if (!parsed.success) {
     throw new HttpsError("invalid-argument", "Bu kontrol belge veya serbest istem kabul etmez.");
   }
   const age = now / 1000 - Number(auth.token.auth_time ?? 0);
@@ -52,7 +57,12 @@ export async function reserveGeminiDiagnostic(uid: string, now = Date.now(), pri
 export const checkGemini = onCall<z.infer<typeof diagnosticInput>>({ region: "europe-west1", timeoutSeconds: GEMINI_LIMITS.diagnosticTimeoutMs / 1000 + 30,
   memory: "256MiB", maxInstances: 1, concurrency: 1 }, async request => {
   const uid = requireGeminiDeveloper(request.auth, request.data);
-  const { transport, tableFormat } = request.data;
+  const { transport, tableFormat, syntheticReportId } = request.data;
+  if (syntheticReportId) {
+    const grant = requireSyntheticGrant(request.auth!.token, syntheticReportId);
+    return executeStartAnalysis(uid, { id: grant.id, sourceId: "file-0", selection: trialFixtures[grant.format].selection, locale: grant.locale },
+      { access: "available", syntheticGrant: grant });
+  }
   const priority = transport === "interactions-priority";
   try {
     const key = await readGeminiKey();

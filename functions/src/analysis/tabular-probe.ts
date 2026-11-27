@@ -29,8 +29,7 @@ async function syntheticFixture(format: Format) {
 }
 
 // Her metrik kaynağının fiziksel satırlarını bağımsız cevap anahtarı ve işçi parçasıyla eşleştirir.
-function verifyProbeLedger(worker: WorkerResult, fixture: Awaited<ReturnType<typeof syntheticFixture>>) {
-  const digest = createHash("sha256").update(fixture.bytes).digest("hex");
+export function verifySyntheticLedger(worker: WorkerResult, fixture: { name: string; selection: TableSelection; aggregate: number; rows: number[]; groups: { label: string; value: number; rows: number[] }[] }, digest: string) {
   const { document, scope, metrics, points } = worker;
   const matches = (metric: WorkerResult["metrics"][number] | undefined, value: number, unit: string, rows: number[]) => {
     if (!metric || metric.value !== value || metric.unit !== unit) return false;
@@ -39,7 +38,7 @@ function verifyProbeLedger(worker: WorkerResult, fixture: Awaited<ReturnType<typ
       const { rowStart, rowEnd } = entry.locator;
       const chunk = document.chunks.find(item => item.id === entry.chunkId);
       if (entry.sourceId !== sourceId || entry.sha256 !== digest || !chunk || !rowStart || !rowEnd
-        || rowStart > rowEnd || rowEnd > 5 || rowStart < (chunk.locator.rowStart ?? Infinity) || rowEnd > (chunk.locator.rowEnd ?? 0)
+        || rowStart > rowEnd || rowEnd > fixture.rows.at(-1)! || rowStart < (chunk.locator.rowStart ?? Infinity) || rowEnd > (chunk.locator.rowEnd ?? 0)
         || (entry.locator.sheet ?? null) !== fixture.selection.sheet) return false;
       for (let row = rowStart; row <= rowEnd; row++) covered.add(row);
     }
@@ -64,7 +63,7 @@ export async function probeSyntheticTable(format: Format, createGenerate: (onUsa
   const started = now();
   const worker = await compute(fixture.bytes, sourceId, fixture.name, fixture.selection);
   const pythonMs = now() - started;
-  verifyProbeLedger(worker, fixture);
+  verifySyntheticLedger(worker, fixture, createHash("sha256").update(fixture.bytes).digest("hex"));
   const packet = createTabularPacket("incagen-synthetic", objective, worker, "en");
   let usage: GeminiUsage | undefined;
   const generate = createGenerate(value => { usage = value; });

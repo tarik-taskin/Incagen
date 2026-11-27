@@ -1,16 +1,19 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import { initializeApp, deleteApp } from "firebase/app";
 import { getAuth, connectAuthEmulator, createUserWithEmailAndPassword } from "firebase/auth";
 import { getFunctions, connectFunctionsEmulator, httpsCallable } from "firebase/functions";
 import { getStorage, connectStorageEmulator, ref, uploadBytes } from "firebase/storage";
 import { emulatorPorts } from "../src/lib/emulator-ports.ts";
+import { tabularFixture } from "../scripts/tabular-synthetic-fixtures.mjs";
 
 const ports = emulatorPorts(process.env.INCAGEN_TEST_PORT_BASE);
 const require = createRequire(new URL("../functions/package.json", import.meta.url));
 const { initializeApp: initializeAdmin, getApps } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
+const { getAuth: getAdminAuth } = require("firebase-admin/auth");
 const { geminiQuotaDay } = require("./lib/analysis/provider-calendar");
 const { getStorage: getAdminStorage } = require("firebase-admin/storage");
 
@@ -563,5 +566,58 @@ test("sağlayıcı beklemesini hesaplar arasında korur ve süresi dolunca manue
     if (own.auth.currentUser?.uid) await db.doc(`users/${own.auth.currentUser.uid}/aiQuotas/${day}`).delete().catch(() => {});
     if (id) await own.call("deleteAnalysis", { id }).catch(() => {});
     await deleteApp(own.app);
+  }
+});
+
+
+test("kapalı rapor provası tek sentetik kullanıcı, kaynak ve rezervasyona bağlıdır", { timeout: 180000 }, async () => {
+  if (!getApps().length) initializeAdmin({ projectId: "demo-incagen", storageBucket: "demo-incagen.appspot.com" });
+  const own = await client(), other = await client(), db = getFirestore();
+  const uid = own.auth.currentUser.uid;
+  const fixture = await tabularFixture("csv");
+  let id;
+  // Yalnız demo kimliğinin kısa ömürlü claim'ini yeniler; gerçek sağlayıcı taklit edilir.
+  async function claim(values) {
+    await getAdminAuth().setCustomUserClaims(uid, values);
+    await own.auth.currentUser.getIdToken(true);
+  }
+  try {
+    const { data } = await own.call("createAnalysis", { requestId: crypto.randomUUID(), title: "Synthetic service analysis", business: "Synthetic acceptance",
+      objective: fixture.objective, files: [{ name: fixture.name, size: fixture.bytes.length, contentType: fixture.type }] });
+    id = data.id;
+    await uploadBytes(ref(own.storage, data.paths[0]), fixture.bytes, { contentType: fixture.type });
+    await own.call("prepareAnalysis", { id });
+    const snapshot = db.doc(`users/${uid}/analyses/${id}`);
+    const quota = db.doc(`internalAnalysisQuotas/pacific-${geminiQuotaDay(Date.now())}`);
+    const before = (await quota.get()).data()?.count ?? 0;
+    const expected = { id, locale: "tr", format: "csv", sha256: createHash("sha256").update(fixture.bytes).digest("hex"), expiresAt: Date.now() + 420_000 };
+    const probe = () => own.call("checkGemini", { syntheticReportId: id });
+    await assert.rejects(probe(), { code: "functions/permission-denied" });
+    await claim({ incagenDeveloper: true });
+    await assert.rejects(probe(), { code: "functions/permission-denied" });
+    await claim({ incagenSyntheticReport: { ...expected, id: crypto.randomUUID() } });
+    await assert.rejects(probe(), { code: "functions/permission-denied" });
+    await claim({ incagenSyntheticReport: { ...expected, expiresAt: Date.now() - 1 } });
+    await assert.rejects(probe(), { code: "functions/permission-denied" });
+    await claim({ incagenSyntheticReport: { ...expected, sha256: "f".repeat(64) } });
+    await assert.rejects(probe(), { code: "functions/failed-precondition" });
+    assert.equal((await snapshot.get()).data().ai, undefined);
+    assert.equal((await quota.get()).data()?.count ?? 0, before);
+    await claim({ incagenSyntheticReport: expected });
+    await assert.rejects(own.call("checkGemini", {}), { code: "functions/permission-denied" });
+    await assert.rejects(other.call("checkGemini", { syntheticReportId: id }), { code: "functions/permission-denied" });
+    const first = (await probe()).data;
+    assert.deepEqual(first, { id, status: "completed", reused: false });
+    const artifact = (await own.call("getAnalysisResult", { id })).data;
+    assert.equal(artifact.result.metrics.find(metric => metric.id === "aggregate").value, fixture.total);
+    await assert.rejects(other.call("getAnalysisResult", { id }), { code: "functions/not-found" });
+    assert.deepEqual((await probe()).data, { id, status: "completed", reused: true });
+    await snapshot.update({ "ai.status": "failed" });
+    await assert.rejects(probe(), { code: "functions/resource-exhausted" });
+    assert.equal((await snapshot.get()).data().ai.attempts, 1);
+    assert.equal((await quota.get()).data().count, before + 1);
+  } finally {
+    if (id) await own.call("deleteAnalysis", { id });
+    await Promise.all([deleteApp(own.app), deleteApp(other.app)]);
   }
 });

@@ -14,6 +14,8 @@ import { AI_JOB_LIMITS, hasActiveAnalysisLease, startAnalysisSchema, type AiJob,
 import { isAnalysisEmulator, tabularAnalysisAccess } from "./tabular-rollout";
 import { geminiQuotaDay, legacyProviderQuotaDays, nextQuotaReset } from "./provider-calendar";
 import { readOriginalTable } from "./analysis-source";
+import { assertSyntheticSource, matchesSyntheticRequest, trialFixtures, verifySyntheticCells, type SyntheticGrant } from "./tabular-acceptance";
+import { verifySyntheticLedger } from "./tabular-probe";
 
 const providerBackoffPath = "internalAnalysisQuotas/provider-backoff";
 const maxInvocationSeconds = 180;
@@ -47,7 +49,7 @@ function reuseAnalysis(previous: (AiJob & { fingerprint?: string }) | undefined,
 }
 
 // Atomik kabul hem tekrar çağrıyı tekilleştirir hem kullanıcı/proje maliyet sınırını sunucuda uygular.
-export async function reserveAnalysis(uid: string, input: ReturnType<typeof startAnalysisSchema.parse>, fingerprint: string, now = Date.now(), artifactAttempt?: string) {
+export async function reserveAnalysis(uid: string, input: ReturnType<typeof startAnalysisSchema.parse>, fingerprint: string, now = Date.now(), artifactAttempt?: string, syntheticExpiresAt?: number) {
   const db = getFirestore(), ref = db.doc(`users/${uid}/analyses/${input.id}`), day = getQuotaDay(new Date(now));
   const providerDay = geminiQuotaDay(now);
   return db.runTransaction(async tx => {
@@ -58,8 +60,14 @@ export async function reserveAnalysis(uid: string, input: ReturnType<typeof star
     if (!current.exists) throw new HttpsError("not-found", "Analiz bulunamadı.");
     if (owner.data()?.deletingAccount || current.data()?.status !== "completed") throw new HttpsError("failed-precondition", "Önce belge hazırlığını tamamlayın.");
     const previous = current.data()?.ai as (AiJob & { fingerprint?: string; quotaDay?: string }) | undefined;
+    if (syntheticExpiresAt !== undefined && syntheticExpiresAt <= Date.now()) {
+      throw new HttpsError("permission-denied", "Sentetik prova yetkisinin süresi doldu.");
+    }
     const reused = reuseAnalysis(previous, fingerprint, now);
     if (reused) return reused;
+    if (syntheticExpiresAt !== undefined && previous) {
+      throw new HttpsError("resource-exhausted", "Bu sentetik prova için tek deneme hakkı kullanıldı.", { analysisLimit: "attempts" });
+    }
     if (artifactAttempt !== undefined && current.data()?.artifactAttempt !== artifactAttempt) {
       throw new HttpsError("failed-precondition", "Belge hazırlığı bu sırada değişti. Tabloyu yeniden seçin.", { analysisFailure: "invalid-data" });
     }
@@ -150,6 +158,7 @@ export interface StartAnalysisOptions {
   access?: AnalysisAccess;
   generate?: GeminiGenerate;
   readKey?: () => Promise<string>;
+  syntheticGrant?: SyntheticGrant;
 }
 
 // İstek doğrulama, rollout kapısı, Python hesabı, model çağrısı ve sonucu Atomik hata kaydıyla yürütür.
@@ -158,12 +167,19 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
   const parsed = startAnalysisSchema.safeParse(rawData);
   if (!parsed.success) throw new HttpsError("invalid-argument", "Analiz kapsamını kontrol edin.");
   const input = parsed.data;
+  const grant = options.syntheticGrant;
   const { data, ref } = await preparedAnalysis(uid, input.id);
   const access = options.access ?? tabularAnalysisAccess();
   if (access === "closed") throw new HttpsError("failed-precondition", "Analiz servisi şu anda kullanılamıyor.", { analysisFailure: "configuration" });
   if (access === "invite-required") throw new HttpsError("permission-denied", "Bu hesap tablo analizi betasına dahil değil.", { analysisAccess: access });
   const source = data.report.sources.find(source => source.id === input.sourceId && /\.(csv|xlsx)$/i.test(source.name));
   if (!source || !data.objective?.trim()) throw new HttpsError("failed-precondition", "Analiz için CSV veya XLSX tablosu ve bir hedef seçin.");
+  if (grant) {
+    assertSyntheticSource(grant, source, data);
+    if (!matchesSyntheticRequest(grant, input)) {
+      throw new HttpsError("permission-denied", "Sentetik prova yetkisi kapsamla eşleşmiyor.");
+    }
+  }
   if (input.checkOnly) {
     await verifyPreparedSelection(uid!, input.id, data.artifactAttempt, source, input.selection);
     return { id: input.id, status: "available" as const, checkOnly: true };
@@ -172,7 +188,7 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
   const reused = reuseAnalysis(data.ai, fingerprint, Date.now());
   if (reused) return { id: input.id, status: reused.state, reused: true };
   await verifyPreparedSelection(uid!, input.id, data.artifactAttempt, source, input.selection);
-  const reservation = await reserveAnalysis(uid!, input, fingerprint, Date.now(), data.artifactAttempt);
+  const reservation = await reserveAnalysis(uid!, input, fingerprint, Date.now(), data.artifactAttempt, grant?.expiresAt);
   if (reservation.state !== "started") return { id: input.id, status: reservation.state, reused: true };
   const job = reservation.job, bucket = getStorage().bucket(), startedAt = Date.now();
   const artifactPath = `derived/${uid}/analyses/${input.id}/ai/${job.attemptId}.json.gz`;
@@ -190,6 +206,11 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
     if (worker.document.sourceId !== source.id || worker.document.sha256 !== source.sha256 || worker.document.fileName !== source.name
       || worker.scope.sheet !== input.selection.sheet || worker.document.chunks.some(chunk => (chunk.locator.sheet ?? null) !== input.selection.sheet)
       || analysisFingerprint(source.sha256, source.id, worker.scope.selection, input.locale) !== fingerprint) throw new WorkerError("invalid-data");
+    if (grant) {
+      const fixture = trialFixtures[grant.format];
+      verifySyntheticLedger(worker, fixture, grant.sha256);
+      if (!verifySyntheticCells(worker, grant.format)) throw new WorkerError("invalid-data");
+    }
     const packet = createTabularPacket(input.id, data.objective, worker, input.locale);
     const artifactBase: Omit<AiArtifact, "result"> = { version: 1, sources: [worker.document], scope: worker.scope, locale: input.locale };
     assertAiArtifactSourceBudget(artifactBase);
@@ -209,6 +230,7 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
     }
     const result = await interpretTable(packet, input.locale, async request => {
       const started = Date.now();
+      if (grant && grant.expiresAt <= Date.now()) throw new HttpsError("permission-denied", "Sentetik prova yetkisinin süresi doldu.");
       const timeoutMs = budget(request.timeoutMs ?? GEMINI_LIMITS.analysisTimeoutMs);
       measurement.inputBytes = packet.inputBytes;
       measurement.model = emulator ? "emulator" : GEMINI_MODEL;
