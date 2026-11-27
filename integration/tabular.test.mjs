@@ -417,14 +417,17 @@ test("analiz kapalıyken belge hazırlama ve yeniden açma çalışır; AI işi,
   }
 });
 
-test("sağlayıcı hız sınırı ve timeout sonrası bekleme, korunmuş hazırlık ve manuel tekrar akışı", { timeout: 60000 }, async () => {
+test("sağlayıcı beklemesini hesaplar arasında korur ve süresi dolunca manuel tekrar çalışır", { timeout: 60000 }, async () => {
   assert.match(process.env.FIRESTORE_EMULATOR_HOST ?? "", /^127\.0\.0\.1:/);
   if (!getApps().length) initializeAdmin({ projectId: "demo-incagen", storageBucket: "demo-incagen.appspot.com" });
-  const { executeStartAnalysis } = require("./lib/analysis/tabular-jobs");
+  const { executeStartAnalysis, reserveAnalysis } = require("./lib/analysis/tabular-jobs");
   const { GeminiError } = require("./lib/analysis/gemini");
   const { getQuotaDay } = require("./lib/contracts");
 
   const own = await client(), db = getFirestore();
+  const pause = db.doc("internalAnalysisQuotas/provider-backoff");
+  const otherUid = crypto.randomUUID(), otherId = crypto.randomUUID();
+  const otherRecord = db.doc(`users/${otherUid}/analyses/${otherId}`);
   const prevEmu = process.env.FUNCTIONS_EMULATOR;
   const prevProj = process.env.GCLOUD_PROJECT;
   const body = Buffer.from("Channel,Revenue\nWeb,10.00\nStore,20.00\n");
@@ -472,6 +475,14 @@ test("sağlayıcı hız sınırı ve timeout sonrası bekleme, korunmuş hazırl
     assert.equal(docData.ai.retryAfter - docData.ai.finishedAt, 120_000);
     assert.equal(modelCalls, 1);
 
+    await otherRecord.set({ status: "completed" });
+    await assert.rejects(reserveAnalysis(otherUid, { id: otherId, sourceId: "file-0", selection, locale: "tr" }, "test-other"), {
+      code: "resource-exhausted", details: { analysisFailure: "provider-rate-limit", retryAfter: returnedDeadline },
+    });
+    assert.equal((await otherRecord.get()).data().ai, undefined);
+    assert.equal((await db.doc(`users/${otherUid}/aiQuotas/${getQuotaDay()}`).get()).exists, false);
+    assert.equal((await db.doc(`internalAnalysisQuotas/pacific-${geminiQuotaDay(Date.now())}`).get()).data().count, 1);
+
     // Bekleme süresi dolmadan tekrar deneme modeli çağırmadan reddedilir.
     await assert.rejects(
       executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, { access: "available", generate: limitedGenerator }),
@@ -479,27 +490,32 @@ test("sağlayıcı hız sınırı ve timeout sonrası bekleme, korunmuş hazırl
     );
     assert.equal(modelCalls, 1);
 
-    // 2. Deneme: Bekleme süresi dolduktan sonra timeout durumu oluşur ve dosya hâlâ hazır kalır.
+    // Paralel bir yanıt daha uzun bekleme kaydetmişse kısa kapasite hatası onu kısaltamaz.
     await recordRef.update({ "ai.retryAfter": Date.now() - 1 });
+    await pause.update({ retryAfter: Date.now() - 1 });
+    const longerPause = Date.now() + 120_000;
     await assert.rejects(
       executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, {
         access: "available",
         generate: async () => {
           modelCalls += 1;
-          throw new GeminiError("timeout");
+          await pause.set({ reason: "provider-rate-limit", retryAfter: longerPause });
+          throw new GeminiError("busy");
         },
       }),
-      error => error.code === "failed-precondition" && error.details?.analysisFailure === "timeout" && Number.isFinite(error.details.retryAfter)
+      error => error.code === "failed-precondition" && error.details?.analysisFailure === "provider-busy" && Number.isFinite(error.details.retryAfter)
     );
     docData = (await recordRef.get()).data();
     assert.equal(docData.ai.status, "failed");
-    assert.equal(docData.ai.error, "timeout");
+    assert.equal(docData.ai.error, "provider-busy");
     assert.equal(docData.ai.retryAfter - docData.ai.finishedAt, 30_000);
+    assert.equal((await pause.get()).data().retryAfter, longerPause);
     assert.equal(docData.ai.attempts, 2);
     assert.equal(modelCalls, 2);
 
     // 3. Deneme: Bekleme sonrası başarılı manuel yeniden deneme raporu kaydeder.
     await recordRef.update({ "ai.retryAfter": Date.now() - 1 });
+    await pause.update({ retryAfter: Date.now() - 1 });
     let sentBytes;
     const done = await executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, {
       access: "available",
@@ -521,13 +537,17 @@ test("sağlayıcı hız sınırı ve timeout sonrası bekleme, korunmuş hazırl
     assert.equal(modelCalls, 3);
     assert.ok(sentBytes > 0);
     assert.equal(docData.ai.inputBytes, sentBytes);
+    await pause.set({ reason: "provider-busy", retryAfter: Date.now() + 30_000 });
+    const reused = await executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, { access: "available" });
+    assert.deepEqual(reused, { id, status: "completed", reused: true });
   } finally {
     if (prevEmu === undefined) delete process.env.FUNCTIONS_EMULATOR;
     else process.env.FUNCTIONS_EMULATOR = prevEmu;
     if (prevProj === undefined) delete process.env.GCLOUD_PROJECT;
     else process.env.GCLOUD_PROJECT = prevProj;
     const day = getQuotaDay(new Date());
-    await db.doc(`internalAnalysisQuotas/${day}`).delete().catch(() => {});
+    await db.doc(`internalAnalysisQuotas/pacific-${geminiQuotaDay(Date.now())}`).delete().catch(() => {});
+    await Promise.all([pause.delete(), otherRecord.delete()]);
     if (own.auth.currentUser?.uid) await db.doc(`users/${own.auth.currentUser.uid}/aiQuotas/${day}`).delete().catch(() => {});
     if (id) await own.call("deleteAnalysis", { id }).catch(() => {});
     await deleteApp(own.app);

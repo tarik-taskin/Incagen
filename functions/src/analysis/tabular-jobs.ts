@@ -219,6 +219,13 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
     const disposition = await getFirestore().runTransaction(async tx => {
       const current = await tx.get(ref);
       const next = failureDisposition(current.data(), job.attemptId, artifactPath, savedHash);
+      if (next === "fail" && failureDetails.retryAfter !== undefined && (failure === "provider-busy" || failure === "provider-rate-limit")) {
+        const backoff = getFirestore().doc(providerBackoffPath);
+        const previous = (await tx.get(backoff)).data();
+        if (!Number.isFinite(previous?.retryAfter) || previous!.retryAfter < failureDetails.retryAfter) {
+          tx.set(backoff, { reason: failure, retryAfter: failureDetails.retryAfter });
+        }
+      }
       if (next === "fail") tx.update(ref, { ai: { ...job, status: "failed", finishedAt, error: failure, durationMs: finishedAt - startedAt,
         ...(failureDetails.retryAfter !== undefined ? { retryAfter: failureDetails.retryAfter } : {}) }, updatedAt: finishedAt });
       return next;
