@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { createAcceptanceJournal, createTabularAcceptanceEmail, writePrivateJson } from "./acceptance-resources.mjs";
 import { tabularFixture } from "./tabular-synthetic-fixtures.mjs";
-import { verifyGitStatus } from "./verify-release.mjs";
+import { runReleaseVerification, verifyGitStatus } from "./verify-release.mjs";
+import { callerIdentity, closedBackendPlan, cloudRequest, inspectClosedEnvironment, revisionScope } from "./closed-backend.mjs";
 import { closeSync, constants, existsSync, fstatSync, lstatSync, mkdirSync, openSync, readFileSync, readSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -26,15 +27,18 @@ export function configuration(mode, env = process.env, readEnvFile = () => readF
   assert.equal(optIn, "1", "Explicit opt-in required for the selected acceptance mode.");
   assert.ok(!env.FUNCTIONS_EMULATOR && !env.FIRESTORE_EMULATOR_HOST && !env.FIREBASE_AUTH_EMULATOR_HOST
     && !env.FIREBASE_STORAGE_EMULATOR_HOST && !env.STORAGE_EMULATOR_HOST, "Cloud acceptance cannot use emulator configuration.");
+  const synthetic = env.INCAGEN_ACCEPTANCE_ROUTE === "synthetic";
+  assert.ok(env.INCAGEN_ACCEPTANCE_ROUTE === undefined || (synthetic && mode !== "closed"), "Unexpected acceptance route.");
   const url = new URL(env.INCAGEN_ACCEPTANCE_URL || "");
   const local = url.protocol === "http:" && url.hostname === "127.0.0.1";
   const deployed = url.protocol === "https:" && !url.port && (/^[a-f0-9]+--incagen\.netlify\.app$/.test(url.hostname)
-    || (mode === "closed" && url.hostname === "incagen.netlify.app"));
+    || ((mode === "closed" || synthetic) && url.hostname === "incagen.netlify.app"));
   assert.ok((local || deployed) && !url.username && !url.password && url.pathname === "/" && !url.search && !url.hash,
     "Unexpected acceptance URL.");
+  if (synthetic) assert.equal(url.origin, "https://incagen.netlify.app", "Synthetic report acceptance requires production package parity.");
   const values = Object.fromEntries(readEnvFile().split(/\r?\n/).filter(line => /^VITE_FIREBASE_/.test(line)).map(line => { const at = line.indexOf("="); return [line.slice(0, at), line.slice(at + 1).trim().replace(/^['"]|['"]$/g, "")]; }));
   assert.equal(values.VITE_FIREBASE_PROJECT_ID, PROJECT);
-  return { url: url.origin, firebase: { apiKey: values.VITE_FIREBASE_API_KEY, authDomain: values.VITE_FIREBASE_AUTH_DOMAIN, projectId: PROJECT, storageBucket: values.VITE_FIREBASE_STORAGE_BUCKET, appId: values.VITE_FIREBASE_APP_ID } };
+  return { url: url.origin, ...(synthetic ? { synthetic } : {}), firebase: { apiKey: values.VITE_FIREBASE_API_KEY, authDomain: values.VITE_FIREBASE_AUTH_DOMAIN, projectId: PROJECT, storageBucket: values.VITE_FIREBASE_STORAGE_BUCKET, appId: values.VITE_FIREBASE_APP_ID } };
 }
 
 // CLI modu seçilen azami vaka sayısını belirler. Geçersiz bayrak ücretli moda düşmez.
@@ -323,7 +327,7 @@ export function writePendingHumanReviewFile(outputDirectory, fileName, reviewInp
 }
 
 // Koşu sonunda acceptance.json, runs.json ve insan inceleme dosyalarını yazar; doğrulama başarısızsa acceptance'ı failed işaretler.
-export function finalizeAcceptanceEvidence({ outputDirectory, mode, gitCommit, failure, results, reports, cleanupStatus, closedChecks }) {
+export function finalizeAcceptanceEvidence({ outputDirectory, mode, gitCommit, failure, results, reports, cleanupStatus, closedChecks, synthetic }) {
   const expectedCount = expectedAcceptanceCases(mode).length;
   const acceptance = {
     schemaVersion: 2,
@@ -334,6 +338,7 @@ export function finalizeAcceptanceEvidence({ outputDirectory, mode, gitCommit, f
     caseCount: expectedCount,
     completedReportCount: results.filter(run => run.status === "completed").length,
     humanReviewRequired: mode !== "closed",
+    ...(synthetic ? { route: "synthetic-report" } : {}),
     cleanup: cleanupStatus,
     reports,
     ...(closedChecks === undefined ? {} : { closedChecks }),
@@ -462,6 +467,7 @@ export function verifyAcceptanceEvidence(outputDirectory, options = {}) {
     return failed("Kabul kanıtı sürümü veya aşaması desteklenmiyor.");
   }
   if (!["closed", "smoke", "full"].includes(acceptance.mode)) return failed("Geçersiz kabul modu.");
+  if (acceptance.route !== undefined && (acceptance.route !== "synthetic-report" || acceptance.mode === "closed")) return failed("Geçersiz kabul yolu.");
   let closedChecks;
   try { closedChecks = verifyClosedChecks(acceptance); }
   catch (error) { return failed(error.message); }
@@ -549,6 +555,7 @@ export function verifyAcceptanceEvidence(outputDirectory, options = {}) {
     legacy: false,
     gitCommit: commitIsValid ? acceptance.gitCommit : null,
     mode: acceptance.mode,
+    ...(acceptance.route ? { route: acceptance.route } : {}),
     reportCount: acceptance.reports.length,
     closedChecks,
     verifiedReports,
@@ -559,10 +566,14 @@ export function verifyAcceptanceEvidence(outputDirectory, options = {}) {
 }
 
 // Yeni arayüz aynı gerçek kayıtla açılır; okuma/yenileme/kaynak inceleme yeni model çağrısı yapmaz.
-async function checkBrowser(account, baseURL, { closed, outputDirectory }) {
+async function checkBrowser(account, baseURL, { closed, outputDirectory, format = "csv" }) {
   const browser = await chromium.launch();
   try {
     const page = await browser.newPage({ reducedMotion: "reduce" });
+    let modelRequests = 0;
+    page.on("request", request => {
+      if (["/startAnalysis", "/checkGemini"].some(path => new URL(request.url()).pathname.endsWith(path))) modelRequests++;
+    });
     await page.goto(baseURL);
     assert.equal(new URL(page.url()).origin, baseURL, "Acceptance site redirected outside the configured origin.");
     await page.getByRole("button", { name: "Analize başla", exact: true }).click();
@@ -584,22 +595,55 @@ async function checkBrowser(account, baseURL, { closed, outputDirectory }) {
     await page.goto(`${baseURL}/app/analyses/${account.ids[0]}`);
     const report = page.getByRole("region", { name: "Analiz raporu", exact: true });
     await report.waitFor({ timeout: 30000 });
-    assert.match(await report.innerText(), /19\.000,50 USD/);
+    const csv = format === "csv";
+    const expectedMetric = csv ? /19\.000,50 USD/ : /40,00 EUR/;
+    const input = await fixture(format);
+    const label = input.points[0][0];
+    assert.match(await report.innerText(), expectedMetric);
     await report.getByText("Veri tablosu", { exact: true }).click();
-    await report.getByRole("button", { name: "Cloud kaynağı", exact: true }).click();
-    const dialog = page.getByRole("dialog", { name: "Cloud", exact: true });
-    await dialog.waitFor(); assert.match(await dialog.getByRole("table").innerText(), /-500\.10/);
-    assert.ok(!(await dialog.getByRole("table").innerText()).includes("Consulting"));
+    await report.getByRole("button", { name: `${label} kaynağı`, exact: true }).click();
+    const dialog = page.getByRole("dialog", { name: label, exact: true });
+    await dialog.waitFor();
+    const sourceRows = await dialog.getByRole("table").innerText();
+    if (csv) {
+      assert.match(sourceRows, /-500\.10/);
+      assert.ok(!sourceRows.includes("Consulting"));
+    } else {
+      assert.match(sourceRows, /\b90\b/);
+      assert.ok(!sourceRows.includes("999999"));
+      assert.match(await dialog.innerText(), /Services/);
+    }
     const downloadEvent = page.waitForEvent("download", { timeout: 30000 });
     await dialog.getByRole("button", { name: "Özgün belgeyi indir", exact: true }).click();
     const download = await downloadEvent;
-    assert.equal(download.suggestedFilename(), "synthetic-service-revenue.csv");
-    assert.equal(createHash("sha256").update(readFileSync(await download.path())).digest("hex"), createHash("sha256").update((await fixture("csv")).bytes).digest("hex"));
+    assert.equal(download.suggestedFilename(), input.name);
+    const expectedHash = account.sourceSha256 ?? createHash("sha256").update(input.bytes).digest("hex");
+    assert.equal(createHash("sha256").update(readFileSync(await download.path())).digest("hex"), expectedHash);
     await page.keyboard.press("Escape"); await page.reload(); await report.waitFor({ timeout: 30000 });
-    assert.match(await report.innerText(), /19\.000,50 USD/);
-    await page.screenshot({ path: join(outputDirectory, "report.png"), fullPage: true });
-    console.log(JSON.stringify({ browser: "real-source-report-reload", status: "passed" }));
+    assert.match(await report.innerText(), expectedMetric);
+    assert.equal(modelRequests, 0, "Stored report viewing must not start another model call.");
+    await page.screenshot({ path: join(outputDirectory, format === "csv" ? "report.png" : "report-xlsx.png"), fullPage: true });
+    console.log(JSON.stringify({ browser: "real-source-report-reload", format, modelRequests, status: "passed" }));
   } finally { await browser.close(); }
+}
+
+// Sentetik rapor provası gerçek uçları ve kapalı tarayıcı paketini aynı SHA ile doğrulamadan hesap oluşturmaz.
+async function verifySyntheticRelease(config, gitCommit) {
+  const [front, backend, diagnostic] = await Promise.all([
+    runReleaseVerification([`--site-url=${config.url}`]), closedBackendPlan(["--live"]),
+    cloudRequest()(`https://cloudfunctions.googleapis.com/v2/${revisionScope}/functions/checkGemini`),
+  ]);
+  assert.ok(front.liveVerified && front.commit === gitCommit && backend.liveVerified && backend.analysisEnabled === false
+    && backend.functions.every(endpoint => endpoint.releaseCommit === gitCommit), "Synthetic release mismatch.");
+  const service = diagnostic.serviceConfig;
+  const { workerOrigin } = inspectClosedEnvironment(readFileSync(`functions/.env.${PROJECT}`, "utf8"));
+  assert.ok(diagnostic.state === "ACTIVE" && service?.serviceAccountEmail === callerIdentity
+    && service.maxInstanceCount === 1 && service.maxInstanceRequestConcurrency === 1 && service.timeoutSeconds === 330
+    && service.environmentVariables?.INCAGEN_BACKEND_RELEASE_SHA === gitCommit
+    && service.environmentVariables?.INCAGEN_TABULAR_ANALYSIS_ENABLED === "false"
+    && service.environmentVariables?.INCAGEN_PYTHON_WORKER_URL?.replace(/\/$/, "") === workerOrigin
+    && !Object.hasOwn(service.environmentVariables, "GEMINI_API_KEY")
+    && !service.secretEnvironmentVariables?.some(secret => secret.key === "GEMINI_API_KEY"), "Synthetic diagnostic revision mismatch.");
 }
 
 // Kapalı mod iki formatı dener. Canlı model modları ilk hatada durur ve yalnız koşunun hesaplarını temizler.
@@ -607,6 +651,8 @@ async function main(args) {
   const mode = acceptanceMode(args);
   const config = configuration(mode);
   const gitCommit = resolveAcceptanceGitCommit();
+  const synthetic = config.synthetic === true;
+  if (synthetic) await verifySyntheticRelease(config, gitCommit);
   const accounts = [], results = [], reports = [], cleanupErrors = [];
   const journal = createAcceptanceJournal("tabular");
   const outputDirectory = journal.path.replace(/\.json$/, "-evidence");
@@ -614,25 +660,32 @@ async function main(args) {
   const closed = mode === "closed";
   const cases = closed ? closedFormats.map(format => ({ locale: "tr", format })) : expectedAcceptanceCases(mode);
   const closedChecks = closed ? [] : undefined;
-  let failure;
-  console.log(JSON.stringify({ phase: "start", mode, gitCommit, caseCount: cases.length, outputDirectory, journal: journal.path }));
+  let failure, isolationAccount;
+  const browserAccounts = new Map();
+  // Her sentetik prova hesabı oluşturulduğu anda günlüğe girer ve yalnız tek rapor yetkisi alabilir.
+  async function createAccount() {
+    const app = initializeApp(config.firebase, `live-table-${randomUUID()}`);
+    const email = createTabularAcceptanceEmail();
+    const password = `Synthetic-${randomUUID()}!`;
+    const account = { app, email, password, ids: [] }; accounts.push(account);
+    const created = await createUserWithEmailAndPassword(getAuth(app), email, password); account.uid = created.user.uid;
+    journal.account(account.uid);
+    if (!closed && !synthetic) {
+      await journal.grantTabularBeta(account.uid, email);
+      const refreshed = await created.user.getIdTokenResult(true);
+      assert.equal(refreshed.claims.incagenTabularBeta, true, "Synthetic beta token did not refresh.");
+    }
+    return account;
+  }
+  console.log(JSON.stringify({ phase: "start", mode, gitCommit, caseCount: cases.length, outputDirectory, journal: journal.path,
+    ...(synthetic ? { route: "synthetic-report" } : {}) }));
   try {
-    for (let index = 0; index < Math.ceil(cases.length / 2); index++) {
-      const app = initializeApp(config.firebase, `live-table-${randomUUID()}`);
-      const email = createTabularAcceptanceEmail();
-      const password = `Synthetic-${randomUUID()}!`;
-      const account = { app, email, password, ids: [] }; accounts.push(account);
-      const created = await createUserWithEmailAndPassword(getAuth(app), email, password); account.uid = created.user.uid;
-      journal.account(account.uid);
-      if (!closed) {
-        await journal.grantTabularBeta(account.uid, email);
-        const refreshed = await created.user.getIdTokenResult(true);
-        assert.equal(refreshed.claims.incagenTabularBeta, true, "Synthetic beta token did not refresh.");
-      }
+    if (!synthetic) {
+      for (let index = 0; index < Math.ceil(cases.length / 2); index++) await createAccount();
     }
     for (let index = 0; index < cases.length; index++) {
       const accountIndex = Math.floor(index / 2);
-      const account = accounts[accountIndex];
+      const account = synthetic ? await createAccount() : accounts[accountIndex];
       const { locale, format, caseId } = cases[index];
       const input = await fixture(format);
       const sourceSha256 = createHash("sha256").update(input.bytes).digest("hex");
@@ -644,7 +697,8 @@ async function main(args) {
       const catalog = (await call(account, "getAnalysisTables", { id: created.id })).data;
       verifyPreparedCatalog(catalog, input);
       const request = { id: created.id, sourceId: "file-0", selection: input.selection, locale };
-      await checkAdmission(mode, catalog.access, request, async data => (await call(account, "startAnalysis", data)).data);
+      const ordinaryStart = async data => (await call(account, "startAnalysis", data)).data;
+      if (!synthetic) await checkAdmission(mode, catalog.access, request, ordinaryStart);
       if (closed) {
         const record = (await getDoc(doc(getFirestore(account.app), `users/${account.uid}/analyses/${created.id}`))).data();
         assert.equal(record.ai, undefined, "Closed rollout must not reserve a paid job.");
@@ -652,8 +706,20 @@ async function main(args) {
           access: catalog.access, paidJobReserved: false, modelCalls: 0 });
         continue;
       }
-      if (mode === "full") {
-        const other = accounts[(accountIndex + 1) % accounts.length];
+      if (synthetic) {
+        const grant = await journal.grantSyntheticReport(account.uid, account.email, { id: created.id, sha256: sourceSha256, format, locale });
+        const { claims } = await getAuth(account.app).currentUser.getIdTokenResult(true);
+        assert.deepEqual(claims.incagenSyntheticReport, grant);
+        assert.equal(claims.incagenTabularBeta, undefined);
+        assert.equal(claims.incagenDeveloper, undefined);
+        await checkAdmission("closed", catalog.access, request, ordinaryStart);
+        assert.equal((await getDoc(doc(getFirestore(account.app), `users/${account.uid}/analyses/${created.id}`))).data().ai, undefined);
+        account.sourceSha256 = sourceSha256;
+      }
+      const start = synthetic ? async () => (await call(account, "checkGemini", { syntheticReportId: created.id })).data
+        : () => ordinaryStart(request);
+      if (mode === "full" || synthetic) {
+        const other = synthetic ? (isolationAccount ??= await createAccount()) : accounts[(accountIndex + 1) % accounts.length];
         await assert.rejects(call(other, "getAnalysisResult", { id: created.id }), { code: "functions/not-found" });
       }
       console.log(JSON.stringify({ phase: "real-model-start", run: index + 1, locale, format, caseId }));
@@ -661,13 +727,15 @@ async function main(args) {
       const runId = randomUUID();
       let job, artifact;
       try {
-        await call(account, "startAnalysis", request);
+        const started = await start();
+        if (synthetic) assert.deepEqual(started, { id: created.id, status: "completed", reused: false });
         const record = (await getDoc(recordRef)).data();
         job = record?.ai;
         artifact = (await call(account, "getAnalysisResult", { id: created.id })).data;
         checkResult(artifact, record, input, created.id, locale);
-        if (mode === "full") {
-          const cached = (await call(account, "startAnalysis", request)).data;
+        if (synthetic) await assert.rejects(call(isolationAccount, "getAnalysisResult", { id: created.id }), { code: "functions/not-found" });
+        if (mode === "full" || synthetic) {
+          const cached = await start();
           assert.equal(cached.reused, true);
           assert.equal((await getDoc(recordRef)).data().ai.attempts, 1);
         }
@@ -687,9 +755,12 @@ async function main(args) {
       results.push(usageRecord({ runId, gitCommit, caseId, locale, format, sourceSha256, reportFile, reportSha256, job, passed: true }));
       reports.push({ runId, gitCommit, caseId, format, locale, sourceSha256, reportId: created.id, reportFile, reportSha256, humanReviewFile, status: "completed" });
       writePrivateJson(join(outputDirectory, "runs.json"), results);
+      if (!browserAccounts.has(format)) browserAccounts.set(format, account);
       console.log(JSON.stringify({ phase: "real-model-passed", run: index + 1, locale, aggregate: input.total, durationMs: job.durationMs, tokens: job.usage.totalTokens }));
     }
-    await checkBrowser(accounts[0], config.url, { closed, outputDirectory });
+    if (synthetic) {
+      for (const [format, account] of browserAccounts) await checkBrowser(account, config.url, { closed, outputDirectory, format });
+    } else await checkBrowser(accounts[0], config.url, { closed, outputDirectory });
     if (closed) {
       for (const check of closedChecks) check.browserVerified = true;
       console.log(JSON.stringify({ phase: "closed-rollout", formats: closedFormats, paidJobReserved: false, modelCalls: 0, status: "passed" }));
@@ -722,7 +793,7 @@ async function main(args) {
       }
     } catch (error) { failure ??= error; }
     if (!failure && results.length !== (closed ? 0 : cases.length)) failure = new Error("Acceptance case count mismatch.");
-    const finalized = finalizeAcceptanceEvidence({ outputDirectory, mode, gitCommit, failure, results, reports, cleanupStatus, closedChecks });
+    const finalized = finalizeAcceptanceEvidence({ outputDirectory, mode, gitCommit, failure, results, reports, cleanupStatus, closedChecks, synthetic });
     failure = finalized.failure;
     console.log(JSON.stringify({ phase: "cleanup", status: cleanupStatus, accounts: accountCount, evidenceVerified: finalized.verification.verified }));
     console.log(JSON.stringify(finalized.acceptance));

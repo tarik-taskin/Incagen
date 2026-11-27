@@ -624,3 +624,14 @@ test("closed verification and paid preflight can only issue an explicit read-onl
   }));
   assert.equal(attempts, 4);
 });
+
+
+test("scoped synthetic acceptance is opt-in and targets only the closed production package", () => {
+  const config = () => "VITE_FIREBASE_PROJECT_ID=incagen-eeef4\n";
+  const env = { INCAGEN_LIVE_MODEL_ACCEPTANCE: "1", INCAGEN_ACCEPTANCE_ROUTE: "synthetic", INCAGEN_ACCEPTANCE_URL: "https://incagen.netlify.app" };
+  assert.equal(configuration("smoke", env, config).synthetic, true);
+  assert.throws(() => configuration("smoke", { ...env, INCAGEN_LIVE_MODEL_ACCEPTANCE: undefined }, config), /opt-in/);
+  assert.throws(() => configuration("full", { ...env, INCAGEN_ACCEPTANCE_URL: "http://127.0.0.1:4177" }, config), /production package parity/);
+  assert.throws(() => configuration("closed", { ...env, INCAGEN_CLOUD_CLOSED_ACCEPTANCE: "1" }, config), /Unexpected acceptance route/);
+  assert.throws(() => configuration("full", { ...env, INCAGEN_ACCEPTANCE_ROUTE: "arbitrary" }, config), /Unexpected acceptance route/);
+});

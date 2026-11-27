@@ -110,3 +110,26 @@ test("refuses to replace existing claims or update an account that does not matc
     assert.deepEqual(saved.accounts, [{ uid, ids: [], tabularBetaGrant: "attempted" }]);
   }
 });
+
+
+test("grants short-lived report access only to the exact single journal record", async t => {
+  const journal = createAcceptanceJournal("tabular", directory(t));
+  const email = `table-${id}@example.test`;
+  const scope = { id, format: "xlsx", locale: "de", sha256: "a".repeat(64) };
+  journal.account(uid);
+  const calls = [];
+  const admin = async (url, options) => {
+    calls.push([url, JSON.parse(options.body)]);
+    return new Response(JSON.stringify(url.endsWith(":lookup") ? { users: [{ localId: uid, email }] } : {}));
+  };
+  await assert.rejects(journal.grantSyntheticReport(uid, email, scope, admin), /Invalid synthetic report scope/);
+  journal.analysis(uid, id);
+  await assert.rejects(journal.grantSyntheticReport(uid, email, { ...scope, format: "pdf" }, admin), /Invalid synthetic report scope/);
+  assert.equal(calls.length, 0);
+  const grant = await journal.grantSyntheticReport(uid, email, scope, admin);
+  assert.ok(grant.expiresAt > Date.now() && grant.expiresAt <= Date.now() + 7 * 60_000);
+  assert.deepEqual(calls[1][1], { localId: uid, customAttributes: JSON.stringify({ incagenSyntheticReport: grant }) });
+  await assert.rejects(journal.grantSyntheticReport(uid, email, scope, admin), /Invalid synthetic report scope/);
+  await assert.rejects(journal.grantTabularBeta(uid, email, admin), /Invalid synthetic beta scope/);
+  assert.deepEqual(JSON.parse(readFileSync(journal.path)).accounts, [{ uid, ids: [id], syntheticReportGrant: "granted" }]);
+});

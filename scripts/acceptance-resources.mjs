@@ -61,25 +61,29 @@ export function createAcceptanceJournal(purpose, directory = resolve(".incagen-l
       assert.equal(state.purpose, "tabular");
       assert.equal(state.status, "pending");
       const account = state.accounts.find(item => item.uid === uid);
-      assert.ok(account && !account.tabularBetaGrant && isTabularAcceptanceEmail(email), "Invalid synthetic beta scope.");
+      assert.ok(account && !account.tabularBetaGrant && !account.syntheticReportGrant && isTabularAcceptanceEmail(email), "Invalid synthetic beta scope.");
       account.tabularBetaGrant = "attempted";
       persist();
 
-      const send = request ?? await metadataClient();
-      const authUrl = `https://identitytoolkit.googleapis.com/v1/projects/${PROJECT}/accounts`;
-      const lookup = await send(`${authUrl}:lookup`, { method: "POST", body: JSON.stringify({ localId: [uid] }) });
-      assert.equal(lookup.status, 200, "Synthetic beta lookup failed.");
-      const { users } = await lookup.json();
-      const found = Array.isArray(users) && users.length === 1 ? users[0] : null;
-      assert.ok(found?.localId === uid && found.email === email && found.disabled !== true, "Synthetic beta account mismatch.");
-      assert.ok([undefined, "", "{}"].includes(found.customAttributes), "Synthetic account already has custom claims.");
-      const update = await send(`${authUrl}:update`, {
-        method: "POST",
-        body: JSON.stringify({ localId: uid, customAttributes: JSON.stringify({ incagenTabularBeta: true }) }),
-      });
-      assert.equal(update.status, 200, "Synthetic beta grant failed.");
+      await assignSyntheticClaims(uid, email, { incagenTabularBeta: true }, request);
       account.tabularBetaGrant = "granted";
       persist();
+    },
+    // Açık beta claim'i vermeden tek kayıt ve kısa süre için sentetik rapor yetkisi üretir.
+    async grantSyntheticReport(uid, email, { id, sha256, format, locale }, request) {
+      assert.equal(state.purpose, "tabular");
+      assert.equal(state.status, "pending");
+      const account = state.accounts.find(item => item.uid === uid);
+      assert.ok(account && !account.syntheticReportGrant && !account.tabularBetaGrant && isTabularAcceptanceEmail(email)
+        && account.ids.length === 1 && account.ids[0] === id && typeof sha256 === "string" && /^[a-f0-9]{64}$/.test(sha256)
+        && ["csv", "xlsx"].includes(format) && ["tr", "en", "de", "es", "zh", "ar"].includes(locale), "Invalid synthetic report scope.");
+      account.syntheticReportGrant = "attempted";
+      persist();
+      const grant = { id, sha256, format, locale, expiresAt: Date.now() + 7 * 60_000 };
+      await assignSyntheticClaims(uid, email, { incagenSyntheticReport: grant }, request);
+      account.syntheticReportGrant = "granted";
+      persist();
+      return grant;
     },
     // Temiz işareti yalnız Auth, Firestore ve Storage metadata kontrollerinin tümü geçince yazılır.
     async verifyClean(config, request) {
@@ -88,6 +92,23 @@ export function createAcceptanceJournal(purpose, directory = resolve(".incagen-l
       state.status = "verified-clean"; persist();
     },
   };
+}
+
+// Her grant yalnız yeni, günlüğe bağlı sentetik hesabın boş claim alanına yazılır.
+async function assignSyntheticClaims(uid, email, claims, request) {
+  const send = request ?? await metadataClient();
+  const authUrl = `https://identitytoolkit.googleapis.com/v1/projects/${PROJECT}/accounts`;
+  const lookup = await send(`${authUrl}:lookup`, { method: "POST", body: JSON.stringify({ localId: [uid] }) });
+  assert.equal(lookup.status, 200, "Synthetic beta lookup failed.");
+  const { users } = await lookup.json();
+  const found = Array.isArray(users) && users.length === 1 ? users[0] : null;
+  assert.ok(found?.localId === uid && found.email === email && found.disabled !== true, "Synthetic beta account mismatch.");
+  assert.ok([undefined, "", "{}"].includes(found.customAttributes), "Synthetic account already has custom claims.");
+  const update = await send(`${authUrl}:update`, {
+    method: "POST",
+    body: JSON.stringify({ localId: uid, customAttributes: JSON.stringify(claims) }),
+  });
+  assert.equal(update.status, 200, "Synthetic beta grant failed.");
 }
 
 // Firebase CLI yetkisi yalnız bellekte kalır; özel anahtar veya sağlayıcı sırrı okunmaz.

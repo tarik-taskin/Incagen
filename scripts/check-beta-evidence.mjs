@@ -43,6 +43,7 @@ function inspectEvidence(directory, expectedCommit) {
     status: evidence.status,
     mechanicalVerified: evidence.verified,
     mode: evidence.mode ?? evidence.readOnlySummary?.mode ?? null,
+    ...(evidence.route ? { route: evidence.route } : {}),
     gitCommit: evidence.gitCommit ?? null,
     commitMatched,
     reviews,

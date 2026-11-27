@@ -7,6 +7,41 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M3 — İlk kaynaklı tablo analizi
 
+### 2026-11-27 — Furkan / Codex: kapalı üretimde kaynaklı kullanıcı raporu provası
+
+- [x] Sahip: Furkan — 1. Geliştirici callable girişine yalnız iç kabul kapsamındaki rapor provası seçeneğini ekle.
+- [x] Sahip: Furkan — 2. Normal geliştirici claim’iyle rapor provası başlamasın.
+- [x] Sahip: Furkan — 3. Geçici kabul kapsamını tek analiz UUID’si, dosya SHA’sı, dil, biçim ve süreye bağla.
+- [x] Sahip: Furkan — 4. Geçerli ve süresi dolmuş grant’leri sabit şemayla ayır.
+- [x] Sahip: Furkan — 5. Farklı kullanıcı veya analiz kimliğiyle çalışmayı reddet.
+- [x] Sahip: Furkan — 6. CSV ve Excel için kabul başlığını, hedefini, kaynak adını ve açık tablo seçimini sunucuda sabitle.
+- [x] Sahip: Furkan — 7. Prova hesabında bir dosyalık hazırlanmış sentetik kaynak şartını uygula.
+- [x] Sahip: Furkan — 8. Kapalı genel kullanıcı kapısını ve mevcut beta davetini koru.
+- [x] Sahip: Furkan — 9. Sentetik deneme için mevcut üretim analiz hesabı, kaynak okuma, Gemini ve kaydetme hattını kullan.
+- [x] Sahip: Furkan — 10. Prova rezervasyonunu mevcut kullanıcı ve proje bütçesine dahil et.
+- [x] Sahip: Furkan — 11. Başarısız aynı prova için ikinci ücretli denemeyi atomik olarak engelle.
+- [x] Sahip: Furkan — 12. Geçerli çalışan veya tamamlanmış provayı aynı kapsamda tekrar kullan.
+- [x] Sahip: Furkan — 13. Prova geçerlilik süresini rezervasyon transaction’ında tekrar denetle.
+- [x] Sahip: Furkan — 14. CSV’nin gerçek hesap, grup ve fiziksel kaynak sonuçlarını modele gitmeden eşleştir.
+- [x] Sahip: Furkan — 15. Excel’de seçilen sayfanın satır ağırlıklı ortalamasını ve gruplarını doğrula.
+- [x] Sahip: Furkan — 16. Modele giden hedef ve tablo özetini sabit sentetik kapsam içinde tut.
+- [x] Sahip: Furkan — 17. Kabul aracında yeni prova yolunu açık opt-in ile seç; eski kapalı ve davetli yolları koru.
+- [x] Sahip: Furkan — 18. Sentetik hesap ve provaya ait tek analiz kaydı doğrulanmadan geçici claim üretme.
+- [x] Sahip: Furkan — 19. Sentetik grant için yalnız bilinen yönetim çağrılarını ve UID’yi kullan.
+- [~] Sahip: Furkan — 20. Geçici claim yenilendikten sonra üretim kullanıcı kapısının hâlâ kapalı olduğunu doğrula.
+- [x] Sahip: Furkan — 21. Gerçek yükleme, hazırlık ve kaynak satırı eşliğini vaka başına doğrula.
+- [x] Sahip: Furkan — 22. Kaydedilen sonucu ortak rapor okuma ucundan doğrula.
+- [x] Sahip: Furkan — 23. Saklanan rapora aynı kapsamla dönmenin yeni model çağrısı doğurmadığını kanıtla.
+- [x] Sahip: Furkan — 24. Başka sentetik hesabın sonuç okumasının reddedildiğini doğrula.
+- [~] Sahip: Furkan — 25. Kapalı üretim arayüzünde kaydedilen raporu aç, yenile ve kaynağı denetle.
+- [x] Sahip: Furkan — 26. Vaka başına ölçümlü kaynak ve rapor kanıtını mevcut kabul formatına bağla.
+- [~] Sahip: Furkan — 27. Geçici hesap, claim, Firestore ve Storage temizliğini birlikte doğrula.
+- [x] Sahip: Furkan — 28. Yetki, süre, kaynak bağı ve tek rezervasyon için olumsuz regresyonları çalıştır.
+- [~] Sahip: Furkan — 29. Türkçe tek CSV gerçek uçtan uca prova koşusunu tamamla.
+- [~] Sahip: Furkan — 30. Altı dilde CSV/XLSX gerçek mekanik kalite ve kullanım kanıtını al.
+- [~] Sahip: Furkan — 31. İnsan incelemesini bekleyen karar olarak kaydet ve açık genel yayını engelle.
+- [~] Sahip: Furkan — 32. Aynı SHA’da GitHub Quality, Firebase ve Netlify kapalı yayın eşliğini doğrula.
+
 ### 2026-11-27 — Furkan / Codex: canlı sentetik tablo kabulü ve çalışma sınırları
 
 - [x] Sahip: Furkan — 1. Yeni Secret Manager sürümüyle gerçek 3.8 Flash bağlantısını doğrula ve geçici hesabı temizle. 27 Kasım’da callable 21.717 ms içinde beklenen sabit JSON’u döndürdü. Temizlik doğrulandı.
@@ -25,10 +60,10 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 14. Kaynak işinde sabit yayın süresinden kalan bütçeyi worker ve Gemini çağrılarına uygula.
 - [x] Sahip: Furkan — 15. Kaynak okumayı baştaki Storage nesil bilgisine ve gerçek okuma boyutuna bağla.
 - [x] Sahip: Furkan — 16. Hatalı analiz işletim kaydına güvenli aşama, süre ve sonuç kodu ekle.
-- [~] Sahip: Furkan — 17. Yeni teşhis revizyonunun özel worker ve kapalı backend ile eşliğini yayın metadata'sından doğrula.
-- [~] Sahip: Furkan — 18. Değişikliği model taklidi, gerçek Python, Firebase emülatörü ve mevcut tarayıcı yollarıyla regresyona al.
-- [~] Sahip: Furkan — 19. GitHub Quality ve Netlify eşliğini aynı SHA üzerinde doğrula.
-- [~] Sahip: Furkan — 20. Kapalı üretimde canlı sentetik tablo hattını ve temizliği doğrula. Tam kullanıcı/altı dil kabulünü ayrı tut.
+- [x] Sahip: Furkan — 17. Yeni teşhis revizyonunun özel worker ve kapalı backend ile eşliğini yayın metadata'sından doğrula.
+- [x] Sahip: Furkan — 18. Değişikliği model taklidi, gerçek Python, Firebase emülatörü ve mevcut tarayıcı yollarıyla regresyona al.
+- [x] Sahip: Furkan — 19. GitHub Quality ve Netlify eşliğini aynı SHA üzerinde doğrula.
+- [x] Sahip: Furkan — 20. Kapalı üretimde canlı sentetik tablo hattını ve temizliği doğrula. Tam kullanıcı/altı dil kabulünü ayrı tut.
 - [x] Sahip: Furkan — 21. Yerel kalite koşusunda doğrulanmış alternatif port bloğu seç.
 - [x] Sahip: Furkan — 22. Firebase test konfigürasyonunu yalnız o koşuya ait geçici dosyada hazırla.
 - [x] Sahip: Furkan — 23. Varsayılan Firebase ve Vite portlarıyla mevcut geliştirme akışını koru.
@@ -36,11 +71,13 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 25. Auth, Firestore, Storage ve Functions entegrasyon istemcilerini aynı port bloğuna bağla.
 - [x] Sahip: Furkan — 26. Demo tarayıcının Firebase servis adreslerini test koşusuyla eşleştir.
 - [x] Sahip: Furkan — 27. Playwright web sunucusunu seçilen portta kesin olarak bağla.
-- [~] Sahip: Furkan — 28. Ağ yakalama ve Firestore yaşam döngüsü senaryolarını seçilen portlarla çalıştır.
+- [x] Sahip: Furkan — 28. Ağ yakalama ve Firestore yaşam döngüsü senaryolarını seçilen portlarla çalıştır.
 - [x] Sahip: Furkan — 29. Alternatif portları yalnız demo modunda kullan ve geçersiz girişte dur.
 - [x] Sahip: Furkan — 30. Koşuya ait geçici konfigürasyonu başarı ve hata sonrasında kaldır.
-- [~] Sahip: Furkan — 31. Meşgul varsayılan portlara dokunmadan entegrasyon ve masaüstü/mobil koşularını doğrula.
+- [x] Sahip: Furkan — 31. Meşgul varsayılan portlara dokunmadan entegrasyon ve masaüstü/mobil koşularını doğrula.
 - [x] Sahip: Furkan — 32. Alternatif port komutunu ve beklenen erişim sınırını test rehberine ekle.
+
+32 işin canlı kanıtı `f76962e` üzerinde geçti. CSV 31 EUR ve Excel 40 EUR doğru kaynak satırlarına bağlandı. [GitHub Quality](https://github.com/tarik-taskin/Incagen/actions/runs/46024687702) ve Netlify yayın eşliği doğrulandı.
 
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 

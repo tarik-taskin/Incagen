@@ -33,6 +33,19 @@ Yerel, emülatör ve 26 Kasım kapalı canlı kanıtlarıyla birlikte ilk beta i
 | Hata izleme | Altyapı / Backend | Kodda sabit hata kodları (`AnalysisFailure`, `WorkerError`, `gemini-rejected-response`, `gemini-request-failed`) ham veri sızdırmadan test edildi. | GCP Cloud Monitoring üzerinde `startAnalysis` / Cloud Run 5xx, timeout ve reddedilen Gemini yanıtları için uyarı politikası kimliği ve test bildirimi kaydı. | Kod loglaması canlı uyarı politikası yerine geçmez (`kısmen doğrulandı`). |
 | Sınırlı beta yayını | Ürün + Güvenlik / Yayın | Ön yüz kapalı analiz bayraklarıyla (`VITE_TABULAR_ANALYSIS_ENABLED=false`) Netlify `verify:release` eşliği doğrulandı. | Beta kohort erişim kararı, ham/türetilmiş veri saklama (TTL) politikası ve kapalı mod dışına geçiş onayı. | Küçük kullanıcı grubunda ölçümlü açılış; mevcut hazırlık korunur. |
 
+## Kapalı üretimde kaydedilen rapor provası
+
+Sabit bağlantı ve tablo teşhisinden sonra normal kullanıcı analizi kapalıyken tek koşuya özel rapor provası yapılabilir. Ön koşul aynı Git SHA’sında Netlify paket eşliği, kapalı Firebase analiz uçları ve üretimdeki teşhis revizyonudur. Aracın geçici hesabına normal beta veya geliştirici yetkisi verilmez. Kısa ömürlü claim yalnız hazırlığı tamamlanan tek sentetik kayıt, dosya SHA’sı, biçim ve dil için geçerlidir.
+
+```bash
+INCAGEN_LIVE_MODEL_ACCEPTANCE=1 INCAGEN_ACCEPTANCE_ROUTE=synthetic \
+  INCAGEN_ACCEPTANCE_URL=https://incagen.netlify.app node scripts/accept-tabular-cloud.mjs --smoke
+```
+
+İlk gerçek CSV koşusu geçince `--smoke` kaldırılarak altı dilli mekanik paket alınabilir. Her vaka gerçek yükleme, hazırlık, kaynak satırı, iş rezervasyonu, aynı üretim Gemini adaptörü, saklanan sonuç, tekrar okuma ve temizlik kullanır. CSV ve XLSX raporlarının tarayıcıda açılması, kaynak indirmesinin SHA eşliği ve yenilemede yeni model isteği çıkmaması ayrıca doğrulanır. Altı vakalı mekanik koşuda en fazla altı model isteği vardır. İlk hatada koşu durur. Geçici claim bir kez başarısız olan vaka için yeni deneme hakkı vermez.
+
+Bu kanıtla birlikte `npm run acceptance:check` çıktısındaki insan incelemesi ve operasyon koşulları açık kaldığı sürece genel analiz kapalıdır.
+
 ## İnsan incelemesi kabul tablosu ve karar kaydı
 
 Mekanik kabul (`acceptance.json`) yalnız yapısal/sayısal/kaynak hash doğruluğunu kanıtlar; insan incelemesi ayrı karar nesnesiyle (`reportId`, `reportSha256`, `sourceSha256`, `locale` alanlarına bağlı `validateHumanReviewDecision`) kaydedilir. Sentetik anlatımla geçen testler bu insan kabulünü kapatmaz; gerçek model sonucu gelmeden insan incelemesi **`beklemede` (`pending`)** kalır. Ayrıntılı ölçüt tablosu [analiz rehberindedir](TABULAR-ANALYSIS.md#gerçek-rapor-insan-incelemesi-tablosu).
