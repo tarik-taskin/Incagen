@@ -6,7 +6,8 @@ export const GEMINI_MODEL = "gemini-3.8-flash";
 export const GEMINI_COMPARISON_MODEL = "gemini-3.6-flash";
 export const GEMINI_INTERACTION_TRANSPORTS = ["interactions", "interactions-priority", "interactions-comparison"] as const;
 export const GEMINI_LIMITS = { timeoutMs: 45_000, analysisTimeoutMs: 90_000, diagnosticTimeoutMs: 300_000, inputBytes: 256 * 1024, outputBytes: 64 * 1024 } as const;
-export type GeminiFailureCode = "not-configured" | "unavailable" | "busy" | "rate-limited" | "timeout" | "invalid-response" | "invalid-input";
+export type GeminiFailureCode = "not-configured" | "credential-rejected" | "unavailable" | "busy" | "rate-limited" | "timeout" | "invalid-response" | "invalid-input";
+export interface GeminiUsage { promptTokens: number; outputTokens: number; totalTokens: number }
 
 // Sağlayıcının ham hata/metinlerini ve anahtarı istemciye veya loglara taşımayan kontrollü hata.
 export class GeminiError extends Error {
@@ -15,7 +16,7 @@ export class GeminiError extends Error {
 export interface GeminiRequest {
   prompt: string; system: string; schema: unknown; maxOutputTokens: number;
   thinkingLevel?: "low" | "medium";
-  timeoutMs?: 45_000 | 90_000 | 300_000;
+  timeoutMs?: number;
   useDefaultTemperature?: true;
 }
 export type GeminiGenerate = (request: GeminiRequest) => Promise<string>;
@@ -27,15 +28,16 @@ function classifyGeminiError(error: unknown) {
   const message = error instanceof Error ? error.message : "";
   const timedOut = status === 408 || status === 504 || (error instanceof Error
     && ["AbortError", "TimeoutError", "RequestTimeoutError", "APIConnectionTimeoutError"].includes(error.name));
-  const code = status === 429 ? "rate-limited" : timedOut ? "timeout" : status === 503 ? "busy" : "unavailable";
+  const credentialRejected = status === 401 || status === 403 || (status === 400 && /\bAPI_KEY_(INVALID|EXPIRED)\b/.test(message));
+  const code = credentialRejected ? "credential-rejected" : status === 429 ? "rate-limited" : timedOut ? "timeout" : status === 503 ? "busy" : "unavailable";
   console.warn("gemini-request-failed", { status: typeof status === "number" && Number.isInteger(status) && status >= 100 && status <= 599 ? status : "unknown",
-    reason: code === "rate-limited" ? "rate-limit" : code === "timeout" ? "timeout"
+    reason: code === "rate-limited" ? "rate-limit" : code === "timeout" || code === "credential-rejected" ? code
       : code === "busy" && /overload|high demand|capacity/i.test(message) ? "capacity" : "provider" });
   return new GeminiError(code);
 }
 
 // Resmî SDK yalnız backend'de çalışır; otomatik ücretli retry, araç ve kod yürütme açılmaz.
-export function createGeminiGenerate(apiKey: string, onUsage?: (usage: { promptTokens: number; outputTokens: number; totalTokens: number }) => void): GeminiGenerate {
+export function createGeminiGenerate(apiKey: string, onUsage?: (usage: GeminiUsage) => void): GeminiGenerate {
   if (!apiKey.trim()) throw new GeminiError("not-configured");
   const client = new GoogleGenAI({ apiKey, httpOptions: { timeout: GEMINI_LIMITS.timeoutMs, retryOptions: { attempts: 1 } } });
   return async request => {

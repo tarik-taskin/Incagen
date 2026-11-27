@@ -40,6 +40,7 @@ async function deploy(args) {
       assert.ok(state === "ACTIVE" && config.timeoutSeconds === 330 && config.maxInstanceCount === 1
         && config.maxInstanceRequestConcurrency === 1 && config.serviceAccountEmail === callerIdentity
         && env?.INCAGEN_BACKEND_RELEASE_SHA === plan.commit && env.INCAGEN_TABULAR_ANALYSIS_ENABLED === "false"
+        && env.INCAGEN_PYTHON_WORKER_URL?.replace(/\/$/, "") === workerOrigin
         && !Object.hasOwn(env, "GEMINI_API_KEY") && !config.secretEnvironmentVariables?.some(secret => secret.key === "GEMINI_API_KEY"),
       "Canlı Gemini teşhisinin süre, kota veya sürüm bilgisi doğrulanamadı.");
       console.log(JSON.stringify({ ...released, targets, diagnosticRevision: config.revision }, null, 2));

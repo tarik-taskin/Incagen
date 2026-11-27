@@ -80,6 +80,14 @@ describe("Gemini backend boundary", () => {
     expect(JSON.stringify(warning.mock.calls)).not.toMatch(/private-key|document-content/);
     warning.mockRestore();
   });
+  it("reports the provider's invalid key reason without exposing its body", async () => {
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      sdk.generate.mockRejectedValue(Object.assign(new Error('API_KEY_INVALID: private body'), { status: 400 }));
+      await expect(checkGeminiConnection(createGeminiGenerate("synthetic-key"))).rejects.toThrow(/^Gemini: credential-rejected$/);
+      expect(warning).toHaveBeenCalledExactlyOnceWith("gemini-request-failed", { status: 400, reason: "credential-rejected" });
+    } finally { warning.mockRestore(); }
+  });
   it("records measured tokens before rejecting incomplete output, ignoring inconsistent measurements", async () => {
     const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
     const usage = vi.fn();
@@ -94,7 +102,7 @@ describe("Gemini backend boundary", () => {
       expect(usage).toHaveBeenCalledTimes(1);
     } finally { warning.mockRestore(); }
   });
-  it.each([[429, "rate-limited"], [503, "busy"], [408, "timeout"], [504, "timeout"], [400, "unavailable"], [403, "unavailable"]])("classifies HTTP %s without retrying or exposing provider bodies", async (status, code) => {
+  it.each([[429, "rate-limited"], [503, "busy"], [408, "timeout"], [504, "timeout"], [400, "unavailable"], [401, "credential-rejected"], [403, "credential-rejected"]])("classifies HTTP %s without retrying or exposing provider bodies", async (status, code) => {
     const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
     sdk.generate.mockRejectedValue(Object.assign(new Error("private provider body"), { status }));
     try {
@@ -154,6 +162,11 @@ describe("Gemini diagnostic authorization", () => {
     expect(() => requireGeminiDeveloper(auth, { prompt: "custom" }, now)).toThrow("serbest istem kabul etmez");
     expect(() => requireGeminiDeveloper(auth, { transport: "other" }, now)).toThrow("serbest istem kabul etmez");
     expect(requireGeminiDeveloper(auth, { transport: "interactions" }, now)).toBe("developer");
+    expect(requireGeminiDeveloper(auth, { tableFormat: "csv" }, now)).toBe("developer");
+    expect(requireGeminiDeveloper(auth, { tableFormat: "xlsx" }, now)).toBe("developer");
+    expect(() => requireGeminiDeveloper(auth, { tableFormat: "pdf" }, now)).toThrow("serbest istem kabul etmez");
+    expect(() => requireGeminiDeveloper(auth, { tableFormat: "csv", transport: "interactions" }, now)).toThrow("serbest istem kabul etmez");
+    expect(() => requireGeminiDeveloper(auth, { tableFormat: "csv", sourceId: "private" }, now)).toThrow("serbest istem kabul etmez");
     for (const auth_time of [0, "not-a-number", now / 1000 - 301, now / 1000 + 100]) {
       expect(() => requireGeminiDeveloper({ ...auth, token: { incagenDeveloper: true, auth_time } }, {}, now)).toThrow("Yeniden giriş");
     }

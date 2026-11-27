@@ -4,8 +4,11 @@ import { z } from "zod";
 import { checkGeminiConnection, checkGeminiInteractions, createGeminiGenerate, GeminiError, GEMINI_INTERACTION_TRANSPORTS, GEMINI_LIMITS } from "./gemini";
 import { readGeminiKey } from "./gemini-secret";
 import { geminiQuotaDay } from "./provider-calendar";
+import { probeSyntheticTable, syntheticTableFormats } from "./tabular-probe";
+import { WorkerError } from "./python-worker";
 
-const diagnosticInput = z.object({ transport: z.enum(GEMINI_INTERACTION_TRANSPORTS).optional() }).strict();
+const diagnosticInput = z.object({ transport: z.enum(GEMINI_INTERACTION_TRANSPORTS).optional(), tableFormat: z.enum(syntheticTableFormats).optional() })
+  .strict().refine(value => !(value.transport && value.tableFormat));
 const diagnosticLimits = { projectPerDay: 4, intervalMs: 60_000 } as const;
 
 // Maliyetli kontrol normal kullanıcılara kapalıdır; son giriş, UID ve geliştirici claim'i zorunludur.
@@ -49,17 +52,19 @@ export async function reserveGeminiDiagnostic(uid: string, now = Date.now(), pri
 export const checkGemini = onCall<z.infer<typeof diagnosticInput>>({ region: "europe-west1", timeoutSeconds: GEMINI_LIMITS.diagnosticTimeoutMs / 1000 + 30,
   memory: "256MiB", maxInstances: 1, concurrency: 1 }, async request => {
   const uid = requireGeminiDeveloper(request.auth, request.data);
-  const { transport } = request.data;
+  const { transport, tableFormat } = request.data;
   const priority = transport === "interactions-priority";
   try {
     const key = await readGeminiKey();
     await reserveGeminiDiagnostic(uid, Date.now(), priority);
+    if (tableFormat) return await probeSyntheticTable(tableFormat, onUsage => createGeminiGenerate(key, onUsage));
     if (transport) {
       return { ...await checkGeminiInteractions(key, transport), transport };
     }
     return await checkGeminiConnection(createGeminiGenerate(key));
   } catch (error) {
     if (error instanceof HttpsError) throw error;
+    if (error instanceof WorkerError) throw new HttpsError("unavailable", "Sentetik tablo hesabı doğrulanamadı.", { geminiFailure: "synthetic-calculation" });
     const missing = error instanceof GeminiError && error.code === "not-configured";
     throw new HttpsError(missing ? "failed-precondition" : "unavailable", missing ? "Gemini anahtarı henüz yapılandırılmadı." : "Gemini bağlantısı doğrulanamadı.",
       { geminiFailure: error instanceof GeminiError ? error.code : "unavailable" });

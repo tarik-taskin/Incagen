@@ -5,6 +5,8 @@ import { resolve } from "node:path";
 import { render, cleanup } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createTabularPacket, interpretTable } from "../functions/src/analysis/tabular-result";
+import { probeSyntheticTable } from "../functions/src/analysis/tabular-probe";
+import type { GeminiGenerate } from "../functions/src/analysis/gemini";
 import { workerResultSchema, type ResultLocale, type TableSelection, type WorkerResult } from "../functions/src/analysis/tabular-contract";
 import { parseCsvTablePreview } from "../functions/src/analysis/tabular-storage";
 import { parseDocument } from "../functions/src/parsing";
@@ -79,6 +81,34 @@ function runPythonWorker(bytes: Buffer, fileName: string, selection: TableSelect
   });
   return { status: child.status, body: JSON.parse(child.stdout) as { error?: string; result?: WorkerResult } };
 }
+
+const smokeNarrative = JSON.stringify({ summary: [{ text: "The selected group totals differ.", metricIds: ["aggregate"] }],
+  findings: [{ id: "finding-1", title: "Distribution", text: "Review the recorded amounts.", metricIds: ["aggregate"] }],
+  recommendations: [], limitations: ["Costs are unavailable in this table."] });
+
+it.each([["csv", 31], ["xlsx", 40]] as const)("runs the real Python ledger for the fixed %s provider smoke", async (format, aggregate) => {
+  const model = vi.fn<GeminiGenerate>(async () => smokeNarrative);
+  let tick = 0;
+  const result = await probeSyntheticTable(format, onUsage => async request => {
+    onUsage({ promptTokens: 120, outputTokens: 30, totalTokens: 150 });
+    return model(request);
+  }, async (bytes, _source, name, selection) => {
+    return workerResultSchema.parse(runPythonWorker(bytes, name, selection).body.result);
+  }, () => ++tick);
+  expect(result).toMatchObject({ tableFormat: format, rows: 3, groups: 2, aggregate, sourceRowsVerified: true, usage: { totalTokens: 150 } });
+  expect(model).toHaveBeenCalledOnce();
+  expect(result).not.toHaveProperty("summary");
+});
+
+it("rejects changed physical source evidence before dispatching the smoke to Gemini", async () => {
+  const model = vi.fn();
+  await expect(probeSyntheticTable("csv", model, async (bytes, _source, name, selection) => {
+    const worker = workerResultSchema.parse(runPythonWorker(bytes, name, selection).body.result);
+    worker.metrics[1].evidence[0].locator.rowStart = 1;
+    return worker;
+  })).rejects.toMatchObject({ code: "invalid-data" });
+  expect(model).not.toHaveBeenCalled();
+});
 
 // Çıktı içindeki kaynak kanıtlarının beklenen sayfa ve fiziksel satır aralığıyla birebir eşleşmesini doğrular.
 function collectPhysicalRows(

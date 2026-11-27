@@ -3,7 +3,21 @@ import test from "node:test";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadCloudDiagnosticConfig, resolveProbeResourcePath, runCloudProbe } from "./check-gemini-cloud.mjs";
+import { loadCloudDiagnosticConfig, resolveProbeResourcePath, runCloudProbe, verifyTableProbe } from "./check-gemini-cloud.mjs";
+
+test("validates and narrows real synthetic evidence to the selected fixture and coherent measurements", () => {
+  const result = { tableFormat: "csv", rows: 3, groups: 2, aggregate: 31, sourceRowsVerified: true,
+    pythonMs: 300, modelMs: 1200, durationMs: 1600, inputBytes: 400,
+    usage: { promptTokens: 100, outputTokens: 50, totalTokens: 150, arbitrary: "ignored" }, narrative: "ignored" };
+  const evidence = verifyTableProbe("csv", result);
+  assert.equal(evidence.aggregate, 31);
+  assert.equal(evidence.narrative, undefined);
+  assert.deepEqual(evidence.usage, { promptTokens: 100, outputTokens: 50, totalTokens: 150 });
+  for (const invalid of [{ aggregate: 30 }, { sourceRowsVerified: false }, { durationMs: 500 }, { modelMs: 0 }, { usage: undefined }]) {
+    assert.throws(() => verifyTableProbe("csv", { ...result, ...invalid }));
+  }
+  assert.throws(() => verifyTableProbe("xlsx", result));
+});
 
 const validConfig = {
   apiKey: "synthetic-web-key",

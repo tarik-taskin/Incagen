@@ -12,13 +12,28 @@ const PROJECT = "incagen-eeef4";
 const CALLABLE_TIMEOUT_MS = 340_000;
 const TRANSPORTS = new Set(["interactions", "interactions-priority", "interactions-comparison"]);
 const DEFAULT_PROBE_STATE_FILE = "/tmp/incagen-cloud-probe-resources.json";
-const ALLOWED_REASONS = new Set(["not-configured", "unavailable", "busy", "rate-limited", "timeout", "invalid-response", "invalid-input"]);
+const ALLOWED_REASONS = new Set(["not-configured", "credential-rejected", "synthetic-calculation", "unavailable", "busy", "rate-limited", "timeout", "invalid-response", "invalid-input"]);
+const TABLE_TOTALS = new Map([["csv", 31], ["xlsx", 40]]);
 const SAFE_CODE = /^(auth|functions)\/[a-z0-9-]+$|^(configuration-error|client-auth-failed|claim-assign-failed|token-refresh-failed|callable-failed|cleanup-failed|validation|diagnostic-failed)$/;
 
 // İzinli hata kodu dışındaki serbest hata/mesaj metinlerini çıktıda sabit güvenli koda indirger.
 export function safeCode(rawCode, fallback = "diagnostic-failed") {
   if (typeof rawCode === "string" && SAFE_CODE.test(rawCode)) return rawCode;
   return fallback;
+}
+
+// Doğrulanmış sentetik sonuçtan yalnız sabit sayısal kanıtı alır. Yanıt metni veya ek alanlar yayımlanmaz.
+export function verifyTableProbe(format, input) {
+  const { tableFormat, rows, groups, aggregate, sourceRowsVerified, pythonMs, modelMs, durationMs, inputBytes, usage } = input ?? {};
+  assert.ok(TABLE_TOTALS.has(format) && tableFormat === format && rows === 3 && groups === 2
+    && aggregate === TABLE_TOTALS.get(format) && sourceRowsVerified === true, "Unexpected synthetic table evidence.");
+  const { promptTokens, outputTokens, totalTokens } = usage ?? {};
+  assert.ok([pythonMs, modelMs, durationMs, inputBytes, promptTokens, outputTokens, totalTokens]
+    .every(value => Number.isSafeInteger(value) && value > 0)
+    && pythonMs + modelMs <= durationMs && promptTokens + outputTokens === totalTokens
+    && inputBytes <= 256 * 1024, "Unexpected synthetic measurements.");
+  return { tableFormat, rows, groups, aggregate, sourceRowsVerified, pythonMs, modelMs, durationMs, inputBytes,
+    usage: { promptTokens, outputTokens, totalTokens } };
 }
 
 // Çıktı için yalnız izinli sabit alanları tutar; ham hata mesajı, token veya kullanıcı verisi taşımaz.
@@ -34,6 +49,7 @@ export function formatDiagnosticSummary({
   cleanup,
   transport,
   serviceTier,
+  tableEvidence,
 }) {
   const summary = {
     probe: "cloud-connectivity",
@@ -44,6 +60,7 @@ export function formatDiagnosticSummary({
     ...(model === "gemini-3.8-flash" || model === "gemini-3.6-flash" ? { model } : {}),
     ...(TRANSPORTS.has(transport) ? { transport } : {}),
     ...(serviceTier === "standard" || serviceTier === "priority" ? { serviceTier } : {}),
+    ...(tableEvidence ? { table: tableEvidence } : {}),
     ...(code ? { code: safeCode(code) } : {}),
     ...(ALLOWED_REASONS.has(reason) ? { reason } : {}),
     stages,
@@ -159,12 +176,15 @@ export async function runCloudProbe(deps = {}) {
   let failureReason;
   let model;
   let serviceTier;
+  let tableEvidence;
   let probeStatePath;
   const transport = (deps.env ?? process.env).INCAGEN_CLOUD_DIAGNOSTIC_TRANSPORT;
+  const tableFormat = (deps.env ?? process.env).INCAGEN_CLOUD_DIAGNOSTIC_TABLE;
 
   const configStarted = now();
   try {
     assert.ok(transport === undefined || TRANSPORTS.has(transport), "Unexpected diagnostic transport.");
+    assert.ok(tableFormat === undefined || (transport === undefined && TABLE_TOTALS.has(tableFormat)), "Unexpected diagnostic table format.");
     config = (deps.loadConfig ?? loadCloudDiagnosticConfig)();
     admin = deps.adminClient ? await deps.adminClient() : await defaultAdminClient();
     journal = (deps.createJournal ?? createAcceptanceJournal)("connectivity");
@@ -232,10 +252,12 @@ export async function runCloudProbe(deps = {}) {
     stages.callable.callAttempted = true;
     try {
       const callable = sdk.httpsCallable(sdk.getFunctions(app, "europe-west1"), "checkGemini", { timeout: CALLABLE_TIMEOUT_MS });
-      const result = await callable(transport ? { transport } : {});
+      const result = await callable(tableFormat ? { tableFormat } : transport ? { transport } : {});
       assert.equal(result?.data?.status, "ok");
       assert.equal(result?.data?.model, transport === "interactions-comparison" ? "gemini-3.6-flash" : "gemini-3.8-flash");
       assert.equal(result?.data?.transport, transport);
+      if (tableFormat) tableEvidence = verifyTableProbe(tableFormat, result.data);
+      else assert.equal(result?.data?.tableFormat, undefined);
       model = result.data.model;
       serviceTier = result.data.serviceTier;
       stages.callable = { status: "passed", durationMs: now() - callableStarted, callAttempted: true };
@@ -327,6 +349,7 @@ export async function runCloudProbe(deps = {}) {
     model,
     transport,
     serviceTier,
+    tableEvidence,
     durationMs: now() - probeStart,
     stages,
     cleanup,

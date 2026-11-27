@@ -70,6 +70,17 @@ Geliştirici teşhisinin sağlayıcı süresi 300 saniye, Functions süresi 330 
 
 `INCAGEN_CLOUD_DIAGNOSTIC_TRANSPORT=interactions-comparison` yalnız geliştirici teşhisinde Gemini 3.6 Flash’ı aynı sabit istekle sınar. Yanıtın model ve taşıma bilgisi ayrı doğrulanır. Gemini 3.8 Flash için bağlantı kabulü, doğrudan o modelden geçerli yanıt gerektirir.
 
+### Kapalı üretimde sentetik tablo kontrolü
+
+27 Kasım’da yeni Secret Manager sürümüyle doğrudan bağlantı testi geçerli `gemini-3.8-flash` yanıtı döndürdü. Callable 21.717 ms sürdü. Geçici Auth hesabı ve geliştirici claim’i temizlendi.
+
+```bash
+INCAGEN_CLOUD_DIAGNOSTIC=1 INCAGEN_CLOUD_DIAGNOSTIC_TABLE=csv node scripts/check-gemini-cloud.mjs
+INCAGEN_CLOUD_DIAGNOSTIC=1 INCAGEN_CLOUD_DIAGNOSTIC_TABLE=xlsx node scripts/check-gemini-cloud.mjs
+```
+
+Her komut mevcut geliştirici yetkisi ve proje teşhis bütçesiyle bir vaka çalıştırır. Koşular arasında en az bir dakika gerekir. `csv` ondalık ve negatif tutarlı üç fiziksel veri satırını, `xlsx` ise iki sayfadan yalnız seçilendeki satır ağırlıklı ortalamayı kullanır. Özel Python işçisinin kaynak SHA, satır aralıkları ve sonuçları beklenen hesapla eşleşirse aynı üretim Gemini adaptörü doğrulanmış rapor sözleşmesini işler. CLI yalnız kontrollü sayı, süre ve token kanıtını gösterir. Vaka kullanıcı raporu/dosya oluşturmaz, gerçek kullanıcı verisi kabul etmez ve genel analiz bayrağı kapalıyken çalışır. İnsan kalite kabulü [beta planında](BETA-ACCEPTANCE.md#insan-incelemesi-kabul-tablosu-ve-karar-kaydı) izlenir.
+
 6 Kasım devamında ilk iki 45 saniyelik kontrol doğrulanamadı; yeni güvenli sınıflama bunlardan ikincisini `timeout` olarak ayırdı. Analizle aynı `LOW`/90 saniye ayarıyla yapılan son kontrol `busy` yanıtı aldı. Hesaplar ve geçici yetkiler temizlendi. Gerçek analiz kalite kabulü hâlâ tamamlanmadı; açılış anahtarları kapalı kalır. [Resmî thinking seçenekleri](https://aistudio.google.com/docs/thinking?generate-content=true).
 
 16 Kasım tek sabit sentetik backend kontrolü 95.680 ms içinde `functions/unavailable / timeout` verdi. Tekrar çağrı yapılmadı; geçici geliştirici claim’i kaldırıldı, hesap silindi ve koşuya özel kaynak günlüğü `verified-clean` oldu. Bu sonuç gerçek bağlantı veya analiz kalite kabulü değildir; model/anahtar değiştirilmedi, iki yayın kapısı kapalı kaldı.
