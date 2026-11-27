@@ -9,6 +9,31 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 Ödeme/domain dışındaki ilk beta kapsamı, çıkış kanıtları ve sonraki işler [beta kabul planında](docs/BETA-ACCEPTANCE.md) ayrılmıştır.
 
+### 2026-11-27 — Furkan / Codex: beta iş kabulü ve servis sınırları
+
+- [x] Sahip: Furkan — 1. Teşhis gününü Gemini kota takvimiyle eşleştir.
+- [x] Sahip: Furkan — 2. Eski UTC sayacı geçiş sırasında ikinci bir günlük hak açmadan taşı.
+- [x] Sahip: Furkan — 3. Sınırlı geliştirici teşhisi için proje genelinde günlük istek bütçesini düşür.
+- [x] Sahip: Furkan — 4. Yeni sentetik hesaplar arasında proje genelinde bir dakikalık teşhis aralığını atomik uygula.
+- [x] Sahip: Furkan — 5. Gemini 429 hız sınırını 503 kapasite ve 504 zaman aşımından ayır.
+- [x] Sahip: Furkan — 6. Hız sınırı sonucunu geliştirici teşhisinden güvenli CLI kanıtına taşı.
+- [x] Sahip: Furkan — 7. Analiz işinde sağlayıcı hız sınırı için ayrı kod ve sunucu bekleme süresi kullan.
+- [x] Sahip: Furkan — 8. Hız sınırını altı dilde anlaşılır göster ve kayıt dinleyicisi gecikse de sunucu beklemesini uygula.
+- [x] Sahip: Furkan — 9. Yeni ücretli işten önce hazırlanmış tablonun sayfa ve sütun geçerliliğini doğrula.
+- [x] Sahip: Furkan — 10. Kapsam ön kontrolünü rezervasyonda aynı hazırlık sürümüne bağla.
+- [x] Sahip: Furkan — 11. Tamamlanan veya çalışan aynı kapsamı hazırlık artefaktına tekrar erişmeden kullan.
+- [x] Sahip: Furkan — 12. Geçersiz kapsam ve değişen hazırlığın kota ve iş bırakmadığını emülatörde doğrula.
+- [x] Sahip: Furkan — 13. Yerel Python çıktı bütçesi aşıldığında kontrollü kapsam hatası üret.
+- [x] Sahip: Furkan — 14. Yerel Python süre aşımını hatalı belge sonucundan ayır.
+- [x] Sahip: Furkan — 15. Özel Cloud Run çağrısında ağ süre aşımını yapılandırma hatasından ayır.
+- [x] Sahip: Furkan — 16. İşçi isteğinin yönlendirme izlemesini engelle ve boyut aşımını aynı hata ailesine bağla.
+- [x] Sahip: Furkan — 17. Rapor yazma ve okuma için tek işlenmiş artefakt boyut sözleşmesi kullan.
+- [x] Sahip: Furkan — 18. Rapor bütçesine sığmayacak kaynağı Gemini çağrısından önce reddet.
+- [x] Sahip: Furkan — 19. Yazılacak gzip ve gerçek indirilen baytları aynı sınırda doğrula.
+- [~] Sahip: Furkan — 20. Eski v1 raporlarını ve çok baytlı sınırları doğrula, kapalı paketin yayın kanıtını kaydet.
+
+Yerel kabul ve Firebase entegrasyonu geçti. Son canlı GitHub/Netlify ile kapalı Firebase kanıtı TASK-0009 devir kaydında tamamlanır. [Analiz sözleşmesi](docs/TABULAR-ANALYSIS.md).
+
 ### 2026-11-27 — Furkan / Codex: model veri sınırı ve tablo ön kontrolü
 
 - [x] Sahip: Furkan — 1. Gemini tablo isteminden ham hücreleri ve kaynak satırlarının içeriğini çıkar.
@@ -20,14 +45,14 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — 7. Eksik sayfa, geçersiz sütun ve okunamayan kaynak için güvenli, ayrıştırılabilir ön kontrol sonucu döndür.
 - [x] Sahip: Furkan — 8. Geçersiz ve yetkisiz ön kontrollerde Python, Gemini, iş ve kota oluşmadığını entegrasyonda doğrula.
 - [x] Sahip: Furkan — 9. Ham tablo büyük olsa bile kısa model isteminden kaynaklı rapor üretildiğini regresyonla doğrula.
-- [~] Sahip: Furkan — 10. Model veri sınırını belgele, GitHub/Netlify paketini ve kapalı Firebase yayınını doğrula.
+- [x] Sahip: Furkan — 10. Model veri sınırını belgele, GitHub/Netlify paketini ve kapalı Firebase yayınını doğrula (`84846a2`).
 
 Yerel veri sınırı ve ön kontrol testleri geçti. Bu paketin kesin SHA’sı ve GitHub, Netlify ve kapalı Firebase yayın kanıtları TASK-0008 devir kaydında takip edilir. [Tablo analizi sözleşmesi](docs/TABULAR-ANALYSIS.md).
 
 ### 2026-11-26 — Furkan / Codex: beta erişim ve kabul kanıtı
 
 - [x] Sahip: Furkan — 1. Kapalı canlı Functions ve worker sürümünü sağlayıcı denemesi öncesinde doğrula.
-- [!] Sahip: Furkan — 2. Canlı Gemini 3.8 Flash yanıtı ve süreyi doğrula. Standard `generateContent` 504, Standard Interactions 503, Priority Interactions 429 döndü. Onaylı 3.6 Flash karşılaştırması da 503 döndü. Geçici kaynaklar temizlendi. Kabul için 3.8 Flash’tan geçerli sabit JSON gerekiyor. [Teşhis kaydı](docs/GEMINI.md).
+- [!] Sahip: Furkan — 2. Canlı Gemini 3.8 Flash yanıtı ve süreyi doğrula. Günlük kota yenilendikten sonra 27 Kasım 12.42’de Standard `generateContent` tek çağrı 12.210 ms’de HTTP 503 / kapasite döndü. Önceki koşularda 504 ve Priority 429 da görüldü. Geçici kaynaklar temizlendi. Kabul için 3.8 Flash’tan geçerli sabit JSON gerekiyor. [Teşhis kaydı](docs/GEMINI.md).
 - [x] Sahip: Furkan — 3. Teşhis hesabı, geçici claim ve kaynak günlüğü temizliğini doğrula.
 - [x] Sahip: Furkan — 4. Bulut bütçe, alarm ve saklama durumunu salt okunur veriyle yeniden değerlendir.
 - [x] Sahip: Furkan — 5. Canlı kabulün oluşturduğu e-posta ile sentetik davet doğrulayıcısının sözleşmesini birleştir.

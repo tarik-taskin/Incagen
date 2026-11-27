@@ -1,5 +1,4 @@
 import { createHash, randomUUID } from "node:crypto";
-import { gzipSync } from "node:zlib";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { warn } from "firebase-functions/logger";
@@ -8,7 +7,7 @@ import { getQuotaDay } from "../contracts";
 import { createGeminiGenerate, GEMINI_MODEL, GeminiError, type GeminiGenerate } from "./gemini";
 import { readGeminiKey } from "./gemini-secret";
 import { AnalysisPacketBudgetError } from "./input-packet";
-import { preparedAnalysis, verifyPreparedSelection, type AiArtifact } from "./tabular-storage";
+import { assertAiArtifactSourceBudget, encodeAiArtifact, preparedAnalysis, verifyPreparedSelection, type AiArtifact } from "./tabular-storage";
 import { computeTable, WorkerError } from "./python-worker";
 import { analysisFingerprint, createTabularPacket, interpretTable } from "./tabular-result";
 import { AI_JOB_LIMITS, hasActiveAnalysisLease, startAnalysisSchema, type AiJob, type AnalysisAccess, type AnalysisFailure } from "./tabular-contract";
@@ -148,6 +147,8 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
       || worker.scope.sheet !== input.selection.sheet || worker.document.chunks.some(chunk => (chunk.locator.sheet ?? null) !== input.selection.sheet)
       || analysisFingerprint(source.sha256, source.id, worker.scope.selection, input.locale) !== fingerprint) throw new WorkerError("invalid-data");
     const packet = createTabularPacket(input.id, data.objective, worker, input.locale);
+    const artifactBase: Omit<AiArtifact, "result"> = { version: 1, sources: [worker.document], scope: worker.scope, locale: input.locale };
+    assertAiArtifactSourceBudget(artifactBase);
     await advanceAnalysis(uid!, input.id, job.attemptId, "interpreting");
     const emulator = isAnalysisEmulator();
     let usage: AiJob["usage"];
@@ -167,11 +168,10 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
     const modelMs = Date.now() - modelStarted;
     await advanceAnalysis(uid!, input.id, job.attemptId, "saving");
     if (Buffer.byteLength(JSON.stringify(result)) > AI_JOB_LIMITS.outputBytes) throw new WorkerError("scope-limit");
-    const artifact: AiArtifact = { version: 1, result, sources: [worker.document], scope: worker.scope, locale: input.locale };
-    const encoded = Buffer.from(JSON.stringify(artifact));
-    await bucket.file(artifactPath).save(gzipSync(encoded), { resumable: false, preconditionOpts: { ifGenerationMatch: 0 },
+    const { compressed, sha256 } = encodeAiArtifact({ ...artifactBase, result });
+    await bucket.file(artifactPath).save(compressed, { resumable: false, preconditionOpts: { ifGenerationMatch: 0 },
       metadata: { contentType: "application/gzip", cacheControl: "private, no-store" } });
-    savedHash = createHash("sha256").update(encoded).digest("hex");
+    savedHash = sha256;
     const completed: AiJob = { ...job, stage: "saving", status: "completed", finishedAt: Date.now(), artifactPath, artifactSha256: savedHash,
         model: emulator ? "emulator" : GEMINI_MODEL, durationMs: Date.now() - startedAt, pythonMs, modelMs,
         ...(!useFixedEmulatorText ? { inputBytes: packet.inputBytes } : {}), ...(usage ? { usage } : {}) };

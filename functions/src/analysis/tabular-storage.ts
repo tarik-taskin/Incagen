@@ -1,11 +1,11 @@
-import { gunzipSync } from "node:zlib";
+import { gunzipSync, gzipSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import { parse } from "csv-parse/sync";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { z } from "zod";
-import { parsedDocumentSchema } from "./input-packet";
+import { AnalysisPacketBudgetError, parsedDocumentSchema } from "./input-packet";
 import { aiResultSchema, validateAiResult, type AiResult } from "./result-contract";
 import { PARSING_LIMITS, type ParsedDocument, type Report } from "../contracts";
 import { decodeUtf8, normalizeColumns } from "../parsing/common";
@@ -26,7 +26,35 @@ const ANALYSIS_ROW_LIMIT = 5000;
 const ANALYSIS_TABLE_LIMITS = { rows: ANALYSIS_ROW_LIMIT, groups: 12, attempts: AI_JOB_LIMITS.attempts };
 const RAW_SOURCE_MAX_BYTES = 25 * 1024 * 1024;
 export const ANALYSIS_TABLES_MAX_BYTES = 512 * 1024;
+const artifactLimits = { json: 4 * 1024 * 1024, gzip: 2 * 1024 * 1024 } as const;
 export interface AiArtifact { version: 1; result: AiResult; sources: ParsedDocument[]; scope: WorkerResult["scope"]; locale: ResultLocale }
+
+// Rapor sonucu için yer ayırır ve tek başına sığmayan kaynakları model çağrısından önce durdurur.
+export function assertAiArtifactSourceBudget(source: Omit<AiArtifact, "result">) {
+  const bytes = Buffer.from(JSON.stringify(source));
+  const resultFieldBytes = Buffer.byteLength(',"result":');
+  const projectedSize = bytes.length + resultFieldBytes + AI_JOB_LIMITS.outputBytes;
+  if (projectedSize > artifactLimits.json) throw new AnalysisPacketBudgetError(projectedSize, artifactLimits.json);
+  const compressed = gzipSync(bytes);
+  if (compressed.length > artifactLimits.gzip) throw new AnalysisPacketBudgetError(compressed.length, artifactLimits.gzip);
+}
+
+// Yazma ve okuma aynı açılım ve gzip sınırını kullandığı için kabul edilen rapor daha sonra açılabilir.
+export function encodeAiArtifact(artifact: AiArtifact) {
+  const bytes = Buffer.from(JSON.stringify(artifact));
+  if (bytes.length > artifactLimits.json) throw new AnalysisPacketBudgetError(bytes.length, artifactLimits.json);
+  const compressed = gzipSync(bytes);
+  if (compressed.length > artifactLimits.gzip) throw new AnalysisPacketBudgetError(compressed.length, artifactLimits.gzip);
+  return { compressed, sha256: createHash("sha256").update(bytes).digest("hex") };
+}
+
+// Depolama metadata'sından bağımsız olarak gerçek gzip baytını, açılımı ve sonucu hash ile doğrular.
+export function decodeAiArtifact(compressed: Buffer, expectedSha256: string): unknown {
+  if (compressed.length > artifactLimits.gzip) throw new AnalysisPacketBudgetError(compressed.length, artifactLimits.gzip);
+  const bytes = gunzipSync(compressed, { maxOutputLength: artifactLimits.json });
+  if (createHash("sha256").update(bytes).digest("hex") !== expectedSha256) throw new Error("Report digest does not match.");
+  return JSON.parse(bytes.toString("utf8"));
+}
 
 // Metni UTF-8 bayt sınırına ve karakter sayısına göre Unicode çiftlerini bölmeden kısaltır.
 function truncateUtf8(text: string, maxChars: number, maxBytes: number): string {
@@ -397,11 +425,10 @@ export const getAnalysisResult = onCall({ region: "europe-west1", timeoutSeconds
   try {
     const file = getStorage().bucket().file(ai.artifactPath);
     const [metadata] = await file.getMetadata();
-    if (Number(metadata.size) > 2 * 1024 * 1024) throw new Error();
+    const size = Number(metadata.size);
+    if (!Number.isSafeInteger(size) || size <= 0 || size > artifactLimits.gzip) throw new Error();
     const [encoded] = await file.download();
-    const json = gunzipSync(encoded, { maxOutputLength: 4 * 1024 * 1024 });
-    if (createHash("sha256").update(json).digest("hex") !== ai.artifactSha256) throw new Error();
-    return validateStoredArtifact(JSON.parse(json.toString("utf8")), {
+    return validateStoredArtifact(decodeAiArtifact(encoded, ai.artifactSha256), {
       analysisId: parsed.data.id,
       objective: data.objective,
       job: ai,

@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { createHash } from "node:crypto";
+import { gzipSync } from "node:zlib";
 import { GeminiError } from "./gemini";
 import { AnalysisPacketBudgetError } from "./input-packet";
 import { mapWorkerFailure, WorkerError } from "./python-worker";
 import { failureCode, failureDisposition } from "./tabular-jobs";
-import { buildAnalysisTables, fitAnalysisTablesBudget, parseCsvTablePreview, validateStoredArtifact, type AiArtifact } from "./tabular-storage";
+import { assertAiArtifactSourceBudget, buildAnalysisTables, decodeAiArtifact, encodeAiArtifact, fitAnalysisTablesBudget, parseCsvTablePreview, validateStoredArtifact, type AiArtifact } from "./tabular-storage";
 import { analysisFingerprint } from "./tabular-result";
 import { AI_JOB_LIMITS, hasActiveAnalysisLease, type AiJob } from "./tabular-contract";
 import type { ParsedDocument, Report } from "../contracts";
@@ -260,7 +262,8 @@ describe("validateStoredArtifact bütünlük bağı", () => {
 
   it("geçerli eski v1 raporunu opsiyonel fingerprint olmadan da açar", () => {
     const artifact = validV1Artifact();
-    const verified = validateStoredArtifact(artifact, {
+    const stored = Buffer.from(JSON.stringify(artifact));
+    const verified = validateStoredArtifact(decodeAiArtifact(gzipSync(stored), createHash("sha256").update(stored).digest("hex")), {
       analysisId: "11111111-1111-4111-8111-111111111111",
       objective: "Compare team averages",
       job: validJob(false),
@@ -269,6 +272,34 @@ describe("validateStoredArtifact bütünlük bağı", () => {
     expect(verified.locale).toBe("de");
     expect(verified.scope.sheet).toBe("Services");
     expect(verified.sources[0].sha256).toBe(validSha);
+  });
+
+  it("counts UTF-8 bytes before generation and refuses a report too large to reopen", () => {
+    const artifact = validV1Artifact();
+    const encoded = encodeAiArtifact(artifact);
+    expect(decodeAiArtifact(encoded.compressed, encoded.sha256)).toEqual(artifact);
+    expect(() => decodeAiArtifact(encoded.compressed, "a".repeat(64))).toThrow("digest");
+
+    const { sources, scope, version, locale } = artifact;
+    sources[0].metadata = { text: "界".repeat(1_410_000) };
+    expect(JSON.stringify(artifact).length).toBeLessThan(4 * 1024 * 1024);
+    expect(() => assertAiArtifactSourceBudget({ sources, scope, version, locale })).toThrow(AnalysisPacketBudgetError);
+    expect(() => encodeAiArtifact(artifact)).toThrow(AnalysisPacketBudgetError);
+    expect(() => decodeAiArtifact(gzipSync(JSON.stringify(artifact)), encoded.sha256)).toThrow();
+  });
+
+  it("enforces the compressed byte limit before saving and after downloading", () => {
+    const artifact = validV1Artifact();
+    const data = createHash("shake256", { outputLength: 2_300_000 }).update("synthetic artifact budget").digest("base64");
+    artifact.sources[0].metadata = { text: data };
+    const json = JSON.stringify(artifact);
+    const compressed = gzipSync(json);
+    expect(Buffer.byteLength(json)).toBeLessThan(4 * 1024 * 1024);
+    expect(compressed.length).toBeGreaterThan(2 * 1024 * 1024);
+    const { sources, scope, version, locale } = artifact;
+    expect(() => assertAiArtifactSourceBudget({ sources, scope, version, locale })).toThrow(AnalysisPacketBudgetError);
+    expect(() => encodeAiArtifact(artifact)).toThrow(AnalysisPacketBudgetError);
+    expect(() => decodeAiArtifact(compressed, createHash("sha256").update(json).digest("hex"))).toThrow(AnalysisPacketBudgetError);
   });
 
   it("saklanan ölçüm adı veya boş satır adedi kaynakla uyuşmadığında raporu reddeder", () => {
