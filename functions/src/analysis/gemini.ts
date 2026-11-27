@@ -6,7 +6,7 @@ export const GEMINI_MODEL = "gemini-3.8-flash";
 export const GEMINI_COMPARISON_MODEL = "gemini-3.6-flash";
 export const GEMINI_INTERACTION_TRANSPORTS = ["interactions", "interactions-priority", "interactions-comparison"] as const;
 export const GEMINI_LIMITS = { timeoutMs: 45_000, analysisTimeoutMs: 90_000, diagnosticTimeoutMs: 300_000, inputBytes: 256 * 1024, outputBytes: 64 * 1024 } as const;
-export type GeminiFailureCode = "not-configured" | "unavailable" | "busy" | "timeout" | "invalid-response" | "invalid-input";
+export type GeminiFailureCode = "not-configured" | "unavailable" | "busy" | "rate-limited" | "timeout" | "invalid-response" | "invalid-input";
 
 // Sağlayıcının ham hata/metinlerini ve anahtarı istemciye veya loglara taşımayan kontrollü hata.
 export class GeminiError extends Error {
@@ -27,10 +27,11 @@ function classifyGeminiError(error: unknown) {
   const message = error instanceof Error ? error.message : "";
   const timedOut = status === 408 || status === 504 || (error instanceof Error
     && ["AbortError", "TimeoutError", "RequestTimeoutError", "APIConnectionTimeoutError"].includes(error.name));
-  const busy = status === 429 || status === 503;
+  const code = status === 429 ? "rate-limited" : timedOut ? "timeout" : status === 503 ? "busy" : "unavailable";
   console.warn("gemini-request-failed", { status: typeof status === "number" && Number.isInteger(status) && status >= 100 && status <= 599 ? status : "unknown",
-    reason: /deadline|timeout|timed out/i.test(message) ? "timeout" : /overload|high demand|capacity/i.test(message) ? "capacity" : "provider" });
-  return new GeminiError(timedOut ? "timeout" : busy ? "busy" : "unavailable");
+    reason: code === "rate-limited" ? "rate-limit" : code === "timeout" ? "timeout"
+      : code === "busy" && /overload|high demand|capacity/i.test(message) ? "capacity" : "provider" });
+  return new GeminiError(code);
 }
 
 // Resmî SDK yalnız backend'de çalışır; otomatik ücretli retry, araç ve kod yürütme açılmaz.

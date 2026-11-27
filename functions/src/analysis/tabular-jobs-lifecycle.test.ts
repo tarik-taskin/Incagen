@@ -11,6 +11,7 @@ import type { ParsedDocument, Report } from "../contracts";
 describe("AI iş yaşam döngüsü hata sınıflandırması", () => {
   it("sağlayıcı busy/timeout, geçersiz yanıt, kapsam aşımı ve eksik anahtar hatalarını ayırır", () => {
     expect(failureCode(new GeminiError("busy"))).toBe("provider-busy");
+    expect(failureCode(new GeminiError("rate-limited"))).toBe("provider-rate-limit");
     expect(failureCode(new GeminiError("timeout"))).toBe("timeout");
     expect(failureCode(new GeminiError("invalid-response"))).toBe("validation");
     expect(failureCode(new GeminiError("invalid-input"))).toBe("validation");

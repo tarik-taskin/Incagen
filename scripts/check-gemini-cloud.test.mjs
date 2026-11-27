@@ -168,14 +168,14 @@ test("runCloudProbe stops before callable on clientAuth failure and does not lea
   assert.doesNotMatch(serialized, /secret-token-xyz|Bearer|example\.test|mock-id-token/);
 });
 
-test("runCloudProbe isolates callable timeout without retrying or leaking raw provider bodies", async () => {
+for (const reason of ["timeout", "rate-limited"]) test(`runCloudProbe preserves ${reason} without retrying or leaking raw provider bodies`, async () => {
   const base = mockDeps();
   base.deps.firebase.httpsCallable = (_fn, name) => async () => {
     if (name === "checkGemini") {
       base.calls.callable += 1;
       const err = new Error("Raw provider payload with apiKey=AIzaSySyntheticLeak and Authorization header");
       err.code = "functions/unavailable";
-      err.details = { geminiFailure: "timeout", rawBody: "SENSITIVE_PROVIDER_BODY" };
+      err.details = { geminiFailure: reason, rawBody: "SENSITIVE_PROVIDER_BODY" };
       throw err;
     }
     base.calls.deleteAccount += 1;
@@ -189,9 +189,9 @@ test("runCloudProbe isolates callable timeout without retrying or leaking raw pr
   assert.equal(summary.stage, "callable");
   assert.equal(summary.callAttempted, true);
   assert.equal(summary.code, "functions/unavailable");
-  assert.equal(summary.reason, "timeout");
+  assert.equal(summary.reason, reason);
   assert.equal(summary.stages.callable.status, "failed");
-  assert.equal(summary.stages.callable.reason, "timeout");
+  assert.equal(summary.stages.callable.reason, reason);
   assert.equal(summary.cleanup.status, "passed");
   assert.equal(summary.cleanup.syntheticAccountDeleted, true);
   assert.equal(base.calls.callable, 1);

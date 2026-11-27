@@ -31,6 +31,7 @@ const errors: Record<AnalysisFailure, string> = {
   configuration: "Analiz servisine şu anda ulaşılamıyor. Hazırlanan belgeleriniz korunuyor; daha sonra yeniden deneyin.",
   provider: "Özet bu denemede tamamlanamadı. Aynı kapsamla yeniden deneyebilirsiniz.",
   "provider-busy": "Özet servisi şu anda yoğun. Hazırlanan belgeleriniz korunuyor; biraz sonra yeniden deneyin.",
+  "provider-rate-limit": "Özet servisi istek sınırına ulaştı. Hazırlanan belgeleriniz korunuyor. Daha sonra yeniden deneyin.",
   validation: "Üretilen sonuç doğrulama kontrolünü geçemedi ve rapor olarak kaydedilmedi. Yeniden deneyebilirsiniz.",
   timeout: "Analiz süresi doldu. Aynı kapsamla yeniden deneyebilirsiniz.",
 };
@@ -195,6 +196,7 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
   const [limits, setLimits] = useState({ rows: 5000, groups: 12, attempts: 3 });
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const [callableRetryAfter, setCallableRetryAfter] = useState(0);
   const [refresh, setRefresh] = useState(0);
   const [artifact, setArtifact] = useState<AiArtifact | null>(null);
   const lifetime = useRef({ active: true, starting: false, reloading: false });
@@ -203,10 +205,10 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
     current.active = true;
     return () => { current.active = false; };
   }, []);
-  const deadline = job?.status === "running" ? job.leaseUntil : job?.status === "failed" ? job.retryAfter : undefined;
-  const deadlineReached = useDeadlineReached(deadline);
-  const running = job?.status === "running" && !deadlineReached;
-  const cooling = job?.status === "failed" && !deadlineReached;
+  const leaseUntil = job?.status === "running" ? job.leaseUntil : undefined;
+  const running = !useDeadlineReached(leaseUntil);
+  const retryAfter = Math.max(job?.status === "failed" ? job.retryAfter ?? 0 : 0, callableRetryAfter);
+  const cooling = !useDeadlineReached(running ? undefined : retryAfter);
   const ready = job?.status === "completed";
   useEffect(() => {
     if (!user || ready || running) return;
@@ -259,8 +261,10 @@ function AnalysisSession({ analysis }: { analysis: Analysis }) {
     try { await httpsCallable(getServices().functions, "startAnalysis", { timeout: 190_000 })({ id: analysis.id, sourceId: selected.sourceId, selection: normalizedSelection, locale: job?.status === "running" ? job.locale : getLocale() }); }
     catch (failure) {
       if (!lifetime.current.active) return;
-      const details = (failure as { details?: { analysisFailure?: string; analysisAccess?: string } })?.details;
+      const details = (failure as { details?: { analysisFailure?: string; analysisAccess?: string; retryAfter?: number } })?.details;
       const reason = details?.analysisFailure;
+      const retryAfter = details?.retryAfter;
+      if (typeof retryAfter === "number" && Number.isFinite(retryAfter) && retryAfter > Date.now()) setCallableRetryAfter(retryAfter);
       if (details?.analysisAccess === "invite-required") {
         setAccess("invite-required");
         return;

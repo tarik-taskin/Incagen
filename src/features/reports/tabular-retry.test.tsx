@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, expect, it, vi } from "vitest";
 import { TabularAnalysisPanel } from "./tabular-analysis-panel";
@@ -35,6 +35,20 @@ it("shows a safe configuration error when admission is rejected before a new job
   await waitFor(() => expect(retry).toBeEnabled());
   await userEvent.click(retry);
   expect(await screen.findByRole("alert")).toHaveTextContent("Analiz servisine şu anda ulaşılamıyor.");
+  expect(mocks.start).toHaveBeenCalledTimes(1);
+});
+
+it.each(["failed", "running"] as const)("blocks manual resend from a rate-limit response after an old %s job", async status => {
+  vi.useFakeTimers({ now: 5000 });
+  mocks.start.mockRejectedValue({ code: "functions/resource-exhausted", details: { analysisFailure: "provider-rate-limit", retryAfter: 8000 } });
+  const analysis = { id: "synthetic", ai: { status, attempts: 1, error: "provider-busy", locale: "tr", leaseUntil: 4500, sourceId: "file-0",
+    selection: { sheet: null, valueColumn: 1, groupColumn: 0, aggregation: "sum", numberFormat: "plain", unit: "USD" } } } as Analysis;
+  await act(async () => { render(<TabularAnalysisPanel analysis={analysis} />); });
+  await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Yeniden dene" })); });
+  expect(screen.getByRole("alert")).toHaveTextContent("Özet servisi istek sınırına ulaştı.");
+  expect(screen.getByRole("button", { name: "Kısa bir süre bekleyin" })).toBeDisabled();
+  await act(async () => { vi.advanceTimersByTime(3001); });
+  expect(screen.getByRole("button", { name: "Yeniden dene" })).toBeEnabled();
   expect(mocks.start).toHaveBeenCalledTimes(1);
 });
 

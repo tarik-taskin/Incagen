@@ -1104,6 +1104,7 @@
   "kayıt__many": "records",
   "kayıt__other": "records",
   "Özet servisi şu anda yoğun. Hazırlanan belgeleriniz korunuyor; biraz sonra yeniden deneyin.": "The summary service is busy right now. Your prepared documents are safe; please try again shortly.",
+  "Özet servisi istek sınırına ulaştı. Hazırlanan belgeleriniz korunuyor. Daha sonra yeniden deneyin.": "The summary service reached its request limit. Your prepared documents are saved. Try again later.",
   "Yeniden deneme kısa bir süre sonra açılacak; işlem kendiliğinden başlamaz.": "You can retry shortly. The analysis will only restart when you choose to retry.",
   "Kısa bir süre bekleyin": "Please wait a moment",
   "1. İncelenecek veri kaynağı": "1. Data source to analyze",

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { parsedDocumentSchema } from "./input-packet";
 import { sourceLocatorSchema } from "./result-contract";
 
-export const AI_JOB_LIMITS = { attempts: 3, leaseMs: 240_000, retryDelayMs: 30_000, dailyPerUser: 2, dailyGlobal: 100, packetBytes: 256 * 1024, outputBytes: 64 * 1024 } as const;
+export const AI_JOB_LIMITS = { attempts: 3, leaseMs: 240_000, retryDelayMs: 30_000, rateLimitDelayMs: 120_000, dailyPerUser: 2, dailyGlobal: 100, packetBytes: 256 * 1024, outputBytes: 64 * 1024 } as const;
 export const resultLocaleSchema = z.enum(["tr", "en", "de", "es", "zh", "ar"]);
 export const tableSelectionSchema = z.object({
   sheet: z.string().trim().min(1).max(200).nullable(),
@@ -60,6 +60,7 @@ export type AnalysisFailure =
   | "configuration"
   | "provider"
   | "provider-busy"
+  | "provider-rate-limit"
   | "validation"
   | "timeout";
 export interface AiJob {

@@ -1104,6 +1104,7 @@
   "kayıt__many": "registros",
   "kayıt__other": "registros",
   "Özet servisi şu anda yoğun. Hazırlanan belgeleriniz korunuyor; biraz sonra yeniden deneyin.": "El servicio de resúmenes está ocupado. Tus documentos preparados se conservan; vuelve a intentarlo en unos momentos.",
+  "Özet servisi istek sınırına ulaştı. Hazırlanan belgeleriniz korunuyor. Daha sonra yeniden deneyin.": "El servicio de resúmenes alcanzó su límite de solicitudes. Tus documentos preparados se han guardado. Inténtalo más tarde.",
   "Yeniden deneme kısa bir süre sonra açılacak; işlem kendiliğinden başlamaz.": "Podrás volver a intentarlo en unos momentos. El análisis solo se reiniciará cuando lo solicites.",
   "Kısa bir süre bekleyin": "Espera un momento",
   "1. İncelenecek veri kaynağı": "1. Fuente de datos a analizar",

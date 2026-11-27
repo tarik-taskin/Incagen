@@ -372,7 +372,7 @@ test("analiz kapalıyken belge hazırlama ve yeniden açma çalışır; AI işi,
   }
 });
 
-test("provider-busy ve timeout sonrası deterministik toparlanma, bekleme süresi ve manuel tekrar akışı", { timeout: 60000 }, async () => {
+test("sağlayıcı hız sınırı ve timeout sonrası bekleme, korunmuş hazırlık ve manuel tekrar akışı", { timeout: 60000 }, async () => {
   assert.match(process.env.FIRESTORE_EMULATOR_HOST ?? "", /^127\.0\.0\.1:/);
   if (!getApps().length) initializeAdmin({ projectId: "demo-incagen", storageBucket: "demo-incagen.appspot.com" });
   const { executeStartAnalysis } = require("./lib/analysis/tabular-jobs");
@@ -404,28 +404,33 @@ test("provider-busy ve timeout sonrası deterministik toparlanma, bekleme süres
     const recordRef = db.doc(`users/${uid}/analyses/${id}`);
 
     let modelCalls = 0;
-    const busyGenerator = async () => {
+    const limitedGenerator = async () => {
       modelCalls += 1;
-      throw new GeminiError("busy");
+      throw new GeminiError("rate-limited");
     };
 
-    // 1. Deneme: provider-busy döner, retryAfter (~30 sn) saklanır ve hazırlanan dosya korunur.
+    // Hız sınırı, kapasite hatasından ayrı iki dakikalık güvenli bekleme süresi üretir.
+    let returnedDeadline;
     await assert.rejects(
-      executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, { access: "available", generate: busyGenerator }),
-      { code: "failed-precondition", details: { analysisFailure: "provider-busy" } }
+      executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, { access: "available", generate: limitedGenerator }),
+      error => {
+        returnedDeadline = error.details?.retryAfter;
+        return error.code === "failed-precondition" && error.details?.analysisFailure === "provider-rate-limit" && Number.isFinite(returnedDeadline);
+      }
     );
     let docData = (await recordRef.get()).data();
     assert.equal(docData.status, "completed");
     assert.equal(docData.ai.status, "failed");
-    assert.equal(docData.ai.error, "provider-busy");
+    assert.equal(docData.ai.error, "provider-rate-limit");
     assert.equal(docData.ai.attempts, 1);
-    assert.ok(docData.ai.retryAfter > Date.now());
+    assert.equal(docData.ai.retryAfter, returnedDeadline);
+    assert.equal(docData.ai.retryAfter - docData.ai.finishedAt, 120_000);
     assert.equal(modelCalls, 1);
 
     // Bekleme süresi dolmadan tekrar deneme modeli çağırmadan reddedilir.
     await assert.rejects(
-      executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, { access: "available", generate: busyGenerator }),
-      { code: "resource-exhausted" }
+      executeStartAnalysis(uid, { id, sourceId: "file-0", selection, locale: "tr" }, { access: "available", generate: limitedGenerator }),
+      { code: "resource-exhausted", details: { analysisFailure: "provider-rate-limit", retryAfter: returnedDeadline } }
     );
     assert.equal(modelCalls, 1);
 
@@ -439,11 +444,12 @@ test("provider-busy ve timeout sonrası deterministik toparlanma, bekleme süres
           throw new GeminiError("timeout");
         },
       }),
-      { code: "failed-precondition", details: { analysisFailure: "timeout" } }
+      error => error.code === "failed-precondition" && error.details?.analysisFailure === "timeout" && Number.isFinite(error.details.retryAfter)
     );
     docData = (await recordRef.get()).data();
     assert.equal(docData.ai.status, "failed");
     assert.equal(docData.ai.error, "timeout");
+    assert.equal(docData.ai.retryAfter - docData.ai.finishedAt, 30_000);
     assert.equal(docData.ai.attempts, 2);
     assert.equal(modelCalls, 2);
 

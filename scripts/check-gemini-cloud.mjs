@@ -12,7 +12,7 @@ const PROJECT = "incagen-eeef4";
 const CALLABLE_TIMEOUT_MS = 340_000;
 const TRANSPORTS = new Set(["interactions", "interactions-priority", "interactions-comparison"]);
 const DEFAULT_PROBE_STATE_FILE = "/tmp/incagen-cloud-probe-resources.json";
-const ALLOWED_REASONS = new Set(["not-configured", "unavailable", "busy", "timeout", "invalid-response", "invalid-input"]);
+const ALLOWED_REASONS = new Set(["not-configured", "unavailable", "busy", "rate-limited", "timeout", "invalid-response", "invalid-input"]);
 const SAFE_CODE = /^(auth|functions)\/[a-z0-9-]+$|^(configuration-error|client-auth-failed|claim-assign-failed|token-refresh-failed|callable-failed|cleanup-failed|validation|diagnostic-failed)$/;
 
 // İzinli hata kodu dışındaki serbest hata/mesaj metinlerini çıktıda sabit güvenli koda indirger.

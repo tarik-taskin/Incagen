@@ -54,6 +54,7 @@ export function failureCode(error: unknown): AnalysisFailure {
   if (error instanceof GeminiError) {
     if (error.code === "not-configured") return "configuration";
     if (error.code === "busy") return "provider-busy";
+    if (error.code === "rate-limited") return "provider-rate-limit";
     if (error.code === "timeout") return "timeout";
     if (error.code === "invalid-response" || error.code === "invalid-input") return "validation";
     return "provider";
@@ -170,11 +171,14 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
     return { id: input.id, status: "completed", reused: false };
   } catch (error) {
     const failure = failureCode(error), finishedAt = Date.now();
+    const retryDelay = failure === "provider-rate-limit" ? AI_JOB_LIMITS.rateLimitDelayMs
+      : failure === "provider-busy" || failure === "timeout" ? AI_JOB_LIMITS.retryDelayMs : 0;
+    const failureDetails = { analysisFailure: failure, ...(retryDelay ? { retryAfter: finishedAt + retryDelay } : {}) };
     const disposition = await getFirestore().runTransaction(async tx => {
       const current = await tx.get(ref);
       const next = failureDisposition(current.data(), job.attemptId, artifactPath, savedHash);
       if (next === "fail") tx.update(ref, { ai: { ...job, status: "failed", finishedAt, error: failure, durationMs: finishedAt - startedAt,
-        ...(["provider-busy", "timeout"].includes(failure) ? { retryAfter: finishedAt + AI_JOB_LIMITS.retryDelayMs } : {}) }, updatedAt: finishedAt });
+        ...(failureDetails.retryAfter !== undefined ? { retryAfter: failureDetails.retryAfter } : {}) }, updatedAt: finishedAt });
       return next;
     }).catch(() => {
       warn("analysis-finalization-unconfirmed", { failure });
@@ -187,7 +191,7 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
       });
     }
     if (error instanceof HttpsError) throw error;
-    throw new HttpsError("failed-precondition", "Analiz tamamlanamadı. Kaynakları ve analiz kapsamını kontrol edip yeniden deneyin.", { analysisFailure: failure });
+    throw new HttpsError("failed-precondition", "Analiz tamamlanamadı. Kaynakları ve analiz kapsamını kontrol edip yeniden deneyin.", failureDetails);
   }
 }
 

@@ -75,12 +75,12 @@ describe("Gemini backend boundary", () => {
   it("sanitizes raw provider errors", async () => {
     const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
     sdk.generate.mockRejectedValue(Object.assign(new Error("https://provider.test?key=private-key document-content"), { status: 429 }));
-    await expect(checkGeminiConnection(createGeminiGenerate("synthetic-key"))).rejects.toThrow(/^Gemini: busy$/);
-    expect(warning).toHaveBeenCalledWith("gemini-request-failed", { status: 429, reason: "provider" });
+    await expect(checkGeminiConnection(createGeminiGenerate("synthetic-key"))).rejects.toThrow(/^Gemini: rate-limited$/);
+    expect(warning).toHaveBeenCalledWith("gemini-request-failed", { status: 429, reason: "rate-limit" });
     expect(JSON.stringify(warning.mock.calls)).not.toMatch(/private-key|document-content/);
     warning.mockRestore();
   });
-  it.each([[429, "busy"], [503, "busy"], [408, "timeout"], [504, "timeout"], [400, "unavailable"], [403, "unavailable"]])("classifies HTTP %s without retrying or exposing provider bodies", async (status, code) => {
+  it.each([[429, "rate-limited"], [503, "busy"], [408, "timeout"], [504, "timeout"], [400, "unavailable"], [403, "unavailable"]])("classifies HTTP %s without retrying or exposing provider bodies", async (status, code) => {
     const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
     sdk.generate.mockRejectedValue(Object.assign(new Error("private provider body"), { status }));
     try {
