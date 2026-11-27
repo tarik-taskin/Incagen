@@ -8,6 +8,7 @@ import { getStorage, connectStorageEmulator, ref, uploadBytes } from "firebase/s
 const require = createRequire(new URL("../functions/package.json", import.meta.url));
 const { initializeApp: initializeAdmin, getApps } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
+const { geminiQuotaDay } = require("./lib/analysis/provider-calendar");
 const { getStorage: getAdminStorage } = require("firebase-admin/storage");
 
 // Yetki testleri gerçek buluta düşemez; tüm hesaplar yalnız açıkça seçilen demo emülatöründedir.
@@ -109,7 +110,41 @@ test("atomik iş kabulü, sınırlar ve geç gelen/silinen sonuçların reddi", 
   await assert.rejects(reserveAnalysis(crypto.randomUUID(), { ...input, id: crypto.randomUUID() }, fingerprint), { code: "not-found" });
   await assert.rejects(reserveAnalysis(uid, input, fingerprint), { code: "resource-exhausted" });
   await db.doc(`internalAnalysisQuotas/${getQuotaDay()}`).delete();
+  await db.doc(`internalAnalysisQuotas/pacific-${geminiQuotaDay(Date.now())}`).delete();
   await record.delete();
+});
+
+test("Pasifik kota sınırı geçişi eski günleri sayar ve son hakkı atomik ayırır", async () => {
+  assert.match(process.env.FIRESTORE_EMULATOR_HOST ?? "", /^127\.0\.0\.1:/);
+  const { reserveAnalysis } = require("./lib/analysis/tabular-jobs");
+  const { getQuotaDay } = require("./lib/contracts");
+  const db = getFirestore(), now = Date.parse("2003-11-27T00:30:00Z");
+  const legacy = ["2003-11-26", "2003-11-27"].map(day => db.doc(`internalAnalysisQuotas/${day}`));
+  const budget = db.doc(`internalAnalysisQuotas/pacific-${geminiQuotaDay(now)}`);
+  const users = [crypto.randomUUID(), crypto.randomUUID()];
+  const id = crypto.randomUUID(), personalDay = getQuotaDay(new Date(now));
+  const records = users.map(uid => db.doc(`users/${uid}/analyses/${id}`));
+  const personal = users.map(uid => db.doc(`users/${uid}/aiQuotas/${personalDay}`));
+  const selection = { sheet: null, valueColumn: null, groupColumn: null, aggregation: "count", numberFormat: "plain", unit: "count" };
+  const input = { id, sourceId: "file-0", selection, locale: "en" };
+  try {
+    await Promise.all(records.map(record => record.set({ status: "completed" })));
+    await legacy[0].set({ count: 7 });
+    await legacy[1].set({ count: 4 });
+    const outcomes = await Promise.allSettled(users.map(uid => reserveAnalysis(uid, input, "test-fingerprint", now)));
+    assert.equal(outcomes.filter(outcome => outcome.status === "fulfilled").length, 1);
+    const rejectedIndex = outcomes.findIndex(outcome => outcome.status === "rejected");
+    assert.equal(outcomes[rejectedIndex].reason.details.analysisLimit, "provider-day");
+    assert.equal(outcomes[rejectedIndex].reason.details.retryAfter, Date.parse("2003-11-27T08:00:00Z"));
+    assert.equal(personalDay, "2003-11-27");
+    assert.equal((await budget.get()).data().count, 1);
+    assert.equal((await personal[rejectedIndex].get()).exists, false);
+    assert.equal((await records[rejectedIndex].get()).data().ai, undefined);
+    await budget.set({ count: "invalid" });
+    await assert.rejects(reserveAnalysis(users[rejectedIndex], input, "test-fingerprint", now), {
+      code: "failed-precondition", details: { analysisFailure: "configuration" },
+    });
+  } finally { await Promise.all([...records, ...personal, ...legacy, budget].map(record => record.delete())); }
 });
 
 test("sağlayıcı bekleme süresinde deneme/kota tüketmez; süre dolunca yalnız açık isteği kabul eder", async () => {
@@ -119,7 +154,7 @@ test("sağlayıcı bekleme süresinde deneme/kota tüketmez; süre dolunca yaln�
   const { getQuotaDay } = require("./lib/contracts");
   const db = getFirestore(), uid = crypto.randomUUID(), id = crypto.randomUUID(), now = Date.UTC(2001, 0, 1, 12);
   const record = db.doc(`users/${uid}/analyses/${id}`), day = getQuotaDay(new Date(now));
-  const quota = db.doc(`internalAnalysisQuotas/${day}`), own = db.doc(`users/${uid}/aiQuotas/${day}`);
+  const quota = db.doc(`internalAnalysisQuotas/pacific-${geminiQuotaDay(now)}`), own = db.doc(`users/${uid}/aiQuotas/${day}`);
   const input = { id, sourceId: "file-0", locale: "en", selection: { sheet: null, valueColumn: 1, groupColumn: null, aggregation: "sum", numberFormat: "plain", unit: "USD" } };
   try {
     await record.set({ status: "completed", ai: { status: "failed", attempts: 1, error: "provider-busy", retryAfter: now + 30000 } });
@@ -185,7 +220,7 @@ test("lease dolumu, eski denemenin yeni denemeyi ezmemesi ve aynı gün kota kur
   const day = getQuotaDay(new Date(t0));
   const record = db.doc(`users/${uid}/analyses/${id}`);
   const ownQuota = db.doc(`users/${uid}/aiQuotas/${day}`);
-  const globalQuota = db.doc(`internalAnalysisQuotas/${day}`);
+  const globalQuota = db.doc(`internalAnalysisQuotas/pacific-${geminiQuotaDay(t0)}`);
   const input = {
     id,
     sourceId: "file-0",
@@ -322,7 +357,7 @@ test("analiz kapalıyken belge hazırlama ve yeniden açma çalışır; AI işi,
     assert.equal(prepared.ai, undefined);
 
     const day = getQuotaDay(new Date());
-    await db.doc(`internalAnalysisQuotas/${day}`).delete().catch(() => {});
+    await db.doc(`internalAnalysisQuotas/pacific-${geminiQuotaDay(Date.now())}`).delete().catch(() => {});
 
     // Kapalı bayrakla analiz başlatma isteği reddedilir, model çağrılmaz ve AI işi/kota oluşmaz.
     await assert.rejects(
@@ -373,7 +408,7 @@ test("analiz kapalıyken belge hazırlama ve yeniden açma çalışır; AI işi,
     const afterClosed = (await recordRef.get()).data();
     assert.equal(afterClosed.ai, undefined);
     assert.equal((await db.doc(`users/${uid}/aiQuotas/${day}`).get()).exists, false);
-    assert.equal((await db.doc(`internalAnalysisQuotas/${day}`).get()).exists, false);
+    assert.equal((await db.doc(`internalAnalysisQuotas/pacific-${geminiQuotaDay(Date.now())}`).get()).exists, false);
     const [derivedAi] = await getAdminStorage().bucket().getFiles({ prefix: `derived/${uid}/analyses/${id}/ai/` });
     assert.equal(derivedAi.length, 0);
   } finally {

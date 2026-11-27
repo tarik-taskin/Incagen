@@ -12,6 +12,18 @@ import { computeTable, WorkerError } from "./python-worker";
 import { analysisFingerprint, createTabularPacket, interpretTable } from "./tabular-result";
 import { AI_JOB_LIMITS, hasActiveAnalysisLease, startAnalysisSchema, type AiJob, type AnalysisAccess, type AnalysisFailure } from "./tabular-contract";
 import { isAnalysisEmulator, tabularAnalysisAccess } from "./tabular-rollout";
+import { geminiQuotaDay, legacyProviderQuotaDays, nextQuotaReset } from "./provider-calendar";
+
+const providerBackoffPath = "internalAnalysisQuotas/provider-backoff";
+
+// Eksik sayaç sıfırdır. Bozuk saklanmış sayaç yeni ücretli izin açamaz.
+function quotaCount(value: unknown) {
+  if (value === undefined) return 0;
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0) {
+    throw new HttpsError("failed-precondition", "Analiz kotası doğrulanamadı.", { analysisFailure: "configuration" });
+  }
+  return value;
+}
 
 // Tekilleştirilmiş iş için hazır sonuç veya aktif deneme döner. Farklı kapsam mevcut işi değiştiremez.
 function reuseAnalysis(previous: (AiJob & { fingerprint?: string }) | undefined, fingerprint: string, now: number) {
@@ -28,9 +40,12 @@ function reuseAnalysis(previous: (AiJob & { fingerprint?: string }) | undefined,
 // Atomik kabul hem tekrar çağrıyı tekilleştirir hem kullanıcı/proje maliyet sınırını sunucuda uygular.
 export async function reserveAnalysis(uid: string, input: ReturnType<typeof startAnalysisSchema.parse>, fingerprint: string, now = Date.now(), artifactAttempt?: string) {
   const db = getFirestore(), ref = db.doc(`users/${uid}/analyses/${input.id}`), day = getQuotaDay(new Date(now));
+  const providerDay = geminiQuotaDay(now);
   return db.runTransaction(async tx => {
-    const ownerRef = db.doc(`users/${uid}`), ownQuota = db.doc(`users/${uid}/aiQuotas/${day}`), globalQuota = db.doc(`internalAnalysisQuotas/${day}`);
-    const [owner, current, own, global] = await Promise.all([tx.get(ownerRef), tx.get(ref), tx.get(ownQuota), tx.get(globalQuota)]);
+    const ownerRef = db.doc(`users/${uid}`), ownQuota = db.doc(`users/${uid}/aiQuotas/${day}`);
+    const globalQuota = db.doc(`internalAnalysisQuotas/pacific-${providerDay}`);
+    const legacy = legacyProviderQuotaDays(providerDay).map(date => db.doc(`internalAnalysisQuotas/${date}`));
+    const [owner, current, own, global, backoff, ...old] = await tx.getAll(ownerRef, ref, ownQuota, globalQuota, db.doc(providerBackoffPath), ...legacy);
     if (!current.exists) throw new HttpsError("not-found", "Analiz bulunamadı.");
     if (owner.data()?.deletingAccount || current.data()?.status !== "completed") throw new HttpsError("failed-precondition", "Önce belge hazırlığını tamamlayın.");
     const previous = current.data()?.ai as (AiJob & { fingerprint?: string; quotaDay?: string }) | undefined;
@@ -39,18 +54,33 @@ export async function reserveAnalysis(uid: string, input: ReturnType<typeof star
     if (artifactAttempt !== undefined && current.data()?.artifactAttempt !== artifactAttempt) {
       throw new HttpsError("failed-precondition", "Belge hazırlığı bu sırada değişti. Tabloyu yeniden seçin.", { analysisFailure: "invalid-data" });
     }
-    if ((previous?.attempts ?? 0) >= AI_JOB_LIMITS.attempts) throw new HttpsError("resource-exhausted", "Bu çalışma için analiz deneme sınırına ulaşıldı.");
+    if ((previous?.attempts ?? 0) >= AI_JOB_LIMITS.attempts) throw new HttpsError("resource-exhausted", "Bu çalışma için analiz deneme sınırına ulaşıldı.", { analysisLimit: "attempts" });
     if (previous?.status === "failed" && Number.isFinite(previous.retryAfter) && now < previous.retryAfter!) {
       throw new HttpsError("resource-exhausted", "Yeniden denemeden önce kısa bir süre bekleyin.", { analysisFailure: previous.error, retryAfter: previous.retryAfter });
     }
     const newDayAdmission = previous?.quotaDay !== day;
-    if ((newDayAdmission && Number(own.data()?.count ?? 0) >= AI_JOB_LIMITS.dailyPerUser) || Number(global.data()?.count ?? 0) >= AI_JOB_LIMITS.dailyGlobal) throw new HttpsError("resource-exhausted", "Günlük analiz kapasitesine ulaşıldı. Daha sonra yeniden deneyin.");
+    const ownCount = quotaCount(own.data()?.count), globalCount = quotaCount(global.data()?.count);
+    if (newDayAdmission && ownCount >= AI_JOB_LIMITS.dailyPerUser) {
+      throw new HttpsError("resource-exhausted", "Günlük kullanıcı analiz kotasına ulaşıldı.", {
+        analysisLimit: "user-day", retryAfter: nextQuotaReset(now, time => getQuotaDay(new Date(time))),
+      });
+    }
+    if (globalCount + old.reduce((sum, entry) => sum + quotaCount(entry.data()?.count), 0) >= AI_JOB_LIMITS.dailyGlobal) {
+      throw new HttpsError("resource-exhausted", "Günlük analiz kapasitesine ulaşıldı.", {
+        analysisLimit: "provider-day", retryAfter: nextQuotaReset(now, geminiQuotaDay),
+      });
+    }
+    const pause = backoff.data();
+    if (typeof pause?.retryAfter === "number" && Number.isFinite(pause.retryAfter) && now < pause.retryAfter) {
+      const reason = pause.reason === "provider-rate-limit" ? "provider-rate-limit" : "provider-busy";
+      throw new HttpsError("resource-exhausted", "Analiz servisi geçici olarak beklemede.", { analysisFailure: reason, retryAfter: pause.retryAfter });
+    }
     const job = { status: "running" as const, attemptId: randomUUID(), attempts: (previous?.attempts ?? 0) + 1, startedAt: now,
       leaseUntil: now + AI_JOB_LIMITS.leaseMs, maxAttempts: AI_JOB_LIMITS.attempts, stage: "calculating" as const,
       locale: input.locale, sourceId: input.sourceId, selection: input.selection, fingerprint, quotaDay: day };
     tx.update(ref, { ai: job, updatedAt: now });
-    if (newDayAdmission) tx.set(ownQuota, { count: Number(own.data()?.count ?? 0) + 1 });
-    tx.set(globalQuota, { count: Number(global.data()?.count ?? 0) + 1 });
+    if (newDayAdmission) tx.set(ownQuota, { count: ownCount + 1 });
+    tx.set(globalQuota, { count: globalCount + 1 });
     return { state: "started" as const, job };
   });
 }

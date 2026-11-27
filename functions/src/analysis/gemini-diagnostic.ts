@@ -3,16 +3,10 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { z } from "zod";
 import { checkGeminiConnection, checkGeminiInteractions, createGeminiGenerate, GeminiError, GEMINI_INTERACTION_TRANSPORTS, GEMINI_LIMITS } from "./gemini";
 import { readGeminiKey } from "./gemini-secret";
+import { geminiQuotaDay } from "./provider-calendar";
 
 const diagnosticInput = z.object({ transport: z.enum(GEMINI_INTERACTION_TRANSPORTS).optional() }).strict();
-const providerCalendar = new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", year: "numeric", month: "2-digit", day: "2-digit" });
 const diagnosticLimits = { projectPerDay: 4, intervalMs: 60_000 } as const;
-
-// UTC gece yarısı yeni teşhis hakkı açmaz; sağlayıcının Pasifik takvimi kullanılır.
-export function geminiQuotaDay(now: number) {
-  const parts = Object.fromEntries(providerCalendar.formatToParts(now).map(({ type, value }) => [type, value]));
-  return `${parts.year}-${parts.month}-${parts.day}`;
-}
 
 // Maliyetli kontrol normal kullanıcılara kapalıdır; son giriş, UID ve geliştirici claim'i zorunludur.
 export function requireGeminiDeveloper(auth: { uid: string; token: Record<string, unknown> } | undefined, data: unknown, now = Date.now()) {

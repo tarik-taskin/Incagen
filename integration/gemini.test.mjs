@@ -28,7 +28,8 @@ test("Gemini geliştirici sınırı, eksik anahtar ve atomik maliyet sınırı",
     await assert.rejects(call({ prompt: "untrusted" }), { code: "functions/invalid-argument" });
     await assert.rejects(call({}), { code: "functions/failed-precondition" });
     assert.equal((await db.doc(`users/${uid}/diagnostics/gemini`).get()).exists, false);
-    const { reserveGeminiDiagnostic, geminiQuotaDay } = require("./lib/analysis/gemini-diagnostic");
+    const { reserveGeminiDiagnostic } = require("./lib/analysis/gemini-diagnostic");
+    const { geminiQuotaDay } = require("./lib/analysis/provider-calendar");
     const global = db.doc("internalDiagnostics/gemini");
     const now = Date.parse("2026-11-27T07:50:00Z");
     await global.delete();
