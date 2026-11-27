@@ -54,7 +54,9 @@ test("gerçek Python hesabı, kaynaklı rapor, tekrar/yenileme, izolasyon ve tem
     assert.equal(report.result.metrics.find(metric => metric.id === "aggregate").value, 0.3);
     assert.equal(report.result.charts.length, 1); assert.equal(report.sources[0].fileName, "revenue.csv");
     assert.deepEqual(report.result.metrics.find(metric => metric.id === "rows").evidence.map(e => [e.locator.rowStart, e.locator.rowEnd]), [[2, 3]]);
-    assert.equal((await own.call("startAnalysis", input)).data.reused, true);
+    await record.update({ artifactAttempt: crypto.randomUUID() });
+    try { assert.equal((await own.call("startAnalysis", input)).data.reused, true); }
+    finally { await record.update({ artifactAttempt: completed.artifactAttempt }); }
     assert.equal((await record.get()).data().ai.attempts, 1);
     await assert.rejects(own.call("startAnalysis", { ...input, locale: "de" }), { code: "functions/failed-precondition" });
     assert.deepEqual((await own.call("getAnalysisResult", { id })).data.result, report.result);
@@ -65,7 +67,11 @@ test("gerçek Python hesabı, kaynaklı rapor, tekrar/yenileme, izolasyon ve tem
     assert.equal((await retryRecord.get()).data().ai.status, "completed");
     assert.equal((await retryRecord.get()).data().ai.attempts, 2);
     const thirdId = crypto.randomUUID();
-    await db.doc(`users/${own.auth.currentUser.uid}/analyses/${thirdId}`).set({ ...completed, ai: null });
+    const uid = own.auth.currentUser.uid;
+    const bucket = getAdminStorage().bucket();
+    const [preparedCopy] = await bucket.file(`derived/${uid}/analyses/${id}/${completed.artifactAttempt}/file-0.json.gz`).download();
+    await bucket.file(`derived/${uid}/analyses/${thirdId}/${completed.artifactAttempt}/file-0.json.gz`).save(preparedCopy);
+    await db.doc(`users/${uid}/analyses/${thirdId}`).set({ ...completed, ai: null });
     await assert.rejects(own.call("startAnalysis", { ...input, id: thirdId }), { code: "functions/resource-exhausted" });
     await own.call("deleteAnalysis", { id: thirdId });
     for (const removeId of [id, retryId]) {
@@ -285,7 +291,7 @@ test("aktif AI işi sürerken silme/hesap silme engeli ve Storage derived izolas
 test("analiz kapalıyken belge hazırlama ve yeniden açma çalışır; AI işi, kota ve model çağrısı oluşmaz", { timeout: 60000 }, async () => {
   assert.match(process.env.FIRESTORE_EMULATOR_HOST ?? "", /^127\.0\.0\.1:/);
   if (!getApps().length) initializeAdmin({ projectId: "demo-incagen", storageBucket: "demo-incagen.appspot.com" });
-  const { executeStartAnalysis } = require("./lib/analysis/tabular-jobs");
+  const { executeStartAnalysis, reserveAnalysis } = require("./lib/analysis/tabular-jobs");
   const { getQuotaDay } = require("./lib/contracts");
   const { GeminiError } = require("./lib/analysis/gemini");
 
@@ -349,11 +355,15 @@ test("analiz kapalıyken belge hazırlama ve yeniden açma çalışır; AI işi,
     ]) {
       await assert.rejects(executeStartAnalysis(uid, { ...input, selection: { ...selection, ...override }, checkOnly: true },
         { access: "available", generate: unexpectedModel }), { code: "failed-precondition", details: { analysisFailure } });
+      await assert.rejects(executeStartAnalysis(uid, { ...input, selection: { ...selection, ...override } },
+        { access: "available", generate: unexpectedModel }), { code: "failed-precondition", details: { analysisFailure } });
     }
 
     await recordRef.update({ artifactAttempt: crypto.randomUUID() });
     try {
       await assert.rejects(executeStartAnalysis(uid, { ...input, checkOnly: true }, { access: "available", generate: unexpectedModel }),
+        { code: "failed-precondition", details: { analysisFailure: "invalid-data" } });
+      await assert.rejects(reserveAnalysis(uid, input, "validated-scope", Date.now(), prepared.artifactAttempt),
         { code: "failed-precondition", details: { analysisFailure: "invalid-data" } });
     } finally {
       await recordRef.update({ artifactAttempt: prepared.artifactAttempt });

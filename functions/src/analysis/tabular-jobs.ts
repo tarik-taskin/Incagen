@@ -14,8 +14,20 @@ import { analysisFingerprint, createTabularPacket, interpretTable } from "./tabu
 import { AI_JOB_LIMITS, hasActiveAnalysisLease, startAnalysisSchema, type AiJob, type AnalysisAccess, type AnalysisFailure } from "./tabular-contract";
 import { isAnalysisEmulator, tabularAnalysisAccess } from "./tabular-rollout";
 
+// Tekilleştirilmiş iş için hazır sonuç veya aktif deneme döner. Farklı kapsam mevcut işi değiştiremez.
+function reuseAnalysis(previous: (AiJob & { fingerprint?: string }) | undefined, fingerprint: string, now: number) {
+  if (previous?.status === "completed") {
+    if (previous.fingerprint !== fingerprint) throw new HttpsError("failed-precondition", "Tamamlanan analiz korunur. Farklı bir kapsam için yeni çalışma oluşturun.");
+    return { state: "completed" as const, job: previous };
+  }
+  if (previous && hasActiveAnalysisLease(previous, now)) {
+    if (previous.fingerprint !== fingerprint) throw new HttpsError("failed-precondition", "Devam eden analizin kapsamı değiştirilemez.");
+    return { state: "running" as const, job: previous };
+  }
+}
+
 // Atomik kabul hem tekrar çağrıyı tekilleştirir hem kullanıcı/proje maliyet sınırını sunucuda uygular.
-export async function reserveAnalysis(uid: string, input: ReturnType<typeof startAnalysisSchema.parse>, fingerprint: string, now = Date.now()) {
+export async function reserveAnalysis(uid: string, input: ReturnType<typeof startAnalysisSchema.parse>, fingerprint: string, now = Date.now(), artifactAttempt?: string) {
   const db = getFirestore(), ref = db.doc(`users/${uid}/analyses/${input.id}`), day = getQuotaDay(new Date(now));
   return db.runTransaction(async tx => {
     const ownerRef = db.doc(`users/${uid}`), ownQuota = db.doc(`users/${uid}/aiQuotas/${day}`), globalQuota = db.doc(`internalAnalysisQuotas/${day}`);
@@ -23,13 +35,10 @@ export async function reserveAnalysis(uid: string, input: ReturnType<typeof star
     if (!current.exists) throw new HttpsError("not-found", "Analiz bulunamadı.");
     if (owner.data()?.deletingAccount || current.data()?.status !== "completed") throw new HttpsError("failed-precondition", "Önce belge hazırlığını tamamlayın.");
     const previous = current.data()?.ai as (AiJob & { fingerprint?: string; quotaDay?: string }) | undefined;
-    if (previous?.status === "completed") {
-      if (previous.fingerprint !== fingerprint) throw new HttpsError("failed-precondition", "Tamamlanan analiz korunur. Farklı bir kapsam için yeni çalışma oluşturun.");
-      return { state: "completed" as const, job: previous };
-    }
-    if (previous && hasActiveAnalysisLease(previous, now)) {
-      if (previous.fingerprint !== fingerprint) throw new HttpsError("failed-precondition", "Devam eden analizin kapsamı değiştirilemez.");
-      return { state: "running" as const, job: previous };
+    const reused = reuseAnalysis(previous, fingerprint, now);
+    if (reused) return reused;
+    if (artifactAttempt !== undefined && current.data()?.artifactAttempt !== artifactAttempt) {
+      throw new HttpsError("failed-precondition", "Belge hazırlığı bu sırada değişti. Tabloyu yeniden seçin.", { analysisFailure: "invalid-data" });
     }
     if ((previous?.attempts ?? 0) >= AI_JOB_LIMITS.attempts) throw new HttpsError("resource-exhausted", "Bu çalışma için analiz deneme sınırına ulaşıldı.");
     if (previous?.status === "failed" && Number.isFinite(previous.retryAfter) && now < previous.retryAfter!) {
@@ -121,7 +130,10 @@ export async function executeStartAnalysis(uid: string | undefined, rawData: unk
     return { id: input.id, status: "available" as const, checkOnly: true };
   }
   const fingerprint = analysisFingerprint(source.sha256, source.id, input.selection, input.locale);
-  const reservation = await reserveAnalysis(uid!, input, fingerprint);
+  const reused = reuseAnalysis(data.ai, fingerprint, Date.now());
+  if (reused) return { id: input.id, status: reused.state, reused: true };
+  await verifyPreparedSelection(uid!, input.id, data.artifactAttempt, source, input.selection);
+  const reservation = await reserveAnalysis(uid!, input, fingerprint, Date.now(), data.artifactAttempt);
   if (reservation.state !== "started") return { id: input.id, status: reservation.state, reused: true };
   const job = reservation.job, bucket = getStorage().bucket(), startedAt = Date.now();
   const artifactPath = `derived/${uid}/analyses/${input.id}/ai/${job.attemptId}.json.gz`;
