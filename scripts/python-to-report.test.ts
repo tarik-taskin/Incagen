@@ -1,5 +1,6 @@
 import { createElement, type ReactNode } from "react";
 import { createHash } from "node:crypto";
+import { createRequire } from "node:module";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { render, cleanup } from "@testing-library/react";
@@ -244,5 +245,98 @@ describe("gerçek Python hesaplayıcısından altı dilli üretim rapor biçimin
     const wrongRowWorker = structuredClone(worker);
     wrongRowWorker.metrics[1].evidence[0].locator.rowEnd = 99;
     expect(() => createTabularPacket("bad-row-anchor", xlsxSample.objective, wrongRowWorker, "en")).toThrow();
+  });
+
+  it("gerçek Python CSV/XLSX üzerinde geçerli Çince raporları kabul eder, üç kaynağa dayanmayan vakayı tek çağrıda reddeder ve nötr anlatımda kesin etiketleri korur", async () => {
+    // 1. Gerçek Python CSV (gerçek başlık "净收入"): üç geçerli Çince anlatım kabul edilir.
+    const zhCsv = Buffer.from("服务,净收入\nCloud,12000.10\nCloud,-500.10\nConsulting,5000.20\nConsulting,2500.30\n", "utf8");
+    const zhSelection: TableSelection = { sheet: null, valueColumn: 1, groupColumn: 0, aggregation: "sum", numberFormat: "plain", unit: "USD" };
+    const zhRun = runPythonWorker(zhCsv, "zh-net-revenue.csv", zhSelection);
+    expect(zhRun.status).toBe(0);
+    const zhWorker = workerResultSchema.parse(zhRun.body.result);
+    const zhPacket = createTabularPacket("py-zh-valid", "比较各服务净收入汇总", zhWorker, "zh");
+    const zhOk = await interpretTable(zhPacket, "zh", async () => JSON.stringify({
+      summary: [{ text: "所选净收入列已汇总。", metricIds: ["rows", "aggregate"] }],
+      findings: [{ id: "finding-1", title: "服务线对比", text: "Cloud高于Consulting。", metricIds: ["group-1", "group-2"] }],
+      recommendations: [],
+      limitations: ["此分析不验证记录完整性。"],
+    }));
+    expect(zhOk.metrics.find(m => m.id === "aggregate")?.value).toBe(19000.5);
+
+    // 1b. Olumsuz ifade ve ayrı tamlık iddiası yan yana geldiğinde (且) yanlışlıkla muaf kalmaz.
+    const badConjGen = vi.fn<GeminiGenerate>(async () => JSON.stringify({
+      summary: [{ text: "所选净收入列已汇总。", metricIds: ["rows", "aggregate"] }],
+      findings: [{ id: "finding-1", title: "服务线对比", text: "Cloud高于Consulting。", metricIds: ["group-1", "group-2"] }],
+      recommendations: [],
+      limitations: ["此分析不评估成本且记录完整。"],
+    }));
+    await expect(interpretTable(zhPacket, "zh", badConjGen)).rejects.toThrow(/completeness/i);
+    expect(badConjGen).toHaveBeenCalledTimes(1);
+
+    // 2. Tek grup referanslı (group-1) Çince çeviri özgün Cloud olmadan reddedilir; ikinci ücretli çağrı yapılmaz.
+    const badZhGen = vi.fn<GeminiGenerate>(async () => JSON.stringify({
+      summary: [{ text: "所选净收入列已汇总。", metricIds: ["rows", "aggregate"] }],
+      findings: [{ id: "finding-1", title: "分组情况", text: "云服务的汇总金额较高。", metricIds: ["group-1"] }],
+      recommendations: [],
+      limitations: ["此分析不验证记录完整性。"],
+    }));
+    await expect(interpretTable(zhPacket, "zh", badZhGen)).rejects.toThrow(/group label/i);
+    expect(badZhGen).toHaveBeenCalledTimes(1);
+
+    // 3. Gerçek Python çok sayfalı XLSX ("Support" sayfası + "Out of scope"):
+    const ExcelJS = createRequire(resolve("functions/package.json"))("exceljs");
+    const wb = new ExcelJS.Workbook();
+    wb.addWorksheet("Out of scope").addRows([["Team", "Amount"], ["Other", 999999]]);
+    wb.addWorksheet("Support").addRows([["Team", "Amount"], ["A", 10], ["A", 20], ["B", 90]]);
+    const supportBytes = Buffer.from(await wb.xlsx.writeBuffer());
+    const supportSelection: TableSelection = { sheet: "Support", valueColumn: 1, groupColumn: 0, aggregation: "mean", numberFormat: "plain", unit: "EUR" };
+    const supportRun = runPythonWorker(supportBytes, "support-teams.xlsx", supportSelection);
+    expect(supportRun.status).toBe(0);
+    const supportWorker = workerResultSchema.parse(supportRun.body.result);
+    expect(supportWorker.scope.sheet).toBe("Support");
+    expect(supportWorker.metrics.find(m => m.id === "aggregate")?.value).toBe(40);
+
+    // 3a. Hedefte "performance" geçse bile Amount ölçümünde performans farkı iddiası reddedilir (tek çağrı).
+    const enPerfPacket = createTabularPacket("py-en-perf", "Evaluate team performance from recorded amounts.", supportWorker, "en");
+    const badEnGen = vi.fn<GeminiGenerate>(async () => JSON.stringify({
+      summary: [{ text: "The teams show performance differences.", metricIds: ["rows", "aggregate"] }],
+      findings: [{ id: "finding-1", title: "Team comparison", text: "Team B has a higher recorded average than team A.", metricIds: ["group-1", "group-2"] }],
+      recommendations: [],
+      limitations: ["Only recorded Amount averages are available."],
+    }));
+    await expect(interpretTable(enPerfPacket, "en", badEnGen)).rejects.toThrow(/performance/i);
+    expect(badEnGen).toHaveBeenCalledTimes(1);
+
+    // 3b. Support sayfasının Arapça metinde "ورقة الدعم" diye çevrilmesi reddedilir (tek çağrı).
+    const arSupportPacket = createTabularPacket("py-ar-support", "Compare team averages on Support.", supportWorker, "ar");
+    const badArGen = vi.fn<GeminiGenerate>(async () => JSON.stringify({
+      summary: [{ text: "يعرض الملخص متوسط المبالغ في ورقة الدعم.", metricIds: ["rows", "aggregate"] }],
+      findings: [{ id: "finding-1", title: "مقارنة المجموعات", text: "متوسط B أعلى من متوسط A.", metricIds: ["group-1", "group-2"] }],
+      recommendations: [],
+      limitations: ["البيانات تقتصر على الورقة المحددة."],
+    }));
+    await expect(interpretTable(arSupportPacket, "ar", badArGen)).rejects.toThrow(/worksheet/i);
+    expect(badArGen).toHaveBeenCalledTimes(1);
+
+    // 3c. Güvenli nötr anlatım geçer ve arayüzde gerçek "Support", "A" ve "B" kimlikleri korunur.
+    const neutralGen = vi.fn<GeminiGenerate>(async () => JSON.stringify({
+      summary: [{ text: "يعرض الملخص متوسط المبالغ المسجلة في ورقة العمل المحددة فقط.", metricIds: ["rows", "aggregate"] }],
+      findings: [{ id: "finding-1", title: "ملخص القياس", text: "تختلف المتوسطات المسجلة بين المجموعات ضمن النطاق المحدد.", metricIds: ["aggregate"] }],
+      recommendations: [],
+      limitations: ["لا تقيس هذه المبالغ الأداء التشغيلي."],
+    }));
+    const neutralResult = await interpretTable(arSupportPacket, "ar", neutralGen);
+    expect(neutralGen).toHaveBeenCalledTimes(1);
+    setLocale("ar");
+    const view = render(createElement(AdaptiveReport, {
+      result: neutralResult,
+      sources: [supportWorker.document],
+      featuredMetricIds: ["aggregate", "rows"],
+      translateContent: false,
+      compactMetrics: false,
+    }));
+    expect(view.getByTestId("chart-groups").textContent).toBe("EUR:B=90,A=15");
+    expect(neutralResult.metrics.find(m => m.id === "aggregate")?.evidence[0].locator.sheet).toBe("Support");
+    view.unmount();
   });
 });

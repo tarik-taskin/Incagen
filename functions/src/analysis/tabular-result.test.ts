@@ -282,4 +282,154 @@ describe("real table result boundary", () => {
       limitations: ["Only Amount totals are available."],
     }))).rejects.toThrow();
   });
+
+  it("accepts valid Chinese column names, negated completeness caveats, and unspaced CJK+Latin labels while blocking lookalike confusion", async () => {
+    const zhCsvEvAll = [{ sourceId: "file-0", sha256: "d".repeat(64), chunkId: "file-0:table:0001", locator: { section: "table", rowStart: 2, rowEnd: 5 } }];
+    const zhCsvEvCloud = [{ sourceId: "file-0", sha256: "d".repeat(64), chunkId: "file-0:table:0001", locator: { section: "table", rowStart: 2, rowEnd: 3 } }];
+    const zhCsvEvCons = [{ sourceId: "file-0", sha256: "d".repeat(64), chunkId: "file-0:table:0001", locator: { section: "table", rowStart: 4, rowEnd: 5 } }];
+    const zhMeasureWorker: WorkerResult = {
+      version: 1,
+      document: {
+        version: 1, sourceId: "file-0", fileName: "zh-revenue.csv", sha256: "d".repeat(64), extension: "csv",
+        detectedMime: "text/csv", category: "Tablo", parserVersion: "incagen-python/0.1.0", metadata: {}, warnings: [],
+        chunks: [{ id: "file-0:table:0001", kind: "table", locator: { section: "table", rowStart: 2, rowEnd: 5 }, table: { columns: ["服务", "净收入"], rows: [["Cloud", "12000.10"], ["Cloud", "-500.10"], ["Consulting", "5000.20"], ["Consulting", "2500.30"]] } }],
+      },
+      metrics: [
+        { id: "rows", labelKey: "rows", methodKey: "count", unit: "count", value: 4, evidence: zhCsvEvAll },
+        { id: "aggregate", labelKey: "sum", methodKey: "sum", unit: "USD", value: 19000.5, evidence: zhCsvEvAll },
+        { id: "group-1", label: "Cloud", methodKey: "sum", unit: "USD", value: 11500, evidence: zhCsvEvCloud },
+        { id: "group-2", label: "Consulting", methodKey: "sum", unit: "USD", value: 7500.5, evidence: zhCsvEvCons },
+      ],
+      points: [{ label: "Cloud", metricId: "group-1", value: 11500 }, { label: "Consulting", metricId: "group-2", value: 7500.5 }],
+      scope: { rows: 4, emptyRows: 0, groups: 2, sheet: null, measure: "净收入", group: "服务", selection: { ...selection, numberFormat: "plain" } },
+    };
+
+    const packet = createTabularPacket("zh-valid-1", "比较各服务的净收入汇总。", zhMeasureWorker, "zh");
+    const validResult = await interpretTable(packet, "zh", async () => JSON.stringify({
+      summary: [{ text: "所选净收入列已汇总。", metricIds: ["rows", "aggregate"] }],
+      findings: [{ id: "finding-1", title: "分组汇总对比", text: "Cloud高于Consulting。", metricIds: ["group-1", "group-2"] }],
+      recommendations: [],
+      limitations: ["此分析不验证记录完整性。"],
+    }));
+    expect(validResult.summary[0].text).toBe("所选净收入列已汇总。");
+    expect(validResult.findings[0].statements[0].text).toBe("Cloud高于Consulting。");
+
+    // Olumsuz bir ifade ile ayrı bir tamlık iddiası yan yana geldiğinde (且 / and) iddia muaf kalmaz.
+    await expect(interpretTable(packet, "zh", async () => JSON.stringify({
+      summary: [{ text: "所选净收入列已汇总。", metricIds: ["rows", "aggregate"] }],
+      findings: [{ id: "finding-1", title: "分组汇总对比", text: "Cloud高于Consulting。", metricIds: ["group-1", "group-2"] }],
+      recommendations: [],
+      limitations: ["此分析不评估成本且记录完整。"],
+    }))).rejects.toThrow(/completeness/i);
+    await expect(interpretTable(createTabularPacket("en-conj-1", "Compare totals", worker, "en"), "en", async () => JSON.stringify({
+      summary: [{ text: "Store leads the selected measure.", metricIds: ["group-2"] }],
+      findings: [{ id: "finding-1", title: "Scope", text: "Costs are not included and the entire dataset is complete.", metricIds: ["rows", "aggregate"] }],
+      recommendations: [],
+      limitations: ["Costs are unavailable."],
+    }))).rejects.toThrow(/completeness/i);
+
+    // Benzer etiketler (Cloud vs Cloud Pro) birbirinin yerine sayılmaz.
+    const lookalikeWorker = structuredClone(zhMeasureWorker);
+    lookalikeWorker.metrics[3] = { ...lookalikeWorker.metrics[3], label: "Cloud Pro" };
+    lookalikeWorker.points = [{ label: "Cloud Pro", metricId: "group-2", value: 7500.5 }, { label: "Cloud", metricId: "group-1", value: 11500 }];
+    const lookalikePacket = createTabularPacket("lookalike-1", "Compare groups", lookalikeWorker, "en");
+    await expect(interpretTable(lookalikePacket, "en", async () => JSON.stringify({
+      summary: [{ text: "The selected column totals were summarized.", metricIds: ["rows", "aggregate"] }],
+      findings: [{ id: "finding-1", title: "Group comparison", text: "Cloud Pro leads in recorded totals.", metricIds: ["group-1", "group-2"] }],
+      recommendations: [],
+      limitations: ["Only recorded totals are available."],
+    }))).rejects.toThrow(/group label/i);
+
+    const lookalikeOk = await interpretTable(lookalikePacket, "en", async () => JSON.stringify({
+      summary: [{ text: "The selected column totals were summarized.", metricIds: ["rows", "aggregate"] }],
+      findings: [{ id: "finding-1", title: "Group comparison", text: "Cloud leads over Cloud Pro in recorded totals.", metricIds: ["group-1", "group-2"] }],
+      recommendations: [],
+      limitations: ["Only recorded totals are available."],
+    }));
+    expect(lookalikeOk.datasets[0].points.map(point => point.label)).toEqual(["Cloud Pro", "Cloud"]);
+  });
+
+  it("enforces evidence boundaries regardless of user objective, single-group references, and arbitrary worksheet names without retrying model calls", async () => {
+    const xlsxEvAll = [{ sourceId: "file-0", sha256: "e".repeat(64), chunkId: "file-0:sheet-2:table:0001", locator: { sheet: "Support", rowStart: 2, rowEnd: 4 } }];
+    const xlsxEvA = [{ sourceId: "file-0", sha256: "e".repeat(64), chunkId: "file-0:sheet-2:table:0001", locator: { sheet: "Support", rowStart: 2, rowEnd: 3 } }];
+    const xlsxEvB = [{ sourceId: "file-0", sha256: "e".repeat(64), chunkId: "file-0:sheet-2:table:0001", locator: { sheet: "Support", rowStart: 4, rowEnd: 4 } }];
+    const supportXlsxWorker: WorkerResult = {
+      version: 1,
+      document: {
+        version: 1, sourceId: "file-0", fileName: "teams.xlsx", sha256: "e".repeat(64), extension: "xlsx",
+        detectedMime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", category: "Tablo", parserVersion: "incagen-python/0.1.0", metadata: { sheets: 2 }, warnings: [],
+        chunks: [{ id: "file-0:sheet-2:table:0001", kind: "table", locator: { sheet: "Support", rowStart: 2, rowEnd: 4 }, table: { columns: ["Team", "Amount"], rows: [["A", 10], ["A", 20], ["B", 90]] } }],
+      },
+      metrics: [
+        { id: "rows", labelKey: "rows", methodKey: "count", unit: "count", value: 3, evidence: xlsxEvAll },
+        { id: "aggregate", labelKey: "mean", methodKey: "mean", unit: "EUR", value: 40, evidence: xlsxEvAll },
+        { id: "group-1", label: "A", methodKey: "mean", unit: "EUR", value: 15, evidence: xlsxEvA },
+        { id: "group-2", label: "B", methodKey: "mean", unit: "EUR", value: 90, evidence: xlsxEvB },
+      ],
+      points: [{ label: "B", metricId: "group-2", value: 90 }, { label: "A", metricId: "group-1", value: 15 }],
+      scope: { rows: 3, emptyRows: 0, groups: 2, sheet: "Support", measure: "Amount", group: "Team", selection: { sheet: "Support", valueColumn: 1, groupColumn: 0, aggregation: "mean", numberFormat: "plain", unit: "EUR" } },
+    };
+
+    // 1. Kullanıcı amacı "performance" içerse bile Amount ölçümünde performans çıkarımı reddedilir ve ikinci model çağrısı yapılmaz.
+    const perfObjPacket = createTabularPacket("perf-obj-1", "Compare team performance across recorded amounts.", supportXlsxWorker, "en");
+    const perfGenerate = vi.fn<GeminiGenerate>(async () => JSON.stringify({
+      summary: [{ text: "The teams show performance differences.", metricIds: ["rows", "aggregate"] }],
+      findings: [{ id: "finding-1", title: "Group averages", text: "Team B has a higher recorded average than team A.", metricIds: ["group-1", "group-2"] }],
+      recommendations: [],
+      limitations: ["Only recorded Amount averages are available."],
+    }));
+    await expect(interpretTable(perfObjPacket, "en", perfGenerate)).rejects.toThrow(/performance/i);
+    expect(perfGenerate).toHaveBeenCalledTimes(1);
+
+    // 1b. Gruplama başlığı "PerformanceTier" olsa bile ölçüm sütunu Amount iken performans iddiası reddedilir.
+    const perfGroupWorker = structuredClone(supportXlsxWorker);
+    perfGroupWorker.scope.group = "PerformanceTier";
+    const perfGroupPacket = createTabularPacket("perf-group-1", "Compare recorded amounts.", perfGroupWorker, "en");
+    const perfGroupGen = vi.fn<GeminiGenerate>(async () => JSON.stringify({
+      summary: [{ text: "The teams show performance differences.", metricIds: ["rows", "aggregate"] }],
+      findings: [{ id: "finding-1", title: "Group averages", text: "Team B has a higher recorded average than team A.", metricIds: ["group-1", "group-2"] }],
+      recommendations: [],
+      limitations: ["Only recorded Amount averages are available."],
+    }));
+    await expect(interpretTable(perfGroupPacket, "en", perfGroupGen)).rejects.toThrow(/performance/i);
+    expect(perfGroupGen).toHaveBeenCalledTimes(1);
+
+    // 2. Tek grup referanslı (group-1) Çince ifade özgün Cloud etiketi olmadan reddedilir ve ikinci model çağrısı yapılmaz.
+    const csvWorker = structuredClone(worker);
+    csvWorker.metrics[2] = { ...csvWorker.metrics[2], label: "Cloud" };
+    csvWorker.metrics[3] = { ...csvWorker.metrics[3], label: "Consulting" };
+    csvWorker.points = [{ label: "Cloud", metricId: "group-1", value: 10.1 }, { label: "Consulting", metricId: "group-2", value: 20.2 }];
+    const singleGroupPacket = createTabularPacket("zh-single-1", "Compare totals by group", csvWorker, "zh");
+    const singleGroupGenerate = vi.fn<GeminiGenerate>(async () => JSON.stringify({
+      summary: [{ text: "所选记录已汇总。", metricIds: ["rows", "aggregate"] }],
+      findings: [{ id: "finding-1", title: "单项汇总", text: "云服务的汇总金额较高。", metricIds: ["group-1"] }],
+      recommendations: [],
+      limitations: ["当前仅包含所选列金额汇总。"],
+    }));
+    await expect(interpretTable(singleGroupPacket, "zh", singleGroupGenerate)).rejects.toThrow(/group label/i);
+    expect(singleGroupGenerate).toHaveBeenCalledTimes(1);
+
+    // 3. Herhangi bir sayfa adı (Support) Arapça metinde "ورقة الدعم" diye çevrilirse reddedilir ve ikinci model çağrısı yapılmaz.
+    const arSupportPacket = createTabularPacket("ar-support-1", "Compare averages on Support sheet", supportXlsxWorker, "ar");
+    const arSupportGenerate = vi.fn<GeminiGenerate>(async () => JSON.stringify({
+      summary: [{ text: "يوضح الملخص متوسط المبالغ في ورقة الدعم.", metricIds: ["rows", "aggregate"] }],
+      findings: [{ id: "finding-1", title: "مقارنة المتوسطات", text: "جاء متوسط الفريق B أعلى من الفريق A.", metricIds: ["group-1", "group-2"] }],
+      recommendations: [],
+      limitations: ["لا تتوفر بيانات إضافية."],
+    }));
+    await expect(interpretTable(arSupportPacket, "ar", arSupportGenerate)).rejects.toThrow(/worksheet/i);
+    expect(arSupportGenerate).toHaveBeenCalledTimes(1);
+
+    // 4. Nötr kapsam anlatımı geçer; uygulama kesin grup ve sayfa kimliklerini doğrulanmış metrik/kanıt bağından korur.
+    const neutralGenerate = vi.fn<GeminiGenerate>(async () => JSON.stringify({
+      summary: [{ text: "يوضح الملخص متوسط المبالغ في ورقة العمل المحددة فقط.", metricIds: ["rows", "aggregate"] }],
+      findings: [{ id: "finding-1", title: "ملخص النطاق", text: "يختلف المتوسط المسجل بين المجموعات ضمن السجلات المحددة.", metricIds: ["aggregate"] }],
+      recommendations: [],
+      limitations: ["لا تعكس هذه المبالغ الأداء التشغيلي ولا تتوفر بيانات خارج الورقة المحددة."],
+    }));
+    const neutralResult = await interpretTable(arSupportPacket, "ar", neutralGenerate);
+    expect(neutralGenerate).toHaveBeenCalledTimes(1);
+    expect(neutralResult.datasets[0].points.map(point => point.label)).toEqual(["B", "A"]);
+    expect(neutralResult.metrics.find(m => m.id === "aggregate")?.evidence[0].locator.sheet).toBe("Support");
+  });
 });

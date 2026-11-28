@@ -673,10 +673,11 @@ test("oturumsuz, davetsiz, davetli, geri kapatma ve davet iptali erişim sınır
       { code: "permission-denied", details: { analysisAccess: "invite-required" } }
     );
 
-    // 3. Davetli claim (incagenTabularBeta: true) ile checkOnly geçer, yazım yapmaz.
-    await getAdminAuth().setCustomUserClaims(uid, { incagenTabularBeta: true });
+    // 3. Davetli claim (incagenTabularBeta: true) diğer claim'lerle birlikte çalışır; checkOnly yazım yapmaz.
+    await getAdminAuth().setCustomUserClaims(uid, { otherRole: "keep-me", incagenTabularBeta: true });
     const invitedToken = await own.auth.currentUser.getIdTokenResult(true);
     assert.equal(invitedToken.claims.incagenTabularBeta, true);
+    assert.equal(invitedToken.claims.otherRole, "keep-me");
     const invitedAccess = tabularAnalysisAccess(invitedToken.claims.incagenTabularBeta);
     assert.equal(invitedAccess, "available");
     assert.deepEqual(
@@ -684,7 +685,7 @@ test("oturumsuz, davetsiz, davetli, geri kapatma ve davet iptali erişim sınır
       { id, status: "available", checkOnly: true }
     );
 
-    // 4. Geri kapatma: kullanıcı claim'i geçerli kalsa bile sunucu kapısı kapanınca yeni analiz reddedilir.
+    // 4. Geri kapatma: önceden verilmiş davet belirteci geçerli kalsa bile sunucu kapısı kapanınca yeni analiz reddedilir.
     process.env.INCAGEN_TABULAR_ANALYSIS_ENABLED = "false";
     const rolledBackAccess = tabularAnalysisAccess(invitedToken.claims.incagenTabularBeta);
     assert.equal(rolledBackAccess, "closed");
@@ -696,12 +697,19 @@ test("oturumsuz, davetsiz, davetli, geri kapatma ve davet iptali erişim sınır
       { code: "failed-precondition", details: { analysisFailure: "configuration" } }
     );
 
-    // 5. Davet iptali sonrası taze belirteçte claim kalkar ve açık modda tekrar invite-required döner.
-    await getAdminAuth().setCustomUserClaims(uid, {});
+    // 5. Davet iptalinde diğer claim korunur; taze belirteç reddedilirken eski belirteç sunucu kapatmasıyla anında engellenir.
+    const currentClaims = { ...(await getAdminAuth().getUser(uid)).customClaims };
+    delete currentClaims.incagenTabularBeta;
+    await getAdminAuth().setCustomUserClaims(uid, currentClaims);
     const revokedToken = await own.auth.currentUser.getIdTokenResult(true);
     assert.equal(revokedToken.claims.incagenTabularBeta, undefined);
+    assert.equal(revokedToken.claims.otherRole, "keep-me");
     process.env.INCAGEN_TABULAR_ANALYSIS_ENABLED = "true";
     assert.equal(tabularAnalysisAccess(revokedToken.claims.incagenTabularBeta), "invite-required");
+    // Önceden verilmiş eski belirteç yenilenene kadar claim taşır; anında iptal kapalı sunucu bayrağıyla güvence altındadır.
+    assert.equal(tabularAnalysisAccess(invitedToken.claims.incagenTabularBeta), "available");
+    process.env.INCAGEN_TABULAR_ANALYSIS_ENABLED = "false";
+    assert.equal(tabularAnalysisAccess(invitedToken.claims.incagenTabularBeta), "closed");
 
     // 6. Kapalı/reddedilen akışta sıfır model çağrısı, sıfır AI işi ve sıfır kota; belge hazırlığı ve geçmiş korunur; başka kullanıcı reddedilir.
     assert.equal(modelCalls, 0);
@@ -721,5 +729,114 @@ test("oturumsuz, davetsiz, davetli, geri kapatma ve davet iptali erişim sınır
     else process.env.INCAGEN_TABULAR_ANALYSIS_ENABLED = prevEnabled;
     if (id) await own.call("deleteAnalysis", { id }).catch(() => {});
     await Promise.all([deleteApp(own.app), deleteApp(other.app)]);
+  }
+});
+
+test("anlatı doğrulamasından reddedilen yanıt kaydedilmez, ikinci çağrı yapmaz; mevcut tamamlanan v1 rapor geri kapatmada da açılır", { timeout: 60000 }, async () => {
+  assert.match(process.env.FIRESTORE_EMULATOR_HOST ?? "", /^127\.0\.0\.1:/);
+  if (!getApps().length) initializeAdmin({ projectId: "demo-incagen", storageBucket: "demo-incagen.appspot.com" });
+  const { executeStartAnalysis } = require("./lib/analysis/tabular-jobs");
+  const { getQuotaDay } = require("./lib/contracts");
+
+  const own = await client(), db = getFirestore();
+  const uid = own.auth.currentUser.uid;
+  const xlsx = await tabularFixture("xlsx");
+  const prevEmu = process.env.FUNCTIONS_EMULATOR;
+  const prevProj = process.env.GCLOUD_PROJECT;
+  const prevEnabled = process.env.INCAGEN_TABULAR_ANALYSIS_ENABLED;
+  let badId;
+  let goodId;
+
+  try {
+    process.env.FUNCTIONS_EMULATOR = "true";
+    process.env.GCLOUD_PROJECT = "demo-incagen";
+
+    // 1. Anlatı doğrulamasından reddedilen sağlayıcı yanıtı tek çağrıda validation hatasına düşer ve artefakt yazmaz.
+    const badCreated = await own.call("createAnalysis", {
+      requestId: crypto.randomUUID(),
+      title: "Rejected narrative check",
+      business: "Synthetic",
+      objective: "Evaluate team performance from recorded amounts.",
+      files: [{ name: xlsx.name, size: xlsx.bytes.length, contentType: xlsx.type }],
+    });
+    badId = badCreated.data.id;
+    await uploadBytes(ref(own.storage, badCreated.data.paths[0]), xlsx.bytes, { contentType: xlsx.type });
+    await own.call("prepareAnalysis", { id: badId });
+
+    let badCalls = 0;
+    await assert.rejects(
+      executeStartAnalysis(uid, { id: badId, sourceId: "file-0", selection: xlsx.selection, locale: "en" }, {
+        access: "available",
+        generate: async () => {
+          badCalls += 1;
+          return JSON.stringify({
+            summary: [{ text: "The teams show performance differences.", metricIds: ["rows", "aggregate"] }],
+            findings: [{ id: "finding-1", title: "Team averages", text: "Team B has a higher recorded average than team A.", metricIds: ["group-1", "group-2"] }],
+            recommendations: [],
+            limitations: ["Only recorded Amount averages are available."],
+          });
+        },
+      }),
+      { code: "failed-precondition", details: { analysisFailure: "validation" } }
+    );
+    assert.equal(badCalls, 1);
+    const badRecord = (await db.doc(`users/${uid}/analyses/${badId}`).get()).data();
+    assert.equal(badRecord.ai.status, "failed");
+    assert.equal(badRecord.ai.error, "validation");
+    assert.equal(badRecord.ai.artifactPath, undefined);
+    const [badDerived] = await getAdminStorage().bucket().getFiles({ prefix: `derived/${uid}/analyses/${badId}/ai/` });
+    assert.equal(badDerived.length, 0);
+    await assert.rejects(own.call("getAnalysisResult", { id: badId }), { code: "functions/failed-precondition" });
+
+    // 2. Geçerli v1 raporu tamamlandıktan sonra sunucu geri kapatılsa bile Geçmiş/sonuç okuması ve kaynak erişimi çalışır, ek model çağrısı olmaz.
+    const goodCreated = await own.call("createAnalysis", {
+      requestId: crypto.randomUUID(),
+      title: "Valid v1 report preserved on rollback",
+      business: "Synthetic",
+      objective: xlsx.objective,
+      files: [{ name: xlsx.name, size: xlsx.bytes.length, contentType: xlsx.type }],
+    });
+    goodId = goodCreated.data.id;
+    await uploadBytes(ref(own.storage, goodCreated.data.paths[0]), xlsx.bytes, { contentType: xlsx.type });
+    await own.call("prepareAnalysis", { id: goodId });
+
+    let goodCalls = 0;
+    const completed = await executeStartAnalysis(uid, { id: goodId, sourceId: "file-0", selection: xlsx.selection, locale: "en" }, {
+      access: "available",
+      generate: async () => {
+        goodCalls += 1;
+        return JSON.stringify({
+          summary: [{ text: "The selected Services worksheet records show the overall record-weighted average and separate averages for team A and team B.", metricIds: ["rows", "aggregate"] }],
+          findings: [{ id: "finding-1", title: "Recorded amount comparison", text: "Team B has a higher recorded average amount than team A.", metricIds: ["group-1", "group-2"] }],
+          recommendations: [],
+          limitations: ["Operational drivers cannot be determined from recorded Amount averages alone."],
+        });
+      },
+    });
+    assert.equal(completed.status, "completed");
+    assert.equal(goodCalls, 1);
+
+    // Geri kapatma sonrası tamamlanan v1 raporu ve kaynak okunmaya devam eder.
+    process.env.FUNCTIONS_EMULATOR = "false";
+    process.env.GCLOUD_PROJECT = "incagen-eeef4";
+    process.env.INCAGEN_TABULAR_ANALYSIS_ENABLED = "false";
+    const loaded = (await own.call("getAnalysisResult", { id: goodId })).data;
+    assert.equal(loaded.version, 1);
+    assert.equal(loaded.scope.sheet, "Services");
+    assert.equal(loaded.result.metrics.find(m => m.id === "aggregate").value, 40);
+    assert.equal(goodCalls, 1);
+  } finally {
+    if (prevEmu === undefined) delete process.env.FUNCTIONS_EMULATOR;
+    else process.env.FUNCTIONS_EMULATOR = prevEmu;
+    if (prevProj === undefined) delete process.env.GCLOUD_PROJECT;
+    else process.env.GCLOUD_PROJECT = prevProj;
+    if (prevEnabled === undefined) delete process.env.INCAGEN_TABULAR_ANALYSIS_ENABLED;
+    else process.env.INCAGEN_TABULAR_ANALYSIS_ENABLED = prevEnabled;
+    const day = getQuotaDay(new Date());
+    await db.doc(`internalAnalysisQuotas/pacific-${geminiQuotaDay(Date.now())}`).delete().catch(() => {});
+    await db.doc(`users/${uid}/aiQuotas/${day}`).delete().catch(() => {});
+    if (badId) await own.call("deleteAnalysis", { id: badId }).catch(() => {});
+    if (goodId) await own.call("deleteAnalysis", { id: goodId }).catch(() => {});
+    await deleteApp(own.app);
   }
 });
