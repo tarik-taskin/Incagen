@@ -94,14 +94,15 @@ Firebase CLI Node 20+ ister; PowerShell'de `--only` listesi tırnak içinde veri
 
 ### Kapalı analiz backend yayını
 
-Önce temiz Git ağacı, yerel kalite kapıları ve mevcut özel worker denetlenir. `backend:check -- --live` ayrı servis/proje IAM okumalarıyla tek hazır Cloud Run revizyonunu, image digest’ini, kaynak sınırlarını, kapalı Functions bayrağını ve runtime servis hesabını kontrol eder. Çıktı ortam değerlerini içermez. `functions[].releaseCommit`, dağıtılmış kaynağın SHA kaydıdır. Eski yayınlarda bu alan boş olabilir.
+Önce temiz Git ağacı, yerel kalite kapıları ve mevcut özel worker denetlenir. `backend:check -- --live` dağıtım öncesinde mevcut/eski kapalı sürümü ve tek hazır Cloud Run revizyonunu (ayrı servis/proje IAM okumaları, image digest, kaynak sınırları, kapalı Functions bayrağı ve runtime servis hesabı) okur; çıktı ortam değerlerini içermez, `functions[].releaseCommit` ile canlıdaki dağıtılmış SHA’yı ve `commitMatched` ile yerel HEAD eşliğini gösterir. Dağıtım sonrasında dört kapalı analiz ucunun beklenen tam SHA’da olduğunu zorunlu kılmak için `--expected-commit <tam-SHA>` kullanılır; eski, eksik veya karışık SHA bu kesin kontrolden geçmez.
 
 ```bash
 npm run backend:check
 npm run backend:check -- --live
+npm run backend:check -- --live --expected-commit <40-karakter-tam-SHA>
 ```
 
-Davetli beta sürümü için `npm run verify:release -- --invite-beta` ön yüz paketinin beklenen açık bayrağını ve canlı dosya eşliğini doğrular. `npm run backend:check -- --live --invite-beta` dört Functions ucunda aynı açık bayrağı, doğrulanmış worker adresini ve güncel tam SHA’yı ister. Bu iki komut salt okunurdur. Kapalı mod doğrulamaları varsayılan kalır. Erişim davetinin ve [beta operasyon kararlarının](BETA-ACCEPTANCE.md#sınırlı-beta-operasyon-durumu-ve-ekip-karar-matrisi) kanıtı ayrıca gerekir.
+Davetli beta sürümü için `npm run verify:release -- --invite-beta` ön yüz paketinin beklenen açık bayrağını ve canlı dosya eşliğini doğrular. `npm run backend:check -- --live --invite-beta` dört Functions ucunda aynı açık bayrağı, doğrulanmış worker adresini ve güncel tam SHA’yı ister. Bu komutlar salt okunurdur. Kapalı mod doğrulamaları varsayılan kalır. Erişim davetinin ve [beta operasyon kararlarının](BETA-ACCEPTANCE.md#sınırlı-beta-operasyon-durumu-ve-ekip-karar-matrisi) kanıtı ayrıca gerekir.
 
 Mevcut worker’ı yenilerken komut yalnız temiz Git’teki sabit Python girdilerini paketler. Cloud Build çalışması onay verilen projedeki özel kaynak bucket’ını ve mevcut Artifact Registry deposunu kullanır. Aynı Linux imajında tek CPU, 1 GiB ve kapalı ağla sentetik CSV ve XLSX sonucu kontrol edilir. İmaj sürümü arşiv nesnesi ve nesne nesliyle eşleştiğinde mevcut worker’ın image alanı güncellenir. IAM, servis hesabı, yerel ortam ve trafik yapılandırması korunur. `.incagen-local/worker-refresh-*/worker-release.json` önceki ve sonraki digest/revizyonu kaydeder. Geri dönüş gerektiğinde önceki doğrulanmış digest, mevcut worker politikasını koruyan ayrı yayın kararıyla tekrar uygulanır.
 
@@ -109,10 +110,14 @@ Mevcut worker’ı yenilerken komut yalnız temiz Git’teki sabit Python girdil
 INCAGEN_CLOSED_WORKER_REFRESH=1 npm run backend:worker:refresh
 ```
 
-Ardından yalnız `prepareAnalysis`, `startAnalysis`, `getAnalysisTables` ve `getAnalysisResult` temiz Git arşivinden geçici dizinde derlenip dağıtılır. Komut, üretime kapalı analiz bayrağını, doğrulanmış worker adresini ve Git SHA’sını aktarır. Kurallar ve diğer uçlar bu dağıtım kapsamında yer almaz. Canlı metadata aynı SHA’yı gösterdikten sonra [kapalı sentetik kabul](TESTING.md#canlı-analiz-kabul-kayıtları) çalıştırılır.
+Ardından yalnız `prepareAnalysis`, `startAnalysis`, `getAnalysisTables` ve `getAnalysisResult` temiz Git arşivinden geçici dizinde derlenip dağıtılır. Komut, üretime kapalı analiz bayrağını, doğrulanmış worker adresini ve Git SHA’sını aktarır. Kurallar ve diğer uçlar bu dağıtım kapsamında yer almaz. Davetli açık moddan veya kısmi bir kapanış sonrası karışık açık/kapalı durumdan üretime geri dönmek için açıkça seçilen `--rollback-closed` bayrağı kullanılır (yalnız dört analiz ucunu kapatır; Auth, Firestore/Storage kuralları, worker veya `checkGemini` değişmez; kısmi hatada hangi uçların kapandığını ve hangilerinin doğrulama beklediğini raporlayıp otomatik retry yapmadan durur). Sentetik canlı rapor kabulü (`INCAGEN_ACCEPTANCE_ROUTE=synthetic`) bu dört analiz ucuna ek olarak **beşinci uç olan `checkGemini`** için de aynı tam SHA’yı, kapalı analiz bayrağını ve teşhis sınırlarını (`330s`, `1` instance, `1` eşzamanlı istek) zorunlu tutar; bu beşinci uç kendi `--diagnostic-only` komutuyla ayrı dağıtılır. Hesap oluşturmadan ve Gemini çağırmadan beş uç + worker + Netlify eşliğini denetlemek için `--preflight-synthetic` kullanılır; canlı metadata kesin SHA ile doğrulandıktan sonra [kapalı sentetik kabul](TESTING.md#canlı-analiz-kabul-kayıtları) çalıştırılır.
 
 ```bash
 INCAGEN_CLOSED_FUNCTIONS_DEPLOY=1 npm run backend:functions:deploy
+INCAGEN_CLOSED_FUNCTIONS_DEPLOY=1 npm run backend:functions:deploy -- --rollback-closed
+INCAGEN_CLOSED_FUNCTIONS_DEPLOY=1 npm run backend:functions:deploy -- --diagnostic-only
+npm run backend:check -- --live --expected-commit <40-karakter-tam-SHA>
+INCAGEN_CLOUD_CLOSED_ACCEPTANCE=1 INCAGEN_ACCEPTANCE_URL=https://incagen.netlify.app node scripts/accept-tabular-cloud.mjs --preflight-synthetic
 INCAGEN_CLOUD_CLOSED_ACCEPTANCE=1 INCAGEN_ACCEPTANCE_URL=https://incagen.netlify.app node scripts/accept-tabular-cloud.mjs --verify-closed
 ```
 

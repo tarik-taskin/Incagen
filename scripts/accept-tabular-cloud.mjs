@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { createAcceptanceJournal, createTabularAcceptanceEmail, writePrivateJson } from "./acceptance-resources.mjs";
-import { tabularFixture } from "./tabular-synthetic-fixtures.mjs";
+import { tabularFixture, tabularFixtureContract } from "./tabular-synthetic-fixtures.mjs";
 import { runReleaseVerification, verifyGitStatus } from "./verify-release.mjs";
-import { callerIdentity, closedBackendPlan, cloudRequest, inspectClosedEnvironment, revisionScope } from "./closed-backend.mjs";
+import { callerIdentity, closedBackendPlan, cloudRequest, inspectClosedEnvironment, revisionScope, selectedFunctions } from "./closed-backend.mjs";
 import { closeSync, constants, existsSync, fstatSync, lstatSync, mkdirSync, openSync, readFileSync, readSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,36 +17,115 @@ const PROJECT = "incagen-eeef4";
 const ACCEPTANCE_MODEL = "gemini-3.8-flash";
 const locales = ["tr", "en", "de", "es", "zh", "ar"];
 const closedFormats = ["csv", "xlsx"];
-const analysisFailures = new Set(["invalid-data", "invalid-measure", "invalid-group", "empty-table", "row-limit", "scope-limit", "configuration", "provider", "provider-busy", "provider-rate-limit", "validation", "timeout"]);
+const analysisFailures = new Set(["invalid-data", "invalid-number-format", "currency-precision", "invalid-measure", "invalid-group", "empty-table", "row-limit", "scope-limit", "configuration", "provider", "provider-busy", "provider-rate-limit", "validation", "timeout"]);
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-// Kapalı ve ücretli kabul ayrı opt-in gerektirir. Ücretli koşu yalnız yerel arayüz veya dağıtım önizlemesini kabul eder.
+// Kapalı, ön kontrol ve ücretli kabul ayrı opt-in gerektirir. Ücretli koşu yalnız yerel arayüz veya dağıtım önizlemesini kabul eder.
 export function configuration(mode, env = process.env, readEnvFile = () => readFileSync(".env.cloud-preview.local", "utf8")) {
-  assert.ok(["closed", "smoke", "full"].includes(mode), "Unexpected acceptance mode.");
-  const optIn = mode === "closed" ? env.INCAGEN_CLOUD_CLOSED_ACCEPTANCE : env.INCAGEN_LIVE_MODEL_ACCEPTANCE;
+  assert.ok(["closed", "preflight-synthetic", "smoke", "full"].includes(mode), "Unexpected acceptance mode.");
+  const readOnlyMode = mode === "closed" || mode === "preflight-synthetic";
+  const optIn = readOnlyMode ? env.INCAGEN_CLOUD_CLOSED_ACCEPTANCE : env.INCAGEN_LIVE_MODEL_ACCEPTANCE;
   assert.equal(optIn, "1", "Explicit opt-in required for the selected acceptance mode.");
   assert.ok(!env.FUNCTIONS_EMULATOR && !env.FIRESTORE_EMULATOR_HOST && !env.FIREBASE_AUTH_EMULATOR_HOST
     && !env.FIREBASE_STORAGE_EMULATOR_HOST && !env.STORAGE_EMULATOR_HOST, "Cloud acceptance cannot use emulator configuration.");
-  const synthetic = env.INCAGEN_ACCEPTANCE_ROUTE === "synthetic";
-  assert.ok(env.INCAGEN_ACCEPTANCE_ROUTE === undefined || (synthetic && mode !== "closed"), "Unexpected acceptance route.");
+  const synthetic = mode === "preflight-synthetic" || env.INCAGEN_ACCEPTANCE_ROUTE === "synthetic";
+  assert.ok(env.INCAGEN_ACCEPTANCE_ROUTE === undefined || (env.INCAGEN_ACCEPTANCE_ROUTE === "synthetic" && mode !== "closed"), "Unexpected acceptance route.");
   const url = new URL(env.INCAGEN_ACCEPTANCE_URL || "");
   const local = url.protocol === "http:" && url.hostname === "127.0.0.1";
   const deployed = url.protocol === "https:" && !url.port && (/^[a-f0-9]+--incagen\.netlify\.app$/.test(url.hostname)
-    || ((mode === "closed" || synthetic) && url.hostname === "incagen.netlify.app"));
+    || ((readOnlyMode || synthetic) && url.hostname === "incagen.netlify.app"));
   assert.ok((local || deployed) && !url.username && !url.password && url.pathname === "/" && !url.search && !url.hash,
     "Unexpected acceptance URL.");
   if (synthetic) assert.equal(url.origin, "https://incagen.netlify.app", "Synthetic report acceptance requires production package parity.");
   const values = Object.fromEntries(readEnvFile().split(/\r?\n/).filter(line => /^VITE_FIREBASE_/.test(line)).map(line => { const at = line.indexOf("="); return [line.slice(0, at), line.slice(at + 1).trim().replace(/^['"]|['"]$/g, "")]; }));
   assert.equal(values.VITE_FIREBASE_PROJECT_ID, PROJECT);
-  return { url: url.origin, ...(synthetic ? { synthetic } : {}), firebase: { apiKey: values.VITE_FIREBASE_API_KEY, authDomain: values.VITE_FIREBASE_AUTH_DOMAIN, projectId: PROJECT, storageBucket: values.VITE_FIREBASE_STORAGE_BUCKET, appId: values.VITE_FIREBASE_APP_ID } };
+  const smokeEvidenceDir = mode === "full" && typeof env.INCAGEN_SMOKE_EVIDENCE_DIR === "string" && env.INCAGEN_SMOKE_EVIDENCE_DIR.trim()
+    ? env.INCAGEN_SMOKE_EVIDENCE_DIR.trim() : undefined;
+  return {
+    url: url.origin,
+    ...(synthetic ? { synthetic } : {}),
+    ...(smokeEvidenceDir ? { smokeEvidenceDir } : {}),
+    firebase: { apiKey: values.VITE_FIREBASE_API_KEY, authDomain: values.VITE_FIREBASE_AUTH_DOMAIN, projectId: PROJECT, storageBucket: values.VITE_FIREBASE_STORAGE_BUCKET, appId: values.VITE_FIREBASE_APP_ID },
+  };
+}
+
+// CLI bayraklarını ve isteğe bağlı --smoke-evidence dizinini kesin biçimde ayrıştırır; geçersiz bayrak ücretli moda düşmez.
+export function parseAcceptanceArgs(args) {
+  let mode;
+  let smokeEvidenceDir;
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === "--verify-closed" || arg === "--preflight-synthetic" || arg === "--smoke") {
+      if (mode !== undefined) throw new Error("Yalnız --smoke, --verify-closed veya --preflight-synthetic bayraklarından biri kullanılabilir.");
+      mode = arg === "--verify-closed" ? "closed" : arg === "--preflight-synthetic" ? "preflight-synthetic" : "smoke";
+    } else if (arg === "--smoke-evidence") {
+      const value = args[index + 1];
+      if (smokeEvidenceDir !== undefined || !value?.trim() || value.startsWith("--")) {
+        throw new Error("Geçerli bir --smoke-evidence kanıt dizini belirtilmelidir.");
+      }
+      smokeEvidenceDir = value.trim();
+      index += 1;
+    } else if (arg.startsWith("--smoke-evidence=")) {
+      const value = arg.slice("--smoke-evidence=".length).trim();
+      if (smokeEvidenceDir !== undefined || !value) {
+        throw new Error("Geçerli bir --smoke-evidence kanıt dizini belirtilmelidir.");
+      }
+      smokeEvidenceDir = value;
+    } else {
+      throw new Error("Yalnız --smoke, --verify-closed, --preflight-synthetic veya tam koşu için --smoke-evidence <dizin> kullanılabilir.");
+    }
+  }
+  const resolvedMode = mode ?? "full";
+  if (smokeEvidenceDir !== undefined && resolvedMode !== "full") {
+    throw new Error("--smoke-evidence yalnızca tam kabul (full) koşusu ile kullanılabilir.");
+  }
+  return { mode: resolvedMode, smokeEvidenceDir };
 }
 
 // CLI modu seçilen azami vaka sayısını belirler. Geçersiz bayrak ücretli moda düşmez.
 export function acceptanceMode(args) {
-  if (args.length === 0) return "full";
-  if (args.length === 1 && args[0] === "--verify-closed") return "closed";
-  if (args.length === 1 && args[0] === "--smoke") return "smoke";
-  throw new Error("Yalnız --smoke veya --verify-closed bayraklarından biri kullanılabilir.");
+  return parseAcceptanceArgs(args).mode;
+}
+
+// Sentetik tam koşudan önce aynı tam SHA'da, synthetic-report yolunda başarılı ve temizliği doğrulanmış smoke kanıtını zorunlu kılar.
+export function verifyPriorSyntheticSmokeEvidence(smokeEvidenceDir, gitCommit) {
+  assert.ok(typeof smokeEvidenceDir === "string" && smokeEvidenceDir.trim().length > 0,
+    "Sentetik tam koşu için aynı SHA’da doğrulanmış smoke kanıtı (--smoke-evidence) gereklidir.");
+  const evidence = verifyAcceptanceEvidence(smokeEvidenceDir.trim(), { expectedCommit: gitCommit });
+  assert.equal(evidence.verified, true, `Önceki smoke kanıtı doğrulanamadı: ${(evidence.errors ?? []).join(" ")}`);
+  assert.equal(evidence.status, "verified", "Önceki smoke kanıtı geçerli değil.");
+  assert.equal(evidence.mode, "smoke", "Önceki kanıt smoke moduna ait olmalıdır.");
+  assert.equal(evidence.route, "synthetic-report", "Önceki smoke kanıtı synthetic-report yoluna ait olmalıdır.");
+  assert.equal(evidence.gitCommit, gitCommit, "Önceki smoke kanıtı güncel tam SHA ile eşleşmelidir.");
+  return {
+    smokeEvidenceDir: smokeEvidenceDir.trim(),
+    gitCommit,
+    mode: evidence.mode,
+    route: evidence.route,
+    verified: true,
+  };
+}
+
+// Sentetik smoke ve tam koşu deneme sayılarını uygulama kotalarıyla eşleştirir; otomatik tekrar kapalıdır.
+export function syntheticQuotaPlan(mode) {
+  assert.ok(["smoke", "full"].includes(mode), "Unexpected synthetic quota mode.");
+  const dailyPerUser = 2;
+  const dailyGlobal = 12;
+  const smokeAttempts = 1;
+  const fullAttempts = locales.length;
+  const attempts = mode === "smoke" ? smokeAttempts : fullAttempts;
+  const combinedAttempts = smokeAttempts + fullAttempts;
+  assert.ok(combinedAttempts <= dailyGlobal, "Synthetic sequence exceeds daily global cap.");
+  return {
+    mode,
+    attempts,
+    attemptsPerAccount: 1,
+    dailyPerUser,
+    dailyGlobal,
+    combinedSmokeAndFullAttempts: combinedAttempts,
+    requiresPriorSmokeClean: mode === "full",
+    autoRetry: false,
+  };
 }
 
 // Canlı kabul, aynı erişim kuralını salt okunur istekle doğrular. Yanlış durum gerçek modele ilerlemez.
@@ -100,12 +179,13 @@ function evidenceRows(evidence, source, expected) {
     assert.equal(anchor.sha256, source.sha256);
     assert.equal(anchor.sourceId, source.sourceId);
     assert.equal(anchor.locator.sheet ?? null, expected.selection.sheet);
-    const chunk = source.chunks.find(item => item.id === anchor.chunkId);
-    assert.ok(chunk, "Unknown source chunk.");
+    assert.ok(typeof anchor.chunkId === "string" && anchor.chunkId.length > 0, "Missing source chunk.");
+    const chunk = source.chunks?.find(item => item.id === anchor.chunkId);
+    if (source.chunks) assert.ok(chunk, "Unknown source chunk.");
     const { rowStart, rowEnd } = anchor.locator;
     assert.ok(Number.isInteger(rowStart) && Number.isInteger(rowEnd) && rowStart <= rowEnd
       && rowStart >= 2 && rowEnd <= expected.rows + 1
-      && rowStart >= chunk.locator.rowStart && rowEnd <= chunk.locator.rowEnd, "Invalid source rows.");
+      && (!chunk || (rowStart >= chunk.locator.rowStart && rowEnd <= chunk.locator.rowEnd)), "Invalid source rows.");
     for (let row = rowStart; row <= rowEnd; row++) rows.add(row);
   }
   return [...rows].sort((a, b) => a - b);
@@ -137,8 +217,13 @@ export function checkResult(artifact, record, expected, id, locale) {
   assert.equal(source.sourceId, "file-0");
   assert.equal(source.sha256, createHash("sha256").update(expected.bytes).digest("hex"));
   assert.ok(source.chunks.length > 0 && source.chunks.every(chunk => (chunk.locator.sheet ?? null) === expected.selection.sheet));
+  assertSyntheticReport(result, source, expected);
+}
 
+// Canlı ve saklanan raporun hesap, grup, grafik ve dayanakları aynı cevap anahtarını kullanır.
+function assertSyntheticReport(result, source, expected) {
   const metrics = new Map(result.metrics.map(metric => [metric.id, metric]));
+  assert.equal(metrics.size, result.metrics.length, "Duplicate metric identity.");
   const allRows = Array.from({ length: expected.rows }, (_, i) => i + 2);
   const rows = metrics.get("rows"), aggregate = metrics.get("aggregate");
   assert.equal(rows.value, expected.rows);
@@ -156,7 +241,9 @@ export function checkResult(artifact, record, expected, id, locale) {
   assert.equal(result.charts[0].type, "horizontal-bar");
   assert.equal(result.charts[0].datasetId, dataset.id);
   assert.equal(metrics.size, dataset.points.length + 2);
+  assert.equal(new Set(dataset.points.map(point => point.metricId)).size, dataset.points.length, "Duplicate group metric.");
   for (const point of dataset.points) {
+    assert.ok(point.metricId !== "rows" && point.metricId !== "aggregate", "Invalid group metric identity.");
     const metric = metrics.get(point.metricId);
     assert.equal(metric.label, point.label);
     assert.equal(metric.value, point.value);
@@ -406,22 +493,6 @@ function readEvidenceJson(root, fileName, label) {
   }
 }
 
-// Raporun sayıları ve anlatısı aynı dosya özetine ve sentetik vakanın seçili sayfasına bağlanır.
-function reportMatchesSource(report, sourceSha256, format) {
-  const sheet = format === "xlsx" ? "Services" : null;
-  const finalRow = format === "xlsx" ? 4 : 5;
-  if (!Array.isArray(report?.metrics) || !Array.isArray(report.summary) || !Array.isArray(report.findings)
-    || !report.metrics.length || !report.summary.length || !report.findings.length
-    || report.findings.some(finding => !Array.isArray(finding?.statements) || !finding.statements.length)) return false;
-  const entries = [...report.metrics, ...report.summary, ...report.findings.flatMap(finding => finding.statements)];
-  return entries.every(entry => Array.isArray(entry?.evidence) && entry.evidence.length > 0 && entry.evidence.every(anchor => {
-    const locator = anchor?.locator;
-    return anchor?.sourceId === "file-0" && anchor.sha256 === sourceSha256 && (locator?.sheet ?? null) === sheet
-      && Number.isSafeInteger(locator?.rowStart) && Number.isSafeInteger(locator?.rowEnd)
-      && locator.rowStart >= 2 && locator.rowEnd <= finalRow && locator.rowEnd >= locator.rowStart;
-  }));
-}
-
 // Kanıt girişleri koşu dizininin doğrudan üyesidir. Bir dosya tek bir rol veya vakaya aittir.
 function claimEvidenceFile(fileName, reservedFiles) {
   if (typeof fileName !== "string" || !/^[a-zA-Z0-9][a-zA-Z0-9_-]*\.json$/.test(fileName)
@@ -529,8 +600,10 @@ export function verifyAcceptanceEvidence(outputDirectory, options = {}) {
       if (createHash("sha256").update(report.bytes).digest("hex") !== entry.reportSha256) {
         throw new Error(`Rapor SHA-256 uyuşmuyor (${label}).`);
       }
-      if (!reportMatchesSource(report.value, entry.sourceSha256, spec.format)) {
-        throw new Error(`Rapor dayanağı kaynak, sayfa veya fiziksel satırla eşleşmiyor (${label}).`);
+      try {
+        assertSyntheticReport(report.value, { sourceId: "file-0", sha256: entry.sourceSha256 }, tabularFixtureContract(spec.format));
+      } catch {
+        throw new Error(`Rapor dayanağı veya hesabı beklenen kaynak, sayfa, fiziksel satır ve değerlerle eşleşmiyor (${label}).`);
       }
       const reportId = report.value?.analysisId;
       if (typeof reportId !== "string" || !reportId.trim() || reportId !== entry.reportId || reportIds.has(reportId)) {
@@ -627,32 +700,170 @@ async function checkBrowser(account, baseURL, { closed, outputDirectory, format 
   } finally { await browser.close(); }
 }
 
-// Sentetik rapor provası gerçek uçları ve kapalı tarayıcı paketini aynı SHA ile doğrulamadan hesap oluşturmaz.
-async function verifySyntheticRelease(config, gitCommit) {
-  const [front, backend, diagnostic] = await Promise.all([
-    runReleaseVerification([`--site-url=${config.url}`]), closedBackendPlan(["--live"]),
-    cloudRequest()(`https://cloudfunctions.googleapis.com/v2/${revisionScope}/functions/checkGemini`),
+// Sentetik rapor provası beş ucu, özel worker'ı ve kapalı ön yüz paketini aynı SHA ile doğrulamadan hesap oluşturmaz.
+export async function verifySyntheticRelease(config, gitCommit, deps = {}) {
+  const verifyFront = deps.runReleaseVerification ?? runReleaseVerification;
+  const checkBackend = deps.closedBackendPlan ?? closedBackendPlan;
+  const request = deps.request ?? cloudRequest();
+  const readClosedEnv = deps.readClosedEnv ?? (() => readFileSync(`functions/.env.${PROJECT}`, "utf8"));
+  const { workerOrigin } = inspectClosedEnvironment(readClosedEnv());
+
+  const [frontResult, backendResult, diagnosticResult] = await Promise.all([
+    Promise.resolve().then(() => verifyFront([`--site-url=${config.url}`])).then(
+      value => ({ ok: true, value }),
+      () => ({ ok: false, reason: "frontend-verification-failed" }),
+    ),
+    Promise.resolve().then(() => checkBackend(["--live"])).then(
+      value => ({ ok: true, value }),
+      error => ({ ok: false, reason: /worker/i.test(error?.message ?? "") ? "worker-mismatch" : "backend-verification-failed" }),
+    ),
+    Promise.resolve().then(() => request(`https://cloudfunctions.googleapis.com/v2/${revisionScope}/functions/checkGemini`)).then(
+      value => ({ ok: true, value }),
+      () => ({ ok: false, reason: "diagnostic-read-failed" }),
+    ),
   ]);
-  assert.ok(front.liveVerified && front.commit === gitCommit && backend.liveVerified && backend.analysisEnabled === false
-    && backend.functions.every(endpoint => endpoint.releaseCommit === gitCommit), "Synthetic release mismatch.");
-  const service = diagnostic.serviceConfig;
-  const { workerOrigin } = inspectClosedEnvironment(readFileSync(`functions/.env.${PROJECT}`, "utf8"));
-  assert.ok(diagnostic.state === "ACTIVE" && service?.serviceAccountEmail === callerIdentity
+
+  const mismatches = [];
+  const front = frontResult.ok ? frontResult.value : null;
+  const frontOk = Boolean(front?.liveVerified && front.commit === gitCommit && front.mode === "cloud-preview");
+  if (!frontOk) mismatches.push({ target: "frontend", code: frontResult.ok ? "frontend-sha-or-mode-mismatch" : frontResult.reason });
+
+  const backend = backendResult.ok ? backendResult.value : null;
+  const workerOk = Boolean(backend?.liveVerified && backend.worker?.revision && backend.worker?.digest);
+  if (!workerOk) mismatches.push({ target: "worker", code: backendResult.ok ? "worker-mismatch" : backendResult.reason });
+  if (backend?.worker && deps.expectedWorkerDigest && backend.worker.digest !== deps.expectedWorkerDigest) {
+    mismatches.push({ target: "worker", code: "worker-digest-mismatch" });
+  }
+
+  const rawFunctions = Array.isArray(backend?.functions) ? backend.functions : [];
+  const seenCounts = new Map();
+  for (const endpoint of rawFunctions) {
+    const name = typeof endpoint?.name === "string" ? endpoint.name : "";
+    seenCounts.set(name, (seenCounts.get(name) ?? 0) + 1);
+    if (!selectedFunctions.includes(name)) {
+      mismatches.push({ target: name || "unknown", code: "unexpected-function-endpoint" });
+    }
+  }
+  const functionChecks = [];
+  if (!backend?.liveVerified) {
+    mismatches.push({ target: "functions", code: backendResult.reason ?? "backend-verification-failed" });
+  } else {
+    for (const name of selectedFunctions) {
+      const count = seenCounts.get(name) ?? 0;
+      const endpoint = rawFunctions.find(item => item?.name === name);
+      if (count === 0) {
+        functionChecks.push({ name, revision: null, releaseCommit: null, ok: false });
+        mismatches.push({ target: name, code: "missing-function-endpoint" });
+        continue;
+      }
+      if (count > 1) {
+        functionChecks.push({ name, revision: endpoint?.revision ?? null, releaseCommit: endpoint?.releaseCommit ?? null, ok: false });
+        mismatches.push({ target: name, code: "duplicate-function-endpoint" });
+        continue;
+      }
+      const endpointOk = backend.analysisEnabled === false && endpoint.releaseCommit === gitCommit;
+      functionChecks.push({
+        name,
+        revision: endpoint.revision ?? null,
+        releaseCommit: endpoint.releaseCommit ?? null,
+        ok: endpointOk,
+      });
+      if (backend.analysisEnabled !== false) {
+        mismatches.push({ target: name, code: "function-analysis-open" });
+      } else if (endpoint.releaseCommit !== gitCommit) {
+        mismatches.push({ target: name, code: "function-sha-mismatch" });
+      }
+    }
+  }
+  const functionsOk = Boolean(
+    backend?.liveVerified
+    && backend.analysisEnabled === false
+    && rawFunctions.length === selectedFunctions.length
+    && functionChecks.length === selectedFunctions.length
+    && functionChecks.every(item => item.ok)
+    && !mismatches.some(item => ["missing-function-endpoint", "duplicate-function-endpoint", "unexpected-function-endpoint", "function-analysis-open", "function-sha-mismatch"].includes(item.code)),
+  );
+
+  const diag = diagnosticResult.ok ? diagnosticResult.value : null;
+  const service = diag?.serviceConfig;
+  const diagEnv = service?.environmentVariables;
+  const diagCommit = typeof diagEnv?.INCAGEN_BACKEND_RELEASE_SHA === "string" && /^[a-f0-9]{40}$/.test(diagEnv.INCAGEN_BACKEND_RELEASE_SHA)
+    ? diagEnv.INCAGEN_BACKEND_RELEASE_SHA : null;
+  const diagConfigOk = Boolean(diag?.state === "ACTIVE" && service?.serviceAccountEmail === callerIdentity
     && service.maxInstanceCount === 1 && service.maxInstanceRequestConcurrency === 1 && service.timeoutSeconds === 330
-    && service.environmentVariables?.INCAGEN_BACKEND_RELEASE_SHA === gitCommit
-    && service.environmentVariables?.INCAGEN_TABULAR_ANALYSIS_ENABLED === "false"
-    && service.environmentVariables?.INCAGEN_PYTHON_WORKER_URL?.replace(/\/$/, "") === workerOrigin
-    && !Object.hasOwn(service.environmentVariables, "GEMINI_API_KEY")
-    && !service.secretEnvironmentVariables?.some(secret => secret.key === "GEMINI_API_KEY"), "Synthetic diagnostic revision mismatch.");
+    && diagEnv?.INCAGEN_TABULAR_ANALYSIS_ENABLED === "false"
+    && diagEnv.INCAGEN_PYTHON_WORKER_URL?.replace(/\/$/, "") === workerOrigin
+    && !Object.hasOwn(diagEnv, "GEMINI_API_KEY")
+    && !service.secretEnvironmentVariables?.some(secret => secret.key === "GEMINI_API_KEY"));
+  const diagCommitOk = diagCommit === gitCommit;
+  const diagOk = diagConfigOk && diagCommitOk;
+  if (!diagOk) {
+    mismatches.push({
+      target: "checkGemini",
+      code: !diagnosticResult.ok ? diagnosticResult.reason : !diagConfigOk ? "diagnostic-config-mismatch" : "diagnostic-sha-mismatch",
+    });
+  }
+
+  const checks = {
+    frontend: { ok: frontOk, url: config.url, mode: front?.mode ?? null, commit: front?.commit ?? null, files: front?.files ?? null },
+    worker: { ok: workerOk && !mismatches.some(item => item.target === "worker"), revision: backend?.worker?.revision ?? null, digest: backend?.worker?.digest ?? null },
+    functions: { ok: functionsOk, analysisEnabled: backend?.analysisEnabled ?? null, targets: functionChecks },
+    diagnostic: { ok: diagOk, name: "checkGemini", revision: service?.revision ?? null, releaseCommit: diagCommit },
+  };
+  for (const [key, check] of Object.entries(checks)) {
+    if (!check.ok && mismatches.length === 0) {
+      mismatches.push({ target: key, code: `${key}-check-failed` });
+    }
+  }
+  const allChecksOk = Object.values(checks).every(check => check.ok === true) && mismatches.length === 0;
+  const summary = {
+    status: allChecksOk ? "ready" : "failed",
+    gitCommit,
+    checks,
+    mismatches,
+  };
+  if (!allChecksOk) {
+    const error = new Error(`Synthetic release preflight mismatch: ${mismatches.map(item => `${item.target}:${item.code}`).join(", ")}`);
+    error.preflightReport = summary;
+    throw error;
+  }
+  return summary;
+}
+
+// Hesap, yükleme veya model çağrısından önce CLI argümanlarını, yayın eşliğini ve sentetik full için smoke kanıtını doğrular.
+export async function prepareAcceptanceRun(args, deps = {}) {
+  const { mode, smokeEvidenceDir } = parseAcceptanceArgs(args);
+  const config = configuration(mode, deps.env, deps.readEnvFile);
+  const gitCommit = (deps.resolveGitCommit ?? resolveAcceptanceGitCommit)();
+  const synthetic = config.synthetic === true;
+  assert.ok(!(smokeEvidenceDir || config.smokeEvidenceDir) || synthetic,
+    "Smoke kanıtı yalnız kapalı üretimdeki sentetik tam koşuyla kullanılabilir.");
+  if (mode === "preflight-synthetic") {
+    const preflight = await verifySyntheticRelease(config, gitCommit, deps.releaseDeps);
+    return { mode, config, gitCommit, synthetic: true, preflight };
+  }
+  let preflight;
+  let smokeGate;
+  if (synthetic) {
+    if (mode === "full") {
+      const quota = syntheticQuotaPlan("full");
+      if (quota.requiresPriorSmokeClean) {
+        smokeGate = verifyPriorSyntheticSmokeEvidence(smokeEvidenceDir ?? config.smokeEvidenceDir, gitCommit);
+      }
+    }
+    preflight = await verifySyntheticRelease(config, gitCommit, deps.releaseDeps);
+  }
+  return { mode, config, gitCommit, synthetic, preflight, smokeGate };
 }
 
 // Kapalı mod iki formatı dener. Canlı model modları ilk hatada durur ve yalnız koşunun hesaplarını temizler.
 async function main(args) {
-  const mode = acceptanceMode(args);
-  const config = configuration(mode);
-  const gitCommit = resolveAcceptanceGitCommit();
-  const synthetic = config.synthetic === true;
-  if (synthetic) await verifySyntheticRelease(config, gitCommit);
+  const prepared = await prepareAcceptanceRun(args);
+  const { mode, config, gitCommit, synthetic } = prepared;
+  if (mode === "preflight-synthetic") {
+    console.log(JSON.stringify(prepared.preflight, null, 2));
+    return;
+  }
   const accounts = [], results = [], reports = [], cleanupErrors = [];
   const journal = createAcceptanceJournal("tabular");
   const outputDirectory = journal.path.replace(/\.json$/, "-evidence");
@@ -803,6 +1014,11 @@ async function main(args) {
 
 const isDirectRun = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 if (isDirectRun) main(process.argv.slice(2)).catch(error => {
-  console.error(JSON.stringify({ status: "failed", code: error?.code || error?.name || "unknown", message: "Son aşamayı ve koşuya özel temizlik günlüğünü kontrol edin." }));
+  console.error(JSON.stringify({
+    status: "failed",
+    code: error?.code || error?.name || "unknown",
+    message: error?.preflightReport ? "Sentetik ön kontrol eşliği sağlanamadı." : "Son aşamayı ve koşuya özel temizlik günlüğünü kontrol edin.",
+    ...(error?.preflightReport ? { preflight: error.preflightReport } : {}),
+  }));
   process.exitCode = 1;
 });

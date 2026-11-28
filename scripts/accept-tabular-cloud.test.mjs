@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -14,14 +14,21 @@ import {
   expectedAcceptanceCases,
   finalizeAcceptanceEvidence,
   fixture,
+  parseAcceptanceArgs,
+  prepareAcceptanceRun,
   resolveAcceptanceGitCommit,
+  syntheticQuotaPlan,
   usageRecord,
   validateHumanReviewDecision,
   verifyAcceptanceEvidence,
   verifyPreparedCatalog,
+  verifyPriorSyntheticSmokeEvidence,
+  verifySyntheticRelease,
   writePendingHumanReviewFile,
   writeVerifiedReportFile,
 } from "./accept-tabular-cloud.mjs";
+import { callerIdentity, selectedFunctions } from "./closed-backend.mjs";
+import { inspectEvidence } from "./check-beta-evidence.mjs";
 import { writePrivateJson } from "./acceptance-resources.mjs";
 import { summarizeUsageAcceptance } from "./summarize-usage-acceptance.mjs";
 
@@ -437,17 +444,23 @@ async function reviewEvidence(t, mode) {
   return { directory, gitCommit, reports, results };
 }
 
-test("rejects a rehashed report with changed source anchors even when record hashes are consistent", async t => {
+test("rejects changed anchors, arithmetic and chart bindings even when record hashes are consistent", async t => {
   const { directory, gitCommit, reports, results } = await reviewEvidence(t, "smoke");
   const entry = reports[0];
   const original = JSON.parse(readFileSync(join(directory, entry.reportFile), "utf8"));
   for (const altered of [
-    anchor => { anchor.sha256 = "e".repeat(64); },
-    anchor => { anchor.locator.sheet = "Foreign sheet"; },
-    anchor => { anchor.locator.rowEnd = 6; },
+    report => { report.summary[0].evidence[0].sha256 = "e".repeat(64); },
+    report => { report.summary[0].evidence[0].locator.sheet = "Foreign sheet"; },
+    report => { report.summary[0].evidence[0].locator.rowEnd = 6; },
+    report => { report.metrics.find(metric => metric.id === "aggregate").value = 52.5; },
+    report => { report.metrics.find(metric => metric.id === "rows").value = 1; },
+    report => { report.metrics[2].evidence = report.metrics[3].evidence; },
+    report => { report.summary[0].evidence[0].locator.rowEnd = 2; },
+    report => { report.charts[0].datasetId = "other"; },
+    report => { report.datasets[0].points[0].value = 1; },
   ]) {
     const report = structuredClone(original);
-    altered(report.summary[0].evidence[0]);
+    altered(report);
     const binding = writeVerifiedReportFile(directory, entry.reportFile, report);
     const next = { ...entry, ...binding };
     writePendingHumanReviewFile(directory, next.humanReviewFile, next);
@@ -634,4 +647,307 @@ test("scoped synthetic acceptance is opt-in and targets only the closed producti
   assert.throws(() => configuration("full", { ...env, INCAGEN_ACCEPTANCE_URL: "http://127.0.0.1:4177" }, config), /production package parity/);
   assert.throws(() => configuration("closed", { ...env, INCAGEN_CLOUD_CLOSED_ACCEPTANCE: "1" }, config), /Unexpected acceptance route/);
   assert.throws(() => configuration("full", { ...env, INCAGEN_ACCEPTANCE_ROUTE: "arbitrary" }, config), /Unexpected acceptance route/);
+});
+
+test("cost-free --preflight-synthetic checks all five endpoints, worker and Netlify without creating accounts or entering paid mode", async () => {
+  assert.equal(acceptanceMode(["--preflight-synthetic"]), "preflight-synthetic");
+  assert.throws(() => acceptanceMode(["--preflight-synthetic", "--smoke"]));
+  const configReader = () => "VITE_FIREBASE_PROJECT_ID=incagen-eeef4\n";
+  const preflightEnv = { INCAGEN_CLOUD_CLOSED_ACCEPTANCE: "1", INCAGEN_ACCEPTANCE_URL: "https://incagen.netlify.app" };
+  assert.equal(configuration("preflight-synthetic", preflightEnv, configReader).synthetic, true);
+  // Ücretli bayrak tek başına veya emülatör değişkeniyle ön kontrolü açamaz.
+  assert.throws(() => configuration("preflight-synthetic", { INCAGEN_LIVE_MODEL_ACCEPTANCE: "1", INCAGEN_ACCEPTANCE_URL: "https://incagen.netlify.app" }, configReader), /opt-in/);
+  assert.throws(() => configuration("preflight-synthetic", { ...preflightEnv, FUNCTIONS_EMULATOR: "true" }, configReader), /emulator/);
+  assert.throws(() => configuration("preflight-synthetic", { ...preflightEnv, INCAGEN_ACCEPTANCE_URL: "http://127.0.0.1:4177" }, configReader), /production package parity/);
+
+  const sha = "a".repeat(40);
+  const oldSha = "b".repeat(40);
+  const workerOrigin = "https://worker-example.run.app";
+  const workerDigest = "sha256:" + "c".repeat(64);
+  const readClosedEnv = () => `INCAGEN_TABULAR_ANALYSIS_ENABLED=false\nINCAGEN_PYTHON_WORKER_URL=${workerOrigin}\n`;
+  const makeDeps = ({
+    frontCommit = sha,
+    frontMode = "cloud-preview",
+    backendDigest = workerDigest,
+    fnShas = [sha, sha, sha, sha],
+    diagSha = sha,
+    diagTimeout = 330,
+    expectedWorkerDigest,
+  } = {}) => ({
+    readClosedEnv,
+    expectedWorkerDigest,
+    runReleaseVerification: async () => ({ liveVerified: true, commit: frontCommit, mode: frontMode, files: 80 }),
+    closedBackendPlan: async () => ({
+      liveVerified: true,
+      analysisEnabled: false,
+      worker: { revision: "incagen-extract-00002-pld", digest: backendDigest },
+      functions: selectedFunctions.map((name, index) => ({ name, revision: `${name}-01`, releaseCommit: fnShas[index] })),
+    }),
+    request: async () => ({
+      state: "ACTIVE",
+      serviceConfig: {
+        revision: "checkgemini-00014",
+        serviceAccountEmail: callerIdentity,
+        maxInstanceCount: 1,
+        maxInstanceRequestConcurrency: 1,
+        timeoutSeconds: diagTimeout,
+        environmentVariables: {
+          INCAGEN_TABULAR_ANALYSIS_ENABLED: "false",
+          INCAGEN_PYTHON_WORKER_URL: workerOrigin,
+          INCAGEN_BACKEND_RELEASE_SHA: diagSha,
+          SECRET_LEAK_GUARD: "must-never-appear-in-summary",
+        },
+      },
+    }),
+  });
+
+  // 1. Beş uç + worker + Netlify eşleşince temiz özet döner ve ham ortam/sır sızmaz.
+  const ok = await verifySyntheticRelease({ url: "https://incagen.netlify.app" }, sha, makeDeps());
+  assert.equal(ok.status, "ready");
+  assert.equal(ok.checks.functions.targets.length, 4);
+  assert.equal(ok.checks.diagnostic.releaseCommit, sha);
+  assert.deepEqual(ok.mismatches, []);
+  assert.ok(!JSON.stringify(ok).includes("must-never-appear-in-summary"));
+
+  // 2. Cloud Run digest farkı, checkGemini SHA farkı, tek analiz ucu SHA farkı ve Netlify paket farkı birbirinden ayrılır.
+  const cases = [
+    [{ expectedWorkerDigest: "sha256:" + "d".repeat(64) }, "worker:worker-digest-mismatch"],
+    [{ diagSha: oldSha }, "checkGemini:diagnostic-sha-mismatch"],
+    [{ diagTimeout: 60 }, "checkGemini:diagnostic-config-mismatch"],
+    [{ fnShas: [sha, oldSha, sha, sha] }, "startAnalysis:function-sha-mismatch"],
+    [{ frontCommit: oldSha }, "frontend:frontend-sha-or-mode-mismatch"],
+  ];
+  for (const [override, expectedMismatch] of cases) {
+    let caught;
+    try {
+      await verifySyntheticRelease({ url: "https://incagen.netlify.app" }, sha, makeDeps(override));
+    } catch (error) {
+      caught = error;
+    }
+    assert.ok(caught?.preflightReport, `Expected preflightReport for ${expectedMismatch}`);
+    assert.equal(caught.preflightReport.status, "failed");
+    assert.ok(
+      caught.preflightReport.mismatches.some(item => `${item.target}:${item.code}` === expectedMismatch),
+      `Expected ${expectedMismatch} in ${JSON.stringify(caught.preflightReport.mismatches)}`,
+    );
+    assert.ok(!JSON.stringify(caught.preflightReport).includes("must-never-appear-in-summary"));
+  }
+
+  // 3. Sentetik kota planı: smoke (1) + full (6) = 7 <= dailyGlobal (12), otomatik tekrar yok.
+  assert.deepEqual(syntheticQuotaPlan("smoke"), {
+    mode: "smoke", attempts: 1, attemptsPerAccount: 1, dailyPerUser: 2, dailyGlobal: 12,
+    combinedSmokeAndFullAttempts: 7, requiresPriorSmokeClean: false, autoRetry: false,
+  });
+  assert.equal(syntheticQuotaPlan("full").attempts, 6);
+  assert.equal(syntheticQuotaPlan("full").requiresPriorSmokeClean, true);
+});
+
+test("reports three independent acceptance gates (mechanical, humanReview, operations) and blocks readiness on mismatch", async t => {
+  const dir = mkdtempSync(join(tmpdir(), "incagen-three-gates-"));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const gitCommit = "a".repeat(40);
+  const csvEx = await example("csv");
+  const xlsxEx = await example("xlsx");
+  const csvSha = createHash("sha256").update(csvEx.expected.bytes).digest("hex");
+  const xlsxSha = createHash("sha256").update(xlsxEx.expected.bytes).digest("hex");
+  const cases = expectedAcceptanceCases("full");
+  const results = [];
+  const reports = [];
+  for (const item of cases) {
+    const ex = item.format === "csv" ? csvEx : xlsxEx;
+    const sha = item.format === "csv" ? csvSha : xlsxSha;
+    const result = { ...ex.artifact.result, analysisId: `synthetic-${item.locale}` };
+    const rep = writeVerifiedReportFile(dir, `${item.locale}-${item.format}-result.json`, result);
+    const rev = writePendingHumanReviewFile(dir, `human-review-${item.locale}-${item.format}.json`, {
+      reportId: result.analysisId, reportSha256: rep.reportSha256, sourceSha256: sha, locale: item.locale, gitCommit,
+    });
+    const runId = `run-${item.locale}`;
+    results.push(usageRecord({ runId, gitCommit, caseId: item.caseId, locale: item.locale, format: item.format, sourceSha256: sha, reportFile: rep.reportFile, reportSha256: rep.reportSha256, job: ex.record.ai, passed: true }));
+    reports.push({ runId, gitCommit, caseId: item.caseId, format: item.format, locale: item.locale, sourceSha256: sha, reportId: result.analysisId, reportFile: rep.reportFile, reportSha256: rep.reportSha256, humanReviewFile: rev.humanReviewFile, status: "completed" });
+  }
+  writePrivateJson(join(dir, "runs.json"), results);
+  finalizeAcceptanceEvidence({ outputDirectory: dir, mode: "full", gitCommit, results, reports, cleanupStatus: "verified", synthetic: true });
+
+  const pending = inspectEvidence(dir, gitCommit);
+  assert.equal(pending.evidenceReady, false);
+  assert.equal(pending.gates.mechanical.status, "passed");
+  assert.equal(pending.gates.humanReview.status, "pending");
+  assert.equal(pending.gates.humanReview.pending, 6);
+  assert.equal(pending.gates.operations.status, "manual-signoff-required");
+
+  const wrongCommit = inspectEvidence(dir, "b".repeat(40));
+  assert.equal(wrongCommit.evidenceReady, false);
+  assert.equal(wrongCommit.gates.mechanical.status, "failed");
+});
+
+test("rejects missing, duplicate, or unexpected analysis endpoints in verifySyntheticRelease and guarantees failed status on any failing check", async () => {
+  const sha = "a".repeat(40);
+  const workerOrigin = "https://worker-example.run.app";
+  const workerDigest = "sha256:" + "c".repeat(64);
+  const readClosedEnv = () => `INCAGEN_TABULAR_ANALYSIS_ENABLED=false\nINCAGEN_PYTHON_WORKER_URL=${workerOrigin}\n`;
+  const makeDeps = functionsList => ({
+    readClosedEnv,
+    runReleaseVerification: async () => ({ liveVerified: true, commit: sha, mode: "cloud-preview", files: 80 }),
+    closedBackendPlan: async () => ({
+      liveVerified: true,
+      analysisEnabled: false,
+      worker: { revision: "incagen-extract-00002-pld", digest: workerDigest },
+      functions: functionsList,
+    }),
+    request: async () => ({
+      state: "ACTIVE",
+      serviceConfig: {
+        revision: "checkgemini-00014",
+        serviceAccountEmail: callerIdentity,
+        maxInstanceCount: 1,
+        maxInstanceRequestConcurrency: 1,
+        timeoutSeconds: 330,
+        environmentVariables: {
+          INCAGEN_TABULAR_ANALYSIS_ENABLED: "false",
+          INCAGEN_PYTHON_WORKER_URL: workerOrigin,
+          INCAGEN_BACKEND_RELEASE_SHA: sha,
+        },
+      },
+    }),
+  });
+
+  // 1. Dört uçtan yalnız üçü aynı SHA ile döndüğünde hazır değil, failed + missing-function-endpoint vermelidir.
+  const threeEndpoints = selectedFunctions.slice(0, 3).map(name => ({ name, revision: `${name}-01`, releaseCommit: sha }));
+  let missingErr;
+  try {
+    await verifySyntheticRelease({ url: "https://incagen.netlify.app" }, sha, makeDeps(threeEndpoints));
+  } catch (error) {
+    missingErr = error;
+  }
+  assert.ok(missingErr?.preflightReport);
+  assert.equal(missingErr.preflightReport.status, "failed");
+  assert.equal(missingErr.preflightReport.checks.functions.ok, false);
+  assert.ok(missingErr.preflightReport.mismatches.some(item => item.target === "getAnalysisResult" && item.code === "missing-function-endpoint"));
+
+  // 2. Yinelenmiş veya beklenmeyen uç adları reddedilir.
+  const dupEndpoints = [
+    { name: "prepareAnalysis", revision: "p-1", releaseCommit: sha },
+    { name: "prepareAnalysis", revision: "p-2", releaseCommit: sha },
+    { name: "startAnalysis", revision: "s-1", releaseCommit: sha },
+    { name: "getAnalysisTables", revision: "t-1", releaseCommit: sha },
+  ];
+  let dupErr;
+  try {
+    await verifySyntheticRelease({ url: "https://incagen.netlify.app" }, sha, makeDeps(dupEndpoints));
+  } catch (error) {
+    dupErr = error;
+  }
+  assert.equal(dupErr.preflightReport.status, "failed");
+  assert.ok(dupErr.preflightReport.mismatches.some(item => item.target === "prepareAnalysis" && item.code === "duplicate-function-endpoint"));
+  assert.ok(dupErr.preflightReport.mismatches.some(item => item.target === "getAnalysisResult" && item.code === "missing-function-endpoint"));
+
+  const unexpectedEndpoints = [
+    ...selectedFunctions.slice(0, 3).map(name => ({ name, revision: `${name}-01`, releaseCommit: sha })),
+    { name: "unrelatedEndpoint", revision: "u-1", releaseCommit: sha },
+  ];
+  let unexpectedErr;
+  try {
+    await verifySyntheticRelease({ url: "https://incagen.netlify.app" }, sha, makeDeps(unexpectedEndpoints));
+  } catch (error) {
+    unexpectedErr = error;
+  }
+  assert.equal(unexpectedErr.preflightReport.status, "failed");
+  assert.ok(unexpectedErr.preflightReport.mismatches.some(item => item.target === "unrelatedEndpoint" && item.code === "unexpected-function-endpoint"));
+});
+
+test("requires verified clean same-SHA synthetic-report smoke evidence before starting synthetic full run", async t => {
+  const dir = mkdtempSync(join(tmpdir(), "incagen-smoke-gate-"));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const gitCommit = "a".repeat(40);
+  const oldCommit = "b".repeat(40);
+  const csvEx = await example("csv");
+  const csvSha = createHash("sha256").update(csvEx.expected.bytes).digest("hex");
+
+  const makeSmokeDir = (name, { commit = gitCommit, synthetic = true, cleanupStatus = "verified", mode = "smoke" } = {}) => {
+    const out = join(dir, name);
+    mkdirSync(out, { recursive: true });
+    const spec = expectedAcceptanceCases("smoke")[0];
+    const result = { ...csvEx.artifact.result, analysisId: `smoke-${name}` };
+    const rep = writeVerifiedReportFile(out, `${spec.locale}-${spec.format}-result.json`, result);
+    const rev = writePendingHumanReviewFile(out, `human-review-${spec.locale}-${spec.format}.json`, {
+      reportId: result.analysisId, reportSha256: rep.reportSha256, sourceSha256: csvSha, locale: spec.locale, gitCommit: commit,
+    });
+    const run = usageRecord({
+      runId: `run-${name}`, gitCommit: commit, caseId: spec.caseId, locale: spec.locale, format: spec.format,
+      sourceSha256: csvSha, reportFile: rep.reportFile, reportSha256: rep.reportSha256, job: csvEx.record.ai, passed: true,
+    });
+    writePrivateJson(join(out, "runs.json"), [run]);
+    finalizeAcceptanceEvidence({
+      outputDirectory: out,
+      mode,
+      gitCommit: commit,
+      results: [run],
+      reports: [{
+        runId: `run-${name}`, gitCommit: commit, caseId: spec.caseId, format: spec.format, locale: spec.locale,
+        sourceSha256: csvSha, reportId: result.analysisId, reportFile: rep.reportFile, reportSha256: rep.reportSha256,
+        humanReviewFile: rev.humanReviewFile, status: "completed",
+      }],
+      cleanupStatus,
+      synthetic,
+    });
+    return out;
+  };
+
+  const validSmoke = makeSmokeDir("valid");
+  const oldShaSmoke = makeSmokeDir("old-sha", { commit: oldCommit });
+  const wrongRouteSmoke = makeSmokeDir("wrong-route", { synthetic: false });
+  const unverifiedCleanupSmoke = makeSmokeDir("dirty-cleanup", { cleanupStatus: "unverified" });
+
+  const workerOrigin = "https://worker-example.run.app";
+  const releaseDeps = {
+    readClosedEnv: () => `INCAGEN_TABULAR_ANALYSIS_ENABLED=false\nINCAGEN_PYTHON_WORKER_URL=${workerOrigin}\n`,
+    runReleaseVerification: async () => ({ liveVerified: true, commit: gitCommit, mode: "cloud-preview", files: 80 }),
+    closedBackendPlan: async () => ({
+      liveVerified: true, analysisEnabled: false,
+      worker: { revision: "incagen-extract-00002-pld", digest: "sha256:" + "c".repeat(64) },
+      functions: selectedFunctions.map(name => ({ name, revision: `${name}-01`, releaseCommit: gitCommit })),
+    }),
+    request: async () => ({
+      state: "ACTIVE",
+      serviceConfig: {
+        revision: "checkgemini-00014", serviceAccountEmail: callerIdentity,
+        maxInstanceCount: 1, maxInstanceRequestConcurrency: 1, timeoutSeconds: 330,
+        environmentVariables: {
+          INCAGEN_TABULAR_ANALYSIS_ENABLED: "false", INCAGEN_PYTHON_WORKER_URL: workerOrigin, INCAGEN_BACKEND_RELEASE_SHA: gitCommit,
+        },
+      },
+    }),
+  };
+  const baseEnv = {
+    INCAGEN_LIVE_MODEL_ACCEPTANCE: "1",
+    INCAGEN_ACCEPTANCE_ROUTE: "synthetic",
+    INCAGEN_ACCEPTANCE_URL: "https://incagen.netlify.app",
+  };
+  const prepDeps = { env: baseEnv, readEnvFile: () => "VITE_FIREBASE_PROJECT_ID=incagen-eeef4\n", resolveGitCommit: () => gitCommit, releaseDeps };
+  let frontendReads = 0;
+  const verifyFrontend = releaseDeps.runReleaseVerification;
+  releaseDeps.runReleaseVerification = async () => {
+    frontendReads++;
+    return verifyFrontend();
+  };
+
+  assert.deepEqual(parseAcceptanceArgs(["--smoke-evidence", validSmoke]), { mode: "full", smokeEvidenceDir: validSmoke });
+  assert.throws(() => parseAcceptanceArgs(["--smoke", "--smoke-evidence", validSmoke]), /yalnızca tam kabul/i);
+
+  // Kanıt yokluğu, eski SHA, yanlış yol ve doğrulanmamış temizlik hesap/model öncesinde reddedilir.
+  await assert.rejects(() => prepareAcceptanceRun([], prepDeps), /smoke kanıtı/i);
+  await assert.rejects(() => prepareAcceptanceRun(["--smoke-evidence", oldShaSmoke], prepDeps), /doğrulanamadı|eşleşmiyor/i);
+  await assert.rejects(() => prepareAcceptanceRun(["--smoke-evidence", wrongRouteSmoke], prepDeps), /synthetic-report/i);
+  await assert.rejects(() => prepareAcceptanceRun(["--smoke-evidence", unverifiedCleanupSmoke], prepDeps), /doğrulanamadı|Temizlik/i);
+  const inviteEnv = { INCAGEN_LIVE_MODEL_ACCEPTANCE: "1", INCAGEN_ACCEPTANCE_URL: "http://127.0.0.1:4173" };
+  await assert.rejects(() => prepareAcceptanceRun(["--smoke-evidence", validSmoke], { ...prepDeps, env: inviteEnv }), /yalnız kapalı üretim/i);
+  assert.equal(frontendReads, 0);
+
+  // Yalnız aynı SHA'da başarılı + temizliği doğrulanmış synthetic-report smoke kanıtı full yolunu açar.
+  const ready = await prepareAcceptanceRun(["--smoke-evidence", validSmoke], prepDeps);
+  assert.equal(ready.mode, "full");
+  assert.equal(ready.smokeGate.verified, true);
+  assert.equal(ready.smokeGate.route, "synthetic-report");
+  assert.equal(frontendReads, 1);
+  assert.equal(verifyPriorSyntheticSmokeEvidence(validSmoke, gitCommit).gitCommit, gitCommit);
 });

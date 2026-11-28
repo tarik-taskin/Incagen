@@ -121,26 +121,110 @@ export function verifyClosedFunctions(records, workerOrigin, { inviteBeta = fals
   });
 }
 
-// Temiz revizyon, kapalı ortam ve seçili hedefler doğrulanır. Canlı mod yalnız metadata okur.
-export async function closedBackendPlan(args, root = process.cwd()) {
-  const live = args.includes("--live");
-  const inviteBeta = args.includes("--invite-beta");
-  if (new Set(args).size !== args.length || args.some(arg => !["--live", "--invite-beta"].includes(arg)) || (inviteBeta && !live)) {
-    throw new Error("Kullanım: npm run backend:check -- [--live [--invite-beta]]");
+// Yalnız açık geri kapatma geçişinde dört bilinen ucun kimliğini ve worker bağını doğrulayıp açık/kapalı karışık bayrağı okur.
+export function verifyRollbackFunctions(records, workerOrigin) {
+  return selectedFunctions.map(name => {
+    const record = records.find(value => value.name === `${revisionScope}/functions/${name}`);
+    const config = record?.serviceConfig;
+    const env = config?.environmentVariables;
+    const flag = env?.INCAGEN_TABULAR_ANALYSIS_ENABLED;
+    if (record?.state !== "ACTIVE" || typeof record.updateTime !== "string"
+      || (flag !== "true" && flag !== "false") || env.INCAGEN_PYTHON_WORKER_URL?.replace(/\/$/, "") !== workerOrigin
+      || Object.hasOwn(env, "GEMINI_API_KEY") || config.secretEnvironmentVariables?.some(secret => secret.key === "GEMINI_API_KEY")
+      || config.serviceAccountEmail !== callerIdentity) {
+      throw new Error(`${name} için geri kapatma ön koşulu doğrulanamadı.`);
+    }
+    const releaseCommit = typeof env.INCAGEN_BACKEND_RELEASE_SHA === "string" && commitPattern.test(env.INCAGEN_BACKEND_RELEASE_SHA)
+      ? env.INCAGEN_BACKEND_RELEASE_SHA : null;
+    return { name, updatedAt: record.updateTime, revision: config.revision ?? null, releaseCommit, analysisEnabled: flag === "true" };
+  });
+}
+
+// Geri kapatma sonrası dört analiz ucunun hangilerinin kapalı ve beklenen SHA'da olduğunu sır sızdırmadan özetler.
+export function summarizeRollbackStatus(records, workerOrigin, expectedCommit, unreadableNames = new Set()) {
+  const closedEndpoints = [];
+  const pendingEndpoints = [];
+  for (const name of selectedFunctions) {
+    if (unreadableNames.has(name)) {
+      pendingEndpoints.push({ name, revision: null, releaseCommit: null, analysisEnabled: null, reason: "endpoint-read-failed" });
+      continue;
+    }
+    const record = records.find(value => value?.name === `${revisionScope}/functions/${name}`);
+    const config = record?.serviceConfig;
+    const env = config?.environmentVariables;
+    const releaseCommit = typeof env?.INCAGEN_BACKEND_RELEASE_SHA === "string" && commitPattern.test(env.INCAGEN_BACKEND_RELEASE_SHA)
+      ? env.INCAGEN_BACKEND_RELEASE_SHA : null;
+    const flag = env?.INCAGEN_TABULAR_ANALYSIS_ENABLED;
+    const analysisEnabled = flag === "true" ? true : flag === "false" ? false : null;
+    const validIdentity = record?.state === "ACTIVE" && typeof record.updateTime === "string"
+      && env?.INCAGEN_PYTHON_WORKER_URL?.replace(/\/$/, "") === workerOrigin
+      && !Object.hasOwn(env, "GEMINI_API_KEY") && !config?.secretEnvironmentVariables?.some(secret => secret.key === "GEMINI_API_KEY")
+      && config?.serviceAccountEmail === callerIdentity;
+    const entry = { name, revision: config?.revision ?? null, releaseCommit, analysisEnabled };
+    if (validIdentity && analysisEnabled === false && releaseCommit === expectedCommit) {
+      closedEndpoints.push(entry);
+    } else {
+      const reason = !record ? "missing-endpoint" : !validIdentity ? "invalid-configuration"
+        : analysisEnabled !== false ? "analysis-still-open" : "commit-mismatch";
+      pendingEndpoints.push({ ...entry, reason });
+    }
   }
-  const { commit } = verifyGitStatus({ cwd: root });
+  return { allClosed: pendingEndpoints.length === 0 && closedEndpoints.length === selectedFunctions.length, closedEndpoints, pendingEndpoints };
+}
+
+const commitPattern = /^[a-f0-9]{40}$/;
+const usageMessage = "Kullanım: npm run backend:check -- [--live [--invite-beta] [--expected-commit <40-karakter-SHA>]]";
+
+// Kapalı ve davetli backend kontrolünün CLI bayraklarını kesin ve yinelenmesiz biçimde ayrıştırır.
+export function parseClosedBackendArgs(args) {
+  let live = false;
+  let inviteBeta = false;
+  let expectedCommit;
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === "--live") {
+      if (live) throw new Error(usageMessage);
+      live = true;
+    } else if (arg === "--invite-beta") {
+      if (inviteBeta) throw new Error(usageMessage);
+      inviteBeta = true;
+    } else if (arg === "--expected-commit") {
+      const value = args[index + 1];
+      if (expectedCommit !== undefined || !value || !commitPattern.test(value)) throw new Error(usageMessage);
+      expectedCommit = value;
+      index += 1;
+    } else if (arg.startsWith("--expected-commit=")) {
+      const value = arg.slice("--expected-commit=".length);
+      if (expectedCommit !== undefined || !commitPattern.test(value)) throw new Error(usageMessage);
+      expectedCommit = value;
+    } else {
+      throw new Error(usageMessage);
+    }
+  }
+  if ((inviteBeta || expectedCommit !== undefined) && !live) throw new Error(usageMessage);
+  return { live, inviteBeta, expectedCommit };
+}
+
+// Temiz revizyon, kapalı ortam ve seçili hedefler doğrulanır. Canlı mod yalnız metadata okur.
+export async function closedBackendPlan(args, root = process.cwd(), deps = {}) {
+  const { live, inviteBeta, expectedCommit: requestedCommit } = parseClosedBackendArgs(args);
+  const { commit } = (deps.verifyGit ?? verifyGitStatus)({ cwd: root });
+  if (inviteBeta && requestedCommit && requestedCommit !== commit) {
+    throw new Error("Davetli beta doğrulamasında --expected-commit güncel HEAD ile eşleşmelidir.");
+  }
   const functionsDir = join(root, "functions");
-  const productionEnv = inspectClosedEnvironment(readFileSync(join(functionsDir, `.env.${project}`), "utf8"), { inviteBeta });
+  const readEnv = deps.readEnvFile ?? (path => readFileSync(path, "utf8"));
+  const productionEnv = inspectClosedEnvironment(readEnv(join(functionsDir, `.env.${project}`)), { inviteBeta });
   const sharedPath = join(functionsDir, ".env");
-  if (existsSync(sharedPath)) {
-    const shared = parseEnv(readFileSync(sharedPath, "utf8"));
+  if ((deps.hasSharedEnv ?? existsSync)(sharedPath)) {
+    const shared = parseEnv(readEnv(sharedPath));
     if (["GEMINI_API_KEY", "INCAGEN_TABULAR_ANALYSIS_ENABLED", "INCAGEN_PYTHON_WORKER_URL"].some(key => Object.hasOwn(shared, key))) {
       throw new Error("Ortak Functions ortamı üretim kontrolünü gölgeliyor.");
     }
   }
   const plan = { commit, project, region, analysisEnabled: inviteBeta, targets: selectedFunctions, liveVerified: false };
   if (!live) return plan;
-  const request = cloudRequest(root);
+  const request = deps.request ?? cloudRequest(root);
   const [worker, records] = await Promise.all([
     inspectWorker(request),
     Promise.all(selectedFunctions.map(name => request(`https://cloudfunctions.googleapis.com/v2/${revisionScope}/functions/${name}`))),
@@ -149,7 +233,17 @@ export async function closedBackendPlan(args, root = process.cwd()) {
     throw new Error("Canlı worker adresi kapalı ortamla eşleşmiyor.");
   }
   const { revision, digest } = worker.report;
-  return { ...plan, liveVerified: true, worker: { revision, digest }, functions: verifyClosedFunctions(records, productionEnv.workerOrigin, { inviteBeta, expectedCommit: inviteBeta ? commit : undefined }) };
+  const enforcedCommit = requestedCommit ?? (inviteBeta ? commit : undefined);
+  const functions = verifyClosedFunctions(records, productionEnv.workerOrigin, { inviteBeta, expectedCommit: enforcedCommit });
+  const targetCommit = enforcedCommit ?? commit;
+  return {
+    ...plan,
+    liveVerified: true,
+    expectedCommit: enforcedCommit ?? null,
+    commitMatched: functions.every(item => item.releaseCommit === targetCommit),
+    worker: { revision, digest },
+    functions,
+  };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

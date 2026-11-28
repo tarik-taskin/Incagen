@@ -18,7 +18,7 @@ function inspectMeasurement(run) {
 }
 
 // Dosya bütünlüğü, insan kararı ve ölçüm durumunu birleştirir. Yayın veya sağlayıcı işlemi yapmaz.
-function inspectEvidence(directory, expectedCommit) {
+export function inspectEvidence(directory, expectedCommit) {
   const evidence = verifyAcceptanceEvidence(directory, { expectedCommit });
   const commitMatched = evidence.verified && expectedCommit !== undefined;
   const runs = evidence.runs ?? [];
@@ -39,6 +39,12 @@ function inspectEvidence(directory, expectedCommit) {
     if (reviews.some(review => review.status === "rejected")) blockers.push("rejected-human-review");
     if (reviews.some(review => !review.usageMeasured)) blockers.push("incomplete-usage-measurements");
   }
+  const approvedReviews = reviews.filter(review => review.status === "approved").length;
+  const pendingReviews = reviews.filter(review => review.status === "pending").length;
+  const rejectedReviews = reviews.filter(review => review.status === "rejected").length;
+  const humanGateStatus = !evidence.verified || reviews.length === 0 ? "unavailable"
+    : rejectedReviews > 0 ? "rejected"
+    : pendingReviews > 0 ? "pending" : "approved";
   return {
     status: evidence.status,
     mechanicalVerified: evidence.verified,
@@ -53,6 +59,11 @@ function inspectEvidence(directory, expectedCommit) {
       totalDurationMs: usage ? { median: usage.medians.totalDurationMs, max: usage.maxima.totalDurationMs } : null,
       totalTokens: usage ? { median: usage.medians.totalTokens, max: usage.maxima.totalTokens } : null,
     } : null,
+    gates: {
+      mechanical: { status: evidence.verified && commitMatched && evidence.mode === "full" ? "passed" : evidence.verified ? "partial" : "failed", commitMatched },
+      humanReview: { status: humanGateStatus, approved: approvedReviews, pending: pendingReviews, rejected: rejectedReviews, total: reviews.length },
+      operations: { status: "manual-signoff-required", requiredChecks: ["cloud-billing-budget", "cloud-monitoring-alerts", "retention-ttl-lifecycle", "cohort-approval"] },
+    },
     evidenceReady: blockers.length === 0,
     blockers,
     errors: evidence.errors,

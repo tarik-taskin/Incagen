@@ -4,14 +4,13 @@ import { resolve } from "node:path";
 const backend = createRequire(resolve("functions/package.json"));
 const ExcelJS = backend("exceljs");
 
-// Sentetik CSV ve çok sayfalı XLSX vakalarını bağımsız beklenen grup/toplam/satırlarla üretir.
-export async function tabularFixture(kind) {
+// Canlı koşu ve çevrimdışı inceleme için bağımsız, sabit sentetik cevap anahtarını verir.
+export function tabularFixtureContract(kind) {
   if (kind === "csv") {
     return {
       caseId: "synthetic-service-csv-v1",
       name: "synthetic-service-revenue.csv",
       type: "text/csv",
-      bytes: Buffer.from("Service,NetRevenue\nCloud,12000.10\nCloud,-500.10\nConsulting,5000.20\nConsulting,2500.30\n"),
       rows: 4,
       previews: [{ sheet: null, columns: ["Service", "NetRevenue"], values: [["Cloud", "12000.10"], ["Cloud", "-500.10"], ["Consulting", "5000.20"], ["Consulting", "2500.30"]] }],
       measure: "NetRevenue",
@@ -24,14 +23,10 @@ export async function tabularFixture(kind) {
     };
   }
   if (kind !== "xlsx") throw new Error("Unknown synthetic table format.");
-  const workbook = new ExcelJS.Workbook();
-  workbook.addWorksheet("Out of scope").addRows([["Team", "Amount"], ["Other", 999999]]);
-  workbook.addWorksheet("Services").addRows([["Team", "Amount"], ["A", 10], ["A", 20], ["B", 90]]);
   return {
     caseId: "synthetic-service-xlsx-v1",
     name: "synthetic-service-teams.xlsx",
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    bytes: Buffer.from(await workbook.xlsx.writeBuffer()),
     rows: 3,
     previews: [
       { sheet: "Out of scope", columns: ["Team", "Amount"], values: [["Other", 999999]] },
@@ -45,4 +40,18 @@ export async function tabularFixture(kind) {
     selection: { sheet: "Services", valueColumn: 1, groupColumn: 0, aggregation: "mean", numberFormat: "plain", unit: "EUR" },
     objective: "Compare the unweighted average amount per team on the Services worksheet. Explain which business conclusions need additional evidence.",
   };
+}
+
+// Sentetik CSV ve XLSX dosyalarını kabul sözleşmesindeki girdilerden üretir.
+export async function tabularFixture(kind) {
+  const contract = tabularFixtureContract(kind);
+  if (kind === "csv") {
+    const [{ columns, values }] = contract.previews;
+    return { ...contract, bytes: Buffer.from([columns, ...values].map(row => row.join(",")).join("\n") + "\n") };
+  }
+  const workbook = new ExcelJS.Workbook();
+  for (const { sheet, columns, values } of contract.previews) {
+    workbook.addWorksheet(sheet).addRows([columns, ...values]);
+  }
+  return { ...contract, bytes: Buffer.from(await workbook.xlsx.writeBuffer()) };
 }
