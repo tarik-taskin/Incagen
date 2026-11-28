@@ -278,3 +278,24 @@ test("herkese açık müşteri deneyimi örneği boş değeri koruyan hesap CSV�
   await expect(page.getByRole("link", { name: "Örnek yorumları indir" })).toBeVisible();
   await layout(page);
 });
+
+test("320 px dar ekranda TR ve AR RTL tablo kurulumu ile kapsam özeti taşma olmadan okunur", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 680 });
+  const longName = "VeryLongRegionalRevenueWorksheet_2026.csv";
+  const longCol = "Gross_Recurring_Amount_USD";
+  await prepare(page, `Team,${longCol}\nAlfa,120.50\nBeta,80.25\n`, longName);
+  await select(page, "Ölçüm alanı", longCol);
+  await select(page, "Gruplama", "Team");
+  const scope = page.getByLabel("Kapsam özeti", { exact: true });
+  await expect(scope).toContainText(longName);
+  await expect(scope).toContainText(longCol);
+  await layout(page);
+
+  await chooseLanguage(page, "ar");
+  const rtlScope = page.getByLabel(ar["Kapsam özeti"], { exact: true });
+  await expect(rtlScope).toContainText(longName);
+  await expect(rtlScope).toContainText(longCol);
+  await setTheme(page, { mode: "dark", style: "glass" });
+  await layout(page);
+  await chooseLanguage(page, "tr");
+});

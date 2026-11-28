@@ -287,3 +287,47 @@ it("restores focus to opener on Close, Escape and outside click, uses heading fa
   nextTarget.remove();
   view3.unmount();
 });
+
+it("uzun tabloda ileriki bir sayfaya düşen dayanağa doğrudan gider ve 'Tüm kaynak satırları' açıldığında dayanağın fiziksel sayfasına atlar", async () => {
+  const user = userEvent.setup();
+  const longSource: ReportSource = {
+    sourceId: "file-long",
+    fileName: "uzun.csv",
+    sha256: "c".repeat(64),
+    chunks: [{
+      id: "table-long",
+      locator: { rowStart: 2, rowEnd: 46 },
+      table: {
+        columns: ["record_id", "amount"],
+        rows: Array.from({ length: 45 }, (_, idx) => [`ROW-${idx + 2}`, idx + 2 === 40 ? "999.00" : "10.00"]),
+      },
+    }],
+  };
+  const lateAnchor = {
+    title: "Late physical row",
+    evidence: [{ sourceId: "file-long", sha256: "c".repeat(64), chunkId: "table-long", locator: { rowStart: 40, rowEnd: 40 } }],
+  };
+  render(<SourceDialog selection={lateAnchor} sources={[longSource]} translateContent={false} onClose={() => {}} />);
+
+  // Başlangıçta yalnızca fiziksel satır 40 (dayanak) görünür.
+  expect(screen.getByRole("rowheader")).toHaveTextContent("40, dayanak");
+  await waitFor(() => expect(screen.getByText("ROW-40")).toBeVisible());
+
+  // "Tüm kaynak satırları" açıldığında 1. sayfaya sıfırlamak yerine 40. satırın bulunduğu 2. sayfaya atlar.
+  await user.click(screen.getByRole("checkbox"));
+  expect(screen.getByText("2 / 2")).toBeVisible();
+  expect(screen.getByRole("status")).toHaveTextContent("26–45");
+  expect(screen.getByText("ROW-40")).toBeVisible();
+  expect(screen.getByRole("rowheader", { name: "40, dayanak" })).toBeVisible();
+
+  const search = screen.getByRole("textbox", { name: "Kaynak satırlarında ara" });
+  await user.type(search, "ROW-2");
+  expect(screen.queryByText("ROW-40")).not.toBeInTheDocument();
+  await user.clear(search);
+  expect(screen.getByText("2 / 2")).toBeVisible();
+  expect(screen.getByText("ROW-40")).toBeVisible();
+  await user.type(search, "ROW-2");
+  await user.click(screen.getByRole("button", { name: "Kaynak aramasını temizle" }));
+  expect(search).toHaveFocus();
+  expect(screen.getByRole("rowheader", { name: "40, dayanak" })).toBeVisible();
+});

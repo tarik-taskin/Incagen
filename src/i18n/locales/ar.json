@@ -1211,5 +1211,10 @@
   "Tablo analizi erişimi kontrol ediliyor…": "جارٍ التحقق من إمكانية الوصول إلى تحليل الجداول…",
   "Erişimi kontrol et": "التحقق من إمكانية الوصول",
   "Hesapları CSV olarak indir": "تنزيل المؤشرات بصيغة CSV",
-  "CSV hazırlanamadı. Raporu yeniden açıp deneyin.": "تعذّر إنشاء ملف CSV. أعد فتح التقرير وحاول مجددًا."
+  "CSV hazırlanamadı. Raporu yeniden açıp deneyin.": "تعذّر إنشاء ملف CSV. أعد فتح التقرير وحاول مجددًا.",
+  "Analiz isteği gönderiliyor…": "جارٍ إرسال طلب التحليل…",
+  "Tablo analizi erişimi doğrulanamadı. Yeniden kontrol edin.": "تعذّر التحقق من صلاحية تحليل الجداول. تحقّق مرة أخرى.",
+  "Her dolu satırda geçerli bir ölçüm değeri gerekir. Sayı biçimi ondalık ve binlik ayracını belirler.": "يجب أن يحتوي كل صف غير فارغ على قيمة قياس صالحة. يحدد تنسيق الأرقام الفاصل العشري وفاصل الآلاف.",
+  "Yeniden deneme {0} itibarıyla açılacak; işlem kendiliğinden başlamaz.": "ستُتاح إعادة المحاولة اعتبارًا من {0}؛ ولن يبدأ التحليل تلقائيًا.",
+  "Kota {0} itibarıyla yenilenir; işlem kendiliğinden başlamaz.": "تُجدَّد الحصة اعتبارًا من {0}؛ ولن يبدأ التحليل تلقائيًا."
 }

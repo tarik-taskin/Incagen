@@ -1211,5 +1211,10 @@
   "Tablo analizi erişimi kontrol ediliyor…": "Checking table analysis access…",
   "Erişimi kontrol et": "Check access",
   "Hesapları CSV olarak indir": "Download metrics as CSV",
-  "CSV hazırlanamadı. Raporu yeniden açıp deneyin.": "Could not create the CSV. Reopen the report and try again."
+  "CSV hazırlanamadı. Raporu yeniden açıp deneyin.": "Could not create the CSV. Reopen the report and try again.",
+  "Analiz isteği gönderiliyor…": "Sending analysis request…",
+  "Tablo analizi erişimi doğrulanamadı. Yeniden kontrol edin.": "Table analysis access could not be verified. Check access again.",
+  "Her dolu satırda geçerli bir ölçüm değeri gerekir. Sayı biçimi ondalık ve binlik ayracını belirler.": "Each non-empty row needs a valid measure value. The number format sets the decimal and thousands separators.",
+  "Yeniden deneme {0} itibarıyla açılacak; işlem kendiliğinden başlamaz.": "Retry will unlock at {0}; the analysis will not start automatically.",
+  "Kota {0} itibarıyla yenilenir; işlem kendiliğinden başlamaz.": "Quota resets at {0}; the analysis will not start automatically."
 }

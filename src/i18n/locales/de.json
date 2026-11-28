@@ -1211,5 +1211,10 @@
   "Tablo analizi erişimi kontrol ediliyor…": "Zugriff auf die Tabellenanalyse wird geprüft…",
   "Erişimi kontrol et": "Zugriff prüfen",
   "Hesapları CSV olarak indir": "Kennzahlen als CSV herunterladen",
-  "CSV hazırlanamadı. Raporu yeniden açıp deneyin.": "Die CSV-Datei konnte nicht erstellt werden. Öffnen Sie den Bericht erneut."
+  "CSV hazırlanamadı. Raporu yeniden açıp deneyin.": "Die CSV-Datei konnte nicht erstellt werden. Öffnen Sie den Bericht erneut.",
+  "Analiz isteği gönderiliyor…": "Analyseanfrage wird gesendet…",
+  "Tablo analizi erişimi doğrulanamadı. Yeniden kontrol edin.": "Der Zugriff auf die Tabellenanalyse konnte nicht geprüft werden. Prüfen Sie den Zugriff erneut.",
+  "Her dolu satırda geçerli bir ölçüm değeri gerekir. Sayı biçimi ondalık ve binlik ayracını belirler.": "Jede ausgefüllte Zeile benötigt einen gültigen Messwert. Das Zahlenformat bestimmt die Dezimal- und Tausendertrennzeichen.",
+  "Yeniden deneme {0} itibarıyla açılacak; işlem kendiliğinden başlamaz.": "Erneuter Versuch ab {0} verfügbar; die Analyse startet nicht automatisch.",
+  "Kota {0} itibarıyla yenilenir; işlem kendiliğinden başlamaz.": "Das Kontingent wird ab {0} zurückgesetzt; die Analyse startet nicht automatisch."
 }

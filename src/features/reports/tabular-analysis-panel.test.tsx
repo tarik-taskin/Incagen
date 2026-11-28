@@ -1,6 +1,7 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { setLocale } from "../../i18n/runtime";
 import { TabularAnalysisPanel } from "./tabular-analysis-panel";
 import type { Analysis } from "../../../functions/src/contracts";
 import type { AnalysisTable } from "../../../functions/src/analysis/tabular-contract";
@@ -18,6 +19,7 @@ const mocks = vi.hoisted(() => ({
   access: "available" as import("../../../functions/src/analysis/tabular-contract").AnalysisAccess | undefined,
   start: vi.fn(),
   getResult: vi.fn(),
+  getTablesOverride: null as null | (() => Promise<{ data: { tables: AnalysisTable[]; access?: import("../../../functions/src/analysis/tabular-contract").AnalysisAccess; limits: { rows: number; groups: number; attempts: number } } }>),
   tables: [
     { sourceId: "file-1", fileName: "satislar.xlsx", sheet: "Q1", columns: ["Kategori", "Tutar", "Adet"], rows: 150 },
     { sourceId: "file-2", fileName: "masraflar.csv", sheet: null, columns: ["Departman", "Harcama"], rows: 40 },
@@ -30,7 +32,7 @@ vi.mock("firebase/functions", () => ({
   httpsCallable: (...args: unknown[]) => {
     if (args[1] === "startAnalysis") return mocks.start;
     if (args[1] === "getAnalysisResult") return mocks.getResult;
-    return async () => ({
+    return () => mocks.getTablesOverride ? mocks.getTablesOverride() : Promise.resolve({
       data: {
         tables: mocks.tables,
         access: mocks.access,
@@ -41,10 +43,12 @@ vi.mock("firebase/functions", () => ({
 }));
 
 afterEach(() => {
+  setLocale("tr");
   mocks.start.mockReset();
   mocks.access = "available";
   mocks.user.getIdToken.mockReset();
   mocks.getResult.mockReset();
+  mocks.getTablesOverride = null;
   mocks.tables = [
     { sourceId: "file-1", fileName: "satislar.xlsx", sheet: "Q1", columns: ["Kategori", "Tutar", "Adet"], rows: 150 },
     { sourceId: "file-2", fileName: "masraflar.csv", sheet: null, columns: ["Departman", "Harcama"], rows: 40 },
@@ -364,4 +368,125 @@ it("disables generation after the server denies admission with a newer access de
   expect(await screen.findByText(/Bu hesap tablo analizi betasına dahil değil/)).toBeVisible();
   await user.click(screen.getByRole("button", { name: "Yeniden dene" }));
   expect(mocks.start).toHaveBeenCalledTimes(1);
+});
+
+it("tablo yoksa erişim uyarısı göstermeden yalnız CSV/XLSX yönlendirmesini ve bağlantı hatasında tek yeniden yükleme düğmesini sunar", async () => {
+  mocks.tables = [];
+  mocks.access = "invite-required";
+  const base = { id: "empty-1", title: "Boş", business: "Test", status: "completed", createdAt: 1, updatedAt: 1 } as Analysis;
+  const view = render(<TabularAnalysisPanel analysis={base} />);
+  expect(await screen.findByText(/Bu ilk analiz sürümü CSV ve XLSX tablolarını kullanır/)).toBeVisible();
+  expect(screen.queryByText(/Bu hesap tablo analizi betasına dahil değil/)).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Erişimi kontrol et" })).not.toBeInTheDocument();
+  view.unmount();
+
+  mocks.getTablesOverride = () => Promise.reject(Object.assign(new Error("network"), { code: "functions/unavailable" }));
+  render(<TabularAnalysisPanel analysis={{ ...base, id: "err-conn" }} />);
+  expect(await screen.findByRole("button", { name: "Tabloları yeniden yükle" })).toBeVisible();
+  expect(screen.queryByRole("button", { name: "Erişimi kontrol et" })).not.toBeInTheDocument();
+});
+
+it("erişim yenileme hatasında seçimi korur, çift tıklamayı tekilleştirir ve geciken eski katalog yanıtının yeni erişimi ezmesini önler", async () => {
+  const user = userEvent.setup();
+  let call = 0;
+  let resolveStale!: (value: { data: { tables: AnalysisTable[]; access: "closed"; limits: { rows: number; groups: number; attempts: number } } }) => void;
+  mocks.getTablesOverride = () => {
+    call += 1;
+    if (call === 1) {
+      return Promise.resolve({ data: { tables: mocks.tables, access: "invite-required", limits: { rows: 5000, groups: 12, attempts: 3 } } });
+    }
+    if (call === 2) {
+      return new Promise(resolve => { resolveStale = resolve; });
+    }
+    return Promise.resolve({ data: { tables: mocks.tables, access: "available", limits: { rows: 5000, groups: 12, attempts: 3 } } });
+  };
+
+  render(<TabularAnalysisPanel analysis={retryable} />);
+  const recheck = await screen.findByRole("button", { name: "Erişimi kontrol et" });
+
+  // 1. Token yenileme başarısızsa seçili tablo korunur ve yeniden deneme açılır.
+  mocks.user.getIdToken.mockRejectedValueOnce(new Error("offline"));
+  await user.click(recheck);
+  expect(await screen.findByRole("alert")).toBeVisible();
+  expect(screen.getByText("Tablo analizi erişimi doğrulanamadı. Yeniden kontrol edin.")).toBeVisible();
+  expect(screen.queryByText(/Bu hesap tablo analizi betasına dahil değil/)).not.toBeInTheDocument();
+  expect(screen.getByRole("combobox", { name: "Analiz tablosu" })).toHaveTextContent("satislar.xlsx");
+  expect(screen.getByRole("button", { name: "Erişimi kontrol et" })).toBeEnabled();
+
+  // 2. Çift tıklama tek token yenilemesi üretir, analiz başlatmaz.
+  let resolveToken!: () => void;
+  mocks.user.getIdToken.mockImplementationOnce(() => new Promise<void>(resolve => { resolveToken = resolve; }));
+  fireEvent.click(recheck);
+  fireEvent.click(recheck);
+  expect(mocks.user.getIdToken).toHaveBeenCalledTimes(2);
+  await act(async () => { resolveToken(); });
+  // İlk yenileme hâlâ beklerken üçüncü yeni yanıtı tetikleyip geciken eski yanıtın erişimi ezmediğini doğrula.
+  expect(mocks.start).not.toHaveBeenCalled();
+  await act(async () => {
+    resolveStale({ data: { tables: mocks.tables, access: "closed", limits: { rows: 5000, groups: 12, attempts: 3 } } });
+  });
+});
+
+it("alan doğrulama ve sunucu biçim hatasını aria-invalid ve aria-describedby ile ilgili alana bağlar; kullanıcı biçimi değiştirince işaret kalkar", async () => {
+  const user = userEvent.setup();
+  const badFormatJob = {
+    ...retryable,
+    id: "fmt-1",
+    ai: { ...retryable.ai!, error: "invalid-number-format" as const, selection: { ...retryable.ai!.selection, numberFormat: "plain" as const } },
+  } as Analysis;
+  const view = render(<TabularAnalysisPanel analysis={badFormatJob} />);
+  const formatTrigger = await screen.findByRole("combobox", { name: "Sayı biçimi" });
+  expect(formatTrigger).toHaveAttribute("aria-invalid", "true");
+  expect(formatTrigger).toHaveAttribute("aria-describedby", "ai-job-status");
+
+  await user.click(formatTrigger);
+  await user.click(await screen.findByRole("option", { name: "1.234,56" }));
+  expect(formatTrigger).not.toHaveAttribute("aria-invalid");
+  view.unmount();
+
+  // Tablo seçilmediğinde tablo alanı ve kilitli gönder düğmesi aynı doğrulama açıklamasına bağlanır.
+  const fresh = { id: "fresh-1", status: "completed" } as Analysis;
+  render(<TabularAnalysisPanel analysis={fresh} />);
+  const tableTrigger = await screen.findByRole("combobox", { name: "Analiz tablosu" });
+  expect(tableTrigger).toHaveAttribute("aria-invalid", "true");
+  expect(tableTrigger).toHaveAttribute("aria-describedby", "ai-validation-status");
+  expect(screen.getByRole("button", { name: "Analizi oluştur" })).toHaveAttribute("aria-describedby", "ai-validation-status");
+});
+
+it("kapsam özeti uzun dosya/sayfa/alan adlarını kırpmadan ve Arapça RTL arayüzde <bdi dir='auto'> içinde gösterir", async () => {
+  setLocale("ar");
+  const longName = "VeryLongRegionalRevenueAndServicesWorksheet_2026_Q4.xlsx";
+  const longSheet = "Consolidated_Services_Department_Summary";
+  const longCol = "Gross_Recurring_Amount_USD";
+  mocks.tables = [{ sourceId: "file-long", fileName: longName, sheet: longSheet, columns: ["Team", longCol], rows: 12 }];
+  render(<TabularAnalysisPanel analysis={{
+    id: "rtl-scope",
+    status: "completed",
+    ai: { status: "failed", attempts: 1, sourceId: "file-long", selection: { sheet: longSheet, valueColumn: 1, groupColumn: 0, aggregation: "sum", numberFormat: "plain", unit: "USD" } },
+  } as Analysis} />);
+  const summaryRegion = await screen.findByLabelText("ملخص النطاق");
+  expect(summaryRegion).toHaveTextContent(longName);
+  expect(summaryRegion).toHaveTextContent(longSheet);
+  expect(summaryRegion).toHaveTextContent(longCol);
+  const bdis = summaryRegion.querySelectorAll("bdi[dir='auto']");
+  expect(bdis.length).toBeGreaterThanOrEqual(4);
+  summaryRegion.querySelectorAll("strong").forEach(node => {
+    expect(node.className).not.toContain("truncate");
+  });
+});
+
+it("katalog yenilendiğinde şeması değişen tabloda geçersiz sütunu temizler, aynı kalan geçerli seçimi korur", async () => {
+  const user = userEvent.setup();
+  mocks.access = "invite-required";
+  mocks.tables = [{ sourceId: "file-1", fileName: "satislar.xlsx", sheet: "Q1", columns: ["Kategori", "Tutar", "Adet"], rows: 20 }];
+  render(<TabularAnalysisPanel analysis={retryable} />);
+  const recheck = await screen.findByRole("button", { name: "Erişimi kontrol et" });
+
+  // Şema değişti: 1. sütun artık "Tutar" değil "Notlar".
+  mocks.user.getIdToken.mockResolvedValueOnce(undefined);
+  mocks.access = "available";
+  mocks.tables = [{ sourceId: "file-1", fileName: "satislar.xlsx", sheet: "Q1", columns: ["Kategori", "Notlar"], rows: 20 }];
+  await user.click(recheck);
+  expect(await screen.findByText("Hesaplanacak ölçüm alanını seçin.")).toBeVisible();
+  expect(screen.getByRole("button", { name: "Yeniden dene" })).toBeDisabled();
 });

@@ -1211,5 +1211,10 @@
   "Tablo analizi erişimi kontrol ediliyor…": "正在检查表格分析权限…",
   "Erişimi kontrol et": "检查权限",
   "Hesapları CSV olarak indir": "下载指标 CSV",
-  "CSV hazırlanamadı. Raporu yeniden açıp deneyin.": "未能生成 CSV。请重新打开报告后重试。"
+  "CSV hazırlanamadı. Raporu yeniden açıp deneyin.": "未能生成 CSV。请重新打开报告后重试。",
+  "Analiz isteği gönderiliyor…": "正在发送分析请求…",
+  "Tablo analizi erişimi doğrulanamadı. Yeniden kontrol edin.": "无法验证表格分析权限。请重新检查。",
+  "Her dolu satırda geçerli bir ölçüm değeri gerekir. Sayı biçimi ondalık ve binlik ayracını belirler.": "每个非空行都需要有效的度量值。数字格式决定小数点和千位分隔符。",
+  "Yeniden deneme {0} itibarıyla açılacak; işlem kendiliğinden başlamaz.": "将在 {0} 后允许重试；分析不会自动开始。",
+  "Kota {0} itibarıyla yenilenir; işlem kendiliğinden başlamaz.": "配额将在 {0} 后重置；分析不会自动开始。"
 }

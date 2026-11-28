@@ -7,6 +7,33 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 
 ## Aktif milestone: M3 — İlk kaynaklı tablo analizi
 
+### Furkan / Codex — TASK-0017, beta adayının ürün ve yayın kabulü
+
+- [x] Sahip: Furkan — 1–4. TASK-0014–0016 teslimi devralındı. Eksik Firebase uç kümesi, kısmi geri kapatma özeti ve aynı SHA’da doğrulanmış smoke ön koşulu test edildi. Yanlış smoke girdisi canlı ön kontrolden önce reddediliyor.
+- [x] Sahip: Furkan — 5–8. Çevrimdışı kabul sayı, toplam/ortalama, grup, grafik ve fiziksel dayanağı canlı koşunun sentetik cevap anahtarına bağladı. Özeti yeniden hesaplanmış tutarsız kanıt reddediliyor. Eski `6e972d8` altı vakasının mekanik kanıtı okunabiliyor.
+- [x] Sahip: Furkan — 9–12. Ağ hatası gerçek kapalı moddan ayrıldı, seçim korunuyor ve geçersiz yenilenme zamanı kota uyarısını gizlemiyor. Ölçüm açıklaması altı dilde Python davranışını anlatıyor.
+- [x] Sahip: Furkan — 13–16. Kaynak aramasını klavye veya düğmeyle temizlemek fiziksel dayanak sayfasına dönüyor. Odak geri dönüşü doğrulandı. Python/rapor testleri, kaynak sır taraması ve derleme bütçesi geçti.
+- [x] Sahip: Furkan — 17. Firebase emülatöründe 17 entegrasyon testi geçti.
+- [~] Sahip: Furkan — 18–22. Masaüstü/mobil yayın adayı, iki Git dalı ve Quality, Netlify kapalı paket, kapalı Functions ve ücretli olmayan yayın ön kontrolü. Canlı doğrulama sonuçları TASK-0017 devir kaydında tutulur.
+- [!] Sahip: Furkan — TASK-0013. Mevcut anahtarla tek sabit Gemini 3.8 Flash bağlantısı ve test hesabı temizliği geçti. Rapor kabulü ve davetli açılış için bütçe görünürlüğü HTTP 403 nedeniyle doğrulanamadı. Monitoring uyarı politikası ve bildirim kanalı görünmüyor. İnsan incelemesi, saklama süresi ve ilk kohort kararı açık.
+
+### 2026-11-28 — Furkan / Antigravity: TASK-0016 üç P1/P2 kapatma, CSV/XLSX akış sertleştirmesi ve tam yerel kabul
+
+- [x] Sahip: Furkan — TASK-0015 inceleme düzeltmeleri (2 P1 + 1 P2): sentetik `full` koşusu ilk hesap/yükleme/model çağrısından önce `--smoke-evidence` / `INCAGEN_SMOKE_EVIDENCE_DIR` üzerinden aynı tam SHA + `synthetic-report` + doğrulanmış temizlik smoke kanıtına bağlandı; `verifySyntheticRelease` dört benzersiz analiz ucu kümesini zorunlu kılıp herhangi bir `checks.*.ok === false` durumunda kesin `failed` + fırlatma garantisi verdi; kısmi geri kapatmada Cloud Run worker okuması başarısız olsa da uçların `rollbackSummary` çıktısı ve `workerStatus: "unreadable"` / `"endpoint-read-failed"` ayrımı ek retry olmadan korundu.
+- [x] Sahip: Furkan — A (1–6) Tablo ayarı ve ilk kullanım: boş katalogda erişim bandı gizlenerek başlangıç durumları ayrıldı; `recheckAccess` monoton istek kimliğiyle geciken ilk katalog yanıtı yarışına karşı korundu; ölçüm/gruplama/sayı biçimi/birim doğrulaması `aria-invalid` ve `aria-describedby` ile ilgili alana ve düğmeye bağlandı; katalog yenilemesinde kaybolan tablo/değişen şema sütunları temizlenirken geçerli seçimler korundu; kapsam özeti `truncate` olmadan `<bdi dir="auto">` ve tek sütunlu dar ekran kırılımıyla okunur yapıldı; `sum`/`mean` ve `count` sayı/ayraç açıklaması hizalandı.
+- [x] Sahip: Furkan — B (7–11) İş ilerlemesi ve kesintiden dönme: başarısız eski `job.stage` yeniden denemede gizlenip yeni iş gelene kadar `"Analiz isteği gönderiliyor…"` gösterildi; aktif aşama `aria-current="step"` ile işaretlendi; `startAnalysis` ağ kesintisi sonrası tamamlanan işin otomatik tekrar yapmadan okunması doğrulandı; kota ve sağlayıcı bekleme süreleri kullanıcının yerel saat diliminde gösterilip süre dolumunda yalnız düğme açıldı; Geçmiş/detay durum eşliği ve hazırlık özeti erişimi korundu.
+- [x] Sahip: Furkan — C (12–16) Rapor, kaynak ve dışa aktarma: doğrulanmış Python/AI ayrımı, sabit rapor dili ve kaynak odak/eksik kaynak/indirme tekilleştirme korumaları doğrulandı; `SourceDialog` içinde `"Tüm kaynak satırları"` açıldığında veya arama temizlendiğinde 1. sayfaya sıfırlamak yerine dayanağın fiziksel sayfasına atlama eklendi.
+- [x] Sahip: Furkan — D (17–19) Dar ekran, altı dil, JS bütçesi ve tam yerel test: 320 px TR/AR RTL + açık/koyu tema E2E testi eklendi; dört yeni metin altı dil sözlüğüne işlendi; ilk açılış JS bütçesi (`338.685` / `cloud-preview` `346.714` <= `409.600` gzip bayt) ve tüm yerel kalite kapıları (`check:secrets`, `lint`, `vitest` 294/294, `test:functions` 197/197, `test:scripts` 106/106, `test:python` 51+9, iki build, `test:integration` 17/17, tam `test:local` 107 geçti / 3 atlandı) doğrulandı.
+- [!] Sahip: Furkan — D (20) İzlenebilir teslim, yayın ve TASK-0013 kapıları: `gemini.md` içinde `TASK-0016` -> `REVIEW_NEEDED` kaydedildi; `git commit`/`git push`, GitHub `Quality`, kapalı Netlify/Firebase dağıtımları, canlı sentetik smoke/full kabul ve `TASK-0013` operasyon/açılış kararları açık kullanıcı izni bekler.
+
+### 2026-11-28 — Furkan / Antigravity: TASK-0015 geri kapatma yolu, beş uç ön kontrol ve beta açılış hazırlığı
+
+- [x] Sahip: Furkan — A (1–6): TASK-0014 8 dosyalık düzeltme sertleştirildi (yan yana olumsuzlama+tamlık ayrımı, yalnız ölçüm sütununa bağlı performans kuralı + istem eşliği, reddedilen yanıtın emülatör iş akışı/v1 koruması, `closedBackendPlan` CLI SHA testleri).
+- [x] Sahip: Furkan — B (7–12): Açık davetli veya kısmi karışık moddan güvenli acil geri kapatma (`--rollback-closed`), kısmi hata durum özeti (`closedEndpoints`/`pendingEndpoints`), `--diagnostic-only` ayrımı ve emülatörde geri kapatma sonrası mevcut v1 rapor/belge hazırlığı koruması doğrulandı.
+- [x] Sahip: Furkan — C (13–18): Masrafsız beş uç + worker + Netlify ön kontrolü (`--preflight-synthetic`), ayrıştırılmış uyuşmazlık özeti, ücretli moda örtük geçiş koruması, `1 + 6 = 7 <= 12` sentetik kota planı ve günlük temizlik sınırı doğrulandı.
+- [x] Sahip: Furkan — D–E (19–30): Eski `6e972d8` kanıt ayrımı, üç bağımsız kabul kapısı (`gates.mechanical`, `gates.humanReview`, `gates.operations`), davet iptalinde diğer claim koruması + önceden verilmiş belirteç/anında kapatma sınırı ve [BETA-ACCEPTANCE.md](docs/BETA-ACCEPTANCE.md) operasyon/uyarı/saklama planı doğrulandı.
+- [!] Sahip: Furkan — F (31–36): Yerel kalite kapıları (`check:secrets`, `lint`, `vitest`, `test:functions`, `test:scripts`, `test:python`, iki build, `test:integration`, `browser --tabular`) geçti; commit/push, kapalı Netlify/Firebase dağıtımları, canlı sentetik smoke/full kabul ve TASK-0013 bulut operasyon onayları kullanıcı yetkisi/kararı bekler.
+
 ### 2026-11-27 — Furkan / Antigravity: TASK-0014 rapor kanıt bağı, davetli beta doğrulayıcı ve yayın adayı
 
 - [x] Sahip: Furkan — A (1–6): Altı dilli `6e972d8` canlı rapor JSON’larını ve Claude incelemesini fiziksel kaynak satırlarıyla doğrula; doğrulanan anlam kaymalarına başarısız regresyon testleri ekle.
@@ -14,6 +41,7 @@ Durumlar: [ ] başlanmadı, [~] devam ediyor, [x] doğrulandı, [!] engelli.
 - [x] Sahip: Furkan — C (17–24): `codex/invite-beta-readiness` açık/kapalı doğrulayıcı diff’ini entegre et; CSV/XLSX emülatör E2E, farklı arayüz/rapor dili + RTL, oturumsuz/davetsiz/davetli erişim, geri kapatma ve kota/tekrar testlerini doğrula.
 - [x] Sahip: Furkan — D (25–30): Kapalı/davetli aday kanıtını, geri kapatma adımlarını, bütçe/izleme/saklama durumunu, `acceptance:check`/`usage:summarize` çıktılarını ve yeni aday SHA–eski kanıt ilişkisini [BETA-ACCEPTANCE.md](docs/BETA-ACCEPTANCE.md) içinde hizala.
 - [~] Sahip: Furkan — E (31–36): Tam yerel kalite kapıları (`lint`, `test:run`, `test:functions`, `test:scripts`, `test:python`, `build`, `build:functions`, `test:integration`, `test:local` / `tabular-analysis`, `check:secrets`) geçti; GitHub `Quality`, kapalı Netlify `cloud-preview` yayını, `verify:release` ve `gemini.md` (`REVIEW_NEEDED`) devir kanıtı bu paketin yayın adımında tutulur. Yeni aday SHA için canlı Gemini kabulü, altı dilli insan incelemesi ve kapalı backend yayını `TASK-0013` altında açıktır.
+- [x] Sahip: Furkan — 28 Kasım Codex incelemesi (3 P1): geçerli Çince sütun/kısıt/CJK+Latin kabulü ve benzer etiket ayrımı, kullanıcı amacından bağımsız kanıt sınırı + tek grup + genel sayfa adı koruması, `backend:check -- --live --expected-commit <tam-SHA>` kesin SHA doğrulaması ve `checkGemini --diagnostic-only` rehber eşliği (yerel doğrulama geçti; commit/push/yayın kullanıcı onayına bağlı).
 
 ### 2026-11-27 — Furkan / Codex: kapalı üretimde kaynaklı kullanıcı raporu provası
 
@@ -1151,6 +1179,7 @@ Aşağıdakiler sonraki aşamanın açık kararlarıdır. Bugünkü yerel akış
 - Saklama: kullanıcı silene kadar tutma önerisi yerine süre, silme ve yedek politikası birlikte belirlenmeli.
 - Dosya boyutu: FLOW.md geçici belge sınırlarının gerçek yük testleriyle güncellenmesi.
 - Hedef müşteri profilleri: doğrulanana kadar işletme-genel yaklaşım.
+- [ ] Sonraki aşama — Gemini ile sunucu tarafı moderasyonu değerlendir. Moderasyona girecek içerik, izin ve veri kapsamı, insan incelemesine aktarım ve sağlayıcı hatasında uygulanacak karar ayrı oturumda belirlenecek. Mevcut Secret Manager entegrasyonunu, model erişimini ve kota kapsamını o oturumda doğrula.
 
 ## Açık riskler
 

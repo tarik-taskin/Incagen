@@ -4,15 +4,17 @@ import { afterEach, expect, it, vi } from "vitest";
 import { TabularAnalysisPanel } from "./tabular-analysis-panel";
 import type { Analysis } from "../../../functions/src/contracts";
 
-const mocks = vi.hoisted(() => ({ user: { uid: "synthetic" }, calls: vi.fn(), start: vi.fn() }));
+const mocks = vi.hoisted(() => ({ user: { uid: "synthetic" }, calls: vi.fn(), start: vi.fn(), result: vi.fn() }));
 vi.mock("../../lib/auth-context", () => ({ useAuth: () => ({ user: mocks.user }) }));
 vi.mock("../../lib/firebase", () => ({ getServices: () => ({ functions: {} }) }));
+vi.mock("./live-analysis-report", () => ({ default: ({ artifact }: { artifact: { result: { objective: string } } }) => <p>{artifact.result.objective}</p> }));
 vi.mock("firebase/functions", () => ({ httpsCallable: (...args: unknown[]) => {
   mocks.calls(args[1]);
   if (args[1] === "startAnalysis") return mocks.start;
+  if (args[1] === "getAnalysisResult") return mocks.result;
   return async () => ({ data: { access: "available", tables: [{ sourceId: "file-0", fileName: "test.csv", sheet: null, columns: ["Team", "Amount"], rows: 2 }], limits: { rows: 5000, groups: 12, attempts: 3 } } });
 } }));
-afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); mocks.calls.mockClear(); mocks.start.mockReset(); });
+afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); mocks.calls.mockClear(); mocks.start.mockReset(); mocks.result.mockReset(); });
 
 it("enables manual retry after the stored server deadline without making an automatic generation call", async () => {
   vi.useFakeTimers();
@@ -84,6 +86,18 @@ it("uses the exact retry deadline and leaves no polling after expiry", async () 
   await act(async () => { vi.advanceTimersByTime(60 * 60 * 1000); });
   expect(interval).not.toHaveBeenCalled();
   expect(mocks.calls.mock.calls.map(call => call[0])).toEqual(["getAnalysisTables"]);
+});
+
+it.each([undefined, Number.MAX_VALUE])("shows a quota error even with an unusable reset date (%s)", async retryAfter => {
+  mocks.start.mockRejectedValue({ code: "functions/resource-exhausted", details: { analysisLimit: "user-day", retryAfter } });
+  const analysis = { id: "quota-missing-time", ai: { status: "failed", attempts: 1, sourceId: "file-0",
+    selection: { sheet: null, valueColumn: 1, groupColumn: 0, aggregation: "sum", numberFormat: "plain", unit: "USD" } } } as Analysis;
+  render(<TabularAnalysisPanel analysis={analysis} />);
+  const submit = await screen.findByRole("button", { name: "Yeniden dene" });
+  await waitFor(() => expect(submit).toBeEnabled());
+  await userEvent.click(submit);
+  expect(await screen.findByRole("alert")).toHaveTextContent("Bugünkü analiz haklarınız doldu.");
+  expect(mocks.start).toHaveBeenCalledTimes(1);
 });
 
 it("does not resurrect an expired cooldown when a snapshot arrives after an idle period", async () => {
@@ -180,4 +194,99 @@ it("handles provider-busy and timeout cooldowns deterministically and ignores la
   });
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Analizi oluştur" })).toBeInTheDocument();
+});
+
+it("kaydetme aşamasında başarısız eski denemeden yeniden denerken eski job.stage'i göstermez ve aktif adımı aria-current ile işaretler", async () => {
+  let finishStart!: () => void;
+  mocks.start.mockImplementationOnce(() => new Promise<void>(resolve => { finishStart = resolve; }));
+  const failedAtSaving = {
+    id: "retry-stage",
+    ai: {
+      status: "failed" as const,
+      attemptId: "att-old",
+      attempts: 1,
+      maxAttempts: 3,
+      stage: "saving" as const,
+      error: "provider" as const,
+      sourceId: "file-0",
+      selection: { sheet: null, valueColumn: 1, groupColumn: 0, aggregation: "sum" as const, numberFormat: "plain" as const, unit: "USD" as const },
+    },
+  } as Analysis;
+  const view = render(<TabularAnalysisPanel analysis={failedAtSaving} />);
+  const retry = await screen.findByRole("button", { name: "Yeniden dene" });
+  await waitFor(() => expect(retry).toBeEnabled());
+  await userEvent.click(retry);
+
+  // Sunucu yeni işi henüz bildirmedi: eski "saving" aşaması gösterilmemeli.
+  expect(screen.getByRole("status")).toHaveTextContent("Analiz isteği gönderiliyor…");
+  expect(screen.queryByText("Rapor kaydediliyor.")).not.toBeInTheDocument();
+  const steps = screen.getAllByRole("listitem");
+  expect(steps.every(step => !step.hasAttribute("aria-current"))).toBe(true);
+
+  // Sunucudan gerçek running snapshot geldiğinde etkin adım aria-current="step" taşır.
+  view.rerender(<TabularAnalysisPanel analysis={{
+    ...failedAtSaving,
+    ai: { ...failedAtSaving.ai!, status: "running", attemptId: "att-new", stage: "interpreting", leaseUntil: Date.now() + 60_000 },
+  }} />);
+  expect(screen.getByRole("status")).toHaveTextContent("Kaynaklı özet hazırlanıyor.");
+  const runningSteps = screen.getAllByRole("listitem");
+  expect(runningSteps[0]).not.toHaveAttribute("aria-current");
+  expect(runningSteps[1]).toHaveAttribute("aria-current", "step");
+  expect(runningSteps[2]).not.toHaveAttribute("aria-current");
+  finishStart();
+});
+
+it("startAnalysis ağ kesintisi döndükten sonra sunucu işi tamamladıysa otomatik tekrar yapmadan kayıtlı sonucu açar", async () => {
+  mocks.start.mockRejectedValueOnce({ code: "functions/unavailable" });
+  mocks.result.mockResolvedValueOnce({ data: { result: { objective: "Ağ kesintisi sonrası kurtarılan rapor" } } });
+  const initial = {
+    id: "net-drop",
+    ai: {
+      status: "failed" as const,
+      attemptId: "att-1",
+      attempts: 1,
+      maxAttempts: 3,
+      error: "timeout" as const,
+      sourceId: "file-0",
+      selection: { sheet: null, valueColumn: 1, groupColumn: 0, aggregation: "sum" as const, numberFormat: "plain" as const, unit: "USD" as const },
+    },
+  } as Analysis;
+  const view = render(<TabularAnalysisPanel analysis={initial} />);
+  const retry = await screen.findByRole("button", { name: "Yeniden dene" });
+  await waitFor(() => expect(retry).toBeEnabled());
+  await userEvent.click(retry);
+  expect(await screen.findByRole("alert")).toBeVisible();
+  expect(mocks.start).toHaveBeenCalledTimes(1);
+
+  // Sunucu işi gerçekte tamamlamış: Firestore snapshot'ı geldiğinde yeni startAnalysis yapılmadan sonuç okunur.
+  view.rerender(<TabularAnalysisPanel analysis={{
+    ...initial,
+    ai: { ...initial.ai!, status: "completed", attemptId: "att-2", finishedAt: Date.now() },
+  }} />);
+  expect(await screen.findByText("Ağ kesintisi sonrası kurtarılan rapor")).toBeVisible();
+  expect(mocks.start).toHaveBeenCalledTimes(1);
+  expect(mocks.result).toHaveBeenCalledTimes(1);
+});
+
+it("günlük kota ve geçici sağlayıcı beklemesinde sunucu yenilenme saatini yerelde gösterir ve süre dolunca yalnız düğmeyi açar", async () => {
+  vi.useFakeTimers({ now: new Date(2026, 10, 28, 10, 0, 0).getTime() });
+  const renewAt = new Date(2026, 10, 28, 10, 15, 0).getTime();
+  mocks.start.mockRejectedValueOnce({ code: "functions/resource-exhausted", details: { analysisLimit: "user-day", retryAfter: renewAt } });
+  const analysis = {
+    id: "quota-time",
+    ai: {
+      status: "failed" as const,
+      attempts: 1,
+      sourceId: "file-0",
+      selection: { sheet: null, valueColumn: 1, groupColumn: 0, aggregation: "sum" as const, numberFormat: "plain" as const, unit: "USD" as const },
+    },
+  } as Analysis;
+  await act(async () => { render(<TabularAnalysisPanel analysis={analysis} />); });
+  await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Yeniden dene" })); });
+  const alert = screen.getByRole("alert");
+  expect(alert).toHaveTextContent(/Kota .* itibarıyla yenilenir; işlem kendiliğinden başlamaz\./);
+  expect(screen.getByRole("button", { name: "Yeniden dene" })).toBeDisabled();
+  await act(async () => { vi.advanceTimersByTime(15 * 60 * 1000 + 10); });
+  expect(screen.getByRole("button", { name: "Yeniden dene" })).toBeEnabled();
+  expect(mocks.start).toHaveBeenCalledTimes(1);
 });

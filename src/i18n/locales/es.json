@@ -1211,5 +1211,10 @@
   "Tablo analizi erişimi kontrol ediliyor…": "Comprobando el acceso al análisis de tablas…",
   "Erişimi kontrol et": "Comprobar acceso",
   "Hesapları CSV olarak indir": "Descargar métricas en CSV",
-  "CSV hazırlanamadı. Raporu yeniden açıp deneyin.": "No se pudo crear el CSV. Vuelve a abrir el informe e inténtalo de nuevo."
+  "CSV hazırlanamadı. Raporu yeniden açıp deneyin.": "No se pudo crear el CSV. Vuelve a abrir el informe e inténtalo de nuevo.",
+  "Analiz isteği gönderiliyor…": "Enviando solicitud de análisis…",
+  "Tablo analizi erişimi doğrulanamadı. Yeniden kontrol edin.": "No se pudo verificar el acceso al análisis de tablas. Vuelve a comprobarlo.",
+  "Her dolu satırda geçerli bir ölçüm değeri gerekir. Sayı biçimi ondalık ve binlik ayracını belirler.": "Cada fila no vacía necesita un valor de medida válido. El formato numérico determina los separadores decimales y de miles.",
+  "Yeniden deneme {0} itibarıyla açılacak; işlem kendiliğinden başlamaz.": "El reintento se habilitará a las {0}; el análisis no se iniciará automáticamente.",
+  "Kota {0} itibarıyla yenilenir; işlem kendiliğinden başlamaz.": "La cuota se restablece a las {0}; el análisis no se iniciará automáticamente."
 }

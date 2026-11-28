@@ -48,10 +48,12 @@ describe("App routes", () => {
 
   it("oturumsuz korumalı adresi landing üzerindeki giriş modalına taşır", async () => {
     authState.current = { user: null, loading: false, error: "" };
-    renderApp("/app/new-analysis");
+    // Rota yönlendirmesini soğuk lazy modül derleme süresinden ayır.
+    await import("./components/require-auth");
+    await act(async () => { renderApp("/app/new-analysis"); });
 
     expect(await screen.findByRole("heading", { name: "Verilerinizdeki büyüme fırsatlarını keşfedin." })).toBeInTheDocument();
-    expect(screen.getByRole("dialog", { name: "Giriş yap" })).toBeInTheDocument();
+    expect(await screen.findByRole("dialog", { name: "Giriş yap" })).toBeInTheDocument();
   });
 
   it("iç sayfalar arasında dosya seçimini korur", async () => {

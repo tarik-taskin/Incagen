@@ -1211,5 +1211,10 @@
   "Tablo analizi erişimi kontrol ediliyor…": "Tablo analizi erişimi kontrol ediliyor…",
   "Erişimi kontrol et": "Erişimi kontrol et",
   "Hesapları CSV olarak indir": "Hesapları CSV olarak indir",
-  "CSV hazırlanamadı. Raporu yeniden açıp deneyin.": "CSV hazırlanamadı. Raporu yeniden açıp deneyin."
+  "CSV hazırlanamadı. Raporu yeniden açıp deneyin.": "CSV hazırlanamadı. Raporu yeniden açıp deneyin.",
+  "Analiz isteği gönderiliyor…": "Analiz isteği gönderiliyor…",
+  "Tablo analizi erişimi doğrulanamadı. Yeniden kontrol edin.": "Tablo analizi erişimi doğrulanamadı. Yeniden kontrol edin.",
+  "Her dolu satırda geçerli bir ölçüm değeri gerekir. Sayı biçimi ondalık ve binlik ayracını belirler.": "Her dolu satırda geçerli bir ölçüm değeri gerekir. Sayı biçimi ondalık ve binlik ayracını belirler.",
+  "Yeniden deneme {0} itibarıyla açılacak; işlem kendiliğinden başlamaz.": "Yeniden deneme {0} itibarıyla açılacak; işlem kendiliğinden başlamaz.",
+  "Kota {0} itibarıyla yenilenir; işlem kendiliğinden başlamaz.": "Kota {0} itibarıyla yenilenir; işlem kendiliğinden başlamaz."
 }
